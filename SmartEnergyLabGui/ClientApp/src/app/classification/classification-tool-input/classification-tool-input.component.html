@@ -1,0 +1,50 @@
+<div style="display: grid; grid-auto-flow: column;">
+    <div class="inputColumn">
+        <div class="title">Elexon profile</div>
+        <div style="display: grid; grid-auto-flow: row; margin-top: 1rem; width: 50%">
+            <mat-form-field appearance="fill" *ngFor="let num of [1,2,3,4,5,6,7,8]">
+                <mat-label>Elexon profile {{num}}</mat-label>
+                <input [type]="'number'" matInput [(ngModel)]="input.elexonProfile[num-1]">
+            </mat-form-field>
+        </div>
+    </div>
+    <div class="inputColumn">
+        <div class="title">Transformer type</div>
+        <div style="display: grid; grid-auto-flow: row; margin-top: 1rem; width: 50%">
+            <mat-form-field appearance="fill">
+                <mat-label>Substation mount</mat-label>
+                <select matNativeControl [(ngModel)]="input.substationMount">
+                    <option value="0">Ground mounted</option>
+                    <option value="1">Pole mounted</option>
+                </select>
+            </mat-form-field>
+            <mat-form-field appearance="fill">
+                <mat-label>Transformer rating</mat-label>
+                <input [type]="'number'" matInput [(ngModel)]="input.transformerRating" min="0">
+            </mat-form-field>
+            <mat-form-field appearance="fill">
+                <mat-label>Percentage industrial customers</mat-label>
+                <input [type]="'number'" matInput [(ngModel)]="input.percentIndustrialCustomers" min="0" max="100">
+            </mat-form-field>
+            <mat-form-field appearance="fill">
+                <mat-label>Number of LV feeders</mat-label>
+                <input [type]="'number'" matInput [(ngModel)]="input.numberOfFeeders" min="0">
+            </mat-form-field>
+            <mat-form-field appearance="fill">
+                <mat-label>Percentage half-hourly load</mat-label>
+                <input [type]="'number'" matInput [(ngModel)]="input.percentageHalfHourlyLoad" min="0" max="100">
+            </mat-form-field>
+            <mat-form-field appearance="fill">
+                <mat-label>Total length</mat-label>
+                <input [type]="'number'" matInput [(ngModel)]="input.totalLength" min="0">
+            </mat-form-field>
+            <mat-form-field appearance="fill">
+                <mat-label>Percentage overhead</mat-label>
+                <input [type]="'number'" matInput [(ngModel)]="input.percentageOverhead"  min="0" max="100">
+            </mat-form-field>
+        </div>
+    </div>
+</div>
+<div style="text-align:center">
+    <button mat-raised-button color="primary" style="width: 50%" (click)="run()">Calculate</button>
+</div>

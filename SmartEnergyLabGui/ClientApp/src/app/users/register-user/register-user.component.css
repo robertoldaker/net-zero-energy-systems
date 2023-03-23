@@ -1,0 +1,7 @@
+div#content {
+    min-width: 30rem;    
+}
+
+div#content > form > div {
+    margin-bottom: 1rem;
+}

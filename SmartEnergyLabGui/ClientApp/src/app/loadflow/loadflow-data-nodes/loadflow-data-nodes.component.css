@@ -1,0 +1,14 @@
+.mat-column-demand {
+    text-align: right;
+}
+
+.mat-column-generation {
+    text-align: right;
+    padding-right: 1rem;
+}
+
+.mat-column-mismatch {
+    text-align: right;
+    justify-content: flex-end;
+    font-style: italic;
+}

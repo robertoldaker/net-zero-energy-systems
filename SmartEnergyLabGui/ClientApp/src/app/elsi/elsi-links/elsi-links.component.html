@@ -1,0 +1,89 @@
+<div style="height: calc(100vh - 200px); overflow-y: scroll; padding-right: 1rem">
+    <table style="width: 100%;" #table mat-table [dataSource]="tableData" [trackBy]="getId" matSort>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+            <td mat-cell *matCellDef="let element">{{element.name.value}}</td>
+        </ng-container>
+
+        <!-- From Column -->
+        <ng-container matColumnDef="fromZoneStr">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>From</th>
+            <td mat-cell *matCellDef="let element">{{element.fromZoneStr.value}}</td>
+        </ng-container>
+
+        <!-- To Column -->
+        <ng-container matColumnDef="toZoneStr">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>To</th>
+            <td mat-cell *matCellDef="let element">{{element.toZoneStr.value}}</td>
+        </ng-container>
+
+        <!-- Capacity Column -->
+        <ng-container matColumnDef="capacity">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Capacity</th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.capacity" [decimalPlaces]="1" [readOnly]="isReadOnly"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <!-- Revcap Column -->
+        <ng-container matColumnDef="revCap">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">RevCap</th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.revCap" [decimalPlaces]="1" [readOnly]="isReadOnly"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <!-- Loss Column -->
+        <ng-container matColumnDef="loss">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Loss (%)</th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.loss" [readOnly]="isReadOnly" [scalingFac]="100" [decimalPlaces]="2"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <!-- Market  Column -->
+        <ng-container matColumnDef="market">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Market</th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.market" [readOnly]="isReadOnly" [options]="['true','false']"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <!-- ITF  Column -->
+        <ng-container matColumnDef="itf">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">ITF</th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.itf" [decimalPlaces]="0" [readOnly]="isReadOnly"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <!-- ITT  Column -->
+        <ng-container matColumnDef="itt">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">ITT</th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.itt" [decimalPlaces]="0" [readOnly]="isReadOnly"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <!-- BTF  Column -->
+        <ng-container matColumnDef="btf">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">BTF</th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.btf" [decimalPlaces]="0" [readOnly]="isReadOnly"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <!-- BTT  Column -->
+        <ng-container matColumnDef="btt">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">BTT</th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.btt" [decimalPlaces]="0" [readOnly]="isReadOnly"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+</div>

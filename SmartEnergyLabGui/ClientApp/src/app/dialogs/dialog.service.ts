@@ -1,0 +1,93 @@
+import { Component, Injectable } from '@angular/core';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { AboutDialogComponent } from '../main/about-dialog/about-dialog.component';
+import { AboutLoadflowDialogComponent } from '../loadflow/about-loadflow-dialog/about-loadflow-dialog.component';
+import { ClassificationToolDialogComponent } from '../classification/classification-tool-dialog/classification-tool-dialog.component';
+import { DistSubstationDialogComponent } from '../low-voltage/dist-substation-dialog/dist-substation-dialog.component';
+import { LoadflowHelpDialogComponent } from '../loadflow/loadflow-help-dialog/loadflow-help-dialog.component';
+import { LogOnComponent } from '../users/log-on/log-on.component';
+import { RegisterUserComponent } from '../users/register-user/register-user.component';
+import { DataClientService } from '../data/data-client.service';
+import { MapDataService } from '../low-voltage/map-data.service';
+import { ChangePasswordComponent } from '../users/change-password/change-password.component';
+import { ElsiDatasetDialogComponent } from '../elsi/elsi-dataset-dialog/elsi-dataset-dialog.component';
+import { ElsiDataVersion } from '../data/app.data';
+import { MessageDialog, MessageDialogComponent } from './message-dialog/message-dialog.component';
+import { AboutElsiDialogComponent } from '../elsi/about-elsi-dialog/about-elsi-dialog.component';
+import { ElsiHelpDialogComponent } from '../elsi/elsi-help-dialog/elsi-help-dialog.component';
+
+@Injectable({
+    providedIn: 'root'
+})
+
+export class DialogService {
+
+    constructor(private dialog: MatDialog, private dataClientService:DataClientService, private mapDataService: MapDataService ) {
+
+    }
+
+    private defaultOptions:MatDialogConfig<any> = { position: { top: "100px"} }
+
+    showClassificationToolDialog() {
+        let dialogRef = this.dialog.open(ClassificationToolDialogComponent, this.defaultOptions)
+        dialogRef.afterClosed().subscribe(input => {
+            if ( input!==undefined && this.mapDataService.geographicalArea!==undefined) {
+                let gaId = this.mapDataService.geographicalArea.id
+                this.dataClientService.RunClassificationToolAll(gaId,input);
+            }
+        });
+    }
+
+    showDistSubstationEditorDialog() {
+        let dialogRef = this.dialog.open(DistSubstationDialogComponent, this.defaultOptions)
+    }
+
+    showAboutDialog() {
+        let dialogRef = this.dialog.open(AboutDialogComponent, this.defaultOptions)
+    }
+
+    showAboutLoadflowDialog() {
+        let dialogRef = this.dialog.open(AboutLoadflowDialogComponent, this.defaultOptions)
+    }
+
+    showHelpLoadflowDialog() {
+        let dialogRef = this.dialog.open(LoadflowHelpDialogComponent, this.defaultOptions)
+    }
+
+    showRegisterUserDialog() {
+        let dialogRef = this.dialog.open(RegisterUserComponent, this.defaultOptions)
+    }
+
+    showLogonDialog() {
+        let dialogRef = this.dialog.open(LogOnComponent, this.defaultOptions)
+    }
+
+    showChangePasswordDialog() {
+        let dialogRef = this.dialog.open(ChangePasswordComponent, this.defaultOptions)
+    }
+
+    showElsiDatasetDialog(data: ElsiDataVersion | null) {
+        let options = Object.assign({},this.defaultOptions)
+        options.data = data
+        let dialogRef = this.dialog.open(ElsiDatasetDialogComponent, options)
+    }
+
+    showMessageDialog(data: MessageDialog | null, onOk: ()=>void) {
+        let options = Object.assign({},this.defaultOptions)
+        options.data = data
+        let dialogRef = this.dialog.open(MessageDialogComponent, options)
+        dialogRef.afterClosed().subscribe((input)=>{
+            if ( input && onOk ) {
+                onOk()
+            }
+        });
+    }
+
+    showAboutElsiDialog() {
+        let dialogRef = this.dialog.open(AboutElsiDialogComponent, this.defaultOptions)
+    }
+
+    showElsiHelpDialog() {
+        let dialogRef = this.dialog.open(ElsiHelpDialogComponent, this.defaultOptions)
+    }
+}

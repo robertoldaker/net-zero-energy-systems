@@ -1,0 +1,12 @@
+div#content {
+    min-width: 20rem;
+}
+
+div#header {
+    font-size: 0.8rem;
+}
+
+div#content > form > div {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}

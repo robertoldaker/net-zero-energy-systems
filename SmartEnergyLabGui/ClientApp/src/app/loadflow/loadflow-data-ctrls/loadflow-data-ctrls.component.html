@@ -1,0 +1,57 @@
+<div style="overflow: auto; height: calc(100vh - 170px)">
+
+    <table style="width: 100%;" mat-table [dataSource]="ctrls" [trackBy]="getCtrlId" matSort>
+    
+        <!-- code -->
+        <ng-container matColumnDef="code">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Ctrl</th>
+          <td mat-cell *matCellDef="let element">{{element.obj.code}}</td>
+        </ng-container>
+    
+        <!-- node1 -->
+        <ng-container matColumnDef="node1">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Node 1</th>
+          <td mat-cell *matCellDef="let element">{{element.branch.obj.node1Code}}</td>
+        </ng-container>
+    
+        <!-- node2 -->
+        <ng-container matColumnDef="node2">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Node 2</th>
+          <td mat-cell *matCellDef="let element">{{element.branch.obj.node2Code}}</td>
+        </ng-container>
+    
+        <!-- type -->
+        <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+            <td mat-cell *matCellDef="let element">{{getTypeStr(element.obj.type)}}</td>
+        </ng-container>
+    
+        <!-- min Ctrl -->
+        <ng-container matColumnDef="minCtrl">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Min Ctrl</th>
+            <td mat-cell *matCellDef="let element">{{element.obj.minCtrl.toFixed(2)}}</td>
+        </ng-container>
+            
+        <!-- max ctrl -->
+        <ng-container matColumnDef="maxCtrl">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Max Ctrl</th>
+            <td mat-cell *matCellDef="let element">{{element.obj.maxCtrl.toFixed(2)}}</td>
+        </ng-container>
+            
+        <!-- cost -->
+        <ng-container matColumnDef="cost">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header  arrowPosition="before">Cost</th>
+            <td mat-cell *matCellDef="let element">{{element.obj.cost.toFixed(1)}}</td>
+        </ng-container>
+
+        <!-- set point -->
+        <ng-container matColumnDef="setPoint">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Set point</th>
+            <td mat-cell *matCellDef="let element">{{element.setPoint?.toFixed(2)}}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>            
+</div>
+    

@@ -1,0 +1,8 @@
+<div style="background: #eee; font-size: 0.85em; font-weight: bold; padding: 3px">
+    <img src="{{imgSrc}}" style="width: 16px; margin-right: 6px"/>
+    <span>{{title}}</span>
+</div>
+<app-e-charts-wrapper [options]="this.chartOptions" (chartInit)="onChartInit($event)"
+[styles]="{height: 'calc(100% - 28px)'}"></app-e-charts-wrapper>
+
+

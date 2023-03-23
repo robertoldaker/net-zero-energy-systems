@@ -1,0 +1,189 @@
+/* You can add global styles to this file, and also import other style files */
+:root {
+    --primary-colour: #3F51B5
+}
+
+/* Provide sufficient contrast against white background */
+a {
+    color: #0366d6;
+}
+
+code {
+    color: #e01a76;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.label {
+    color:#014694;
+    margin-right: 1em;
+}
+
+.small {
+    font-size: 9pt;    
+}
+
+.small {
+    font-size: 10pt;    
+}
+
+/* home pages */
+div.content {
+    padding: 1rem;
+}
+div.borderRight {
+  border-right: 1px solid grey
+}
+
+div.borderBottom {
+  border-bottom: 1px solid grey
+}
+
+/* chart headers */
+div.chartHeader {
+    padding: 0px 4px 0px 10px; 
+    display: grid; 
+    grid-auto-flow: column; 
+    align-items: baseline; 
+    font-size: 10pt; 
+    background-color: #eee;
+    min-height: 40px
+}
+
+div.chartHeader > div.title {
+    font-size: 0.8rem;
+    padding-top: 0.6rem;
+}
+
+div.chartHeader > div.title > img {
+    width: 20px;
+    margin-right: 5px;
+}
+
+div.chartHeader > div.selectContainer {
+    justify-self: end; 
+    display: grid; 
+    grid-auto-flow: column; 
+    align-items: center
+}
+
+/* grid */
+div.gridColumn {
+    display: grid;
+    grid-auto-flow: column;    
+}
+
+div.gridRow {
+    display: grid;
+    grid-auto-flow: row;   
+}
+
+/* flex */
+div.inlineFlexRow {
+    display: inline-flex;
+    flex-direction: row; 
+    align-items:center;  
+    justify-items: flex-start;  
+}
+
+div.flexRow {
+    display: flex;
+    flex-direction: row; 
+    align-items:center;  
+    justify-items: flex-start;  
+}
+
+/* map info window */
+div.mapInfoWindow > div {
+    font-weight: bold;
+}
+
+div.mapInfoWindow > table#table {
+    margin-top: 4px;
+    margin-left: 30px;
+}
+
+div.mapInfoWindow > table tr td:nth-child(1) {
+    font-weight: bold;
+    padding-right: 5px;
+    font-size: 0.9em;
+    vertical-align: top;
+}
+
+div.mapInfoWindow div#buttonRow {
+    margin-top: 10px;
+    margin-left: 30px;
+}
+
+.iconButton {
+    font-size: 12pt;
+    color: grey;
+    cursor: pointer;
+}
+
+.iconButton:hover {
+    color: #333;
+}
+
+
+/* header search */
+input[type=text].headerSearch {
+    color: #333;
+    border: none;
+    background: #fff;
+    margin: 0px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 15px;
+    padding-right: 13px;
+    outline: none;
+    border-radius: 5px;
+    width: 30vw;
+}
+
+input[type=text].headerSearch::placeholder {
+    color: #666
+}
+
+input[type=text].headerSearch.withAutoComplete {
+    border-radius: 5px 5px 0px 0px;
+}
+
+/* tag */
+div.tag {
+    display: inline-block;
+    color: white;
+    font-size: 7pt;
+    letter-spacing: 1px;
+    border-radius: 10px;
+    padding-top: 4px;
+    padding-bottom: 3px;
+    padding-left: 6px;
+    padding-right: 6px;
+    line-height: 80%;
+    background-color: #333;
+}
+
+/* this turns an angular material checkboc white */
+span.whiteCheckbox .mat-checkbox-frame {
+    border-color: white !important;
+}
+
+/* */
+span.link {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.iconLink {
+    cursor: pointer;
+    margin-left: 1rem;
+    color: grey;
+}

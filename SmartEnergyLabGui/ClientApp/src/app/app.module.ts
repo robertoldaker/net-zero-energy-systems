@@ -1,0 +1,255 @@
+// basic angular stuff
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { RouterModule } from '@angular/router';
+
+// angular material design
+import { MatSliderModule } from '@angular/material/slider';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select'
+import { MatIconModule } from '@angular/material/icon'; 
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';  
+import { MatButtonToggleModule } from '@angular/material/button-toggle'; 
+import { MatRadioModule } from '@angular/material/radio'; 
+import { MatDividerModule } from '@angular/material/divider'; 
+import { MatDialogModule } from '@angular/material/dialog'; 
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressBarModule } from '@angular/material/progress-bar'; 
+import { MatAutocompleteModule } from '@angular/material/autocomplete'; 
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTabsModule } from '@angular/material/tabs'; 
+import { MatExpansionModule} from '@angular/material/expansion'; 
+import { MatGridListModule } from '@angular/material/grid-list'; 
+import { MatListModule } from '@angular/material/list'; 
+import { MatTableModule } from '@angular/material/table'; 
+import { MatSortModule } from '@angular/material/sort';
+
+// google maps
+import { GoogleMapsModule } from '@angular/google-maps'
+
+// eCharts
+import { NgxEchartsModule } from 'ngx-echarts';
+
+// Angular split
+import { AngularSplitModule } from 'angular-split';
+
+// cookies
+import { CookieService } from 'ngx-cookie-service';
+
+
+// app imports
+import { AppComponent } from './app.component';
+import { ComponentBase } from './utils/component-base'
+import { DialogBase } from './dialogs/diaglog-base'
+import { MainHeaderComponent } from './low-voltage/main-header/main-header.component';
+import { HomeComponent } from './low-voltage/home/home.component';
+import { MapComponent } from './low-voltage/map/map.component';
+import { LoadProfilesComponent } from './low-voltage/load-profiles/load-profiles.component';
+import { ClassificationInfoComponent } from './classification/classification-info/classification-info.component';
+import { EChartsWrapperComponent } from './utils/e-charts-wrapper/e-charts-wrapper.component';
+import { ClassificationToolComponent } from './classification/classification-tool/classification-tool.component';
+import { ClassificationToolInputComponent } from './classification/classification-tool-input/classification-tool-input.component';
+import { ClassificationToolLoadComponent } from './classification/classification-tool-load/classification-tool-load.component';
+import { ClassificationToolClusterProbabilitiesComponent } from './classification/classification-tool-cluster-probabilities/classification-tool-cluster-probabilities.component';
+import { ClassificationToolResultsComponent } from './classification/classification-tool-results/classification-tool-results.component';
+import { ShowMessageComponent } from './main/show-message/show-message.component';
+import { ClassificationToolDialogComponent } from './classification/classification-tool-dialog/classification-tool-dialog.component';
+import { DialogHeaderComponent } from './dialogs/dialog-header/dialog-header.component';
+import { DialogFooterComponent } from './dialogs/dialog-footer/dialog-footer.component';
+import { StatusMessageComponent } from './main/status-message/status-message.component';
+import { SignalRStatusComponent } from './main/signal-r-status/signal-r-status.component';
+import { PrimaryInfoWindowComponent } from './low-voltage/primary-info-window/primary-info-window.component';
+import { DistInfoWindowComponent } from './low-voltage/dist-info-window/dist-info-window.component';
+import { AreaInfoWindowComponent } from './low-voltage/area-info-window/area-info-window.component';
+import { DistSubstationDialogComponent } from './low-voltage/dist-substation-dialog/dist-substation-dialog.component';
+import { AboutDialogComponent } from './main/about-dialog/about-dialog.component';
+import { MapMarkerComponent } from './low-voltage/map-marker/map-marker.component';
+import { ChargingInfoWindowComponent } from './low-voltage/charging-info-window/charging-info-window.component';
+import { MapPowerComponent } from './low-voltage/map-power/map-power.component';
+import { MapEvComponent } from './low-voltage/map-ev/map-ev.component';
+import { MapHpComponent } from './low-voltage/map-hp/map-hp.component';
+import { LoadProfileComponent } from './low-voltage/load-profile/load-profile.component';
+import { LoadflowHomeComponent } from './loadflow/loadflow-home/loadflow-home.component';
+import { LoadflowHeaderComponent } from './loadflow/loadflow-header/loadflow-header.component';
+import { MainMenuComponent } from './main/main-menu/main-menu.component';
+import { LoadflowDataComponent } from './loadflow/loadflow-data/loadflow-data.component';
+import { LoadflowDialogComponent } from './loadflow/loadflow-dialog/loadflow-dialog.component';
+import { LoadflowStagesComponent } from './loadflow/loadflow-stages/loadflow-stages.component';
+import { LoadflowDataNodesComponent } from './loadflow/loadflow-data-nodes/loadflow-data-nodes.component';
+import { LoadflowDataBranchesComponent } from './loadflow/loadflow-data-branches/loadflow-data-branches.component';
+import { LoadflowDataCtrlsComponent } from './loadflow/loadflow-data-ctrls/loadflow-data-ctrls.component';
+import { AboutLoadflowDialogComponent } from './loadflow/about-loadflow-dialog/about-loadflow-dialog.component';
+import { LoadflowTripResultsComponent } from './loadflow/loadflow-trip-results/loadflow-trip-results.component';
+import { LoadflowTripTableComponent } from './loadflow/loadflow-trip-table/loadflow-trip-table.component';
+import { LoadflowHelpDialogComponent } from './loadflow/loadflow-help-dialog/loadflow-help-dialog.component';
+import { ElsiHomeComponent } from './elsi/elsi-home/elsi-home.component';
+import { ElsiDialogComponent } from './elsi/elsi-dialog/elsi-dialog.component';
+import { ElsiResultsComponent } from './elsi/elsi-results/elsi-results.component';
+import { ElsiHeaderComponent } from './elsi/elsi-header/elsi-header.component';
+import { ElsiLogComponent } from './elsi/elsi-log/elsi-log.component';
+import { ElsiInputsComponent } from './elsi/elsi-inputs/elsi-inputs.component';
+import { ElsiOutputsComponent } from './elsi/elsi-outputs/elsi-outputs.component';
+import { ElsiRowExpanderComponent } from './elsi/elsi-outputs/elsi-row-expander/elsi-row-expander.component';
+import { ElsiDayControlComponent } from './elsi/elsi-outputs/elsi-day-control/elsi-day-control.component';
+import { RegisterUserComponent } from './users/register-user/register-user.component';
+import { UserHeaderComponent } from './users/user-header/user-header.component';
+import { LogOnComponent } from './users/log-on/log-on.component';
+import { HttpRequestInterceptor } from './data/HttpRequestInterceptor';
+import { ChangePasswordComponent } from './users/change-password/change-password.component';
+import { ElsiDemandsComponent } from './elsi/elsi-demands/elsi-demands.component';
+import { ElsiGenerationComponent } from './elsi/elsi-generation/elsi-generation.component';
+import { ElsiDatasetDialogComponent } from './elsi/elsi-dataset-dialog/elsi-dataset-dialog.component';
+import { MessageDialogComponent } from './dialogs/message-dialog/message-dialog.component';
+import { ElsiGenParametersComponent } from './elsi/elsi-gen-parameters/elsi-gen-parameters.component';
+import { ElsiGenCapacitiesComponent } from './elsi/elsi-gen-capacities/elsi-gen-capacities.component';
+import { CellEditorComponent } from './utils/cell-editor/cell-editor.component';
+import { ElsiMiscParamsComponent } from './elsi/elsi-misc-params/elsi-misc-params.component';
+import { MatInputEditorComponent } from './utils/mat-input-editor/mat-input-editor.component';
+import { ElsiLinksComponent } from './elsi/elsi-links/elsi-links.component';
+import { AboutElsiDialogComponent } from './elsi/about-elsi-dialog/about-elsi-dialog.component';
+import { ElsiHelpDialogComponent } from './elsi/elsi-help-dialog/elsi-help-dialog.component';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
+import { GspInfoWindowComponent } from './low-voltage/gsp-info-window/gsp-info-window.component';
+import { MapKeyComponent } from './low-voltage/map/map-key/map-key.component';
+
+
+@NgModule({
+    declarations: [
+        AppComponent,
+        ComponentBase,
+        DialogBase,
+        MainHeaderComponent,
+        HomeComponent,
+        MapComponent,
+        LoadProfilesComponent,
+        ClassificationInfoComponent,
+        EChartsWrapperComponent,
+        ClassificationToolComponent,
+        ClassificationToolInputComponent,
+        ClassificationToolLoadComponent,
+        ClassificationToolClusterProbabilitiesComponent,
+        ClassificationToolResultsComponent,
+        ShowMessageComponent,
+        ClassificationToolDialogComponent,
+        DialogHeaderComponent,
+        DialogFooterComponent,
+        StatusMessageComponent,
+        SignalRStatusComponent,
+        PrimaryInfoWindowComponent,
+        DistInfoWindowComponent,
+        AreaInfoWindowComponent,
+        DistSubstationDialogComponent,
+        AboutDialogComponent,
+        MapMarkerComponent,
+        ChargingInfoWindowComponent,
+        MapPowerComponent,
+        MapEvComponent,
+        MapHpComponent,
+        LoadProfileComponent,
+        LoadflowHomeComponent,
+        LoadflowHeaderComponent,
+        MainMenuComponent,
+        LoadflowDataComponent,
+        LoadflowDialogComponent,
+        LoadflowStagesComponent,
+        LoadflowDataNodesComponent,
+        LoadflowDataBranchesComponent,
+        LoadflowDataCtrlsComponent,
+        AboutLoadflowDialogComponent,
+        LoadflowTripResultsComponent,
+        LoadflowTripTableComponent,
+        LoadflowHelpDialogComponent,
+        ElsiHomeComponent,
+        ElsiDialogComponent,
+        ElsiResultsComponent,
+        ElsiHeaderComponent,
+        ElsiLogComponent,
+        ElsiInputsComponent,
+        ElsiOutputsComponent,
+        ElsiRowExpanderComponent,
+        ElsiDayControlComponent,
+        RegisterUserComponent,
+        UserHeaderComponent,
+        LogOnComponent,
+        ChangePasswordComponent,
+        ElsiDemandsComponent,
+        ElsiGenerationComponent,
+        ElsiDatasetDialogComponent,
+        MessageDialogComponent,
+        ElsiGenParametersComponent,
+        ElsiGenCapacitiesComponent,
+        CellEditorComponent,
+        ElsiMiscParamsComponent,
+        MatInputEditorComponent,
+        ElsiLinksComponent,
+        AboutElsiDialogComponent,
+        ElsiHelpDialogComponent,
+        GspInfoWindowComponent,
+        MapKeyComponent
+    ],
+    imports: [
+        BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
+        HttpClientModule,
+        FormsModule,
+        ReactiveFormsModule,
+        RouterModule.forRoot([
+            { path: '',   redirectTo: '/lowVoltage', pathMatch: 'full' }, // redirect to `first-component`
+            { path: 'bathLV',   redirectTo: '/lowVoltage', pathMatch: 'full' }, // redirect to `first-component`
+            { path: 'lowVoltage', component: HomeComponent},
+            { path: 'loadflow', component: LoadflowHomeComponent},
+            { path: 'elsi', component: ElsiHomeComponent},
+            { path: 'classificationTool', component: ClassificationToolComponent},
+        ]),
+        NgxEchartsModule.forRoot({
+            /**
+             * This will import all modules from echarts.
+             * If you only need custom modules,
+             * please refer to [Custom Build] section.
+             */
+            echarts: () => import('echarts'), // or import('./path-to-my-custom-echarts')
+          }),
+        BrowserAnimationsModule,
+        MatSliderModule,
+        MatInputModule,
+        MatSelectModule,
+        GoogleMapsModule,
+        MatIconModule,
+        MatMenuModule,
+        MatButtonModule,
+        MatButtonToggleModule,
+        MatRadioModule,
+        MatDividerModule,
+        MatDialogModule,
+        MatSnackBarModule,
+        MatProgressBarModule,
+        MatAutocompleteModule,
+        MatCheckboxModule,
+        MatTabsModule,
+        AngularSplitModule,
+        MatExpansionModule,
+        MatGridListModule,
+        MatListModule,
+        MatTableModule,
+        MatSortModule,
+        ServiceWorkerModule.register('ngsw-worker.js', {
+          enabled: environment.production,
+          // Register the ServiceWorker as soon as the application is stable
+          // or after 30 seconds (whichever comes first).
+          registrationStrategy: 'registerWhenStable:30000'
+        })
+    ],
+    providers: [
+        // Http Interceptor(s) -  adds with Client Credentials
+        [
+            { provide: HTTP_INTERCEPTORS, useClass: HttpRequestInterceptor, multi: true }
+        ],
+        [CookieService]
+    ],
+    bootstrap: [AppComponent]
+})
+export class AppModule { }

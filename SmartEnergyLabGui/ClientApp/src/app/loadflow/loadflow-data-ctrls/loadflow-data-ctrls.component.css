@@ -1,0 +1,16 @@
+.mat-column-maxCtrl {
+    text-align: right;
+}
+
+.mat-column-minCtrl {
+    text-align: right;
+}
+
+.mat-column-cost {
+    text-align: right;
+}
+
+.mat-column-setPoint {
+    text-align: right;
+    font-style: italic;
+}

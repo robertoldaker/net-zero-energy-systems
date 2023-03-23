@@ -1,0 +1,11 @@
+<div class="dayControl">
+    <div style="display: flex; justify-content: space-between;">
+        <mat-icon (click)="prevDay()" inline="true" class="clickable">keyboard_arrow_left</mat-icon>                    
+        <span>Day {{day}} of {{results.length}}</span>
+        <mat-icon (click)="nextDay()" inline="true" class="clickable">keyboard_arrow_right</mat-icon>    
+    </div>
+    <div>
+        <mat-slider color="primary" class="slider" discrete [value]="index" [max]="results.length-1" [min]="0" [step]="1" (input)="input($event)" (change)="change($event)">
+        </mat-slider> 
+    </div>
+</div>

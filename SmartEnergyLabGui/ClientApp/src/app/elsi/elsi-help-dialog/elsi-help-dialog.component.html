@@ -1,0 +1,46 @@
+<app-dialog-header [dialogRef]="dialogRef">GB Electricity Market Simulator</app-dialog-header>
+<div id="container">
+<h1>Purpose</h1>
+<p>To illustrate the short-run economic operation of an interconnected power system. This should be a reasonable representation of a competitive electricity market.
+</p>    
+<h1>Key features</h1>
+<p>User defined zones and timesteps.</p>
+<p>Stochastic representation of generation availability (especially wind and solar).</p>
+<p>Network exchanges and storage operation reflect losses and plant capabilities.</p>
+<p>Representation of market phase for sets of zones (no internal network constraints) and separate pricing of balance phase (bids and offer prices)</p>
+<h1>Key assumptions and simplifications</h1>
+<p>Generation unit constraints except maximum output are neglected (i.e. no minimum stable generation or ramp rate limits).</p>
+<p>Unit start-up costs are neglected in decisions to run unit (i.e unit runs if cost <= marginal cost).</p>
+<p>Inter zone network link losses are linear function of flow. If required, quadratic i^2r losses can be approximated by a piecewise linear representation.</p>
+<p>Perfect foresight is assumed for short-run storage (pump-store, batteries and demand side actions).</p>
+<p>Long-term storage (e.g. hydro) assumes simple adaptive behaviour as use departs from annual plan.</p>
+
+<h1>Results</h1>
+<p>As each day is computed the relevant day/period columns are populated/updated.</p>
+<p>The first rows of results table record basic inputs for that day/period:</p>
+<ul>
+    <li>Period = #&lt;day no&gt;&lt;period name&lt;&gt;/period&gt;</li>
+    <li>Hours = duration of period</li>
+    <li>Season = W/A/S = Winter, Autumn(&Spring), Summer</li>
+    <li>Availabilities = Period demands and available capacities of generators, stores and links</li>
+</ul>
+
+<h2>Market phase</h2>
+<p>Gives the market scheduled outputs of generators (including demand curtailment), stores and links. Links with market=false will not have capacity constraints active in the market phase. Store production and consumption are reported separately (e.g. BatteryG and BatteryP). Flows on links are reported at both from and to zones. +ve is production into zone and -ve is extra consumption in that zone.</p>
+<p>Marginal prices will vary between subzones in market areas due to marginal effect of losses. Store and link prices report relevant zone prices if consumption/production is marginal. Otherwise it reports the price at which link or store would be marginal given effect of losses.</p>
+<p>In the Misc rows, the number of bender’s iterations are reported, the total period production costs and the remaining bender’s error on completion.</p>
+<h2>Balance Phase</h2>
+<p>Gives the balance phase schedule and prices.</p>
+<p>In the Misc rows, £Resched is the difference in production cost compared to the balance phase.</p>
+
+<h2>Balance mechanism reports</h2>
+<p>Reports the generation, store and inter-market area link changes in scheduled output between market and balance phases. +ve are increases in production or reductions in demand (an accepted offer) whereas -ve are decreases in production or increases in demand (an accepted bid) – hence BOA = Bid and Offer Acceptances.</p>
+<p>Balancing costs are BOA priced at bid and offer price assumptions (seeking to illustrate balancing market prices rather than underlying marginal costs).</p>
+<p>The first two rows labelled Mkt mism and Bal mism calculate the mismatch between production and consumption forall zones. (A check which should be zero).</p>
+
+
+</div>
+<app-dialog-footer [dialogRef]="dialogRef" [buttons]="DialogFooterButtons.Close"></app-dialog-footer>
+
+
+

@@ -1,0 +1,21 @@
+<button mat-icon-button [matMenuTriggerFor]="menu" aria-label="More options">
+    <mat-icon>menu</mat-icon>
+</button>
+<mat-menu #menu="matMenu">
+    <button mat-menu-item routerLink="/classificationTool" routerLinkActive="active">
+        <span>Classification tool</span>
+    </button>
+    <button mat-menu-item routerLink="/lowVoltage" routerLinkActive="active">
+        <span>Low voltage network</span>
+    </button>
+    <button mat-menu-item routerLink="/loadflow" routerLinkActive="active">
+        <span>Transmission Boundary Capability Calculator</span>
+    </button>
+    <button mat-menu-item routerLink="/elsi" routerLinkActive="active">
+        <span>GB Electricity Market Simulator</span>
+    </button>
+    <hr style="margin: 0">
+    <div mat-menu-item>
+        Version {{version}}
+    </div>
+</mat-menu>

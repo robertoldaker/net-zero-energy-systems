@@ -1,0 +1,31 @@
+<div class="mapInfoWindow">
+    <div class="inlineFlexRow">
+        <mat-icon>location_city</mat-icon>
+        <span>GEOGRAPHICAL AREA</span>
+    </div>
+    <table id="table">
+        <tr>
+            <td>Name:</td>
+            <td>{{mapPowerService.SelectedGeographicalArea?.name}}</td>
+        <tr>
+            <td>Grid supply points:</td>
+            <td>{{mapPowerService.SelectedGeographicalArea?.numberOfGridSupplyPoints}}</td>    
+        </tr>
+        <tr>
+            <td>Primary substations:</td>
+            <td>{{mapPowerService.NumberOfPrimarySubstationsForGa}}</td>    
+        </tr>
+        <tr>
+            <td>Customers</td>
+            <td>{{mapPowerService.NumberOfCustomers}}</td>
+        </tr>
+        <tr>
+            <td>Number of EVs</td>
+            <td>{{mapPowerService.NumberOfEVs ? mapPowerService.NumberOfEVs.toFixed(0):''}}</td>
+        </tr>
+        <tr>
+            <td>Number of HPs</td>
+            <td>{{mapPowerService.NumberOfHPs ? mapPowerService.NumberOfHPs.toFixed(0):''}}</td>
+        </tr>
+    </table>
+</div>

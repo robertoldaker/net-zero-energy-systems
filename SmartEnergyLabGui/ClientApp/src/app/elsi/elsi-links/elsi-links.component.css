@@ -1,0 +1,33 @@
+.mat-column-capacity {
+    text-align: right;    
+}
+
+.mat-column-revCap {
+    text-align: right;
+}
+
+.mat-column-loss {
+    text-align: right;
+}
+
+.mat-column-market {
+    text-align: right;
+}
+
+
+.mat-column-itf {
+    text-align: right;
+}
+
+.mat-column-itt {
+    text-align: right;
+}
+
+.mat-column-btf {
+    text-align: right;
+}
+
+.mat-column-btt {
+    text-align: right;
+}
+

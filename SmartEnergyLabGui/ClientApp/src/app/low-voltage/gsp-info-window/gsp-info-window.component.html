@@ -1,0 +1,37 @@
+<div class="mapInfoWindow">
+    <div class="inlineFlexRow">
+        <img src="/assets/images/grid-supply-point.png" style="width: 30px">
+        <span>GRID SUPPLY POINT</span>
+    </div>
+    <table id="table">
+        <tr>
+            <td>Name:</td>
+            <td>{{mapPowerService.SelectedGridSupplyPoint?.name}}</td>
+        </tr>
+        <tr>
+            <td>NR:</td>
+            <td>{{mapPowerService.SelectedGridSupplyPoint?.nr}}</td>
+        </tr>
+        <tr>
+            <td>NR Id:</td>
+            <td>{{mapPowerService.SelectedGridSupplyPoint?.nrId}}</td>
+        </tr>
+        <tr>
+            <td>Primary substations</td>
+            <td>{{mapPowerService.NumberOfDistributionSubstations}}</td>
+        </tr>
+        <tr>
+            <td>Customers</td>
+            <td>{{mapPowerService.NumberOfCustomers}}</td>
+        </tr>
+        <tr>
+            <td>Number of EVs</td>
+            <td>{{mapPowerService.NumberOfEVs ? mapPowerService.NumberOfEVs.toFixed(0):''}}</td>
+        </tr>
+        <tr>
+            <td>Number of HPs</td>
+            <td>{{mapPowerService.NumberOfHPs ? mapPowerService.NumberOfHPs.toFixed(0):''}}</td>
+        </tr>
+    </table>
+</div>
+

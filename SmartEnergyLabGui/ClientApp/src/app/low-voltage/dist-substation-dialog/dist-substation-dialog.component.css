@@ -1,0 +1,24 @@
+div#title {
+    font-size: 1.1rem;
+    color:darkblue;
+    padding-bottom:5px;
+    border-bottom: 1px dotted grey;
+}
+
+table#data {
+    margin-top: 1rem;
+    margin-left: 30px;
+}
+
+table#data > tr > td {
+    padding-left: 1rem;
+}
+
+table#data > tr > td:nth-child(1) {
+    padding-left: 0rem;
+}
+
+img.tabLabel {
+    width: 20px;
+    margin-right: 8px;
+}

@@ -1,0 +1,1945 @@
+VBA 
+Stores update 
+season=W 
+av=1.00000 gc=3.31600 pc=3.31600 eff=0.90000 en=4.00000 
+i=0 j=0 gvmc.Id=54 maxg=3.31600 pvmc.Id=55 maxp=3.31600 
+i=0 j=0 snc.Id=51 gvar.Id=1 -hrs=-2.00000 pvar.Id=2 eff*hrs=1.80000 
+i=0 j=1 gvmc.Id=58 maxg=1.89486 pvmc.Id=59 maxp=2.10540 
+i=0 j=1 snc.Id=51 gvar.Id=3 -hrs=-7.00000 pvar.Id=4 eff*hrs=6.30000 
+i=0 j=2 gvmc.Id=62 maxg=2.21067 pvmc.Id=63 maxp=2.45630 
+i=0 j=2 snc.Id=51 gvar.Id=5 -hrs=-6.00000 pvar.Id=6 eff*hrs=5.40000 
+i=0 j=3 gvmc.Id=66 maxg=3.31600 pvmc.Id=67 maxp=3.31600 
+i=0 j=3 snc.Id=51 gvar.Id=7 -hrs=-4.00000 pvar.Id=8 eff*hrs=3.60000 
+i=0 j=4 gvmc.Id=70 maxg=2.65280 pvmc.Id=71 maxp=2.94756 
+i=0 j=4 snc.Id=51 gvar.Id=9 -hrs=-5.00000 pvar.Id=10 eff*hrs=4.50000 
+av=1.00000 gc=300.00000 pc=300.00000 eff=0.75000 en=10.00000 
+i=1 j=0 gvmc.Id=75 maxg=300.00000 pvmc.Id=76 maxp=300.00000 
+i=1 j=0 snc.Id=72 gvar.Id=11 -hrs=-2.00000 pvar.Id=12 eff*hrs=1.50000 
+i=1 j=1 gvmc.Id=79 maxg=300.00000 pvmc.Id=80 maxp=300.00000 
+i=1 j=1 snc.Id=72 gvar.Id=13 -hrs=-7.00000 pvar.Id=14 eff*hrs=5.25000 
+i=1 j=2 gvmc.Id=83 maxg=300.00000 pvmc.Id=84 maxp=300.00000 
+i=1 j=2 snc.Id=72 gvar.Id=15 -hrs=-6.00000 pvar.Id=16 eff*hrs=4.50000 
+i=1 j=3 gvmc.Id=87 maxg=300.00000 pvmc.Id=88 maxp=300.00000 
+i=1 j=3 snc.Id=72 gvar.Id=17 -hrs=-4.00000 pvar.Id=18 eff*hrs=3.00000 
+i=1 j=4 gvmc.Id=91 maxg=300.00000 pvmc.Id=92 maxp=300.00000 
+i=1 j=4 snc.Id=72 gvar.Id=19 -hrs=-5.00000 pvar.Id=20 eff*hrs=3.75000 
+av=1.00000 gc=243.84700 pc=243.84700 eff=0.90000 en=4.00000 
+i=2 j=0 gvmc.Id=96 maxg=243.84700 pvmc.Id=97 maxp=243.84700 
+i=2 j=0 snc.Id=93 gvar.Id=21 -hrs=-2.00000 pvar.Id=22 eff*hrs=1.80000 
+i=2 j=1 gvmc.Id=100 maxg=139.34114 pvmc.Id=101 maxp=154.82349 
+i=2 j=1 snc.Id=93 gvar.Id=23 -hrs=-7.00000 pvar.Id=24 eff*hrs=6.30000 
+i=2 j=2 gvmc.Id=104 maxg=162.56467 pvmc.Id=105 maxp=180.62741 
+i=2 j=2 snc.Id=93 gvar.Id=25 -hrs=-6.00000 pvar.Id=26 eff*hrs=5.40000 
+i=2 j=3 gvmc.Id=108 maxg=243.84700 pvmc.Id=109 maxp=243.84700 
+i=2 j=3 snc.Id=93 gvar.Id=27 -hrs=-4.00000 pvar.Id=28 eff*hrs=3.60000 
+i=2 j=4 gvmc.Id=112 maxg=195.07760 pvmc.Id=113 maxp=216.75289 
+i=2 j=4 snc.Id=93 gvar.Id=29 -hrs=-5.00000 pvar.Id=30 eff*hrs=4.50000 
+av=1.00000 gc=650.00000 pc=650.00000 eff=0.75000 en=10.00000 
+i=3 j=0 gvmc.Id=117 maxg=650.00000 pvmc.Id=118 maxp=650.00000 
+i=3 j=0 snc.Id=114 gvar.Id=31 -hrs=-2.00000 pvar.Id=32 eff*hrs=1.50000 
+i=3 j=1 gvmc.Id=121 maxg=650.00000 pvmc.Id=122 maxp=650.00000 
+i=3 j=1 snc.Id=114 gvar.Id=33 -hrs=-7.00000 pvar.Id=34 eff*hrs=5.25000 
+i=3 j=2 gvmc.Id=125 maxg=650.00000 pvmc.Id=126 maxp=650.00000 
+i=3 j=2 snc.Id=114 gvar.Id=35 -hrs=-6.00000 pvar.Id=36 eff*hrs=4.50000 
+i=3 j=3 gvmc.Id=129 maxg=650.00000 pvmc.Id=130 maxp=650.00000 
+i=3 j=3 snc.Id=114 gvar.Id=37 -hrs=-4.00000 pvar.Id=38 eff*hrs=3.00000 
+i=3 j=4 gvmc.Id=133 maxg=650.00000 pvmc.Id=134 maxp=650.00000 
+i=3 j=4 snc.Id=114 gvar.Id=39 -hrs=-5.00000 pvar.Id=40 eff*hrs=3.75000 
+av=1.00000 gc=180.94200 pc=180.94200 eff=0.90000 en=4.00000 
+i=4 j=0 gvmc.Id=138 maxg=180.94200 pvmc.Id=139 maxp=180.94200 
+i=4 j=0 snc.Id=135 gvar.Id=41 -hrs=-2.00000 pvar.Id=42 eff*hrs=1.80000 
+i=4 j=1 gvmc.Id=142 maxg=103.39543 pvmc.Id=143 maxp=114.88381 
+i=4 j=1 snc.Id=135 gvar.Id=43 -hrs=-7.00000 pvar.Id=44 eff*hrs=6.30000 
+i=4 j=2 gvmc.Id=146 maxg=120.62800 pvmc.Id=147 maxp=134.03111 
+i=4 j=2 snc.Id=135 gvar.Id=45 -hrs=-6.00000 pvar.Id=46 eff*hrs=5.40000 
+i=4 j=3 gvmc.Id=150 maxg=180.94200 pvmc.Id=151 maxp=180.94200 
+i=4 j=3 snc.Id=135 gvar.Id=47 -hrs=-4.00000 pvar.Id=48 eff*hrs=3.60000 
+i=4 j=4 gvmc.Id=154 maxg=144.75360 pvmc.Id=155 maxp=160.83733 
+i=4 j=4 snc.Id=135 gvar.Id=49 -hrs=-5.00000 pvar.Id=50 eff*hrs=4.50000 
+av=1.00000 gc=312.58700 pc=312.58700 eff=0.90000 en=4.00000 
+i=5 j=0 gvmc.Id=159 maxg=312.58700 pvmc.Id=160 maxp=312.58700 
+i=5 j=0 snc.Id=156 gvar.Id=51 -hrs=-2.00000 pvar.Id=52 eff*hrs=1.80000 
+i=5 j=1 gvmc.Id=163 maxg=178.62114 pvmc.Id=164 maxp=198.46794 
+i=5 j=1 snc.Id=156 gvar.Id=53 -hrs=-7.00000 pvar.Id=54 eff*hrs=6.30000 
+i=5 j=2 gvmc.Id=167 maxg=208.39133 pvmc.Id=168 maxp=231.54593 
+i=5 j=2 snc.Id=156 gvar.Id=55 -hrs=-6.00000 pvar.Id=56 eff*hrs=5.40000 
+i=5 j=3 gvmc.Id=171 maxg=312.58700 pvmc.Id=172 maxp=312.58700 
+i=5 j=3 snc.Id=156 gvar.Id=57 -hrs=-4.00000 pvar.Id=58 eff*hrs=3.60000 
+i=5 j=4 gvmc.Id=175 maxg=250.06960 pvmc.Id=176 maxp=277.85511 
+i=5 j=4 snc.Id=156 gvar.Id=59 -hrs=-5.00000 pvar.Id=60 eff*hrs=4.50000 
+av=1.00000 gc=2,004.00000 pc=2,004.00000 eff=0.75000 en=10.00000 
+i=6 j=0 gvmc.Id=180 maxg=2,004.00000 pvmc.Id=181 maxp=2,004.00000 
+i=6 j=0 snc.Id=177 gvar.Id=61 -hrs=-2.00000 pvar.Id=62 eff*hrs=1.50000 
+i=6 j=1 gvmc.Id=184 maxg=2,004.00000 pvmc.Id=185 maxp=2,004.00000 
+i=6 j=1 snc.Id=177 gvar.Id=63 -hrs=-7.00000 pvar.Id=64 eff*hrs=5.25000 
+i=6 j=2 gvmc.Id=188 maxg=2,004.00000 pvmc.Id=189 maxp=2,004.00000 
+i=6 j=2 snc.Id=177 gvar.Id=65 -hrs=-6.00000 pvar.Id=66 eff*hrs=4.50000 
+i=6 j=3 gvmc.Id=192 maxg=2,004.00000 pvmc.Id=193 maxp=2,004.00000 
+i=6 j=3 snc.Id=177 gvar.Id=67 -hrs=-4.00000 pvar.Id=68 eff*hrs=3.00000 
+i=6 j=4 gvmc.Id=196 maxg=2,004.00000 pvmc.Id=197 maxp=2,004.00000 
+i=6 j=4 snc.Id=177 gvar.Id=69 -hrs=-5.00000 pvar.Id=70 eff*hrs=3.75000 
+av=1.00000 gc=737.10500 pc=737.10500 eff=0.90000 en=4.00000 
+i=7 j=0 gvmc.Id=201 maxg=737.10500 pvmc.Id=202 maxp=737.10500 
+i=7 j=0 snc.Id=198 gvar.Id=71 -hrs=-2.00000 pvar.Id=72 eff*hrs=1.80000 
+i=7 j=1 gvmc.Id=205 maxg=421.20286 pvmc.Id=206 maxp=468.00317 
+i=7 j=1 snc.Id=198 gvar.Id=73 -hrs=-7.00000 pvar.Id=74 eff*hrs=6.30000 
+i=7 j=2 gvmc.Id=209 maxg=491.40333 pvmc.Id=210 maxp=546.00370 
+i=7 j=2 snc.Id=198 gvar.Id=75 -hrs=-6.00000 pvar.Id=76 eff*hrs=5.40000 
+i=7 j=3 gvmc.Id=213 maxg=737.10500 pvmc.Id=214 maxp=737.10500 
+i=7 j=3 snc.Id=198 gvar.Id=77 -hrs=-4.00000 pvar.Id=78 eff*hrs=3.60000 
+i=7 j=4 gvmc.Id=217 maxg=589.68400 pvmc.Id=218 maxp=655.20444 
+i=7 j=4 snc.Id=198 gvar.Id=79 -hrs=-5.00000 pvar.Id=80 eff*hrs=4.50000 
+av=1.00000 gc=0.80700 pc=0.80700 eff=0.90000 en=4.00000 
+i=8 j=0 gvmc.Id=222 maxg=0.80700 pvmc.Id=223 maxp=0.80700 
+i=8 j=0 snc.Id=219 gvar.Id=81 -hrs=-2.00000 pvar.Id=82 eff*hrs=1.80000 
+i=8 j=1 gvmc.Id=226 maxg=0.46114 pvmc.Id=227 maxp=0.51238 
+i=8 j=1 snc.Id=219 gvar.Id=83 -hrs=-7.00000 pvar.Id=84 eff*hrs=6.30000 
+i=8 j=2 gvmc.Id=230 maxg=0.53800 pvmc.Id=231 maxp=0.59778 
+i=8 j=2 snc.Id=219 gvar.Id=85 -hrs=-6.00000 pvar.Id=86 eff*hrs=5.40000 
+i=8 j=3 gvmc.Id=234 maxg=0.80700 pvmc.Id=235 maxp=0.80700 
+i=8 j=3 snc.Id=219 gvar.Id=87 -hrs=-4.00000 pvar.Id=88 eff*hrs=3.60000 
+i=8 j=4 gvmc.Id=238 maxg=0.64560 pvmc.Id=239 maxp=0.71733 
+i=8 j=4 snc.Id=219 gvar.Id=89 -hrs=-5.00000 pvar.Id=90 eff*hrs=4.50000 
+av=1.00000 gc=142.21900 pc=142.21900 eff=0.90000 en=4.00000 
+i=9 j=0 gvmc.Id=243 maxg=142.21900 pvmc.Id=244 maxp=142.21900 
+i=9 j=0 snc.Id=240 gvar.Id=91 -hrs=-2.00000 pvar.Id=92 eff*hrs=1.80000 
+i=9 j=1 gvmc.Id=247 maxg=81.26800 pvmc.Id=248 maxp=90.29778 
+i=9 j=1 snc.Id=240 gvar.Id=93 -hrs=-7.00000 pvar.Id=94 eff*hrs=6.30000 
+i=9 j=2 gvmc.Id=251 maxg=94.81267 pvmc.Id=252 maxp=105.34741 
+i=9 j=2 snc.Id=240 gvar.Id=95 -hrs=-6.00000 pvar.Id=96 eff*hrs=5.40000 
+i=9 j=3 gvmc.Id=255 maxg=142.21900 pvmc.Id=256 maxp=142.21900 
+i=9 j=3 snc.Id=240 gvar.Id=97 -hrs=-4.00000 pvar.Id=98 eff*hrs=3.60000 
+i=9 j=4 gvmc.Id=259 maxg=113.77520 pvmc.Id=260 maxp=126.41689 
+i=9 j=4 snc.Id=240 gvar.Id=99 -hrs=-5.00000 pvar.Id=100 eff*hrs=4.50000 
+av=1.00000 gc=1,150.00000 pc=1,150.00000 eff=0.75000 en=10.00000 
+i=10 j=0 gvmc.Id=264 maxg=1,150.00000 pvmc.Id=265 maxp=1,150.00000 
+i=10 j=0 snc.Id=261 gvar.Id=101 -hrs=-2.00000 pvar.Id=102 eff*hrs=1.50000 
+i=10 j=1 gvmc.Id=268 maxg=1,150.00000 pvmc.Id=269 maxp=1,150.00000 
+i=10 j=1 snc.Id=261 gvar.Id=103 -hrs=-7.00000 pvar.Id=104 eff*hrs=5.25000 
+i=10 j=2 gvmc.Id=272 maxg=1,150.00000 pvmc.Id=273 maxp=1,150.00000 
+i=10 j=2 snc.Id=261 gvar.Id=105 -hrs=-6.00000 pvar.Id=106 eff*hrs=4.50000 
+i=10 j=3 gvmc.Id=276 maxg=1,150.00000 pvmc.Id=277 maxp=1,150.00000 
+i=10 j=3 snc.Id=261 gvar.Id=107 -hrs=-4.00000 pvar.Id=108 eff*hrs=3.00000 
+i=10 j=4 gvmc.Id=280 maxg=1,150.00000 pvmc.Id=281 maxp=1,150.00000 
+i=10 j=4 snc.Id=261 gvar.Id=109 -hrs=-5.00000 pvar.Id=110 eff*hrs=3.75000 
+av=1.00000 gc=9,791.60000 pc=9,791.60000 eff=0.75000 en=10.00000 
+i=11 j=0 gvmc.Id=285 maxg=9,791.60000 pvmc.Id=286 maxp=9,791.60000 
+i=11 j=0 snc.Id=282 gvar.Id=111 -hrs=-2.00000 pvar.Id=112 eff*hrs=1.50000 
+i=11 j=1 gvmc.Id=289 maxg=9,791.60000 pvmc.Id=290 maxp=9,791.60000 
+i=11 j=1 snc.Id=282 gvar.Id=113 -hrs=-7.00000 pvar.Id=114 eff*hrs=5.25000 
+i=11 j=2 gvmc.Id=293 maxg=9,791.60000 pvmc.Id=294 maxp=9,791.60000 
+i=11 j=2 snc.Id=282 gvar.Id=115 -hrs=-6.00000 pvar.Id=116 eff*hrs=4.50000 
+i=11 j=3 gvmc.Id=297 maxg=9,791.60000 pvmc.Id=298 maxp=9,791.60000 
+i=11 j=3 snc.Id=282 gvar.Id=117 -hrs=-4.00000 pvar.Id=118 eff*hrs=3.00000 
+i=11 j=4 gvmc.Id=301 maxg=9,791.60000 pvmc.Id=302 maxp=9,791.60000 
+i=11 j=4 snc.Id=282 gvar.Id=119 -hrs=-5.00000 pvar.Id=120 eff*hrs=3.75000 
+av=1.00000 gc=3,500.00000 pc=3,500.00000 eff=0.75000 en=10.00000 
+i=12 j=0 gvmc.Id=306 maxg=3,500.00000 pvmc.Id=307 maxp=3,500.00000 
+i=12 j=0 snc.Id=303 gvar.Id=121 -hrs=-2.00000 pvar.Id=122 eff*hrs=1.50000 
+i=12 j=1 gvmc.Id=310 maxg=3,500.00000 pvmc.Id=311 maxp=3,500.00000 
+i=12 j=1 snc.Id=303 gvar.Id=123 -hrs=-7.00000 pvar.Id=124 eff*hrs=5.25000 
+i=12 j=2 gvmc.Id=314 maxg=3,500.00000 pvmc.Id=315 maxp=3,500.00000 
+i=12 j=2 snc.Id=303 gvar.Id=125 -hrs=-6.00000 pvar.Id=126 eff*hrs=4.50000 
+i=12 j=3 gvmc.Id=318 maxg=3,500.00000 pvmc.Id=319 maxp=3,500.00000 
+i=12 j=3 snc.Id=303 gvar.Id=127 -hrs=-4.00000 pvar.Id=128 eff*hrs=3.00000 
+i=12 j=4 gvmc.Id=322 maxg=3,500.00000 pvmc.Id=323 maxp=3,500.00000 
+i=12 j=4 snc.Id=303 gvar.Id=129 -hrs=-5.00000 pvar.Id=130 eff*hrs=3.75000 
+av=1.00000 gc=292.00000 pc=292.00000 eff=0.75000 en=10.00000 
+i=13 j=0 gvmc.Id=327 maxg=292.00000 pvmc.Id=328 maxp=292.00000 
+i=13 j=0 snc.Id=324 gvar.Id=131 -hrs=-2.00000 pvar.Id=132 eff*hrs=1.50000 
+i=13 j=1 gvmc.Id=331 maxg=292.00000 pvmc.Id=332 maxp=292.00000 
+i=13 j=1 snc.Id=324 gvar.Id=133 -hrs=-7.00000 pvar.Id=134 eff*hrs=5.25000 
+i=13 j=2 gvmc.Id=335 maxg=292.00000 pvmc.Id=336 maxp=292.00000 
+i=13 j=2 snc.Id=324 gvar.Id=135 -hrs=-6.00000 pvar.Id=136 eff*hrs=4.50000 
+i=13 j=3 gvmc.Id=339 maxg=292.00000 pvmc.Id=340 maxp=292.00000 
+i=13 j=3 snc.Id=324 gvar.Id=137 -hrs=-4.00000 pvar.Id=138 eff*hrs=3.00000 
+i=13 j=4 gvmc.Id=343 maxg=292.00000 pvmc.Id=344 maxp=292.00000 
+i=13 j=4 snc.Id=324 gvar.Id=139 -hrs=-5.00000 pvar.Id=140 eff*hrs=3.75000 
+av=1.00000 gc=1,114.70800 pc=1,114.70800 eff=0.75000 en=10.00000 
+i=14 j=0 gvmc.Id=348 maxg=1,114.70800 pvmc.Id=349 maxp=1,114.70800 
+i=14 j=0 snc.Id=345 gvar.Id=141 -hrs=-2.00000 pvar.Id=142 eff*hrs=1.50000 
+i=14 j=1 gvmc.Id=352 maxg=1,114.70800 pvmc.Id=353 maxp=1,114.70800 
+i=14 j=1 snc.Id=345 gvar.Id=143 -hrs=-7.00000 pvar.Id=144 eff*hrs=5.25000 
+i=14 j=2 gvmc.Id=356 maxg=1,114.70800 pvmc.Id=357 maxp=1,114.70800 
+i=14 j=2 snc.Id=345 gvar.Id=145 -hrs=-6.00000 pvar.Id=146 eff*hrs=4.50000 
+i=14 j=3 gvmc.Id=360 maxg=1,114.70800 pvmc.Id=361 maxp=1,114.70800 
+i=14 j=3 snc.Id=345 gvar.Id=147 -hrs=-4.00000 pvar.Id=148 eff*hrs=3.00000 
+i=14 j=4 gvmc.Id=364 maxg=1,114.70800 pvmc.Id=365 maxp=1,114.70800 
+i=14 j=4 snc.Id=345 gvar.Id=149 -hrs=-5.00000 pvar.Id=150 eff*hrs=3.75000 
+Zones 
+i=1 dcdef.Id=0 -dem=-997.19327 
+i=2 dcdef.Id=1 -dem=-2,671.82311 
+i=3 dcdef.Id=2 -dem=-3,149.80751 
+i=4 dcdef.Id=3 -dem=-8,775.43156 
+i=5 dcdef.Id=4 -dem=-19,692.70337 
+i=6 dcdef.Id=5 -dem=-1,069.53267 
+i=7 dcdef.Id=6 -dem=-6,912.52462 
+i=8 dcdef.Id=7 -dem=-1,578.50000 
+i=9 dcdef.Id=8 -dem=-4,173.00000 
+i=10 dcdef.Id=9 -dem=-17,133.50000 
+i=11 dcdef.Id=10 -dem=-3,522.00000 
+i=12 dcdef.Id=11 -dem=-1,945.50000 
+i=13 dcdef.Id=12 -dem=-13,380.00000 
+i=14 dcdef.Id=13 -dem=-9,493.00000 
+i=15 dcdef.Id=14 -dem=-63,595.50000 
+i=16 dcdef.Id=15 -dem=-57,804.00000 
+Link2 
+i=0 dfivar.Id=0 itf=0.00000 dtivar.Id=2 itt=0.00000 
+i=0 dfemc.Id=21 capf=3,300.00000 dtemc.Id=22 capt=3,300.00000 
+i=0 dfnc.Id=0 dtnc.Id=1 
+i=0 Skip=21 i=0 Skip=22 
+i=1 dfivar.Id=4 itf=0.00000 dtivar.Id=6 itt=0.00000 
+i=1 dfemc.Id=28 capf=3,500.00000 dtemc.Id=29 capt=3,500.00000 
+i=1 dfnc.Id=1 dtnc.Id=2 
+i=1 Skip=28 i=1 Skip=29 
+i=2 dfivar.Id=8 itf=0.00000 dtivar.Id=10 itt=0.00000 
+i=2 dfemc.Id=35 capf=6,500.00000 dtemc.Id=36 capt=6,500.00000 
+i=2 dfnc.Id=2 dtnc.Id=3 
+i=2 Skip=35 i=2 Skip=36 
+i=3 dfivar.Id=12 itf=0.00000 dtivar.Id=14 itt=0.00000 
+i=3 dfemc.Id=42 capf=10,000.00000 dtemc.Id=43 capt=10,000.00000 
+i=3 dfnc.Id=3 dtnc.Id=4 
+i=3 Skip=42 i=3 Skip=43 
+i=4 dfivar.Id=16 itf=0.00000 dtivar.Id=18 itt=0.00000 
+i=4 dfemc.Id=49 capf=6,000.00000 dtemc.Id=50 capt=5,200.00000 
+i=4 dfnc.Id=4 dtnc.Id=6 
+i=4 Skip=49 i=4 Skip=50 
+i=5 dfivar.Id=20 itf=0.00000 dtivar.Id=22 itt=0.00000 
+i=5 dfemc.Id=56 capf=3,500.00000 dtemc.Id=57 capt=3,500.00000 
+i=5 dfnc.Id=4 dtnc.Id=5 
+i=5 Skip=56 i=5 Skip=57 
+i=6 dfivar.Id=24 itf=0.00000 dtivar.Id=26 itt=0.00000 
+i=6 dfemc.Id=63 capf=2,200.00000 dtemc.Id=64 capt=2,200.00000 
+i=6 dfnc.Id=1 dtnc.Id=3 
+i=7 dfivar.Id=28 itf=0.00000 dtivar.Id=30 itt=0.00000 
+i=7 dfemc.Id=70 capf=500.00000 dtemc.Id=71 capt=500.00000 
+i=7 dfnc.Id=3 dtnc.Id=8 
+i=8 dfivar.Id=32 itf=0.00000 dtivar.Id=34 itt=0.00000 
+i=8 dfemc.Id=77 capf=450.00000 dtemc.Id=78 capt=80.00000 
+i=8 dfnc.Id=1 dtnc.Id=7 
+i=9 dfivar.Id=36 itf=0.00000 dtivar.Id=38 itt=0.00000 
+i=9 dfemc.Id=84 capf=1,000.00000 dtemc.Id=85 capt=1,000.00000 
+i=9 dfnc.Id=6 dtnc.Id=12 
+i=10 dfivar.Id=40 itf=0.00000 dtivar.Id=42 itt=0.00000 
+i=10 dfemc.Id=91 capf=1,400.00000 dtemc.Id=92 capt=1,400.00000 
+i=10 dfnc.Id=3 dtnc.Id=9 
+i=11 dfivar.Id=44 itf=0.00000 dtivar.Id=46 itt=0.00000 
+i=11 dfemc.Id=98 capf=1,000.00000 dtemc.Id=99 capt=1,000.00000 
+i=11 dfnc.Id=6 dtnc.Id=13 
+i=12 dfivar.Id=48 itf=0.00000 dtivar.Id=50 itt=0.00000 
+i=12 dfemc.Id=105 capf=1,400.00000 dtemc.Id=106 capt=1,400.00000 
+i=12 dfnc.Id=5 dtnc.Id=10 
+i=13 dfivar.Id=52 itf=0.00000 dtivar.Id=54 itt=0.00000 
+i=13 dfemc.Id=112 capf=4,000.00000 dtemc.Id=113 capt=4,000.00000 
+i=13 dfnc.Id=6 dtnc.Id=14 
+i=14 dfivar.Id=56 itf=0.00000 dtivar.Id=58 itt=0.00000 
+i=14 dfemc.Id=119 capf=1,100.00000 dtemc.Id=120 capt=1,100.00000 
+i=14 dfnc.Id=8 dtnc.Id=7 
+i=14 Skip=119 i=14 Skip=120 
+i=15 dfivar.Id=60 itf=0.00000 dtivar.Id=62 itt=0.00000 
+i=15 dfemc.Id=126 capf=1,000.00000 dtemc.Id=127 capt=1,000.00000 
+i=15 dfnc.Id=13 dtnc.Id=15 
+i=16 dfivar.Id=64 itf=0.00000 dtivar.Id=66 itt=0.00000 
+i=16 dfemc.Id=133 capf=2,800.00000 dtemc.Id=134 capt=4,300.00000 
+i=16 dfnc.Id=13 dtnc.Id=14 
+i=17 dfivar.Id=68 itf=0.00000 dtivar.Id=70 itt=0.00000 
+i=17 dfemc.Id=140 capf=3,000.00000 dtemc.Id=141 capt=3,000.00000 
+i=17 dfnc.Id=15 dtnc.Id=14 
+i=18 dfivar.Id=72 itf=0.00000 dtivar.Id=74 itt=0.00000 
+i=18 dfemc.Id=147 capf=600.00000 dtemc.Id=148 capt=585.00000 
+i=18 dfnc.Id=15 dtnc.Id=11 
+i=19 dfivar.Id=76 itf=0.00000 dtivar.Id=78 itt=0.00000 
+i=19 dfemc.Id=154 capf=3,400.00000 dtemc.Id=155 capt=3,400.00000 
+i=19 dfnc.Id=13 dtnc.Id=12 
+i=20 dfivar.Id=80 itf=0.00000 dtivar.Id=82 itt=0.00000 
+i=20 dfemc.Id=161 capf=3,000.00000 dtemc.Id=162 capt=3,000.00000 
+i=20 dfnc.Id=15 dtnc.Id=10 
+i=21 dfivar.Id=84 itf=0.00000 dtivar.Id=86 itt=0.00000 
+i=21 dfemc.Id=168 capf=400.00000 dtemc.Id=169 capt=400.00000 
+i=21 dfnc.Id=15 dtnc.Id=11 
+i=22 dfivar.Id=88 itf=0.00000 dtivar.Id=90 itt=0.00000 
+i=22 dfemc.Id=175 capf=5,000.00000 dtemc.Id=176 capt=5,000.00000 
+i=22 dfnc.Id=15 dtnc.Id=12 
+i=23 dfivar.Id=92 itf=0.00000 dtivar.Id=94 itt=0.00000 
+i=23 dfemc.Id=182 capf=1,400.00000 dtemc.Id=183 capt=1,400.00000 
+i=23 dfnc.Id=15 dtnc.Id=9 
+i=24 dfivar.Id=96 itf=0.00000 dtivar.Id=98 itt=0.00000 
+i=24 dfemc.Id=189 capf=600.00000 dtemc.Id=190 capt=590.00000 
+i=24 dfnc.Id=11 dtnc.Id=10 
+i=25 dfivar.Id=100 itf=0.00000 dtivar.Id=102 itt=0.00000 
+i=25 dfemc.Id=196 capf=700.00000 dtemc.Id=197 capt=700.00000 
+i=25 dfnc.Id=10 dtnc.Id=12 
+i=26 dfivar.Id=104 itf=0.00000 dtivar.Id=106 itt=0.00000 
+i=26 dfemc.Id=203 capf=1,640.00000 dtemc.Id=204 capt=1,640.00000 
+i=26 dfnc.Id=10 dtnc.Id=9 
+i=27 dfivar.Id=108 itf=0.00000 dtivar.Id=110 itt=0.00000 
+i=27 dfemc.Id=210 capf=700.00000 dtemc.Id=211 capt=700.00000 
+i=27 dfnc.Id=12 dtnc.Id=9 
+Gens 
+i=0 gvar.Id=112 cst=12.40800 gmc.Id=213 sz=11.99671 
+i=1 gvar.Id=113 cst=0.08800 gmc.Id=215 sz=1,511.42200 
+i=2 gvar.Id=114 cst=174.25248 gmc.Id=217 sz=59.98356 
+i=3 gvar.Id=115 cst=0.08800 gmc.Id=219 sz=15.00000 
+i=4 gvar.Id=116 cst=0.08800 gmc.Id=221 sz=0.00000 
+i=5 gvar.Id=117 cst=5.28000 gmc.Id=223 sz=1,191.63823 
+i=6 gvar.Id=118 cst=2.64000 gmc.Id=225 sz=1,558.89554 
+i=7 gvar.Id=119 cst=203.09134 gmc.Id=227 sz=150.94991 
+i=8 gvar.Id=120 cst=12.40800 gmc.Id=229 sz=119.96712 
+i=9 gvar.Id=121 cst=67.31840 gmc.Id=231 sz=135.97019 
+i=10 gvar.Id=122 cst=0.08800 gmc.Id=233 sz=167.97300 
+i=11 gvar.Id=123 cst=12.43200 gmc.Id=235 sz=1,248.80137 
+i=12 gvar.Id=124 cst=174.25248 gmc.Id=237 sz=17.99507 
+i=13 gvar.Id=125 cst=0.08800 gmc.Id=239 sz=36.00000 
+i=14 gvar.Id=126 cst=0.08800 gmc.Id=241 sz=0.00000 
+i=15 gvar.Id=127 cst=5.28000 gmc.Id=243 sz=369.80376 
+i=16 gvar.Id=128 cst=2.64000 gmc.Id=245 sz=2,076.07021 
+i=17 gvar.Id=129 cst=203.09134 gmc.Id=247 sz=303.31651 
+i=18 gvar.Id=130 cst=12.40800 gmc.Id=249 sz=680.81342 
+i=19 gvar.Id=131 cst=67.31840 gmc.Id=251 sz=140.96910 
+i=20 gvar.Id=132 cst=12.43200 gmc.Id=253 sz=3,589.55466 
+i=21 gvar.Id=133 cst=5.28000 gmc.Id=255 sz=796.16574 
+i=22 gvar.Id=134 cst=0.08800 gmc.Id=257 sz=27.64600 
+i=23 gvar.Id=135 cst=203.09134 gmc.Id=259 sz=1,121.94504 
+i=24 gvar.Id=136 cst=0.08800 gmc.Id=261 sz=0.00000 
+i=25 gvar.Id=137 cst=2.64000 gmc.Id=263 sz=345.85850 
+i=26 gvar.Id=138 cst=12.40800 gmc.Id=265 sz=2,554.30000 
+i=27 gvar.Id=139 cst=67.31840 gmc.Id=267 sz=9,828.84526 
+i=28 gvar.Id=140 cst=0.08800 gmc.Id=269 sz=142.25700 
+i=29 gvar.Id=141 cst=174.25248 gmc.Id=271 sz=99.97260 
+i=30 gvar.Id=142 cst=5.28000 gmc.Id=273 sz=2,163.56953 
+i=31 gvar.Id=143 cst=2.64000 gmc.Id=275 sz=653.17663 
+i=32 gvar.Id=144 cst=203.09134 gmc.Id=277 sz=2,874.77177 
+i=33 gvar.Id=145 cst=0.08800 gmc.Id=279 sz=0.00000 
+i=34 gvar.Id=146 cst=12.40800 gmc.Id=281 sz=37.98959 
+i=35 gvar.Id=147 cst=67.31840 gmc.Id=283 sz=13,989.93304 
+i=36 gvar.Id=148 cst=174.25248 gmc.Id=285 sz=198.94548 
+i=37 gvar.Id=149 cst=0.08800 gmc.Id=287 sz=0.00000 
+i=38 gvar.Id=150 cst=0.08800 gmc.Id=289 sz=0.00000 
+i=39 gvar.Id=151 cst=5.28000 gmc.Id=291 sz=748.74385 
+i=40 gvar.Id=152 cst=2.64000 gmc.Id=293 sz=711.25960 
+i=41 gvar.Id=153 cst=0.08800 gmc.Id=295 sz=71.59600 
+i=42 gvar.Id=154 cst=203.09134 gmc.Id=297 sz=4,638.40914 
+i=43 gvar.Id=155 cst=12.40800 gmc.Id=299 sz=40.98877 
+i=44 gvar.Id=156 cst=67.31840 gmc.Id=301 sz=404.91123 
+i=45 gvar.Id=157 cst=12.43200 gmc.Id=303 sz=1,214.83397 
+i=46 gvar.Id=158 cst=5.28000 gmc.Id=305 sz=1,482.69555 
+i=47 gvar.Id=159 cst=203.09134 gmc.Id=307 sz=353.46451 
+i=48 gvar.Id=160 cst=0.08800 gmc.Id=309 sz=0.00000 
+i=49 gvar.Id=161 cst=2.64000 gmc.Id=311 sz=48.86175 
+i=50 gvar.Id=162 cst=67.31840 gmc.Id=313 sz=6,103.66192 
+i=51 gvar.Id=163 cst=12.43200 gmc.Id=315 sz=1,088.95479 
+i=52 gvar.Id=164 cst=174.25248 gmc.Id=317 sz=203.94411 
+i=53 gvar.Id=165 cst=5.28000 gmc.Id=319 sz=578.63412 
+i=54 gvar.Id=166 cst=0.08800 gmc.Id=321 sz=17.03600 
+i=55 gvar.Id=167 cst=203.09134 gmc.Id=323 sz=2,451.75451 
+i=56 gvar.Id=168 cst=0.08800 gmc.Id=325 sz=0.00000 
+i=57 gvar.Id=169 cst=2.64000 gmc.Id=327 sz=246.01484 
+i=58 gvar.Id=170 cst=12.40800 gmc.Id=329 sz=648.42230 
+i=59 gvar.Id=171 cst=59.58920 gmc.Id=331 sz=5,987.78732 
+i=60 gvar.Id=172 cst=0.08800 gmc.Id=333 sz=117.00000 
+i=61 gvar.Id=173 cst=0.08800 gmc.Id=335 sz=1,308.00000 
+i=62 gvar.Id=174 cst=0.08800 gmc.Id=337 sz=658.00000 
+i=63 gvar.Id=175 cst=188.58601 gmc.Id=339 sz=1,156.74641 
+i=64 gvar.Id=176 cst=0.08800 gmc.Id=341 sz=0.00000 
+i=65 gvar.Id=177 cst=5.28000 gmc.Id=343 sz=946.48175 
+i=66 gvar.Id=178 cst=2.64000 gmc.Id=345 sz=141.85486 
+i=67 gvar.Id=179 cst=59.58920 gmc.Id=347 sz=27,637.10440 
+i=68 gvar.Id=180 cst=47.65426 gmc.Id=349 sz=20,894.37395 
+i=69 gvar.Id=181 cst=0.08800 gmc.Id=351 sz=4,329.00000 
+i=70 gvar.Id=182 cst=0.08800 gmc.Id=353 sz=10,787.50000 
+i=71 gvar.Id=183 cst=36.62962 gmc.Id=355 sz=11,413.37219 
+i=72 gvar.Id=184 cst=159.74715 gmc.Id=357 sz=870.35148 
+i=73 gvar.Id=185 cst=0.08800 gmc.Id=359 sz=7,229.00000 
+i=74 gvar.Id=186 cst=188.58601 gmc.Id=361 sz=9,130.32339 
+i=75 gvar.Id=187 cst=0.08800 gmc.Id=363 sz=0.00000 
+i=76 gvar.Id=188 cst=5.28000 gmc.Id=365 sz=1,886.22303 
+i=77 gvar.Id=189 cst=2.64000 gmc.Id=367 sz=10,358.26577 
+i=78 gvar.Id=190 cst=12.40800 gmc.Id=369 sz=1,019.72055 
+i=79 gvar.Id=191 cst=159.74715 gmc.Id=371 sz=535.85315 
+i=80 gvar.Id=192 cst=0.08800 gmc.Id=373 sz=240.07000 
+i=81 gvar.Id=193 cst=188.58601 gmc.Id=375 sz=28.29380 
+i=82 gvar.Id=194 cst=0.08800 gmc.Id=377 sz=0.00000 
+i=83 gvar.Id=195 cst=5.28000 gmc.Id=379 sz=117.72975 
+i=84 gvar.Id=196 cst=2.64000 gmc.Id=381 sz=99.34416 
+i=85 gvar.Id=197 cst=12.40800 gmc.Id=383 sz=589.83836 
+i=86 gvar.Id=198 cst=59.58920 gmc.Id=385 sz=429.90575 
+i=87 gvar.Id=199 cst=47.65426 gmc.Id=387 sz=409.88767 
+i=88 gvar.Id=200 cst=0.08800 gmc.Id=389 sz=6.57120 
+i=89 gvar.Id=201 cst=159.74715 gmc.Id=391 sz=280.92301 
+i=90 gvar.Id=202 cst=0.08800 gmc.Id=393 sz=460.33000 
+i=91 gvar.Id=203 cst=188.58601 gmc.Id=395 sz=70.78448 
+i=92 gvar.Id=204 cst=0.08800 gmc.Id=397 sz=0.00000 
+i=93 gvar.Id=205 cst=5.28000 gmc.Id=399 sz=478.64719 
+i=94 gvar.Id=206 cst=2.64000 gmc.Id=401 sz=413.66015 
+i=95 gvar.Id=207 cst=59.58920 gmc.Id=403 sz=11,493.48033 
+i=96 gvar.Id=208 cst=0.08800 gmc.Id=405 sz=13,600.00000 
+i=97 gvar.Id=209 cst=0.08800 gmc.Id=407 sz=11,500.00000 
+i=98 gvar.Id=210 cst=12.43200 gmc.Id=409 sz=52,149.94521 
+i=99 gvar.Id=211 cst=159.74715 gmc.Id=411 sz=989.72877 
+i=100 gvar.Id=212 cst=0.08800 gmc.Id=413 sz=2,641.00000 
+i=101 gvar.Id=213 cst=0.08800 gmc.Id=415 sz=0.00000 
+i=102 gvar.Id=214 cst=5.28000 gmc.Id=417 sz=269.67167 
+i=103 gvar.Id=215 cst=2.64000 gmc.Id=419 sz=2,026.39000 
+i=104 gvar.Id=216 cst=59.58920 gmc.Id=421 sz=3,723.18378 
+i=105 gvar.Id=217 cst=47.65426 gmc.Id=423 sz=854.76575 
+i=106 gvar.Id=218 cst=0.08800 gmc.Id=425 sz=238.00000 
+i=107 gvar.Id=219 cst=0.08800 gmc.Id=427 sz=292.00000 
+i=108 gvar.Id=220 cst=36.62962 gmc.Id=429 sz=195.94630 
+i=109 gvar.Id=221 cst=159.74715 gmc.Id=431 sz=323.91123 
+i=110 gvar.Id=222 cst=0.08800 gmc.Id=433 sz=114.00000 
+i=111 gvar.Id=223 cst=188.58601 gmc.Id=435 sz=159.96493 
+i=112 gvar.Id=224 cst=0.08800 gmc.Id=437 sz=0.00000 
+i=113 gvar.Id=225 cst=2.64000 gmc.Id=439 sz=3,108.92188 
+i=114 gvar.Id=226 cst=59.58920 gmc.Id=441 sz=989.78301 
+i=115 gvar.Id=227 cst=159.74715 gmc.Id=443 sz=310.91479 
+i=116 gvar.Id=228 cst=0.08800 gmc.Id=445 sz=86.60000 
+i=117 gvar.Id=229 cst=188.58601 gmc.Id=447 sz=11.99737 
+i=118 gvar.Id=230 cst=0.08800 gmc.Id=449 sz=0.00000 
+i=119 gvar.Id=231 cst=2.64000 gmc.Id=451 sz=647.86942 
+i=120 gvar.Id=232 cst=59.58920 gmc.Id=453 sz=8,449.94755 
+i=121 gvar.Id=233 cst=47.65426 gmc.Id=455 sz=4,606.73753 
+i=122 gvar.Id=234 cst=0.08800 gmc.Id=457 sz=38.00000 
+i=123 gvar.Id=235 cst=12.43200 gmc.Id=459 sz=485.53397 
+i=124 gvar.Id=236 cst=0.08800 gmc.Id=461 sz=507.00000 
+i=125 gvar.Id=237 cst=188.58601 gmc.Id=463 sz=4,085.10444 
+i=126 gvar.Id=238 cst=0.08800 gmc.Id=465 sz=0.00000 
+i=127 gvar.Id=239 cst=5.28000 gmc.Id=467 sz=1,983.28109 
+i=128 gvar.Id=240 cst=2.64000 gmc.Id=469 sz=1,347.87712 
+i=129 gvar.Id=241 cst=59.58920 gmc.Id=471 sz=434.90466 
+i=130 gvar.Id=242 cst=0.08800 gmc.Id=473 sz=34,226.90000 
+i=131 gvar.Id=243 cst=0.08800 gmc.Id=475 sz=76.30030 
+i=132 gvar.Id=244 cst=2.64000 gmc.Id=477 sz=1,257.75821 
+i=133 gvar.Id=245 cst=4,000.00000 gmc.Id=479 sz=1,069.53267 
+i=134 gvar.Id=246 cst=4,000.00000 gmc.Id=481 sz=19,692.70337 
+i=135 gvar.Id=247 cst=4,000.00000 gmc.Id=483 sz=8,775.43156 
+i=136 gvar.Id=248 cst=4,000.00000 gmc.Id=485 sz=6,912.52462 
+i=137 gvar.Id=249 cst=4,000.00000 gmc.Id=487 sz=997.19327 
+i=138 gvar.Id=250 cst=4,000.00000 gmc.Id=489 sz=2,671.82311 
+i=139 gvar.Id=251 cst=4,000.00000 gmc.Id=491 sz=3,149.80751 
+i=140 gvar.Id=252 cst=4,000.00000 gmc.Id=493 sz=1,578.50000 
+i=141 gvar.Id=253 cst=4,000.00000 gmc.Id=495 sz=4,173.00000 
+i=142 gvar.Id=254 cst=4,000.00000 gmc.Id=497 sz=17,133.50000 
+i=143 gvar.Id=255 cst=4,000.00000 gmc.Id=499 sz=3,522.00000 
+i=144 gvar.Id=256 cst=4,000.00000 gmc.Id=501 sz=1,945.50000 
+i=145 gvar.Id=257 cst=4,000.00000 gmc.Id=503 sz=13,380.00000 
+i=146 gvar.Id=258 cst=4,000.00000 gmc.Id=505 sz=9,493.00000 
+i=147 gvar.Id=259 cst=4,000.00000 gmc.Id=507 sz=63,595.50000 
+i=148 gvar.Id=260 cst=4,000.00000 gmc.Id=509 sz=57,804.00000 
+Zones 
+i=1 dcdef.Id=0 -dem=-883.75900 
+i=2 dcdef.Id=1 -dem=-2,367.89376 
+i=3 dcdef.Id=2 -dem=-2,791.50574 
+i=4 dcdef.Id=3 -dem=-7,777.19512 
+i=5 dcdef.Id=4 -dem=-17,452.58858 
+i=6 dcdef.Id=5 -dem=-947.86954 
+i=7 dcdef.Id=6 -dem=-6,126.20045 
+i=8 dcdef.Id=7 -dem=-1,323.71429 
+i=9 dcdef.Id=8 -dem=-3,868.57143 
+i=10 dcdef.Id=9 -dem=-16,897.42857 
+i=11 dcdef.Id=10 -dem=-3,278.57143 
+i=12 dcdef.Id=11 -dem=-1,831.57143 
+i=13 dcdef.Id=12 -dem=-12,680.85714 
+i=14 dcdef.Id=13 -dem=-8,880.71429 
+i=15 dcdef.Id=14 -dem=-58,059.85714 
+i=16 dcdef.Id=15 -dem=-53,869.14286 
+Link2 
+i=0 dfivar.Id=0 itf=0.00000 dtivar.Id=2 itt=0.00000 
+i=0 dfemc.Id=21 capf=3,300.00000 dtemc.Id=22 capt=3,300.00000 
+i=0 dfnc.Id=0 dtnc.Id=1 
+i=0 Skip=21 i=0 Skip=22 
+i=1 dfivar.Id=4 itf=0.00000 dtivar.Id=6 itt=0.00000 
+i=1 dfemc.Id=28 capf=3,500.00000 dtemc.Id=29 capt=3,500.00000 
+i=1 dfnc.Id=1 dtnc.Id=2 
+i=1 Skip=28 i=1 Skip=29 
+i=2 dfivar.Id=8 itf=0.00000 dtivar.Id=10 itt=0.00000 
+i=2 dfemc.Id=35 capf=6,500.00000 dtemc.Id=36 capt=6,500.00000 
+i=2 dfnc.Id=2 dtnc.Id=3 
+i=2 Skip=35 i=2 Skip=36 
+i=3 dfivar.Id=12 itf=0.00000 dtivar.Id=14 itt=0.00000 
+i=3 dfemc.Id=42 capf=10,000.00000 dtemc.Id=43 capt=10,000.00000 
+i=3 dfnc.Id=3 dtnc.Id=4 
+i=3 Skip=42 i=3 Skip=43 
+i=4 dfivar.Id=16 itf=0.00000 dtivar.Id=18 itt=0.00000 
+i=4 dfemc.Id=49 capf=6,000.00000 dtemc.Id=50 capt=5,200.00000 
+i=4 dfnc.Id=4 dtnc.Id=6 
+i=4 Skip=49 i=4 Skip=50 
+i=5 dfivar.Id=20 itf=0.00000 dtivar.Id=22 itt=0.00000 
+i=5 dfemc.Id=56 capf=3,500.00000 dtemc.Id=57 capt=3,500.00000 
+i=5 dfnc.Id=4 dtnc.Id=5 
+i=5 Skip=56 i=5 Skip=57 
+i=6 dfivar.Id=24 itf=0.00000 dtivar.Id=26 itt=0.00000 
+i=6 dfemc.Id=63 capf=2,200.00000 dtemc.Id=64 capt=2,200.00000 
+i=6 dfnc.Id=1 dtnc.Id=3 
+i=7 dfivar.Id=28 itf=0.00000 dtivar.Id=30 itt=0.00000 
+i=7 dfemc.Id=70 capf=500.00000 dtemc.Id=71 capt=500.00000 
+i=7 dfnc.Id=3 dtnc.Id=8 
+i=8 dfivar.Id=32 itf=0.00000 dtivar.Id=34 itt=0.00000 
+i=8 dfemc.Id=77 capf=450.00000 dtemc.Id=78 capt=80.00000 
+i=8 dfnc.Id=1 dtnc.Id=7 
+i=9 dfivar.Id=36 itf=0.00000 dtivar.Id=38 itt=0.00000 
+i=9 dfemc.Id=84 capf=1,000.00000 dtemc.Id=85 capt=1,000.00000 
+i=9 dfnc.Id=6 dtnc.Id=12 
+i=10 dfivar.Id=40 itf=0.00000 dtivar.Id=42 itt=0.00000 
+i=10 dfemc.Id=91 capf=1,400.00000 dtemc.Id=92 capt=1,400.00000 
+i=10 dfnc.Id=3 dtnc.Id=9 
+i=11 dfivar.Id=44 itf=0.00000 dtivar.Id=46 itt=0.00000 
+i=11 dfemc.Id=98 capf=1,000.00000 dtemc.Id=99 capt=1,000.00000 
+i=11 dfnc.Id=6 dtnc.Id=13 
+i=12 dfivar.Id=48 itf=0.00000 dtivar.Id=50 itt=0.00000 
+i=12 dfemc.Id=105 capf=1,400.00000 dtemc.Id=106 capt=1,400.00000 
+i=12 dfnc.Id=5 dtnc.Id=10 
+i=13 dfivar.Id=52 itf=0.00000 dtivar.Id=54 itt=0.00000 
+i=13 dfemc.Id=112 capf=4,000.00000 dtemc.Id=113 capt=4,000.00000 
+i=13 dfnc.Id=6 dtnc.Id=14 
+i=14 dfivar.Id=56 itf=0.00000 dtivar.Id=58 itt=0.00000 
+i=14 dfemc.Id=119 capf=1,100.00000 dtemc.Id=120 capt=1,100.00000 
+i=14 dfnc.Id=8 dtnc.Id=7 
+i=14 Skip=119 i=14 Skip=120 
+i=15 dfivar.Id=60 itf=0.00000 dtivar.Id=62 itt=0.00000 
+i=15 dfemc.Id=126 capf=1,000.00000 dtemc.Id=127 capt=1,000.00000 
+i=15 dfnc.Id=13 dtnc.Id=15 
+i=16 dfivar.Id=64 itf=0.00000 dtivar.Id=66 itt=0.00000 
+i=16 dfemc.Id=133 capf=2,800.00000 dtemc.Id=134 capt=4,300.00000 
+i=16 dfnc.Id=13 dtnc.Id=14 
+i=17 dfivar.Id=68 itf=0.00000 dtivar.Id=70 itt=0.00000 
+i=17 dfemc.Id=140 capf=3,000.00000 dtemc.Id=141 capt=3,000.00000 
+i=17 dfnc.Id=15 dtnc.Id=14 
+i=18 dfivar.Id=72 itf=0.00000 dtivar.Id=74 itt=0.00000 
+i=18 dfemc.Id=147 capf=600.00000 dtemc.Id=148 capt=585.00000 
+i=18 dfnc.Id=15 dtnc.Id=11 
+i=19 dfivar.Id=76 itf=0.00000 dtivar.Id=78 itt=0.00000 
+i=19 dfemc.Id=154 capf=3,400.00000 dtemc.Id=155 capt=3,400.00000 
+i=19 dfnc.Id=13 dtnc.Id=12 
+i=20 dfivar.Id=80 itf=0.00000 dtivar.Id=82 itt=0.00000 
+i=20 dfemc.Id=161 capf=3,000.00000 dtemc.Id=162 capt=3,000.00000 
+i=20 dfnc.Id=15 dtnc.Id=10 
+i=21 dfivar.Id=84 itf=0.00000 dtivar.Id=86 itt=0.00000 
+i=21 dfemc.Id=168 capf=400.00000 dtemc.Id=169 capt=400.00000 
+i=21 dfnc.Id=15 dtnc.Id=11 
+i=22 dfivar.Id=88 itf=0.00000 dtivar.Id=90 itt=0.00000 
+i=22 dfemc.Id=175 capf=5,000.00000 dtemc.Id=176 capt=5,000.00000 
+i=22 dfnc.Id=15 dtnc.Id=12 
+i=23 dfivar.Id=92 itf=0.00000 dtivar.Id=94 itt=0.00000 
+i=23 dfemc.Id=182 capf=1,400.00000 dtemc.Id=183 capt=1,400.00000 
+i=23 dfnc.Id=15 dtnc.Id=9 
+i=24 dfivar.Id=96 itf=0.00000 dtivar.Id=98 itt=0.00000 
+i=24 dfemc.Id=189 capf=600.00000 dtemc.Id=190 capt=590.00000 
+i=24 dfnc.Id=11 dtnc.Id=10 
+i=25 dfivar.Id=100 itf=0.00000 dtivar.Id=102 itt=0.00000 
+i=25 dfemc.Id=196 capf=700.00000 dtemc.Id=197 capt=700.00000 
+i=25 dfnc.Id=10 dtnc.Id=12 
+i=26 dfivar.Id=104 itf=0.00000 dtivar.Id=106 itt=0.00000 
+i=26 dfemc.Id=203 capf=1,640.00000 dtemc.Id=204 capt=1,640.00000 
+i=26 dfnc.Id=10 dtnc.Id=9 
+i=27 dfivar.Id=108 itf=0.00000 dtivar.Id=110 itt=0.00000 
+i=27 dfemc.Id=210 capf=700.00000 dtemc.Id=211 capt=700.00000 
+i=27 dfnc.Id=12 dtnc.Id=9 
+Gens 
+i=0 gvar.Id=112 cst=12.40800 gmc.Id=213 sz=11.99671 
+i=1 gvar.Id=113 cst=0.08800 gmc.Id=215 sz=1,511.42200 
+i=2 gvar.Id=114 cst=174.25248 gmc.Id=217 sz=59.98356 
+i=3 gvar.Id=115 cst=0.08800 gmc.Id=219 sz=15.00000 
+i=4 gvar.Id=116 cst=0.08800 gmc.Id=221 sz=0.35541 
+i=5 gvar.Id=117 cst=5.28000 gmc.Id=223 sz=1,149.55010 
+i=6 gvar.Id=118 cst=2.64000 gmc.Id=225 sz=1,441.48811 
+i=7 gvar.Id=119 cst=203.09134 gmc.Id=227 sz=150.94991 
+i=8 gvar.Id=120 cst=12.40800 gmc.Id=229 sz=119.96712 
+i=9 gvar.Id=121 cst=67.31840 gmc.Id=231 sz=135.97019 
+i=10 gvar.Id=122 cst=0.08800 gmc.Id=233 sz=167.97300 
+i=11 gvar.Id=123 cst=12.43200 gmc.Id=235 sz=1,248.80137 
+i=12 gvar.Id=124 cst=174.25248 gmc.Id=237 sz=17.99507 
+i=13 gvar.Id=125 cst=0.08800 gmc.Id=239 sz=36.00000 
+i=14 gvar.Id=126 cst=0.08800 gmc.Id=241 sz=0.53271 
+i=15 gvar.Id=127 cst=5.28000 gmc.Id=243 sz=356.74246 
+i=16 gvar.Id=128 cst=2.64000 gmc.Id=245 sz=1,919.71203 
+i=17 gvar.Id=129 cst=203.09134 gmc.Id=247 sz=303.31651 
+i=18 gvar.Id=130 cst=12.40800 gmc.Id=249 sz=680.81342 
+i=19 gvar.Id=131 cst=67.31840 gmc.Id=251 sz=140.96910 
+i=20 gvar.Id=132 cst=12.43200 gmc.Id=253 sz=3,589.55466 
+i=21 gvar.Id=133 cst=5.28000 gmc.Id=255 sz=768.04552 
+i=22 gvar.Id=134 cst=0.08800 gmc.Id=257 sz=27.64600 
+i=23 gvar.Id=135 cst=203.09134 gmc.Id=259 sz=1,121.94504 
+i=24 gvar.Id=136 cst=0.08800 gmc.Id=261 sz=1.26076 
+i=25 gvar.Id=137 cst=2.64000 gmc.Id=263 sz=319.81034 
+i=26 gvar.Id=138 cst=12.40800 gmc.Id=265 sz=2,554.30000 
+i=27 gvar.Id=139 cst=67.31840 gmc.Id=267 sz=9,828.84526 
+i=28 gvar.Id=140 cst=0.08800 gmc.Id=269 sz=142.25700 
+i=29 gvar.Id=141 cst=174.25248 gmc.Id=271 sz=99.97260 
+i=30 gvar.Id=142 cst=5.28000 gmc.Id=273 sz=2,087.15322 
+i=31 gvar.Id=143 cst=2.64000 gmc.Id=275 sz=603.98296 
+i=32 gvar.Id=144 cst=203.09134 gmc.Id=277 sz=2,874.77177 
+i=33 gvar.Id=145 cst=0.08800 gmc.Id=279 sz=3.49655 
+i=34 gvar.Id=146 cst=12.40800 gmc.Id=281 sz=37.98959 
+i=35 gvar.Id=147 cst=67.31840 gmc.Id=283 sz=13,989.93304 
+i=36 gvar.Id=148 cst=174.25248 gmc.Id=285 sz=198.94548 
+i=37 gvar.Id=149 cst=0.08800 gmc.Id=287 sz=0.00000 
+i=38 gvar.Id=150 cst=0.08800 gmc.Id=289 sz=15.91374 
+i=39 gvar.Id=151 cst=5.28000 gmc.Id=291 sz=722.29855 
+i=40 gvar.Id=152 cst=2.64000 gmc.Id=293 sz=657.69144 
+i=41 gvar.Id=153 cst=0.08800 gmc.Id=295 sz=71.59600 
+i=42 gvar.Id=154 cst=203.09134 gmc.Id=297 sz=4,638.40914 
+i=43 gvar.Id=155 cst=12.40800 gmc.Id=299 sz=40.98877 
+i=44 gvar.Id=156 cst=67.31840 gmc.Id=301 sz=404.91123 
+i=45 gvar.Id=157 cst=12.43200 gmc.Id=303 sz=1,214.83397 
+i=46 gvar.Id=158 cst=5.28000 gmc.Id=305 sz=1,430.32740 
+i=47 gvar.Id=159 cst=203.09134 gmc.Id=307 sz=353.46451 
+i=48 gvar.Id=160 cst=0.08800 gmc.Id=309 sz=1.54416 
+i=49 gvar.Id=161 cst=2.64000 gmc.Id=311 sz=45.18175 
+i=50 gvar.Id=162 cst=67.31840 gmc.Id=313 sz=6,103.66192 
+i=51 gvar.Id=163 cst=12.43200 gmc.Id=315 sz=1,088.95479 
+i=52 gvar.Id=164 cst=174.25248 gmc.Id=317 sz=203.94411 
+i=53 gvar.Id=165 cst=5.28000 gmc.Id=319 sz=558.19702 
+i=54 gvar.Id=166 cst=0.08800 gmc.Id=321 sz=17.03600 
+i=55 gvar.Id=167 cst=203.09134 gmc.Id=323 sz=2,451.75451 
+i=56 gvar.Id=168 cst=0.08800 gmc.Id=325 sz=9.31001 
+i=57 gvar.Id=169 cst=2.64000 gmc.Id=327 sz=227.48636 
+i=58 gvar.Id=170 cst=12.40800 gmc.Id=329 sz=648.42230 
+i=59 gvar.Id=171 cst=59.58920 gmc.Id=331 sz=5,987.78732 
+i=60 gvar.Id=172 cst=0.08800 gmc.Id=333 sz=117.00000 
+i=61 gvar.Id=173 cst=0.08800 gmc.Id=335 sz=1,308.00000 
+i=62 gvar.Id=174 cst=0.08800 gmc.Id=337 sz=658.00000 
+i=63 gvar.Id=175 cst=188.58601 gmc.Id=339 sz=1,156.74641 
+i=64 gvar.Id=176 cst=0.08800 gmc.Id=341 sz=10.89217 
+i=65 gvar.Id=177 cst=5.28000 gmc.Id=343 sz=719.41606 
+i=66 gvar.Id=178 cst=2.64000 gmc.Id=345 sz=125.75242 
+i=67 gvar.Id=179 cst=59.58920 gmc.Id=347 sz=27,637.10440 
+i=68 gvar.Id=180 cst=47.65426 gmc.Id=349 sz=20,894.37395 
+i=69 gvar.Id=181 cst=0.08800 gmc.Id=351 sz=4,329.00000 
+i=70 gvar.Id=182 cst=0.08800 gmc.Id=353 sz=10,787.50000 
+i=71 gvar.Id=183 cst=36.62962 gmc.Id=355 sz=11,413.37219 
+i=72 gvar.Id=184 cst=159.74715 gmc.Id=357 sz=870.35148 
+i=73 gvar.Id=185 cst=0.08800 gmc.Id=359 sz=7,229.00000 
+i=74 gvar.Id=186 cst=188.58601 gmc.Id=361 sz=9,130.32339 
+i=75 gvar.Id=187 cst=0.08800 gmc.Id=363 sz=487.38121 
+i=76 gvar.Id=188 cst=5.28000 gmc.Id=365 sz=3,962.60641 
+i=77 gvar.Id=189 cst=2.64000 gmc.Id=367 sz=11,729.42452 
+i=78 gvar.Id=190 cst=12.40800 gmc.Id=369 sz=1,019.72055 
+i=79 gvar.Id=191 cst=159.74715 gmc.Id=371 sz=535.85315 
+i=80 gvar.Id=192 cst=0.08800 gmc.Id=373 sz=240.07000 
+i=81 gvar.Id=193 cst=188.58601 gmc.Id=375 sz=28.29380 
+i=82 gvar.Id=194 cst=0.08800 gmc.Id=377 sz=0.28453 
+i=83 gvar.Id=195 cst=5.28000 gmc.Id=379 sz=430.41722 
+i=84 gvar.Id=196 cst=2.64000 gmc.Id=381 sz=195.00000 
+i=85 gvar.Id=197 cst=12.40800 gmc.Id=383 sz=589.83836 
+i=86 gvar.Id=198 cst=59.58920 gmc.Id=385 sz=429.90575 
+i=87 gvar.Id=199 cst=47.65426 gmc.Id=387 sz=409.88767 
+i=88 gvar.Id=200 cst=0.08800 gmc.Id=389 sz=6.57120 
+i=89 gvar.Id=201 cst=159.74715 gmc.Id=391 sz=280.92301 
+i=90 gvar.Id=202 cst=0.08800 gmc.Id=393 sz=460.33000 
+i=91 gvar.Id=203 cst=188.58601 gmc.Id=395 sz=70.78448 
+i=92 gvar.Id=204 cst=0.08800 gmc.Id=397 sz=0.27173 
+i=93 gvar.Id=205 cst=5.28000 gmc.Id=399 sz=626.39849 
+i=94 gvar.Id=206 cst=2.64000 gmc.Id=401 sz=704.93209 
+i=95 gvar.Id=207 cst=59.58920 gmc.Id=403 sz=11,493.48033 
+i=96 gvar.Id=208 cst=0.08800 gmc.Id=405 sz=13,600.00000 
+i=97 gvar.Id=209 cst=0.08800 gmc.Id=407 sz=11,500.00000 
+i=98 gvar.Id=210 cst=12.43200 gmc.Id=409 sz=52,149.94521 
+i=99 gvar.Id=211 cst=159.74715 gmc.Id=411 sz=989.72877 
+i=100 gvar.Id=212 cst=0.08800 gmc.Id=413 sz=2,641.00000 
+i=101 gvar.Id=213 cst=0.08800 gmc.Id=415 sz=361.57003 
+i=102 gvar.Id=214 cst=5.28000 gmc.Id=417 sz=249.60058 
+i=103 gvar.Id=215 cst=2.64000 gmc.Id=419 sz=1,875.57004 
+i=104 gvar.Id=216 cst=59.58920 gmc.Id=421 sz=3,723.18378 
+i=105 gvar.Id=217 cst=47.65426 gmc.Id=423 sz=854.76575 
+i=106 gvar.Id=218 cst=0.08800 gmc.Id=425 sz=238.00000 
+i=107 gvar.Id=219 cst=0.08800 gmc.Id=427 sz=292.00000 
+i=108 gvar.Id=220 cst=36.62962 gmc.Id=429 sz=195.94630 
+i=109 gvar.Id=221 cst=159.74715 gmc.Id=431 sz=323.91123 
+i=110 gvar.Id=222 cst=0.08800 gmc.Id=433 sz=114.00000 
+i=111 gvar.Id=223 cst=188.58601 gmc.Id=435 sz=159.96493 
+i=112 gvar.Id=224 cst=0.08800 gmc.Id=437 sz=0.00000 
+i=113 gvar.Id=225 cst=2.64000 gmc.Id=439 sz=2,929.57462 
+i=114 gvar.Id=226 cst=59.58920 gmc.Id=441 sz=989.78301 
+i=115 gvar.Id=227 cst=159.74715 gmc.Id=443 sz=310.91479 
+i=116 gvar.Id=228 cst=0.08800 gmc.Id=445 sz=86.60000 
+i=117 gvar.Id=229 cst=188.58601 gmc.Id=447 sz=11.99737 
+i=118 gvar.Id=230 cst=0.08800 gmc.Id=449 sz=0.00000 
+i=119 gvar.Id=231 cst=2.64000 gmc.Id=451 sz=625.88363 
+i=120 gvar.Id=232 cst=59.58920 gmc.Id=453 sz=8,449.94755 
+i=121 gvar.Id=233 cst=47.65426 gmc.Id=455 sz=4,606.73753 
+i=122 gvar.Id=234 cst=0.08800 gmc.Id=457 sz=38.00000 
+i=123 gvar.Id=235 cst=12.43200 gmc.Id=459 sz=485.53397 
+i=124 gvar.Id=236 cst=0.08800 gmc.Id=461 sz=507.00000 
+i=125 gvar.Id=237 cst=188.58601 gmc.Id=463 sz=4,085.10444 
+i=126 gvar.Id=238 cst=0.08800 gmc.Id=465 sz=17.73592 
+i=127 gvar.Id=239 cst=5.28000 gmc.Id=467 sz=4,132.23989 
+i=128 gvar.Id=240 cst=2.64000 gmc.Id=469 sz=1,233.59372 
+i=129 gvar.Id=241 cst=59.58920 gmc.Id=471 sz=434.90466 
+i=130 gvar.Id=242 cst=0.08800 gmc.Id=473 sz=34,226.90000 
+i=131 gvar.Id=243 cst=0.08800 gmc.Id=475 sz=76.30030 
+i=132 gvar.Id=244 cst=2.64000 gmc.Id=477 sz=1,235.77386 
+i=133 gvar.Id=245 cst=4,000.00000 gmc.Id=479 sz=947.86954 
+i=134 gvar.Id=246 cst=4,000.00000 gmc.Id=481 sz=17,452.58858 
+i=135 gvar.Id=247 cst=4,000.00000 gmc.Id=483 sz=7,777.19512 
+i=136 gvar.Id=248 cst=4,000.00000 gmc.Id=485 sz=6,126.20045 
+i=137 gvar.Id=249 cst=4,000.00000 gmc.Id=487 sz=883.75900 
+i=138 gvar.Id=250 cst=4,000.00000 gmc.Id=489 sz=2,367.89376 
+i=139 gvar.Id=251 cst=4,000.00000 gmc.Id=491 sz=2,791.50574 
+i=140 gvar.Id=252 cst=4,000.00000 gmc.Id=493 sz=1,323.71429 
+i=141 gvar.Id=253 cst=4,000.00000 gmc.Id=495 sz=3,868.57143 
+i=142 gvar.Id=254 cst=4,000.00000 gmc.Id=497 sz=16,897.42857 
+i=143 gvar.Id=255 cst=4,000.00000 gmc.Id=499 sz=3,278.57143 
+i=144 gvar.Id=256 cst=4,000.00000 gmc.Id=501 sz=1,831.57143 
+i=145 gvar.Id=257 cst=4,000.00000 gmc.Id=503 sz=12,680.85714 
+i=146 gvar.Id=258 cst=4,000.00000 gmc.Id=505 sz=8,880.71429 
+i=147 gvar.Id=259 cst=4,000.00000 gmc.Id=507 sz=58,059.85714 
+i=148 gvar.Id=260 cst=4,000.00000 gmc.Id=509 sz=53,869.14286 
+Zones 
+i=1 dcdef.Id=0 -dem=-869.03598 
+i=2 dcdef.Id=1 -dem=-2,328.44572 
+i=3 dcdef.Id=2 -dem=-2,745.00051 
+i=4 dcdef.Id=3 -dem=-7,647.63055 
+i=5 dcdef.Id=4 -dem=-17,161.83631 
+i=6 dcdef.Id=5 -dem=-932.07846 
+i=7 dcdef.Id=6 -dem=-6,024.14071 
+i=8 dcdef.Id=7 -dem=-1,340.66667 
+i=9 dcdef.Id=8 -dem=-3,865.00000 
+i=10 dcdef.Id=9 -dem=-17,117.16667 
+i=11 dcdef.Id=10 -dem=-3,309.66667 
+i=12 dcdef.Id=11 -dem=-1,914.16667 
+i=13 dcdef.Id=12 -dem=-13,161.83333 
+i=14 dcdef.Id=13 -dem=-9,078.83333 
+i=15 dcdef.Id=14 -dem=-58,219.33333 
+i=16 dcdef.Id=15 -dem=-56,525.83333 
+Link2 
+i=0 dfivar.Id=0 itf=0.00000 dtivar.Id=2 itt=0.00000 
+i=0 dfemc.Id=21 capf=3,300.00000 dtemc.Id=22 capt=3,300.00000 
+i=0 dfnc.Id=0 dtnc.Id=1 
+i=0 Skip=21 i=0 Skip=22 
+i=1 dfivar.Id=4 itf=0.00000 dtivar.Id=6 itt=0.00000 
+i=1 dfemc.Id=28 capf=3,500.00000 dtemc.Id=29 capt=3,500.00000 
+i=1 dfnc.Id=1 dtnc.Id=2 
+i=1 Skip=28 i=1 Skip=29 
+i=2 dfivar.Id=8 itf=0.00000 dtivar.Id=10 itt=0.00000 
+i=2 dfemc.Id=35 capf=6,500.00000 dtemc.Id=36 capt=6,500.00000 
+i=2 dfnc.Id=2 dtnc.Id=3 
+i=2 Skip=35 i=2 Skip=36 
+i=3 dfivar.Id=12 itf=0.00000 dtivar.Id=14 itt=0.00000 
+i=3 dfemc.Id=42 capf=10,000.00000 dtemc.Id=43 capt=10,000.00000 
+i=3 dfnc.Id=3 dtnc.Id=4 
+i=3 Skip=42 i=3 Skip=43 
+i=4 dfivar.Id=16 itf=0.00000 dtivar.Id=18 itt=0.00000 
+i=4 dfemc.Id=49 capf=6,000.00000 dtemc.Id=50 capt=5,200.00000 
+i=4 dfnc.Id=4 dtnc.Id=6 
+i=4 Skip=49 i=4 Skip=50 
+i=5 dfivar.Id=20 itf=0.00000 dtivar.Id=22 itt=0.00000 
+i=5 dfemc.Id=56 capf=3,500.00000 dtemc.Id=57 capt=3,500.00000 
+i=5 dfnc.Id=4 dtnc.Id=5 
+i=5 Skip=56 i=5 Skip=57 
+i=6 dfivar.Id=24 itf=0.00000 dtivar.Id=26 itt=0.00000 
+i=6 dfemc.Id=63 capf=2,200.00000 dtemc.Id=64 capt=2,200.00000 
+i=6 dfnc.Id=1 dtnc.Id=3 
+i=7 dfivar.Id=28 itf=0.00000 dtivar.Id=30 itt=0.00000 
+i=7 dfemc.Id=70 capf=500.00000 dtemc.Id=71 capt=500.00000 
+i=7 dfnc.Id=3 dtnc.Id=8 
+i=8 dfivar.Id=32 itf=0.00000 dtivar.Id=34 itt=0.00000 
+i=8 dfemc.Id=77 capf=450.00000 dtemc.Id=78 capt=80.00000 
+i=8 dfnc.Id=1 dtnc.Id=7 
+i=9 dfivar.Id=36 itf=0.00000 dtivar.Id=38 itt=0.00000 
+i=9 dfemc.Id=84 capf=1,000.00000 dtemc.Id=85 capt=1,000.00000 
+i=9 dfnc.Id=6 dtnc.Id=12 
+i=10 dfivar.Id=40 itf=0.00000 dtivar.Id=42 itt=0.00000 
+i=10 dfemc.Id=91 capf=1,400.00000 dtemc.Id=92 capt=1,400.00000 
+i=10 dfnc.Id=3 dtnc.Id=9 
+i=11 dfivar.Id=44 itf=0.00000 dtivar.Id=46 itt=0.00000 
+i=11 dfemc.Id=98 capf=1,000.00000 dtemc.Id=99 capt=1,000.00000 
+i=11 dfnc.Id=6 dtnc.Id=13 
+i=12 dfivar.Id=48 itf=0.00000 dtivar.Id=50 itt=0.00000 
+i=12 dfemc.Id=105 capf=1,400.00000 dtemc.Id=106 capt=1,400.00000 
+i=12 dfnc.Id=5 dtnc.Id=10 
+i=13 dfivar.Id=52 itf=0.00000 dtivar.Id=54 itt=0.00000 
+i=13 dfemc.Id=112 capf=4,000.00000 dtemc.Id=113 capt=4,000.00000 
+i=13 dfnc.Id=6 dtnc.Id=14 
+i=14 dfivar.Id=56 itf=0.00000 dtivar.Id=58 itt=0.00000 
+i=14 dfemc.Id=119 capf=1,100.00000 dtemc.Id=120 capt=1,100.00000 
+i=14 dfnc.Id=8 dtnc.Id=7 
+i=14 Skip=119 i=14 Skip=120 
+i=15 dfivar.Id=60 itf=0.00000 dtivar.Id=62 itt=0.00000 
+i=15 dfemc.Id=126 capf=1,000.00000 dtemc.Id=127 capt=1,000.00000 
+i=15 dfnc.Id=13 dtnc.Id=15 
+i=16 dfivar.Id=64 itf=0.00000 dtivar.Id=66 itt=0.00000 
+i=16 dfemc.Id=133 capf=2,800.00000 dtemc.Id=134 capt=4,300.00000 
+i=16 dfnc.Id=13 dtnc.Id=14 
+i=17 dfivar.Id=68 itf=0.00000 dtivar.Id=70 itt=0.00000 
+i=17 dfemc.Id=140 capf=3,000.00000 dtemc.Id=141 capt=3,000.00000 
+i=17 dfnc.Id=15 dtnc.Id=14 
+i=18 dfivar.Id=72 itf=0.00000 dtivar.Id=74 itt=0.00000 
+i=18 dfemc.Id=147 capf=600.00000 dtemc.Id=148 capt=585.00000 
+i=18 dfnc.Id=15 dtnc.Id=11 
+i=19 dfivar.Id=76 itf=0.00000 dtivar.Id=78 itt=0.00000 
+i=19 dfemc.Id=154 capf=3,400.00000 dtemc.Id=155 capt=3,400.00000 
+i=19 dfnc.Id=13 dtnc.Id=12 
+i=20 dfivar.Id=80 itf=0.00000 dtivar.Id=82 itt=0.00000 
+i=20 dfemc.Id=161 capf=3,000.00000 dtemc.Id=162 capt=3,000.00000 
+i=20 dfnc.Id=15 dtnc.Id=10 
+i=21 dfivar.Id=84 itf=0.00000 dtivar.Id=86 itt=0.00000 
+i=21 dfemc.Id=168 capf=400.00000 dtemc.Id=169 capt=400.00000 
+i=21 dfnc.Id=15 dtnc.Id=11 
+i=22 dfivar.Id=88 itf=0.00000 dtivar.Id=90 itt=0.00000 
+i=22 dfemc.Id=175 capf=5,000.00000 dtemc.Id=176 capt=5,000.00000 
+i=22 dfnc.Id=15 dtnc.Id=12 
+i=23 dfivar.Id=92 itf=0.00000 dtivar.Id=94 itt=0.00000 
+i=23 dfemc.Id=182 capf=1,400.00000 dtemc.Id=183 capt=1,400.00000 
+i=23 dfnc.Id=15 dtnc.Id=9 
+i=24 dfivar.Id=96 itf=0.00000 dtivar.Id=98 itt=0.00000 
+i=24 dfemc.Id=189 capf=600.00000 dtemc.Id=190 capt=590.00000 
+i=24 dfnc.Id=11 dtnc.Id=10 
+i=25 dfivar.Id=100 itf=0.00000 dtivar.Id=102 itt=0.00000 
+i=25 dfemc.Id=196 capf=700.00000 dtemc.Id=197 capt=700.00000 
+i=25 dfnc.Id=10 dtnc.Id=12 
+i=26 dfivar.Id=104 itf=0.00000 dtivar.Id=106 itt=0.00000 
+i=26 dfemc.Id=203 capf=1,640.00000 dtemc.Id=204 capt=1,640.00000 
+i=26 dfnc.Id=10 dtnc.Id=9 
+i=27 dfivar.Id=108 itf=0.00000 dtivar.Id=110 itt=0.00000 
+i=27 dfemc.Id=210 capf=700.00000 dtemc.Id=211 capt=700.00000 
+i=27 dfnc.Id=12 dtnc.Id=9 
+Gens 
+i=0 gvar.Id=112 cst=12.40800 gmc.Id=213 sz=11.99671 
+i=1 gvar.Id=113 cst=0.08800 gmc.Id=215 sz=1,511.42200 
+i=2 gvar.Id=114 cst=174.25248 gmc.Id=217 sz=59.98356 
+i=3 gvar.Id=115 cst=0.08800 gmc.Id=219 sz=15.00000 
+i=4 gvar.Id=116 cst=0.08800 gmc.Id=221 sz=6.52546 
+i=5 gvar.Id=117 cst=5.28000 gmc.Id=223 sz=1,208.68480 
+i=6 gvar.Id=118 cst=2.64000 gmc.Id=225 sz=1,593.87306 
+i=7 gvar.Id=119 cst=203.09134 gmc.Id=227 sz=150.94991 
+i=8 gvar.Id=120 cst=12.40800 gmc.Id=229 sz=119.96712 
+i=9 gvar.Id=121 cst=67.31840 gmc.Id=231 sz=135.97019 
+i=10 gvar.Id=122 cst=0.08800 gmc.Id=233 sz=167.97300 
+i=11 gvar.Id=123 cst=12.43200 gmc.Id=235 sz=1,248.80137 
+i=12 gvar.Id=124 cst=174.25248 gmc.Id=237 sz=17.99507 
+i=13 gvar.Id=125 cst=0.08800 gmc.Id=239 sz=36.00000 
+i=14 gvar.Id=126 cst=0.08800 gmc.Id=241 sz=9.78094 
+i=15 gvar.Id=127 cst=5.28000 gmc.Id=243 sz=375.09386 
+i=16 gvar.Id=128 cst=2.64000 gmc.Id=245 sz=2,122.65178 
+i=17 gvar.Id=129 cst=203.09134 gmc.Id=247 sz=303.31651 
+i=18 gvar.Id=130 cst=12.40800 gmc.Id=249 sz=680.81342 
+i=19 gvar.Id=131 cst=67.31840 gmc.Id=251 sz=140.96910 
+i=20 gvar.Id=132 cst=12.43200 gmc.Id=253 sz=3,589.55466 
+i=21 gvar.Id=133 cst=5.28000 gmc.Id=255 sz=807.55502 
+i=22 gvar.Id=134 cst=0.08800 gmc.Id=257 sz=27.64600 
+i=23 gvar.Id=135 cst=203.09134 gmc.Id=259 sz=1,121.94504 
+i=24 gvar.Id=136 cst=0.08800 gmc.Id=261 sz=23.14837 
+i=25 gvar.Id=137 cst=2.64000 gmc.Id=263 sz=353.61866 
+i=26 gvar.Id=138 cst=12.40800 gmc.Id=265 sz=2,554.30000 
+i=27 gvar.Id=139 cst=67.31840 gmc.Id=267 sz=9,828.84526 
+i=28 gvar.Id=140 cst=0.08800 gmc.Id=269 sz=142.25700 
+i=29 gvar.Id=141 cst=174.25248 gmc.Id=271 sz=99.97260 
+i=30 gvar.Id=142 cst=5.28000 gmc.Id=273 sz=2,194.51973 
+i=31 gvar.Id=143 cst=2.64000 gmc.Id=275 sz=667.83220 
+i=32 gvar.Id=144 cst=203.09134 gmc.Id=277 sz=2,874.77177 
+i=33 gvar.Id=145 cst=0.08800 gmc.Id=279 sz=64.19871 
+i=34 gvar.Id=146 cst=12.40800 gmc.Id=281 sz=37.98959 
+i=35 gvar.Id=147 cst=67.31840 gmc.Id=283 sz=13,989.93304 
+i=36 gvar.Id=148 cst=174.25248 gmc.Id=285 sz=198.94548 
+i=37 gvar.Id=149 cst=0.08800 gmc.Id=287 sz=0.00000 
+i=38 gvar.Id=150 cst=0.08800 gmc.Id=289 sz=292.18580 
+i=39 gvar.Id=151 cst=5.28000 gmc.Id=291 sz=759.45474 
+i=40 gvar.Id=152 cst=2.64000 gmc.Id=293 sz=727.21840 
+i=41 gvar.Id=153 cst=0.08800 gmc.Id=295 sz=71.59600 
+i=42 gvar.Id=154 cst=203.09134 gmc.Id=297 sz=4,638.40914 
+i=43 gvar.Id=155 cst=12.40800 gmc.Id=299 sz=40.98877 
+i=44 gvar.Id=156 cst=67.31840 gmc.Id=301 sz=404.91123 
+i=45 gvar.Id=157 cst=12.43200 gmc.Id=303 sz=1,214.83397 
+i=46 gvar.Id=158 cst=5.28000 gmc.Id=305 sz=1,503.90574 
+i=47 gvar.Id=159 cst=203.09134 gmc.Id=307 sz=353.46451 
+i=48 gvar.Id=160 cst=0.08800 gmc.Id=309 sz=28.35168 
+i=49 gvar.Id=161 cst=2.64000 gmc.Id=311 sz=49.95808 
+i=50 gvar.Id=162 cst=67.31840 gmc.Id=313 sz=6,103.66192 
+i=51 gvar.Id=163 cst=12.43200 gmc.Id=315 sz=1,088.95479 
+i=52 gvar.Id=164 cst=174.25248 gmc.Id=317 sz=203.94411 
+i=53 gvar.Id=165 cst=5.28000 gmc.Id=319 sz=586.91157 
+i=54 gvar.Id=166 cst=0.08800 gmc.Id=321 sz=17.03600 
+i=55 gvar.Id=167 cst=203.09134 gmc.Id=323 sz=2,451.75451 
+i=56 gvar.Id=168 cst=0.08800 gmc.Id=325 sz=170.93737 
+i=57 gvar.Id=169 cst=2.64000 gmc.Id=327 sz=251.53477 
+i=58 gvar.Id=170 cst=12.40800 gmc.Id=329 sz=648.42230 
+i=59 gvar.Id=171 cst=59.58920 gmc.Id=331 sz=5,987.78732 
+i=60 gvar.Id=172 cst=0.08800 gmc.Id=333 sz=117.00000 
+i=61 gvar.Id=173 cst=0.08800 gmc.Id=335 sz=1,308.00000 
+i=62 gvar.Id=174 cst=0.08800 gmc.Id=337 sz=658.00000 
+i=63 gvar.Id=175 cst=188.58601 gmc.Id=339 sz=1,156.74641 
+i=64 gvar.Id=176 cst=0.08800 gmc.Id=341 sz=292.27334 
+i=65 gvar.Id=177 cst=5.28000 gmc.Id=343 sz=1,020.67153 
+i=66 gvar.Id=178 cst=2.64000 gmc.Id=345 sz=143.38843 
+i=67 gvar.Id=179 cst=59.58920 gmc.Id=347 sz=27,637.10440 
+i=68 gvar.Id=180 cst=47.65426 gmc.Id=349 sz=20,894.37395 
+i=69 gvar.Id=181 cst=0.08800 gmc.Id=351 sz=4,329.00000 
+i=70 gvar.Id=182 cst=0.08800 gmc.Id=353 sz=10,787.50000 
+i=71 gvar.Id=183 cst=36.62962 gmc.Id=355 sz=11,413.37219 
+i=72 gvar.Id=184 cst=159.74715 gmc.Id=357 sz=870.35148 
+i=73 gvar.Id=185 cst=0.08800 gmc.Id=359 sz=7,229.00000 
+i=74 gvar.Id=186 cst=188.58601 gmc.Id=361 sz=9,130.32339 
+i=75 gvar.Id=187 cst=0.08800 gmc.Id=363 sz=7,538.33658 
+i=76 gvar.Id=188 cst=5.28000 gmc.Id=365 sz=3,389.79493 
+i=77 gvar.Id=189 cst=2.64000 gmc.Id=367 sz=11,397.53737 
+i=78 gvar.Id=190 cst=12.40800 gmc.Id=369 sz=1,019.72055 
+i=79 gvar.Id=191 cst=159.74715 gmc.Id=371 sz=535.85315 
+i=80 gvar.Id=192 cst=0.08800 gmc.Id=373 sz=240.07000 
+i=81 gvar.Id=193 cst=188.58601 gmc.Id=375 sz=28.29380 
+i=82 gvar.Id=194 cst=0.08800 gmc.Id=377 sz=10.95458 
+i=83 gvar.Id=195 cst=5.28000 gmc.Id=379 sz=763.24117 
+i=84 gvar.Id=196 cst=2.64000 gmc.Id=381 sz=197.56579 
+i=85 gvar.Id=197 cst=12.40800 gmc.Id=383 sz=589.83836 
+i=86 gvar.Id=198 cst=59.58920 gmc.Id=385 sz=429.90575 
+i=87 gvar.Id=199 cst=47.65426 gmc.Id=387 sz=409.88767 
+i=88 gvar.Id=200 cst=0.08800 gmc.Id=389 sz=6.57120 
+i=89 gvar.Id=201 cst=159.74715 gmc.Id=391 sz=280.92301 
+i=90 gvar.Id=202 cst=0.08800 gmc.Id=393 sz=460.33000 
+i=91 gvar.Id=203 cst=188.58601 gmc.Id=395 sz=70.78448 
+i=92 gvar.Id=204 cst=0.08800 gmc.Id=397 sz=28.84872 
+i=93 gvar.Id=205 cst=5.28000 gmc.Id=399 sz=554.63457 
+i=94 gvar.Id=206 cst=2.64000 gmc.Id=401 sz=668.43560 
+i=95 gvar.Id=207 cst=59.58920 gmc.Id=403 sz=11,493.48033 
+i=96 gvar.Id=208 cst=0.08800 gmc.Id=405 sz=13,600.00000 
+i=97 gvar.Id=209 cst=0.08800 gmc.Id=407 sz=11,500.00000 
+i=98 gvar.Id=210 cst=12.43200 gmc.Id=409 sz=52,149.94521 
+i=99 gvar.Id=211 cst=159.74715 gmc.Id=411 sz=989.72877 
+i=100 gvar.Id=212 cst=0.08800 gmc.Id=413 sz=2,641.00000 
+i=101 gvar.Id=213 cst=0.08800 gmc.Id=415 sz=3,818.37285 
+i=102 gvar.Id=214 cst=5.28000 gmc.Id=417 sz=257.04319 
+i=103 gvar.Id=215 cst=2.64000 gmc.Id=419 sz=1,931.49598 
+i=104 gvar.Id=216 cst=59.58920 gmc.Id=421 sz=3,723.18378 
+i=105 gvar.Id=217 cst=47.65426 gmc.Id=423 sz=854.76575 
+i=106 gvar.Id=218 cst=0.08800 gmc.Id=425 sz=238.00000 
+i=107 gvar.Id=219 cst=0.08800 gmc.Id=427 sz=292.00000 
+i=108 gvar.Id=220 cst=36.62962 gmc.Id=429 sz=195.94630 
+i=109 gvar.Id=221 cst=159.74715 gmc.Id=431 sz=323.91123 
+i=110 gvar.Id=222 cst=0.08800 gmc.Id=433 sz=114.00000 
+i=111 gvar.Id=223 cst=188.58601 gmc.Id=435 sz=159.96493 
+i=112 gvar.Id=224 cst=0.08800 gmc.Id=437 sz=0.00000 
+i=113 gvar.Id=225 cst=2.64000 gmc.Id=439 sz=3,285.64881 
+i=114 gvar.Id=226 cst=59.58920 gmc.Id=441 sz=989.78301 
+i=115 gvar.Id=227 cst=159.74715 gmc.Id=443 sz=310.91479 
+i=116 gvar.Id=228 cst=0.08800 gmc.Id=445 sz=86.60000 
+i=117 gvar.Id=229 cst=188.58601 gmc.Id=447 sz=11.99737 
+i=118 gvar.Id=230 cst=0.08800 gmc.Id=449 sz=0.00000 
+i=119 gvar.Id=231 cst=2.64000 gmc.Id=451 sz=765.00750 
+i=120 gvar.Id=232 cst=59.58920 gmc.Id=453 sz=8,449.94755 
+i=121 gvar.Id=233 cst=47.65426 gmc.Id=455 sz=4,606.73753 
+i=122 gvar.Id=234 cst=0.08800 gmc.Id=457 sz=38.00000 
+i=123 gvar.Id=235 cst=12.43200 gmc.Id=459 sz=485.53397 
+i=124 gvar.Id=236 cst=0.08800 gmc.Id=461 sz=507.00000 
+i=125 gvar.Id=237 cst=188.58601 gmc.Id=463 sz=4,085.10444 
+i=126 gvar.Id=238 cst=0.08800 gmc.Id=465 sz=383.48086 
+i=127 gvar.Id=239 cst=5.28000 gmc.Id=467 sz=5,143.56931 
+i=128 gvar.Id=240 cst=2.64000 gmc.Id=469 sz=1,754.73003 
+i=129 gvar.Id=241 cst=59.58920 gmc.Id=471 sz=434.90466 
+i=130 gvar.Id=242 cst=0.08800 gmc.Id=473 sz=34,226.90000 
+i=131 gvar.Id=243 cst=0.08800 gmc.Id=475 sz=76.30030 
+i=132 gvar.Id=244 cst=2.64000 gmc.Id=477 sz=1,349.00733 
+i=133 gvar.Id=245 cst=4,000.00000 gmc.Id=479 sz=932.07846 
+i=134 gvar.Id=246 cst=4,000.00000 gmc.Id=481 sz=17,161.83631 
+i=135 gvar.Id=247 cst=4,000.00000 gmc.Id=483 sz=7,647.63055 
+i=136 gvar.Id=248 cst=4,000.00000 gmc.Id=485 sz=6,024.14071 
+i=137 gvar.Id=249 cst=4,000.00000 gmc.Id=487 sz=869.03598 
+i=138 gvar.Id=250 cst=4,000.00000 gmc.Id=489 sz=2,328.44572 
+i=139 gvar.Id=251 cst=4,000.00000 gmc.Id=491 sz=2,745.00051 
+i=140 gvar.Id=252 cst=4,000.00000 gmc.Id=493 sz=1,340.66667 
+i=141 gvar.Id=253 cst=4,000.00000 gmc.Id=495 sz=3,865.00000 
+i=142 gvar.Id=254 cst=4,000.00000 gmc.Id=497 sz=17,117.16667 
+i=143 gvar.Id=255 cst=4,000.00000 gmc.Id=499 sz=3,309.66667 
+i=144 gvar.Id=256 cst=4,000.00000 gmc.Id=501 sz=1,914.16667 
+i=145 gvar.Id=257 cst=4,000.00000 gmc.Id=503 sz=13,161.83333 
+i=146 gvar.Id=258 cst=4,000.00000 gmc.Id=505 sz=9,078.83333 
+i=147 gvar.Id=259 cst=4,000.00000 gmc.Id=507 sz=58,219.33333 
+i=148 gvar.Id=260 cst=4,000.00000 gmc.Id=509 sz=56,525.83333 
+Zones 
+i=1 dcdef.Id=0 -dem=-678.93911 
+i=2 dcdef.Id=1 -dem=-1,819.11094 
+i=3 dcdef.Id=2 -dem=-2,144.54665 
+i=4 dcdef.Id=3 -dem=-5,974.75316 
+i=5 dcdef.Id=4 -dem=-13,407.77840 
+i=6 dcdef.Id=5 -dem=-728.19139 
+i=7 dcdef.Id=6 -dem=-4,706.39284 
+i=8 dcdef.Id=7 -dem=-927.75000 
+i=9 dcdef.Id=8 -dem=-3,388.00000 
+i=10 dcdef.Id=9 -dem=-15,056.00000 
+i=11 dcdef.Id=10 -dem=-2,696.75000 
+i=12 dcdef.Id=11 -dem=-1,449.25000 
+i=13 dcdef.Id=12 -dem=-10,274.75000 
+i=14 dcdef.Id=13 -dem=-8,072.00000 
+i=15 dcdef.Id=14 -dem=-58,429.00000 
+i=16 dcdef.Id=15 -dem=-44,020.00000 
+Link2 
+i=0 dfivar.Id=0 itf=0.00000 dtivar.Id=2 itt=0.00000 
+i=0 dfemc.Id=21 capf=3,300.00000 dtemc.Id=22 capt=3,300.00000 
+i=0 dfnc.Id=0 dtnc.Id=1 
+i=0 Skip=21 i=0 Skip=22 
+i=1 dfivar.Id=4 itf=0.00000 dtivar.Id=6 itt=0.00000 
+i=1 dfemc.Id=28 capf=3,500.00000 dtemc.Id=29 capt=3,500.00000 
+i=1 dfnc.Id=1 dtnc.Id=2 
+i=1 Skip=28 i=1 Skip=29 
+i=2 dfivar.Id=8 itf=0.00000 dtivar.Id=10 itt=0.00000 
+i=2 dfemc.Id=35 capf=6,500.00000 dtemc.Id=36 capt=6,500.00000 
+i=2 dfnc.Id=2 dtnc.Id=3 
+i=2 Skip=35 i=2 Skip=36 
+i=3 dfivar.Id=12 itf=0.00000 dtivar.Id=14 itt=0.00000 
+i=3 dfemc.Id=42 capf=10,000.00000 dtemc.Id=43 capt=10,000.00000 
+i=3 dfnc.Id=3 dtnc.Id=4 
+i=3 Skip=42 i=3 Skip=43 
+i=4 dfivar.Id=16 itf=0.00000 dtivar.Id=18 itt=0.00000 
+i=4 dfemc.Id=49 capf=6,000.00000 dtemc.Id=50 capt=5,200.00000 
+i=4 dfnc.Id=4 dtnc.Id=6 
+i=4 Skip=49 i=4 Skip=50 
+i=5 dfivar.Id=20 itf=0.00000 dtivar.Id=22 itt=0.00000 
+i=5 dfemc.Id=56 capf=3,500.00000 dtemc.Id=57 capt=3,500.00000 
+i=5 dfnc.Id=4 dtnc.Id=5 
+i=5 Skip=56 i=5 Skip=57 
+i=6 dfivar.Id=24 itf=0.00000 dtivar.Id=26 itt=0.00000 
+i=6 dfemc.Id=63 capf=2,200.00000 dtemc.Id=64 capt=2,200.00000 
+i=6 dfnc.Id=1 dtnc.Id=3 
+i=7 dfivar.Id=28 itf=0.00000 dtivar.Id=30 itt=0.00000 
+i=7 dfemc.Id=70 capf=500.00000 dtemc.Id=71 capt=500.00000 
+i=7 dfnc.Id=3 dtnc.Id=8 
+i=8 dfivar.Id=32 itf=0.00000 dtivar.Id=34 itt=0.00000 
+i=8 dfemc.Id=77 capf=450.00000 dtemc.Id=78 capt=80.00000 
+i=8 dfnc.Id=1 dtnc.Id=7 
+i=9 dfivar.Id=36 itf=0.00000 dtivar.Id=38 itt=0.00000 
+i=9 dfemc.Id=84 capf=1,000.00000 dtemc.Id=85 capt=1,000.00000 
+i=9 dfnc.Id=6 dtnc.Id=12 
+i=10 dfivar.Id=40 itf=0.00000 dtivar.Id=42 itt=0.00000 
+i=10 dfemc.Id=91 capf=1,400.00000 dtemc.Id=92 capt=1,400.00000 
+i=10 dfnc.Id=3 dtnc.Id=9 
+i=11 dfivar.Id=44 itf=0.00000 dtivar.Id=46 itt=0.00000 
+i=11 dfemc.Id=98 capf=1,000.00000 dtemc.Id=99 capt=1,000.00000 
+i=11 dfnc.Id=6 dtnc.Id=13 
+i=12 dfivar.Id=48 itf=0.00000 dtivar.Id=50 itt=0.00000 
+i=12 dfemc.Id=105 capf=1,400.00000 dtemc.Id=106 capt=1,400.00000 
+i=12 dfnc.Id=5 dtnc.Id=10 
+i=13 dfivar.Id=52 itf=0.00000 dtivar.Id=54 itt=0.00000 
+i=13 dfemc.Id=112 capf=4,000.00000 dtemc.Id=113 capt=4,000.00000 
+i=13 dfnc.Id=6 dtnc.Id=14 
+i=14 dfivar.Id=56 itf=0.00000 dtivar.Id=58 itt=0.00000 
+i=14 dfemc.Id=119 capf=1,100.00000 dtemc.Id=120 capt=1,100.00000 
+i=14 dfnc.Id=8 dtnc.Id=7 
+i=14 Skip=119 i=14 Skip=120 
+i=15 dfivar.Id=60 itf=0.00000 dtivar.Id=62 itt=0.00000 
+i=15 dfemc.Id=126 capf=1,000.00000 dtemc.Id=127 capt=1,000.00000 
+i=15 dfnc.Id=13 dtnc.Id=15 
+i=16 dfivar.Id=64 itf=0.00000 dtivar.Id=66 itt=0.00000 
+i=16 dfemc.Id=133 capf=2,800.00000 dtemc.Id=134 capt=4,300.00000 
+i=16 dfnc.Id=13 dtnc.Id=14 
+i=17 dfivar.Id=68 itf=0.00000 dtivar.Id=70 itt=0.00000 
+i=17 dfemc.Id=140 capf=3,000.00000 dtemc.Id=141 capt=3,000.00000 
+i=17 dfnc.Id=15 dtnc.Id=14 
+i=18 dfivar.Id=72 itf=0.00000 dtivar.Id=74 itt=0.00000 
+i=18 dfemc.Id=147 capf=600.00000 dtemc.Id=148 capt=585.00000 
+i=18 dfnc.Id=15 dtnc.Id=11 
+i=19 dfivar.Id=76 itf=0.00000 dtivar.Id=78 itt=0.00000 
+i=19 dfemc.Id=154 capf=3,400.00000 dtemc.Id=155 capt=3,400.00000 
+i=19 dfnc.Id=13 dtnc.Id=12 
+i=20 dfivar.Id=80 itf=0.00000 dtivar.Id=82 itt=0.00000 
+i=20 dfemc.Id=161 capf=3,000.00000 dtemc.Id=162 capt=3,000.00000 
+i=20 dfnc.Id=15 dtnc.Id=10 
+i=21 dfivar.Id=84 itf=0.00000 dtivar.Id=86 itt=0.00000 
+i=21 dfemc.Id=168 capf=400.00000 dtemc.Id=169 capt=400.00000 
+i=21 dfnc.Id=15 dtnc.Id=11 
+i=22 dfivar.Id=88 itf=0.00000 dtivar.Id=90 itt=0.00000 
+i=22 dfemc.Id=175 capf=5,000.00000 dtemc.Id=176 capt=5,000.00000 
+i=22 dfnc.Id=15 dtnc.Id=12 
+i=23 dfivar.Id=92 itf=0.00000 dtivar.Id=94 itt=0.00000 
+i=23 dfemc.Id=182 capf=1,400.00000 dtemc.Id=183 capt=1,400.00000 
+i=23 dfnc.Id=15 dtnc.Id=9 
+i=24 dfivar.Id=96 itf=0.00000 dtivar.Id=98 itt=0.00000 
+i=24 dfemc.Id=189 capf=600.00000 dtemc.Id=190 capt=590.00000 
+i=24 dfnc.Id=11 dtnc.Id=10 
+i=25 dfivar.Id=100 itf=0.00000 dtivar.Id=102 itt=0.00000 
+i=25 dfemc.Id=196 capf=700.00000 dtemc.Id=197 capt=700.00000 
+i=25 dfnc.Id=10 dtnc.Id=12 
+i=26 dfivar.Id=104 itf=0.00000 dtivar.Id=106 itt=0.00000 
+i=26 dfemc.Id=203 capf=1,640.00000 dtemc.Id=204 capt=1,640.00000 
+i=26 dfnc.Id=10 dtnc.Id=9 
+i=27 dfivar.Id=108 itf=0.00000 dtivar.Id=110 itt=0.00000 
+i=27 dfemc.Id=210 capf=700.00000 dtemc.Id=211 capt=700.00000 
+i=27 dfnc.Id=12 dtnc.Id=9 
+Gens 
+i=0 gvar.Id=112 cst=12.40800 gmc.Id=213 sz=11.99671 
+i=1 gvar.Id=113 cst=0.08800 gmc.Id=215 sz=1,511.42200 
+i=2 gvar.Id=114 cst=174.25248 gmc.Id=217 sz=59.98356 
+i=3 gvar.Id=115 cst=0.08800 gmc.Id=219 sz=15.00000 
+i=4 gvar.Id=116 cst=0.08800 gmc.Id=221 sz=0.00000 
+i=5 gvar.Id=117 cst=5.28000 gmc.Id=223 sz=1,117.36107 
+i=6 gvar.Id=118 cst=2.64000 gmc.Id=225 sz=1,094.60484 
+i=7 gvar.Id=119 cst=203.09134 gmc.Id=227 sz=150.94991 
+i=8 gvar.Id=120 cst=12.40800 gmc.Id=229 sz=119.96712 
+i=9 gvar.Id=121 cst=67.31840 gmc.Id=231 sz=135.97019 
+i=10 gvar.Id=122 cst=0.08800 gmc.Id=233 sz=167.97300 
+i=11 gvar.Id=123 cst=12.43200 gmc.Id=235 sz=1,248.80137 
+i=12 gvar.Id=124 cst=174.25248 gmc.Id=237 sz=17.99507 
+i=13 gvar.Id=125 cst=0.08800 gmc.Id=239 sz=36.00000 
+i=14 gvar.Id=126 cst=0.08800 gmc.Id=241 sz=0.00000 
+i=15 gvar.Id=127 cst=5.28000 gmc.Id=243 sz=346.75316 
+i=16 gvar.Id=128 cst=2.64000 gmc.Id=245 sz=1,457.74778 
+i=17 gvar.Id=129 cst=203.09134 gmc.Id=247 sz=303.31651 
+i=18 gvar.Id=130 cst=12.40800 gmc.Id=249 sz=680.81342 
+i=19 gvar.Id=131 cst=67.31840 gmc.Id=251 sz=140.96910 
+i=20 gvar.Id=132 cst=12.43200 gmc.Id=253 sz=3,589.55466 
+i=21 gvar.Id=133 cst=5.28000 gmc.Id=255 sz=746.53916 
+i=22 gvar.Id=134 cst=0.08800 gmc.Id=257 sz=27.64600 
+i=23 gvar.Id=135 cst=203.09134 gmc.Id=259 sz=1,121.94504 
+i=24 gvar.Id=136 cst=0.08800 gmc.Id=261 sz=0.00000 
+i=25 gvar.Id=137 cst=2.64000 gmc.Id=263 sz=242.85039 
+i=26 gvar.Id=138 cst=12.40800 gmc.Id=265 sz=2,554.30000 
+i=27 gvar.Id=139 cst=67.31840 gmc.Id=267 sz=9,828.84526 
+i=28 gvar.Id=140 cst=0.08800 gmc.Id=269 sz=142.25700 
+i=29 gvar.Id=141 cst=174.25248 gmc.Id=271 sz=99.97260 
+i=30 gvar.Id=142 cst=5.28000 gmc.Id=273 sz=2,028.70997 
+i=31 gvar.Id=143 cst=2.64000 gmc.Id=275 sz=458.63901 
+i=32 gvar.Id=144 cst=203.09134 gmc.Id=277 sz=2,874.77177 
+i=33 gvar.Id=145 cst=0.08800 gmc.Id=279 sz=0.00000 
+i=34 gvar.Id=146 cst=12.40800 gmc.Id=281 sz=37.98959 
+i=35 gvar.Id=147 cst=67.31840 gmc.Id=283 sz=13,989.93304 
+i=36 gvar.Id=148 cst=174.25248 gmc.Id=285 sz=198.94548 
+i=37 gvar.Id=149 cst=0.08800 gmc.Id=287 sz=0.00000 
+i=38 gvar.Id=150 cst=0.08800 gmc.Id=289 sz=0.00000 
+i=39 gvar.Id=151 cst=5.28000 gmc.Id=291 sz=702.07317 
+i=40 gvar.Id=152 cst=2.64000 gmc.Id=293 sz=499.42295 
+i=41 gvar.Id=153 cst=0.08800 gmc.Id=295 sz=71.59600 
+i=42 gvar.Id=154 cst=203.09134 gmc.Id=297 sz=4,638.40914 
+i=43 gvar.Id=155 cst=12.40800 gmc.Id=299 sz=40.98877 
+i=44 gvar.Id=156 cst=67.31840 gmc.Id=301 sz=404.91123 
+i=45 gvar.Id=157 cst=12.43200 gmc.Id=303 sz=1,214.83397 
+i=46 gvar.Id=158 cst=5.28000 gmc.Id=305 sz=1,390.27621 
+i=47 gvar.Id=159 cst=203.09134 gmc.Id=307 sz=353.46451 
+i=48 gvar.Id=160 cst=0.08800 gmc.Id=309 sz=0.00000 
+i=49 gvar.Id=161 cst=2.64000 gmc.Id=311 sz=34.30910 
+i=50 gvar.Id=162 cst=67.31840 gmc.Id=313 sz=6,103.66192 
+i=51 gvar.Id=163 cst=12.43200 gmc.Id=315 sz=1,088.95479 
+i=52 gvar.Id=164 cst=174.25248 gmc.Id=317 sz=203.94411 
+i=53 gvar.Id=165 cst=5.28000 gmc.Id=319 sz=542.56671 
+i=54 gvar.Id=166 cst=0.08800 gmc.Id=321 sz=17.03600 
+i=55 gvar.Id=167 cst=203.09134 gmc.Id=323 sz=2,451.75451 
+i=56 gvar.Id=168 cst=0.08800 gmc.Id=325 sz=0.00000 
+i=57 gvar.Id=169 cst=2.64000 gmc.Id=327 sz=172.74348 
+i=58 gvar.Id=170 cst=12.40800 gmc.Id=329 sz=648.42230 
+i=59 gvar.Id=171 cst=59.58920 gmc.Id=331 sz=5,987.78732 
+i=60 gvar.Id=172 cst=0.08800 gmc.Id=333 sz=117.00000 
+i=61 gvar.Id=173 cst=0.08800 gmc.Id=335 sz=1,308.00000 
+i=62 gvar.Id=174 cst=0.08800 gmc.Id=337 sz=658.00000 
+i=63 gvar.Id=175 cst=188.58601 gmc.Id=339 sz=1,156.74641 
+i=64 gvar.Id=176 cst=0.08800 gmc.Id=341 sz=0.00000 
+i=65 gvar.Id=177 cst=5.28000 gmc.Id=343 sz=775.05839 
+i=66 gvar.Id=178 cst=2.64000 gmc.Id=345 sz=128.81955 
+i=67 gvar.Id=179 cst=59.58920 gmc.Id=347 sz=27,637.10440 
+i=68 gvar.Id=180 cst=47.65426 gmc.Id=349 sz=20,894.37395 
+i=69 gvar.Id=181 cst=0.08800 gmc.Id=351 sz=4,329.00000 
+i=70 gvar.Id=182 cst=0.08800 gmc.Id=353 sz=10,787.50000 
+i=71 gvar.Id=183 cst=36.62962 gmc.Id=355 sz=11,413.37219 
+i=72 gvar.Id=184 cst=159.74715 gmc.Id=357 sz=870.35148 
+i=73 gvar.Id=185 cst=0.08800 gmc.Id=359 sz=7,229.00000 
+i=74 gvar.Id=186 cst=188.58601 gmc.Id=361 sz=9,130.32339 
+i=75 gvar.Id=187 cst=0.08800 gmc.Id=363 sz=0.25843 
+i=76 gvar.Id=188 cst=5.28000 gmc.Id=365 sz=6,825.63849 
+i=77 gvar.Id=189 cst=2.64000 gmc.Id=367 sz=13,145.21789 
+i=78 gvar.Id=190 cst=12.40800 gmc.Id=369 sz=1,019.72055 
+i=79 gvar.Id=191 cst=159.74715 gmc.Id=371 sz=535.85315 
+i=80 gvar.Id=192 cst=0.08800 gmc.Id=373 sz=240.07000 
+i=81 gvar.Id=193 cst=188.58601 gmc.Id=375 sz=28.29380 
+i=82 gvar.Id=194 cst=0.08800 gmc.Id=377 sz=0.00000 
+i=83 gvar.Id=195 cst=5.28000 gmc.Id=379 sz=735.81094 
+i=84 gvar.Id=196 cst=2.64000 gmc.Id=381 sz=345.45950 
+i=85 gvar.Id=197 cst=12.40800 gmc.Id=383 sz=589.83836 
+i=86 gvar.Id=198 cst=59.58920 gmc.Id=385 sz=429.90575 
+i=87 gvar.Id=199 cst=47.65426 gmc.Id=387 sz=409.88767 
+i=88 gvar.Id=200 cst=0.08800 gmc.Id=389 sz=6.57120 
+i=89 gvar.Id=201 cst=159.74715 gmc.Id=391 sz=280.92301 
+i=90 gvar.Id=202 cst=0.08800 gmc.Id=393 sz=460.33000 
+i=91 gvar.Id=203 cst=188.58601 gmc.Id=395 sz=70.78448 
+i=92 gvar.Id=204 cst=0.08800 gmc.Id=397 sz=0.00000 
+i=93 gvar.Id=205 cst=5.28000 gmc.Id=399 sz=886.19365 
+i=94 gvar.Id=206 cst=2.64000 gmc.Id=401 sz=1,782.02832 
+i=95 gvar.Id=207 cst=59.58920 gmc.Id=403 sz=11,493.48033 
+i=96 gvar.Id=208 cst=0.08800 gmc.Id=405 sz=13,600.00000 
+i=97 gvar.Id=209 cst=0.08800 gmc.Id=407 sz=11,500.00000 
+i=98 gvar.Id=210 cst=12.43200 gmc.Id=409 sz=52,149.94521 
+i=99 gvar.Id=211 cst=159.74715 gmc.Id=411 sz=989.72877 
+i=100 gvar.Id=212 cst=0.08800 gmc.Id=413 sz=2,641.00000 
+i=101 gvar.Id=213 cst=0.08800 gmc.Id=415 sz=0.00000 
+i=102 gvar.Id=214 cst=5.28000 gmc.Id=417 sz=193.06199 
+i=103 gvar.Id=215 cst=2.64000 gmc.Id=419 sz=1,450.72296 
+i=104 gvar.Id=216 cst=59.58920 gmc.Id=421 sz=3,723.18378 
+i=105 gvar.Id=217 cst=47.65426 gmc.Id=423 sz=854.76575 
+i=106 gvar.Id=218 cst=0.08800 gmc.Id=425 sz=238.00000 
+i=107 gvar.Id=219 cst=0.08800 gmc.Id=427 sz=292.00000 
+i=108 gvar.Id=220 cst=36.62962 gmc.Id=429 sz=195.94630 
+i=109 gvar.Id=221 cst=159.74715 gmc.Id=431 sz=323.91123 
+i=110 gvar.Id=222 cst=0.08800 gmc.Id=433 sz=114.00000 
+i=111 gvar.Id=223 cst=188.58601 gmc.Id=435 sz=159.96493 
+i=112 gvar.Id=224 cst=0.08800 gmc.Id=437 sz=0.00000 
+i=113 gvar.Id=225 cst=2.64000 gmc.Id=439 sz=2,539.03482 
+i=114 gvar.Id=226 cst=59.58920 gmc.Id=441 sz=989.78301 
+i=115 gvar.Id=227 cst=159.74715 gmc.Id=443 sz=310.91479 
+i=116 gvar.Id=228 cst=0.08800 gmc.Id=445 sz=86.60000 
+i=117 gvar.Id=229 cst=188.58601 gmc.Id=447 sz=11.99737 
+i=118 gvar.Id=230 cst=0.08800 gmc.Id=449 sz=0.00000 
+i=119 gvar.Id=231 cst=2.64000 gmc.Id=451 sz=531.79039 
+i=120 gvar.Id=232 cst=59.58920 gmc.Id=453 sz=8,449.94755 
+i=121 gvar.Id=233 cst=47.65426 gmc.Id=455 sz=4,606.73753 
+i=122 gvar.Id=234 cst=0.08800 gmc.Id=457 sz=38.00000 
+i=123 gvar.Id=235 cst=12.43200 gmc.Id=459 sz=485.53397 
+i=124 gvar.Id=236 cst=0.08800 gmc.Id=461 sz=507.00000 
+i=125 gvar.Id=237 cst=188.58601 gmc.Id=463 sz=4,085.10444 
+i=126 gvar.Id=238 cst=0.08800 gmc.Id=465 sz=0.00000 
+i=127 gvar.Id=239 cst=5.28000 gmc.Id=467 sz=5,723.58281 
+i=128 gvar.Id=240 cst=2.64000 gmc.Id=469 sz=1,702.88316 
+i=129 gvar.Id=241 cst=59.58920 gmc.Id=471 sz=434.90466 
+i=130 gvar.Id=242 cst=0.08800 gmc.Id=473 sz=34,226.90000 
+i=131 gvar.Id=243 cst=0.08800 gmc.Id=475 sz=76.30030 
+i=132 gvar.Id=244 cst=2.64000 gmc.Id=477 sz=1,076.49306 
+i=133 gvar.Id=245 cst=4,000.00000 gmc.Id=479 sz=728.19139 
+i=134 gvar.Id=246 cst=4,000.00000 gmc.Id=481 sz=13,407.77840 
+i=135 gvar.Id=247 cst=4,000.00000 gmc.Id=483 sz=5,974.75316 
+i=136 gvar.Id=248 cst=4,000.00000 gmc.Id=485 sz=4,706.39284 
+i=137 gvar.Id=249 cst=4,000.00000 gmc.Id=487 sz=678.93911 
+i=138 gvar.Id=250 cst=4,000.00000 gmc.Id=489 sz=1,819.11094 
+i=139 gvar.Id=251 cst=4,000.00000 gmc.Id=491 sz=2,144.54665 
+i=140 gvar.Id=252 cst=4,000.00000 gmc.Id=493 sz=927.75000 
+i=141 gvar.Id=253 cst=4,000.00000 gmc.Id=495 sz=3,388.00000 
+i=142 gvar.Id=254 cst=4,000.00000 gmc.Id=497 sz=15,056.00000 
+i=143 gvar.Id=255 cst=4,000.00000 gmc.Id=499 sz=2,696.75000 
+i=144 gvar.Id=256 cst=4,000.00000 gmc.Id=501 sz=1,449.25000 
+i=145 gvar.Id=257 cst=4,000.00000 gmc.Id=503 sz=10,274.75000 
+i=146 gvar.Id=258 cst=4,000.00000 gmc.Id=505 sz=8,072.00000 
+i=147 gvar.Id=259 cst=4,000.00000 gmc.Id=507 sz=58,429.00000 
+i=148 gvar.Id=260 cst=4,000.00000 gmc.Id=509 sz=44,020.00000 
+Zones 
+i=1 dcdef.Id=0 -dem=-578.99886 
+i=2 dcdef.Id=1 -dem=-1,551.33671 
+i=3 dcdef.Id=2 -dem=-1,828.86808 
+i=4 dcdef.Id=3 -dem=-5,095.26587 
+i=5 dcdef.Id=4 -dem=-11,434.14529 
+i=6 dcdef.Id=5 -dem=-621.00118 
+i=7 dcdef.Id=6 -dem=-4,013.60897 
+i=8 dcdef.Id=7 -dem=-755.20000 
+i=9 dcdef.Id=8 -dem=-3,073.20000 
+i=10 dcdef.Id=9 -dem=-14,231.60000 
+i=11 dcdef.Id=10 -dem=-2,450.40000 
+i=12 dcdef.Id=11 -dem=-1,281.00000 
+i=13 dcdef.Id=12 -dem=-9,133.20000 
+i=14 dcdef.Id=13 -dem=-7,018.40000 
+i=15 dcdef.Id=14 -dem=-53,363.60000 
+i=16 dcdef.Id=15 -dem=-39,940.00000 
+Link2 
+i=0 dfivar.Id=0 itf=0.00000 dtivar.Id=2 itt=0.00000 
+i=0 dfemc.Id=21 capf=3,300.00000 dtemc.Id=22 capt=3,300.00000 
+i=0 dfnc.Id=0 dtnc.Id=1 
+i=0 Skip=21 i=0 Skip=22 
+i=1 dfivar.Id=4 itf=0.00000 dtivar.Id=6 itt=0.00000 
+i=1 dfemc.Id=28 capf=3,500.00000 dtemc.Id=29 capt=3,500.00000 
+i=1 dfnc.Id=1 dtnc.Id=2 
+i=1 Skip=28 i=1 Skip=29 
+i=2 dfivar.Id=8 itf=0.00000 dtivar.Id=10 itt=0.00000 
+i=2 dfemc.Id=35 capf=6,500.00000 dtemc.Id=36 capt=6,500.00000 
+i=2 dfnc.Id=2 dtnc.Id=3 
+i=2 Skip=35 i=2 Skip=36 
+i=3 dfivar.Id=12 itf=0.00000 dtivar.Id=14 itt=0.00000 
+i=3 dfemc.Id=42 capf=10,000.00000 dtemc.Id=43 capt=10,000.00000 
+i=3 dfnc.Id=3 dtnc.Id=4 
+i=3 Skip=42 i=3 Skip=43 
+i=4 dfivar.Id=16 itf=0.00000 dtivar.Id=18 itt=0.00000 
+i=4 dfemc.Id=49 capf=6,000.00000 dtemc.Id=50 capt=5,200.00000 
+i=4 dfnc.Id=4 dtnc.Id=6 
+i=4 Skip=49 i=4 Skip=50 
+i=5 dfivar.Id=20 itf=0.00000 dtivar.Id=22 itt=0.00000 
+i=5 dfemc.Id=56 capf=3,500.00000 dtemc.Id=57 capt=3,500.00000 
+i=5 dfnc.Id=4 dtnc.Id=5 
+i=5 Skip=56 i=5 Skip=57 
+i=6 dfivar.Id=24 itf=0.00000 dtivar.Id=26 itt=0.00000 
+i=6 dfemc.Id=63 capf=2,200.00000 dtemc.Id=64 capt=2,200.00000 
+i=6 dfnc.Id=1 dtnc.Id=3 
+i=7 dfivar.Id=28 itf=0.00000 dtivar.Id=30 itt=0.00000 
+i=7 dfemc.Id=70 capf=500.00000 dtemc.Id=71 capt=500.00000 
+i=7 dfnc.Id=3 dtnc.Id=8 
+i=8 dfivar.Id=32 itf=0.00000 dtivar.Id=34 itt=0.00000 
+i=8 dfemc.Id=77 capf=450.00000 dtemc.Id=78 capt=80.00000 
+i=8 dfnc.Id=1 dtnc.Id=7 
+i=9 dfivar.Id=36 itf=0.00000 dtivar.Id=38 itt=0.00000 
+i=9 dfemc.Id=84 capf=1,000.00000 dtemc.Id=85 capt=1,000.00000 
+i=9 dfnc.Id=6 dtnc.Id=12 
+i=10 dfivar.Id=40 itf=0.00000 dtivar.Id=42 itt=0.00000 
+i=10 dfemc.Id=91 capf=1,400.00000 dtemc.Id=92 capt=1,400.00000 
+i=10 dfnc.Id=3 dtnc.Id=9 
+i=11 dfivar.Id=44 itf=0.00000 dtivar.Id=46 itt=0.00000 
+i=11 dfemc.Id=98 capf=1,000.00000 dtemc.Id=99 capt=1,000.00000 
+i=11 dfnc.Id=6 dtnc.Id=13 
+i=12 dfivar.Id=48 itf=0.00000 dtivar.Id=50 itt=0.00000 
+i=12 dfemc.Id=105 capf=1,400.00000 dtemc.Id=106 capt=1,400.00000 
+i=12 dfnc.Id=5 dtnc.Id=10 
+i=13 dfivar.Id=52 itf=0.00000 dtivar.Id=54 itt=0.00000 
+i=13 dfemc.Id=112 capf=4,000.00000 dtemc.Id=113 capt=4,000.00000 
+i=13 dfnc.Id=6 dtnc.Id=14 
+i=14 dfivar.Id=56 itf=0.00000 dtivar.Id=58 itt=0.00000 
+i=14 dfemc.Id=119 capf=1,100.00000 dtemc.Id=120 capt=1,100.00000 
+i=14 dfnc.Id=8 dtnc.Id=7 
+i=14 Skip=119 i=14 Skip=120 
+i=15 dfivar.Id=60 itf=0.00000 dtivar.Id=62 itt=0.00000 
+i=15 dfemc.Id=126 capf=1,000.00000 dtemc.Id=127 capt=1,000.00000 
+i=15 dfnc.Id=13 dtnc.Id=15 
+i=16 dfivar.Id=64 itf=0.00000 dtivar.Id=66 itt=0.00000 
+i=16 dfemc.Id=133 capf=2,800.00000 dtemc.Id=134 capt=4,300.00000 
+i=16 dfnc.Id=13 dtnc.Id=14 
+i=17 dfivar.Id=68 itf=0.00000 dtivar.Id=70 itt=0.00000 
+i=17 dfemc.Id=140 capf=3,000.00000 dtemc.Id=141 capt=3,000.00000 
+i=17 dfnc.Id=15 dtnc.Id=14 
+i=18 dfivar.Id=72 itf=0.00000 dtivar.Id=74 itt=0.00000 
+i=18 dfemc.Id=147 capf=600.00000 dtemc.Id=148 capt=585.00000 
+i=18 dfnc.Id=15 dtnc.Id=11 
+i=19 dfivar.Id=76 itf=0.00000 dtivar.Id=78 itt=0.00000 
+i=19 dfemc.Id=154 capf=3,400.00000 dtemc.Id=155 capt=3,400.00000 
+i=19 dfnc.Id=13 dtnc.Id=12 
+i=20 dfivar.Id=80 itf=0.00000 dtivar.Id=82 itt=0.00000 
+i=20 dfemc.Id=161 capf=3,000.00000 dtemc.Id=162 capt=3,000.00000 
+i=20 dfnc.Id=15 dtnc.Id=10 
+i=21 dfivar.Id=84 itf=0.00000 dtivar.Id=86 itt=0.00000 
+i=21 dfemc.Id=168 capf=400.00000 dtemc.Id=169 capt=400.00000 
+i=21 dfnc.Id=15 dtnc.Id=11 
+i=22 dfivar.Id=88 itf=0.00000 dtivar.Id=90 itt=0.00000 
+i=22 dfemc.Id=175 capf=5,000.00000 dtemc.Id=176 capt=5,000.00000 
+i=22 dfnc.Id=15 dtnc.Id=12 
+i=23 dfivar.Id=92 itf=0.00000 dtivar.Id=94 itt=0.00000 
+i=23 dfemc.Id=182 capf=1,400.00000 dtemc.Id=183 capt=1,400.00000 
+i=23 dfnc.Id=15 dtnc.Id=9 
+i=24 dfivar.Id=96 itf=0.00000 dtivar.Id=98 itt=0.00000 
+i=24 dfemc.Id=189 capf=600.00000 dtemc.Id=190 capt=590.00000 
+i=24 dfnc.Id=11 dtnc.Id=10 
+i=25 dfivar.Id=100 itf=0.00000 dtivar.Id=102 itt=0.00000 
+i=25 dfemc.Id=196 capf=700.00000 dtemc.Id=197 capt=700.00000 
+i=25 dfnc.Id=10 dtnc.Id=12 
+i=26 dfivar.Id=104 itf=0.00000 dtivar.Id=106 itt=0.00000 
+i=26 dfemc.Id=203 capf=1,640.00000 dtemc.Id=204 capt=1,640.00000 
+i=26 dfnc.Id=10 dtnc.Id=9 
+i=27 dfivar.Id=108 itf=0.00000 dtivar.Id=110 itt=0.00000 
+i=27 dfemc.Id=210 capf=700.00000 dtemc.Id=211 capt=700.00000 
+i=27 dfnc.Id=12 dtnc.Id=9 
+Gens 
+i=0 gvar.Id=112 cst=12.40800 gmc.Id=213 sz=11.99671 
+i=1 gvar.Id=113 cst=0.08800 gmc.Id=215 sz=1,511.42200 
+i=2 gvar.Id=114 cst=174.25248 gmc.Id=217 sz=59.98356 
+i=3 gvar.Id=115 cst=0.08800 gmc.Id=219 sz=15.00000 
+i=4 gvar.Id=116 cst=0.08800 gmc.Id=221 sz=0.00000 
+i=5 gvar.Id=117 cst=5.28000 gmc.Id=223 sz=1,121.79872 
+i=6 gvar.Id=118 cst=2.64000 gmc.Id=225 sz=1,173.37614 
+i=7 gvar.Id=119 cst=203.09134 gmc.Id=227 sz=150.94991 
+i=8 gvar.Id=120 cst=12.40800 gmc.Id=229 sz=119.96712 
+i=9 gvar.Id=121 cst=67.31840 gmc.Id=231 sz=135.97019 
+i=10 gvar.Id=122 cst=0.08800 gmc.Id=233 sz=167.97300 
+i=11 gvar.Id=123 cst=12.43200 gmc.Id=235 sz=1,248.80137 
+i=12 gvar.Id=124 cst=174.25248 gmc.Id=237 sz=17.99507 
+i=13 gvar.Id=125 cst=0.08800 gmc.Id=239 sz=36.00000 
+i=14 gvar.Id=126 cst=0.08800 gmc.Id=241 sz=0.00000 
+i=15 gvar.Id=127 cst=5.28000 gmc.Id=243 sz=348.13031 
+i=16 gvar.Id=128 cst=2.64000 gmc.Id=245 sz=1,562.65202 
+i=17 gvar.Id=129 cst=203.09134 gmc.Id=247 sz=303.31651 
+i=18 gvar.Id=130 cst=12.40800 gmc.Id=249 sz=680.81342 
+i=19 gvar.Id=131 cst=67.31840 gmc.Id=251 sz=140.96910 
+i=20 gvar.Id=132 cst=12.43200 gmc.Id=253 sz=3,589.55466 
+i=21 gvar.Id=133 cst=5.28000 gmc.Id=255 sz=749.50407 
+i=22 gvar.Id=134 cst=0.08800 gmc.Id=257 sz=27.64600 
+i=23 gvar.Id=135 cst=203.09134 gmc.Id=259 sz=1,121.94504 
+i=24 gvar.Id=136 cst=0.08800 gmc.Id=261 sz=0.00000 
+i=25 gvar.Id=137 cst=2.64000 gmc.Id=263 sz=260.32669 
+i=26 gvar.Id=138 cst=12.40800 gmc.Id=265 sz=2,554.30000 
+i=27 gvar.Id=139 cst=67.31840 gmc.Id=267 sz=9,828.84526 
+i=28 gvar.Id=140 cst=0.08800 gmc.Id=269 sz=142.25700 
+i=29 gvar.Id=141 cst=174.25248 gmc.Id=271 sz=99.97260 
+i=30 gvar.Id=142 cst=5.28000 gmc.Id=273 sz=2,036.76708 
+i=31 gvar.Id=143 cst=2.64000 gmc.Id=275 sz=491.64415 
+i=32 gvar.Id=144 cst=203.09134 gmc.Id=277 sz=2,874.77177 
+i=33 gvar.Id=145 cst=0.08800 gmc.Id=279 sz=0.00000 
+i=34 gvar.Id=146 cst=12.40800 gmc.Id=281 sz=37.98959 
+i=35 gvar.Id=147 cst=67.31840 gmc.Id=283 sz=13,989.93304 
+i=36 gvar.Id=148 cst=174.25248 gmc.Id=285 sz=198.94548 
+i=37 gvar.Id=149 cst=0.08800 gmc.Id=287 sz=0.00000 
+i=38 gvar.Id=150 cst=0.08800 gmc.Id=289 sz=0.00000 
+i=39 gvar.Id=151 cst=5.28000 gmc.Id=291 sz=704.86148 
+i=40 gvar.Id=152 cst=2.64000 gmc.Id=293 sz=535.36304 
+i=41 gvar.Id=153 cst=0.08800 gmc.Id=295 sz=71.59600 
+i=42 gvar.Id=154 cst=203.09134 gmc.Id=297 sz=4,638.40914 
+i=43 gvar.Id=155 cst=12.40800 gmc.Id=299 sz=40.98877 
+i=44 gvar.Id=156 cst=67.31840 gmc.Id=301 sz=404.91123 
+i=45 gvar.Id=157 cst=12.43200 gmc.Id=303 sz=1,214.83397 
+i=46 gvar.Id=158 cst=5.28000 gmc.Id=305 sz=1,395.79775 
+i=47 gvar.Id=159 cst=203.09134 gmc.Id=307 sz=353.46451 
+i=48 gvar.Id=160 cst=0.08800 gmc.Id=309 sz=0.00000 
+i=49 gvar.Id=161 cst=2.64000 gmc.Id=311 sz=36.77810 
+i=50 gvar.Id=162 cst=67.31840 gmc.Id=313 sz=6,103.66192 
+i=51 gvar.Id=163 cst=12.43200 gmc.Id=315 sz=1,088.95479 
+i=52 gvar.Id=164 cst=174.25248 gmc.Id=317 sz=203.94411 
+i=53 gvar.Id=165 cst=5.28000 gmc.Id=319 sz=544.72154 
+i=54 gvar.Id=166 cst=0.08800 gmc.Id=321 sz=17.03600 
+i=55 gvar.Id=167 cst=203.09134 gmc.Id=323 sz=2,451.75451 
+i=56 gvar.Id=168 cst=0.08800 gmc.Id=325 sz=0.00000 
+i=57 gvar.Id=169 cst=2.64000 gmc.Id=327 sz=185.17466 
+i=58 gvar.Id=170 cst=12.40800 gmc.Id=329 sz=648.42230 
+i=59 gvar.Id=171 cst=59.58920 gmc.Id=331 sz=5,987.78732 
+i=60 gvar.Id=172 cst=0.08800 gmc.Id=333 sz=117.00000 
+i=61 gvar.Id=173 cst=0.08800 gmc.Id=335 sz=1,308.00000 
+i=62 gvar.Id=174 cst=0.08800 gmc.Id=337 sz=658.00000 
+i=63 gvar.Id=175 cst=188.58601 gmc.Id=339 sz=1,156.74641 
+i=64 gvar.Id=176 cst=0.08800 gmc.Id=341 sz=0.00000 
+i=65 gvar.Id=177 cst=5.28000 gmc.Id=343 sz=978.85547 
+i=66 gvar.Id=178 cst=2.64000 gmc.Id=345 sz=126.05913 
+i=67 gvar.Id=179 cst=59.58920 gmc.Id=347 sz=27,637.10440 
+i=68 gvar.Id=180 cst=47.65426 gmc.Id=349 sz=20,894.37395 
+i=69 gvar.Id=181 cst=0.08800 gmc.Id=351 sz=4,329.00000 
+i=70 gvar.Id=182 cst=0.08800 gmc.Id=353 sz=10,787.50000 
+i=71 gvar.Id=183 cst=36.62962 gmc.Id=355 sz=11,413.37219 
+i=72 gvar.Id=184 cst=159.74715 gmc.Id=357 sz=870.35148 
+i=73 gvar.Id=185 cst=0.08800 gmc.Id=359 sz=7,229.00000 
+i=74 gvar.Id=186 cst=188.58601 gmc.Id=361 sz=9,130.32339 
+i=75 gvar.Id=187 cst=0.08800 gmc.Id=363 sz=0.00000 
+i=76 gvar.Id=188 cst=5.28000 gmc.Id=365 sz=7,326.20768 
+i=77 gvar.Id=189 cst=2.64000 gmc.Id=367 sz=13,376.97644 
+i=78 gvar.Id=190 cst=12.40800 gmc.Id=369 sz=1,019.72055 
+i=79 gvar.Id=191 cst=159.74715 gmc.Id=371 sz=535.85315 
+i=80 gvar.Id=192 cst=0.08800 gmc.Id=373 sz=240.07000 
+i=81 gvar.Id=193 cst=188.58601 gmc.Id=375 sz=28.29380 
+i=82 gvar.Id=194 cst=0.08800 gmc.Id=377 sz=0.00000 
+i=83 gvar.Id=195 cst=5.28000 gmc.Id=379 sz=861.10903 
+i=84 gvar.Id=196 cst=2.64000 gmc.Id=381 sz=444.29852 
+i=85 gvar.Id=197 cst=12.40800 gmc.Id=383 sz=589.83836 
+i=86 gvar.Id=198 cst=59.58920 gmc.Id=385 sz=429.90575 
+i=87 gvar.Id=199 cst=47.65426 gmc.Id=387 sz=409.88767 
+i=88 gvar.Id=200 cst=0.08800 gmc.Id=389 sz=6.57120 
+i=89 gvar.Id=201 cst=159.74715 gmc.Id=391 sz=280.92301 
+i=90 gvar.Id=202 cst=0.08800 gmc.Id=393 sz=460.33000 
+i=91 gvar.Id=203 cst=188.58601 gmc.Id=395 sz=70.78448 
+i=92 gvar.Id=204 cst=0.08800 gmc.Id=397 sz=0.00000 
+i=93 gvar.Id=205 cst=5.28000 gmc.Id=399 sz=961.39917 
+i=94 gvar.Id=206 cst=2.64000 gmc.Id=401 sz=1,589.96682 
+i=95 gvar.Id=207 cst=59.58920 gmc.Id=403 sz=11,493.48033 
+i=96 gvar.Id=208 cst=0.08800 gmc.Id=405 sz=13,600.00000 
+i=97 gvar.Id=209 cst=0.08800 gmc.Id=407 sz=11,500.00000 
+i=98 gvar.Id=210 cst=12.43200 gmc.Id=409 sz=52,149.94521 
+i=99 gvar.Id=211 cst=159.74715 gmc.Id=411 sz=989.72877 
+i=100 gvar.Id=212 cst=0.08800 gmc.Id=413 sz=2,641.00000 
+i=101 gvar.Id=213 cst=0.08800 gmc.Id=415 sz=0.00000 
+i=102 gvar.Id=214 cst=5.28000 gmc.Id=417 sz=180.00479 
+i=103 gvar.Id=215 cst=2.64000 gmc.Id=419 sz=1,352.60745 
+i=104 gvar.Id=216 cst=59.58920 gmc.Id=421 sz=3,723.18378 
+i=105 gvar.Id=217 cst=47.65426 gmc.Id=423 sz=854.76575 
+i=106 gvar.Id=218 cst=0.08800 gmc.Id=425 sz=238.00000 
+i=107 gvar.Id=219 cst=0.08800 gmc.Id=427 sz=292.00000 
+i=108 gvar.Id=220 cst=36.62962 gmc.Id=429 sz=195.94630 
+i=109 gvar.Id=221 cst=159.74715 gmc.Id=431 sz=323.91123 
+i=110 gvar.Id=222 cst=0.08800 gmc.Id=433 sz=114.00000 
+i=111 gvar.Id=223 cst=188.58601 gmc.Id=435 sz=159.96493 
+i=112 gvar.Id=224 cst=0.08800 gmc.Id=437 sz=0.00000 
+i=113 gvar.Id=225 cst=2.64000 gmc.Id=439 sz=2,269.83571 
+i=114 gvar.Id=226 cst=59.58920 gmc.Id=441 sz=989.78301 
+i=115 gvar.Id=227 cst=159.74715 gmc.Id=443 sz=310.91479 
+i=116 gvar.Id=228 cst=0.08800 gmc.Id=445 sz=86.60000 
+i=117 gvar.Id=229 cst=188.58601 gmc.Id=447 sz=11.99737 
+i=118 gvar.Id=230 cst=0.08800 gmc.Id=449 sz=0.00000 
+i=119 gvar.Id=231 cst=2.64000 gmc.Id=451 sz=482.02557 
+i=120 gvar.Id=232 cst=59.58920 gmc.Id=453 sz=8,449.94755 
+i=121 gvar.Id=233 cst=47.65426 gmc.Id=455 sz=4,606.73753 
+i=122 gvar.Id=234 cst=0.08800 gmc.Id=457 sz=38.00000 
+i=123 gvar.Id=235 cst=12.43200 gmc.Id=459 sz=485.53397 
+i=124 gvar.Id=236 cst=0.08800 gmc.Id=461 sz=507.00000 
+i=125 gvar.Id=237 cst=188.58601 gmc.Id=463 sz=4,085.10444 
+i=126 gvar.Id=238 cst=0.08800 gmc.Id=465 sz=0.00000 
+i=127 gvar.Id=239 cst=5.28000 gmc.Id=467 sz=6,195.03657 
+i=128 gvar.Id=240 cst=2.64000 gmc.Id=469 sz=2,380.17444 
+i=129 gvar.Id=241 cst=59.58920 gmc.Id=471 sz=434.90466 
+i=130 gvar.Id=242 cst=0.08800 gmc.Id=473 sz=34,226.90000 
+i=131 gvar.Id=243 cst=0.08800 gmc.Id=475 sz=76.30030 
+i=132 gvar.Id=244 cst=2.64000 gmc.Id=477 sz=1,005.61468 
+i=133 gvar.Id=245 cst=4,000.00000 gmc.Id=479 sz=621.00118 
+i=134 gvar.Id=246 cst=4,000.00000 gmc.Id=481 sz=11,434.14529 
+i=135 gvar.Id=247 cst=4,000.00000 gmc.Id=483 sz=5,095.26587 
+i=136 gvar.Id=248 cst=4,000.00000 gmc.Id=485 sz=4,013.60897 
+i=137 gvar.Id=249 cst=4,000.00000 gmc.Id=487 sz=578.99886 
+i=138 gvar.Id=250 cst=4,000.00000 gmc.Id=489 sz=1,551.33671 
+i=139 gvar.Id=251 cst=4,000.00000 gmc.Id=491 sz=1,828.86808 
+i=140 gvar.Id=252 cst=4,000.00000 gmc.Id=493 sz=755.20000 
+i=141 gvar.Id=253 cst=4,000.00000 gmc.Id=495 sz=3,073.20000 
+i=142 gvar.Id=254 cst=4,000.00000 gmc.Id=497 sz=14,231.60000 
+i=143 gvar.Id=255 cst=4,000.00000 gmc.Id=499 sz=2,450.40000 
+i=144 gvar.Id=256 cst=4,000.00000 gmc.Id=501 sz=1,281.00000 
+i=145 gvar.Id=257 cst=4,000.00000 gmc.Id=503 sz=9,133.20000 
+i=146 gvar.Id=258 cst=4,000.00000 gmc.Id=505 sz=7,018.40000 
+i=147 gvar.Id=259 cst=4,000.00000 gmc.Id=507 sz=53,363.60000 
+i=148 gvar.Id=260 cst=4,000.00000 gmc.Id=509 sz=39,940.00000 
+Coldstart 
+i=0 j=0 smp0=67.31840 smp1=0.08800 
+i=0 j=1 smp0=67.31840 smp1=12.40800 
+i=0 j=2 smp0=67.31840 smp1=12.43200 
+i=0 j=3 smp0=67.31840 smp1=67.31840 
+i=0 j=4 smp0=67.31840 smp1=203.09134 
+i=0 j=5 smp0=67.31840 smp1=5.28000 
+i=0 j=6 smp0=67.31840 smp1=67.31840 
+i=0 j=7 smp0=59.58920 smp1=59.58920 
+i=0 j=8 smp0=59.58920 smp1=47.65426 
+i=0 j=9 smp0=0.08800 smp1=0.08800 
+i=0 j=10 smp0=4,000.00000 smp1=4,000.00000 
+i=0 j=11 smp0=159.74715 smp1=159.74715 
+i=0 j=12 smp0=59.58920 smp1=59.58920 
+i=0 j=13 smp0=59.58920 smp1=59.58920 
+i=0 j=14 smp0=12.43200 smp1=12.43200 
+i=0 j=15 smp0=47.65426 smp1=47.65426 
+i=1 j=0 smp0=67.31840 smp1=0.08800 
+i=1 j=1 smp0=67.31840 smp1=5.28000 
+i=1 j=2 smp0=67.31840 smp1=12.43200 
+i=1 j=3 smp0=67.31840 smp1=67.31840 
+i=1 j=4 smp0=67.31840 smp1=203.09134 
+i=1 j=5 smp0=67.31840 smp1=5.28000 
+i=1 j=6 smp0=67.31840 smp1=67.31840 
+i=1 j=7 smp0=47.65426 smp1=59.58920 
+i=1 j=8 smp0=47.65426 smp1=47.65426 
+i=1 j=9 smp0=0.08800 smp1=0.08800 
+i=1 j=10 smp0=159.74715 smp1=159.74715 
+i=1 j=11 smp0=12.40800 smp1=12.40800 
+i=1 j=12 smp0=59.58920 smp1=59.58920 
+i=1 j=13 smp0=59.58920 smp1=59.58920 
+i=1 j=14 smp0=12.43200 smp1=12.43200 
+i=1 j=15 smp0=47.65426 smp1=47.65426 
+i=2 j=0 smp0=67.31840 smp1=0.08800 
+i=2 j=1 smp0=67.31840 smp1=2.64000 
+i=2 j=2 smp0=67.31840 smp1=12.43200 
+i=2 j=3 smp0=67.31840 smp1=67.31840 
+i=2 j=4 smp0=67.31840 smp1=203.09134 
+i=2 j=5 smp0=67.31840 smp1=5.28000 
+i=2 j=6 smp0=67.31840 smp1=67.31840 
+i=2 j=7 smp0=47.65426 smp1=59.58920 
+i=2 j=8 smp0=47.65426 smp1=2.64000 
+i=2 j=9 smp0=0.08800 smp1=0.08800 
+i=2 j=10 smp0=159.74715 smp1=159.74715 
+i=2 j=11 smp0=12.40800 smp1=12.40800 
+i=2 j=12 smp0=59.58920 smp1=59.58920 
+i=2 j=13 smp0=59.58920 smp1=59.58920 
+i=2 j=14 smp0=12.43200 smp1=12.43200 
+i=2 j=15 smp0=47.65426 smp1=47.65426 
+i=3 j=0 smp0=67.31840 smp1=0.08800 
+i=3 j=1 smp0=67.31840 smp1=5.28000 
+i=3 j=2 smp0=67.31840 smp1=12.43200 
+i=3 j=3 smp0=67.31840 smp1=67.31840 
+i=3 j=4 smp0=67.31840 smp1=67.31840 
+i=3 j=5 smp0=67.31840 smp1=5.28000 
+i=3 j=6 smp0=67.31840 smp1=67.31840 
+i=3 j=7 smp0=47.65426 smp1=59.58920 
+i=3 j=8 smp0=47.65426 smp1=47.65426 
+i=3 j=9 smp0=0.08800 smp1=0.08800 
+i=3 j=10 smp0=5.28000 smp1=5.28000 
+i=3 j=11 smp0=12.40800 smp1=12.40800 
+i=3 j=12 smp0=47.65426 smp1=47.65426 
+i=3 j=13 smp0=59.58920 smp1=59.58920 
+i=3 j=14 smp0=12.43200 smp1=12.43200 
+i=3 j=15 smp0=36.62962 smp1=36.62962 
+i=4 j=0 smp0=67.31840 smp1=0.08800 
+i=4 j=1 smp0=67.31840 smp1=2.64000 
+i=4 j=2 smp0=67.31840 smp1=12.43200 
+i=4 j=3 smp0=67.31840 smp1=12.40800 
+i=4 j=4 smp0=67.31840 smp1=67.31840 
+i=4 j=5 smp0=67.31840 smp1=5.28000 
+i=4 j=6 smp0=67.31840 smp1=67.31840 
+i=4 j=7 smp0=47.65426 smp1=59.58920 
+i=4 j=8 smp0=47.65426 smp1=36.62962 
+i=4 j=9 smp0=0.08800 smp1=0.08800 
+i=4 j=10 smp0=5.28000 smp1=5.28000 
+i=4 j=11 smp0=5.28000 smp1=5.28000 
+i=4 j=12 smp0=12.43200 smp1=12.43200 
+i=4 j=13 smp0=59.58920 smp1=59.58920 
+i=4 j=14 smp0=12.43200 smp1=12.43200 
+i=4 j=15 smp0=5.28000 smp1=5.28000 
+Solved 38 iterations 
+Sub-problem period=Pk rc=0 objective=-2,995,523.66473 
+Solved 35 iterations 
+Sub-problem period=Pl rc=0 objective=-2,050,591.82545 
+Solved 36 iterations 
+Sub-problem period=So rc=0 objective=-1,592,103.04941 
+Solved 39 iterations 
+Sub-problem period=Pu rc=0 objective=-819,585.93455 
+Solved 81 iterations 
+Sub-problem period=Tr rc=0 objective=-595,460.83990 
+Day=1 Sched=Mkt Iter=0 berr=36,153,456.34180 zupb=0.00000 zlwb=-36,153,456.34180 
+LP Variable Id=-1 Iter=0 GB_MC:BatteryTrpv=-238.86519 ev=201 
+LP Variable Id=-1 Iter=1 GB_MC:BatteryPlgv=-371.56807 ev=218 
+LP Variable Id=-1 Iter=2 GB_EA:BatteryTrpv=-235.28221 ev=222 
+LP Variable Id=-1 Iter=3 GB_EA:BatteryPlgv=-365.99455 ev=239 
+LP Variable Id=-1 Iter=4 GB_NW:BatteryTrpv=-235.28221 ev=159 
+LP Variable Id=-1 Iter=5 GB_NW:BatteryPlgv=-365.99455 ev=176 
+LP Variable Id=-1 Iter=6 GB_SC:BatteryTrpv=-234.73941 ev=243 
+LP Variable Id=-1 Iter=7 GB_SC:BatteryPlgv=-365.15020 ev=260 
+LP Variable Id=-1 Iter=8 GB_UN:BatteryTrpv=-231.75298 ev=338 
+LP Variable Id=-1 Iter=9 GB_UN:BatteryPlgv=-360.50463 ev=155 
+LP Variable Id=-1 Iter=10 GB_SP:BatteryTrpv=-228.27668 ev=250 
+LP Variable Id=-1 Iter=11 GB_SP:BatteryPlgv=-355.09706 ev=287 
+LP Variable Id=-1 Iter=12 GB_SH:BatteryTrpv=-224.85253 ev=162 
+LP Variable Id=-1 Iter=13 GB_SH:BatteryPlgv=-349.77060 ev=198 
+LP Variable Id=-1 Iter=14 GB_MC:BatteryPupv=-188.92262 ev=214 
+LP Variable Id=-1 Iter=15 GB_EA:BatteryPupv=-186.08878 ev=235 
+LP Variable Id=-1 Iter=16 GB_SC:BatteryPupv=-186.08878 ev=256 
+LP Variable Id=-1 Iter=17 GB_NW:BatteryPupv=-186.08878 ev=172 
+LP Variable Id=-1 Iter=18 GB_NW:Hydro-pumpTrpv=-185.55074 ev=180 
+LP Variable Id=-1 Iter=19 GB_NW:Hydro-pumpPlgv=-346.36138 ev=184 
+LP Variable Id=-1 Iter=20 GB_NW:Hydro-pumpSogv=-296.88119 ev=188 
+LP Variable Id=-1 Iter=21 GB_UN:BatteryPupv=-183.29745 ev=151 
+LP Variable Id=-1 Iter=22 GB_SP:BatteryPupv=-180.54798 ev=278 
+LP Variable Id=-1 Iter=23 GB_SP:Hydro-pumpTrpv=-180.02597 ev=295 
+LP Variable Id=-1 Iter=24 GB_SP:Hydro-pumpPlgv=-336.04847 ev=303 
+LP Variable Id=-1 Iter=25 GB_SP:Hydro-pumpSogv=-288.04155 ev=312 
+LP Variable Id=-1 Iter=26 GB_SH:BatteryPupv=-177.83976 ev=190 
+LP Variable Id=-1 Iter=27 GB_SH:Hydro-pumpTrpv=-177.32558 ev=207 
+LP Variable Id=-1 Iter=28 GB_SH:Hydro-pumpPlgv=-331.00775 ev=215 
+LP Variable Id=-1 Iter=29 GB_SH:Hydro-pumpSogv=-283.72093 ev=224 
+LP Variable Id=-1 Iter=30 BE:Hydro-pumpTrpv=-160.35290 ev=264 
+LP Variable Id=-1 Iter=31 BE:Hydro-pumpPlgv=-226.01801 ev=268 
+LP Variable Id=-1 Iter=32 BE:Hydro-pumpSogv=-189.30922 ev=272 
+LP Variable Id=-1 Iter=33 IE:Hydro-pumpTrpv=-156.44517 ev=327 
+LP Variable Id=-1 Iter=34 IE:Hydro-pumpPlgv=-292.03099 ev=331 
+LP Variable Id=-1 Iter=35 IE:Hydro-pumpSogv=-184.06568 ev=335 
+LP Variable Id=-1 Iter=36 DE:Hydro-pumpTrpv=-117.47589 ev=285 
+LP Variable Id=-1 Iter=37 DE:Hydro-pumpPlgv=-219.28832 ev=289 
+LP Variable Id=-1 Iter=38 DE:Hydro-pumpSogv=-183.67253 ev=293 
+LP Constraint Id=-1 Iter=39 DE:Hydro-pumpTrpvmc=-29,374.80000 ev=302 ind164=59 
+LP Constraint Id=-1 Iter=40 DE:Hydro-pumpPupvmc=-26,926.90000 ev=298 ind164=59 
+LP Constraint Id=-1 Iter=41 GB_NW:Hydro-pumpTrpvmc=-6,012.00000 ev=197 ind164=59 
+LP Constraint Id=-1 Iter=42 GB_NW:Hydro-pumpPupvmc=-5,511.00000 ev=193 ind164=59 
+LP Constraint Id=-1 Iter=43 DE:Hydro-pumpSogvzc=-3,671.85000 ev=293 ind164=59 
+LP Constraint Id=-1 Iter=44 BE:Hydro-pumpTrpvmc=-3,450.00000 ev=281 ind164=59 
+LP Constraint Id=-1 Iter=45 BE:Hydro-pumpPupvmc=-3,162.50000 ev=277 ind164=59 
+LP Constraint Id=-1 Iter=46 GB_SP:Hydro-pumpTrpvmc=-1,950.00000 ev=330 ind164=59 
+LP Constraint Id=-1 Iter=47 GB_SP:Hydro-pumpPupvmc=-1,787.50000 ev=321 ind164=59 
+LP Constraint Id=-1 Iter=48 DE:Hydro-pumpPkgvzc=-1,223.95000 ev=283 ind164=53 
+LP Constraint Id=-1 Iter=49 GB_SH:Hydro-pumpTrpvmc=-900.00000 ev=242 ind164=53 
+LP Constraint Id=-1 Iter=50 IE:Hydro-pumpTrpvmc=-876.00000 ev=344 ind164=53 
+LP Constraint Id=-1 Iter=51 GB_SH:Hydro-pumpPupvmc=-825.00000 ev=233 ind164=53 
+LP Constraint Id=-1 Iter=52 IE:Hydro-pumpPupvmc=-803.00000 ev=340 ind164=63 
+LP Constraint Id=-1 Iter=53 BE:Hydro-pumpSogvzc=-431.25000 ev=272 ind164=63 
+LP Constraint Id=-1 Iter=54 GB_NW:Hydro-pumpPlgvzc=-357.85714 ev=184 ind164=63 
+LP Constraint Id=-1 Iter=55 GB_MC:BatteryPlgvmc=-168.48114 ev=205 ind164=65 
+LP Constraint Id=-1 Iter=56 GB_SP:Hydro-pumpPlgvzc=-116.07143 ev=303 ind164=65 
+LP Constraint Id=-1 Iter=57 GB_SH:Hydro-pumpSogvzc=-112.50000 ev=224 ind164=65 
+LP Constraint Id=-1 Iter=58 IE:Hydro-pumpSogvzc=-109.50000 ev=335 ind164=65 
+LP Constraint Id=-1 Iter=59 GB_NW:BatteryPlgvmc=-71.44846 ev=163 ind164=65 
+LP Constraint Id=-1 Iter=60 GB_SP:BatteryPlgvmc=-55.73646 ev=258 ind164=65 
+LP Constraint Id=-1 Iter=61 GB_UN:BatteryPlgvmc=-41.35817 ev=347 ind164=65 
+LP Constraint Id=-1 Iter=62 GB_SC:BatteryPlgvmc=-32.50720 ev=247 ind164=65 
+LP Constraint Id=-1 Iter=63 GB_SH:BatteryPlgvmc=-0.75794 ev=170 ind164=65 
+LP Constraint Id=-1 Iter=64 GB_EA:BatteryPlgvmc=-0.18446 ev=226 ind164=65 
+Solved 65 iterations 
+Solved 1 iterations 
+Sub-problem period=Pk rc=0 objective=-2,614,089.06460 
+Solved 5 iterations 
+Sub-problem period=Pl rc=0 objective=-1,506,653.71754 
+Solved 0 iterations 
+Sub-problem period=So rc=0 objective=-1,425,119.68010 
+Solved 17 iterations 
+Sub-problem period=Pu rc=0 objective=-1,402,030.21572 
+Solved 16 iterations 
+Sub-problem period=Tr rc=0 objective=-791,161.73535 
+Day=1 Sched=Mkt Iter=1 berr=1,756,969.34673 zupb=-32,132,432.42545 zlwb=-33,889,401.77218 
+LP Constraint Id=-1 Iter=0 cut1=-1,756,969.34673 ev=156 ind164=65 
+LP Constraint Id=-1 Iter=1 DE:Hydro-pumpPkgvmc=-69,892.15143 ev=293 ind164=111 
+LP Constraint Id=-1 Iter=2 DE:Hydro-pumpSogvmc=-13,505.78381 ev=298 ind164=113 
+LP Constraint Id=-1 Iter=3 IE:Hydro-pumpPupvzc=-4,682.94490 ev=344 ind164=133 
+LP Constraint Id=-1 Iter=4 GB_NW:Hydro-pumpPupvzc=-1,951.28697 ev=197 ind164=0 
+LP Constraint Id=-1 Iter=5 DE:Hydro-pumpPlgvzc=-1,748.50000 ev=289 ind164=45 
+LP Constraint Id=-1 Iter=6 GB_SH:Hydro-pumpPupvzc=-2,405.89295 ev=242 ind164=45 
+LP Constraint Id=-1 Iter=7 GB_SP:Hydro-pumpPupvzc=-1,719.80456 ev=330 ind164=45 
+LP Constraint Id=-1 Iter=8 GB_EA:BatteryPupvzc=-1,667.79037 ev=235 ind164=45 
+LP Constraint Id=-1 Iter=9 GB_SH:BatteryPupvzc=-1,741.83404 ev=190 ind164=48 
+LP Constraint Id=-1 Iter=10 GB_SP:BatteryPupvzc=-1,471.85953 ev=278 ind164=48 
+LP Constraint Id=-1 Iter=11 GB_UN:BatteryPupvzc=-1,268.83964 ev=151 ind164=45 
+LP Constraint Id=-1 Iter=12 GB_NW:BatteryPupvzc=-937.22004 ev=172 ind164=25 
+LP Constraint Id=-1 Iter=13 GB_MC:BatterySogvzc=-357.33571 ev=205 ind164=25 
+LP Constraint Id=-1 Iter=14 GB_MC:BatteryPupvzc=-186.05674 ev=214 ind164=25 
+LP Constraint Id=-1 Iter=15 GB_NW:BatterySogvzc=-104.19567 ev=163 ind164=25 
+LP Constraint Id=-1 Iter=16 GB_SP:BatterySogvzc=-81.28233 ev=258 ind164=25 
+LP Constraint Id=-1 Iter=17 GB_SC:BatterySogvzc=-75.40899 ev=247 ind164=23 
+LP Constraint Id=-1 Iter=18 GB_UN:BatterySogvzc=-60.31400 ev=347 ind164=23 
+LP Constraint Id=-1 Iter=19 GB_SC:BatteryPupvzc=-46.67109 ev=256 ind164=23 
+LP Constraint Id=-1 Iter=20 GB_SH:BatterySogvzc=-1.10533 ev=170 ind164=115 
+LP Constraint Id=-1 Iter=21 GB_EA:BatterySogvzc=-0.26900 ev=226 ind164=115 
+Solved 22 iterations 
+Solved 0 iterations 
+Sub-problem period=Pk rc=0 objective=-2,147,477.58441 
+Solved 5 iterations 
+Sub-problem period=Pl rc=0 objective=-1,972,497.87665 
+Solved 3 iterations 
+Sub-problem period=So rc=0 objective=-1,225,130.28975 
+Solved 10 iterations 
+Sub-problem period=Pu rc=0 objective=-1,144,806.03974 
+Day=1 Sched=Mkt Iter=2 berr=1,048,719.53277 zupb=-32,939,535.34673 zlwb=-33,988,254.87950 
+LP Constraint Id=-1 Iter=0 cut2=-1,048,719.53277 ev=161 ind164=115 
+LP Constraint Id=-1 Iter=1 GB_SP:BatteryPupvmc=-5,749.17248 ev=190 ind164=43 
+LP Constraint Id=-1 Iter=2 GB_EA:BatteryPupvmc=-5,577.18387 ev=330 ind164=0 
+LP Constraint Id=-1 Iter=3 GB_SH:BatteryPupvmc=-5,832.56289 ev=235 ind164=43 
+LP Constraint Id=-1 Iter=4 GB_UN:BatteryPupvmc=-5,477.95633 ev=278 ind164=0 
+LP Constraint Id=-1 Iter=5 GB_NW:BatteryPupvmc=-5,083.19999 ev=151 ind164=0 
+LP Constraint Id=-1 Iter=6 GB_MC:BatteryPupvmc=-4,269.84699 ev=172 ind164=0 
+LP Constraint Id=-1 Iter=7 GB_SC:BatteryPupvmc=-4,192.65104 ev=214 ind164=0 
+LP Constraint Id=-1 Iter=8 GB_SP:Hydro-pumpPupvmc=-3,671.31829 ev=242 ind164=43 
+LP Constraint Id=-1 Iter=9 DE:Hydro-pumpPupvzc=-3,184.88018 ev=302 ind164=0 
+LP Constraint Id=-1 Iter=10 GB_MC:BatteryPlgvmc=-168.48114 ev=205 ind164=0 
+LP Constraint Id=-1 Iter=11 GB_NW:BatteryPlgvmc=-71.44846 ev=163 ind164=0 
+LP Constraint Id=-1 Iter=12 GB_SP:BatteryPlgvmc=-55.73646 ev=258 ind164=0 
+LP Constraint Id=-1 Iter=13 GB_UN:BatteryPlgvmc=-41.35817 ev=347 ind164=0 
+LP Constraint Id=-1 Iter=14 GB_SC:BatteryPlgvmc=-32.50720 ev=247 ind164=0 
+LP Constraint Id=-1 Iter=15 GB_SH:BatteryPlgvmc=-0.75794 ev=170 ind164=0 
+LP Constraint Id=-1 Iter=16 GB_EA:BatteryPlgvmc=-0.18446 ev=226 ind164=0 
+Solved 17 iterations 
+Solved 0 iterations 
+Sub-problem period=Pl rc=0 objective=-1,828,054.72625 
+Solved 3 iterations 
+Sub-problem period=So rc=0 objective=-1,446,500.03274 
+Solved 11 iterations 
+Sub-problem period=Pu rc=0 objective=-960,348.31213 
+Day=1 Sched=Mkt Iter=3 berr=342,809.96619 zupb=-33,224,730.40808 zlwb=-33,567,540.37428 
+LP Constraint Id=-1 Iter=0 cut3=-342,809.96619 ev=166 ind164=0 
+LP Constraint Id=-1 Iter=1 DE:Hydro-pumpSogvzc=-763.95155 ev=293 ind164=115 
+Solved 2 iterations 
+Solved 1 iterations 
+Sub-problem period=Pl rc=0 objective=-1,771,754.56846 
+Solved 0 iterations 
+Sub-problem period=So rc=0 objective=-1,478,349.52334 
+Solved 3 iterations 
+Sub-problem period=Pu rc=0 objective=-997,277.67245 
+Day=1 Sched=Mkt Iter=4 berr=243,798.61089 zupb=-33,268,455.04370 zlwb=-33,512,253.65458 
+LP Constraint Id=-1 Iter=0 cut4=-243,798.61090 ev=169 ind164=60 
+LP Constraint Id=-1 Iter=1 cut0=-810,902.34727 ev=293 ind164=0 
+LP Constraint Id=-1 Iter=2 GB_NW:Hydro-pumpPupvzc=-354.40407 ev=242 ind164=45 
+LP Constraint Id=-1 Iter=3 DE:Hydro-pumpPupvzc=-336.41346 ev=166 ind164=38 
+Solved 4 iterations 
+Solved 1 iterations 
+Sub-problem period=Pl rc=0 objective=-1,831,972.54406 
+Solved 0 iterations 
+Sub-problem period=So rc=0 objective=-1,503,271.35451 
+Solved 4 iterations 
+Sub-problem period=Pu rc=0 objective=-862,156.21569 
+Day=1 Sched=Mkt Iter=5 berr=51,482.63672 zupb=-33,491,342.00705 zlwb=-33,542,824.64377 
+LP Constraint Id=-1 Iter=0 cut5=-51,482.63672 ev=174 ind164=35 
+LP Constraint Id=-1 Iter=1 BE:Hydro-pumpPupvmc=-219.97099 ev=166 ind164=35 
+LP Constraint Id=-1 Iter=2 GB_SP:Hydro-pumpPupvzc=-90.94305 ev=214 ind164=38 
+Solved 3 iterations 
+Solved 0 iterations 
+Sub-problem period=Pl rc=0 objective=-1,820,664.74481 
+Solved 0 iterations 
+Sub-problem period=So rc=0 objective=-1,512,469.56388 
+Solved 5 iterations 
+Sub-problem period=Pu rc=0 objective=-860,695.55468 
+Day=1 Sched=Mkt Iter=6 berr=20,003.99538 zupb=-33,493,012.66580 zlwb=-33,513,016.66118 
+LP Constraint Id=-1 Iter=0 cut6=-20,003.99538 ev=177 ind164=0 
+Solved 1 iterations 
+Solved 0 iterations 
+Sub-problem period=Pl rc=0 objective=-1,821,352.14572 
+Solved 0 iterations 
+Sub-problem period=So rc=0 objective=-1,501,020.58525 
+Solved 5 iterations 
+Sub-problem period=Pu rc=0 objective=-873,842.91745 
+Day=1 Sched=Mkt Iter=7 berr=7,054.41811 zupb=-33,494,669.62884 zlwb=-33,501,724.04695 
+Solved 2 iterations 
+Sub-problem period=Pk rc=0 objective=-2,164,532.77573 
+Solved 2 iterations 
+Sub-problem period=Pl rc=0 objective=-1,822,599.67624 
+Solved 2 iterations 
+Sub-problem period=So rc=0 objective=-1,511,353.40250 
+Solved 0 iterations 
+Sub-problem period=Pu rc=0 objective=-873,842.91745 
+Solved 0 iterations 
+Sub-problem period=Tr rc=0 objective=-791,161.73535 
+Day=1 Sched=Bal Iter=0 berr=33,606,564.04668 zupb=0.00000 zlwb=-33,606,564.04668 
+LP Variable Id=-1 Iter=0 GB_MC:BatteryTrpv=-237.87445 ev=201 
+LP Variable Id=-1 Iter=1 GB_MC:BatteryPlgv=-370.02692 ev=218 
+LP Variable Id=-1 Iter=2 GB_SC:BatteryTrpv=-234.30633 ev=243 
+LP Variable Id=-1 Iter=3 GB_SC:BatteryPlgv=-364.47652 ev=260 
+LP Variable Id=-1 Iter=4 GB_EA:BatteryTrpv=-234.30633 ev=222 
+LP Variable Id=-1 Iter=5 GB_EA:BatteryPlgv=-364.47652 ev=239 
+LP Variable Id=-1 Iter=6 GB_NW:BatteryTrpv=-234.30633 ev=159 
+LP Variable Id=-1 Iter=7 GB_NW:BatteryPlgv=-364.47652 ev=176 
+LP Variable Id=-1 Iter=8 GB_UN:BatteryTrpv=-230.79174 ev=338 
+LP Variable Id=-1 Iter=9 GB_UN:BatteryPlgv=-359.00937 ev=155 
+LP Variable Id=-1 Iter=10 GB_SP:BatteryTrpv=-227.32986 ev=250 
+LP Variable Id=-1 Iter=11 GB_SP:BatteryPlgv=-353.62423 ev=287 
+LP Variable Id=-1 Iter=12 GB_NW:Hydro-pumpTrpv=-184.57487 ev=180 
+LP Variable Id=-1 Iter=13 GB_NW:Hydro-pumpPlgv=-344.53975 ev=184 
+LP Variable Id=-1 Iter=14 GB_NW:Hydro-pumpSogv=-295.31979 ev=188 
+LP Variable Id=-1 Iter=15 GB_SP:Hydro-pumpTrpv=-179.07915 ev=295 
+LP Variable Id=-1 Iter=16 GB_SP:Hydro-pumpPlgv=-334.28108 ev=303 
+LP Variable Id=-1 Iter=17 GB_SP:Hydro-pumpSogv=-286.52664 ev=312 
+LP Variable Id=-1 Iter=18 GB_SH:BatteryPugv=-164.99849 ev=187 
+LP Variable Id=-1 Iter=19 GB_SH:Hydro-pumpPugv=-164.99849 ev=232 
+LP Variable Id=-1 Iter=20 IE:Hydro-pumpTrpv=-152.87883 ev=327 
+LP Variable Id=-1 Iter=21 IE:Hydro-pumpPlgv=-285.37381 ev=331 
+LP Variable Id=-1 Iter=22 IE:Hydro-pumpSogv=-178.35953 ev=335 
+LP Variable Id=-1 Iter=23 GB_NW:Hydro-pumpPugv=-126.39687 ev=192 
+LP Variable Id=-1 Iter=24 BE:Hydro-pumpTrpv=-123.88596 ev=264 
+LP Variable Id=-1 Iter=25 BE:Hydro-pumpPlgv=-226.01801 ev=268 
+LP Variable Id=-1 Iter=26 BE:Hydro-pumpSogv=-189.30922 ev=272 
+LP Variable Id=-1 Iter=27 GB_SP:Hydro-pumpPugv=-122.63340 ev=320 
+LP Variable Id=-1 Iter=28 IE:Hydro-pumpPugv=-118.90635 ev=339 
+LP Variable Id=-1 Iter=29 DE:Hydro-pumpTrpv=-115.59689 ev=285 
+LP Variable Id=-1 Iter=30 DE:Hydro-pumpPlgv=-215.78086 ev=289 
+LP Variable Id=-1 Iter=31 DE:Hydro-pumpSogv=-180.66614 ev=293 
+LP Variable Id=-1 Iter=32 BE:Hydro-pumpPugv=-83.70126 ev=276 
+LP Variable Id=-1 Iter=33 DE:Hydro-pumpPugv=-79.20479 ev=297 
+LP Variable Id=-1 Iter=34 GB_MC:BatteryPupv=-44.62897 ev=214 
+LP Variable Id=-1 Iter=35 GB_SC:BatteryPupv=-43.95954 ev=256 
+LP Variable Id=-1 Iter=36 GB_NW:BatteryPupv=-43.95954 ev=172 
+LP Variable Id=-1 Iter=37 GB_EA:BatteryPupv=-43.95954 ev=235 
+LP Variable Id=-1 Iter=38 GB_UN:BatteryPupv=-43.30015 ev=151 
+LP Variable Id=-1 Iter=39 GB_SP:BatteryPupv=-42.65064 ev=278 
+LP Variable Id=-1 Iter=40 GB_SH:BatteryTrgv=-34.84180 ev=195 
+LP Variable Id=-1 Iter=41 GB_SH:Hydro-pumpTrgv=-34.84180 ev=240 
+LP Constraint Id=-1 Iter=42 DE:Hydro-pumpTrpvmc=-39,819.17333 ev=302 ind164=53 
+LP Constraint Id=-1 Iter=43 DE:Hydro-pumpPugvzc=-27,538.87500 ev=297 ind164=53 
+LP Constraint Id=-1 Iter=44 DE:Hydro-pumpSogvzc=-8,567.65000 ev=293 ind164=53 
+LP Constraint Id=-1 Iter=45 GB_NW:Hydro-pumpTrpvmc=-8,149.60000 ev=197 ind164=53 
+LP Constraint Id=-1 Iter=46 GB_NW:Hydro-pumpPugvzc=-5,636.25000 ev=192 ind164=53 
+LP Constraint Id=-1 Iter=47 GB_NW:Hydro-pumpPupvmc=-5,511.00000 ev=193 ind164=53 
+LP Constraint Id=-1 Iter=48 BE:Hydro-pumpTrpvmc=-4,676.66667 ev=281 ind164=53 
+LP Constraint Id=-1 Iter=49 BE:Hydro-pumpPugvzc=-3,234.37500 ev=276 ind164=53 
+LP Constraint Id=-1 Iter=50 GB_SP:Hydro-pumpTrpvmc=-2,643.33333 ev=330 ind164=53 
+LP Constraint Id=-1 Iter=51 GB_SP:Hydro-pumpPugvzc=-1,828.12500 ev=320 ind164=53 
+LP Constraint Id=-1 Iter=52 GB_SP:Hydro-pumpPupvmc=-1,787.50000 ev=321 ind164=53 
+LP Constraint Id=-1 Iter=53 GB_SP:Hydro-pumpPkgvzc=-2,031.25000 ev=291 ind164=65 
+LP Constraint Id=-1 Iter=54 GB_SH:Hydro-pumpPkgvzc=-1,350.00000 ev=203 ind164=65 
+LP Constraint Id=-1 Iter=55 IE:Hydro-pumpTrpvmc=-1,187.46667 ev=344 ind164=65 
+LP Constraint Id=-1 Iter=56 BE:Hydro-pumpSogvzc=-1,006.25000 ev=272 ind164=65 
+LP Constraint Id=-1 Iter=57 GB_NW:Hydro-pumpSogvzc=-751.50000 ev=188 ind164=65 
+LP Constraint Id=-1 Iter=58 IE:Hydro-pumpSogvzc=-450.16667 ev=335 ind164=63 
+LP Constraint Id=-1 Iter=59 IE:Hydro-pumpPugvzc=-383.25000 ev=339 ind164=63 
+LP Constraint Id=-1 Iter=60 GB_SH:Hydro-pumpSopvmc=-300.00000 ev=225 ind164=63 
+LP Constraint Id=-1 Iter=61 GB_SH:Hydro-pumpPkpvmc=-600.00000 ev=208 ind164=63 
+LP Constraint Id=-1 Iter=62 GB_MC:BatteryPlgvmc=-168.48114 ev=205 ind164=63 
+LP Constraint Id=-1 Iter=63 GB_NW:BatteryPlgvmc=-71.44846 ev=163 ind164=63 
+LP Constraint Id=-1 Iter=64 GB_SP:BatteryPlgvmc=-55.73646 ev=258 ind164=63 
+LP Constraint Id=-1 Iter=65 GB_UN:BatteryPlgvmc=-41.35817 ev=347 ind164=63 
+LP Constraint Id=-1 Iter=66 GB_SC:BatteryPlgvmc=-32.50720 ev=247 ind164=63 
+LP Constraint Id=-1 Iter=67 GB_SH:BatteryPkgvzc=-13.26400 ev=158 ind164=63 
+LP Constraint Id=-1 Iter=68 GB_SH:BatterySopvmc=-2.45630 ev=182 ind164=63 
+LP Constraint Id=-1 Iter=69 GB_SH:BatteryPkpvmc=-4.05289 ev=165 ind164=63 
+LP Constraint Id=-1 Iter=70 GB_EA:BatteryPlgvmc=-0.18446 ev=226 ind164=63 
+Solved 71 iterations 
+Solved 2 iterations 
+Sub-problem period=Pk rc=0 objective=-2,227,736.69675 
+Solved 2 iterations 
+Sub-problem period=Pl rc=0 objective=-1,770,483.38987 
+Solved 2 iterations 
+Sub-problem period=So rc=0 objective=-1,540,828.84786 
+Solved 25 iterations 
+Sub-problem period=Pu rc=0 objective=-981,130.04263 
+Solved 2 iterations 
+Sub-problem period=Tr rc=0 objective=-785,454.14346 
+Day=1 Sched=Bal Iter=1 berr=422,404.79064 zupb=-33,523,216.30694 zlwb=-33,945,621.09758 
+LP Constraint Id=-1 Iter=0 cut1=-422,404.79064 ev=156 ind164=63 
+LP Constraint Id=-1 Iter=1 BE:Hydro-pumpPupvmc=-2,989.88885 ev=277 ind164=0 
+Solved 2 iterations 
+Solved 2 iterations 
+Sub-problem period=Pl rc=0 objective=-1,682,838.73816 
+Solved 14 iterations 
+Sub-problem period=Pu rc=0 objective=-1,107,189.05002 
+Day=1 Sched=Bal Iter=2 berr=297,792.45459 zupb=-33,538,552.11056 zlwb=-33,836,344.56516 
+LP Constraint Id=-1 Iter=0 cut2=-297,792.45459 ev=161 ind164=0 
+LP Constraint Id=-1 Iter=1 GB_NW:Hydro-pumpPupvzc=-2,130.13259 ev=192 ind164=45 
+LP Constraint Id=-1 Iter=2 GB_SP:Hydro-pumpPupvzc=-1,545.50372 ev=320 ind164=50 
+LP Constraint Id=-1 Iter=3 GB_SP:Hydro-pumpPlgvzc=-208.92857 ev=303 ind164=45 
+LP Constraint Id=-1 Iter=4 GB_SH:Hydro-pumpPlpvzc=-67.03304 ev=208 ind164=45 
+Solved 5 iterations 
+Solved 5 iterations 
+Sub-problem period=Pl rc=0 objective=-1,793,977.95248 
+Solved 0 iterations 
+Sub-problem period=So rc=0 objective=-1,551,554.52270 
+Solved 20 iterations 
+Sub-problem period=Pu rc=0 objective=-854,544.36931 
+Solved 1 iterations 
+Sub-problem period=Tr rc=0 objective=-786,811.93479 
+Day=1 Sched=Bal Iter=3 berr=129,435.30989 zupb=-33,545,448.03839 zlwb=-33,674,883.34828 
+LP Constraint Id=-1 Iter=0 cut3=-129,435.30989 ev=166 ind164=45 
+LP Constraint Id=-1 Iter=1 GB_SP:Hydro-pumpSogvmc=-76.68714 ev=303 ind164=35 
+LP Constraint Id=-1 Iter=2 GB_SH:Hydro-pumpTrgvzc=-54.21175 ev=240 ind164=33 
+LP Constraint Id=-1 Iter=3 GB_SH:BatteryTrgvzc=-61.66916 ev=195 ind164=33 
+LP Constraint Id=-1 Iter=4 GB_SH:BatteryTrpvmc=-65.06345 ev=198 ind164=36 
+LP Constraint Id=-1 Iter=5 GB_SH:BatteryPlpvzc=-3.05283 ev=165 ind164=36 
+LP Constraint Id=-1 Iter=6 GB_SH:BatterySopvzc=-1.10533 ev=158 ind164=36 
+Solved 7 iterations 
+Solved 0 iterations 
+Sub-problem period=Pk rc=0 objective=-2,212,459.39072 
+Solved 0 iterations 
+Sub-problem period=Pl rc=0 objective=-1,793,904.57288 
+Solved 5 iterations 
+Sub-problem period=So rc=0 objective=-1,534,169.58114 
+Solved 25 iterations 
+Sub-problem period=Pu rc=0 objective=-874,625.34812 
+Solved 0 iterations 
+Sub-problem period=Tr rc=0 objective=-788,284.81514 
+Day=1 Sched=Bal Iter=4 berr=80,606.12907 zupb=-33,546,587.61757 zlwb=-33,627,193.74664 
+LP Constraint Id=-1 Iter=0 cut4=-80,606.12907 ev=169 ind164=36 
+LP Constraint Id=-1 Iter=1 GB_SH:BatteryPkpvzc=-693.81254 ev=182 ind164=6 
+LP Constraint Id=-1 Iter=2 GB_SH:Hydro-pumpPkpvzc=-393.81254 ev=225 ind164=16 
+LP Constraint Id=-1 Iter=3 GB_SP:Hydro-pumpPkgvmc=-922.30166 ev=321 ind164=0 
+Solved 4 iterations 
+Solved 0 iterations 
+Sub-problem period=Pk rc=0 objective=-2,166,698.49805 
+Solved 0 iterations 
+Sub-problem period=Pl rc=0 objective=-1,776,951.53934 
+Solved 5 iterations 
+Sub-problem period=So rc=0 objective=-1,563,820.27524 
+Day=1 Sched=Bal Iter=5 berr=48,317.27354 zupb=-33,546,587.61757 zlwb=-33,594,904.89111 
+LP Constraint Id=-1 Iter=0 cut5=-48,317.27354 ev=174 ind164=0 
+LP Constraint Id=-1 Iter=1 GB_SP:Hydro-pumpPupvmc=-856.53827 ev=192 ind164=0 
+Solved 2 iterations 
+Solved 0 iterations 
+Sub-problem period=Pl rc=0 objective=-1,750,809.70694 
+Solved 2 iterations 
+Sub-problem period=So rc=0 objective=-1,563,704.28875 
+Solved 3 iterations 
+Sub-problem period=Pu rc=0 objective=-919,981.85109 
+Solved 0 iterations 
+Sub-problem period=Tr rc=0 objective=-790,506.22286 
+Day=1 Sched=Bal Iter=6 berr=54,335.89991 zupb=-33,549,413.29593 zlwb=-33,603,749.19584 
+LP Constraint Id=-1 Iter=0 cut6=-54,335.89991 ev=177 ind164=35 
+LP Constraint Id=-1 Iter=1 DE:Hydro-pumpPkgvzc=-25,826.81708 ev=283 ind164=16 
+LP Constraint Id=-1 Iter=2 DE:Hydro-pumpPupvzc=-370.57606 ev=277 ind164=63 
+Solved 3 iterations 
+Solved 0 iterations 
+Sub-problem period=Pk rc=0 objective=-2,633,309.97824 
+Solved 5 iterations 
+Sub-problem period=Pl rc=0 objective=-1,653,263.60075 
+Solved 0 iterations 
+Sub-problem period=So rc=0 objective=-1,561,250.45174 
+Solved 11 iterations 
+Sub-problem period=Pu rc=0 objective=-871,084.02384 
+Solved 0 iterations 
+Sub-problem period=Tr rc=0 objective=-790,337.18602 
+Day=1 Sched=Bal Iter=7 berr=92,636.75250 zupb=-33,550,353.14506 zlwb=-33,642,989.89756 
+LP Constraint Id=-1 Iter=0 cut7=-92,636.75250 ev=183 ind164=63 
+LP Constraint Id=-1 Iter=1 DE:Hydro-pumpPkgvmc=-55,006.20747 ev=177 ind164=2 
+LP Constraint Id=-1 Iter=2 GB_SH:BatterySopvmc=-136.42061 ev=165 ind164=33 
+LP Constraint Id=-1 Iter=3 GB_SP:Hydro-pumpPlgvzc=-72.75819 ev=321 ind164=11 
+LP Constraint Id=-1 Iter=4 BE:Hydro-pumpPupvmc=-25.79399 ev=277 ind164=0 
+Solved 5 iterations 
+Solved 0 iterations 
+Sub-problem period=Pk rc=0 objective=-2,166,698.49805 
+Solved 7 iterations 
+Sub-problem period=Pl rc=0 objective=-1,772,905.82875 
+Solved 2 iterations 
+Sub-problem period=So rc=0 objective=-1,542,426.75337 
+Solved 3 iterations 
+Sub-problem period=Pu rc=0 objective=-908,314.43881 
+Solved 0 iterations 
+Sub-problem period=Tr rc=0 objective=-791,088.11145 
+Day=1 Sched=Bal Iter=8 berr=34,406.35457 zupb=-33,552,590.27545 zlwb=-33,586,996.63002 
+LP Constraint Id=-1 Iter=0 cut8=-34,406.35457 ev=186 ind164=3 
+LP Constraint Id=-1 Iter=1 GB_SH:BatteryPkgvmc=-292.83469 ev=162 ind164=17 
+Solved 2 iterations 
+Solved 2 iterations 
+Sub-problem period=Pk rc=0 objective=-2,164,570.60859 
+Solved 2 iterations 
+Sub-problem period=Pl rc=0 objective=-1,775,175.75582 
+Day=1 Sched=Bal Iter=9 berr=46,040.06512 zupb=-33,552,590.27545 zlwb=-33,598,630.34057 
+LP Constraint Id=-1 Iter=0 cut9=-46,040.06512 ev=191 ind164=11 
+LP Constraint Id=-1 Iter=1 cut4=-284.43057 ev=321 ind164=17 
+Solved 2 iterations 
+Solved 0 iterations 
+Sub-problem period=Pk rc=0 objective=-2,165,837.28127 
+Solved 2 iterations 
+Sub-problem period=Pl rc=0 objective=-1,774,952.42153 
+Solved 2 iterations 
+Sub-problem period=So rc=0 objective=-1,541,702.31766 
+Solved 16 iterations 
+Sub-problem period=Pu rc=0 objective=-901,838.10413 
+Solved 0 iterations 
+Sub-problem period=Tr rc=0 objective=-790,921.44304 
+Day=1 Sched=Bal Iter=10 berr=15,783.46445 zupb=-33,552,731.58645 zlwb=-33,568,515.05091 

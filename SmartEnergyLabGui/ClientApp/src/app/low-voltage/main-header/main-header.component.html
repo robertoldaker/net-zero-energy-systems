@@ -1,0 +1,54 @@
+<div class="main-header">
+
+    <span style="float: right">
+        <img src="/assets/images/bath-uni-logo (white).png" style="height: 40px; margin-right: 20px; vertical-align: middle;"/>
+        <!-- search -->
+        <span style="margin-right: 20px; vertical-align: top;"  title="search">
+            <input [hidden]="!searchService.isShown" [ngClass]="{ headerSearch: true, withAutoComplete: autoCompleteOpen}" type="text" placeholder="Search for substation" [matAutocomplete]="auto" #searchInput [(ngModel)]="searchStr"/>
+            <button *ngIf="!searchService.isShown" mat-icon-button aria-label="Search" (click)="showSearch(true)">
+                <mat-icon>search</mat-icon>
+            </button>
+            <button *ngIf="searchService.isShown" mat-icon-button aria-label="Search" (click)="showSearch(false)">
+                <mat-icon>close</mat-icon>
+            </button>
+            <mat-autocomplete #auto (optionSelected)="searchOptionSelected($event)" (opened)="autoCompleteOpened()" (closed)="autoCompleteClosed()">
+                <mat-option *ngFor="let option of searchOptions" [value]="option.name">
+                  {{option.name}}
+                </mat-option>
+            </mat-autocomplete>
+        </span>   
+        <!-- settings -->
+        <button mat-icon-button [matMenuTriggerFor]="settingsMenu" aria-label="Settings" style="margin-right: 20px" title="settings">
+            <mat-icon>settings</mat-icon>
+        </button>    
+        <mat-menu #settingsMenu="matMenu">
+            <button mat-menu-item (click)="runClassificationTool()">
+                <mat-icon>directions_run</mat-icon>
+                <span>Run classification tool</span>
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="mapPowerService.actualDemand()">
+                <mat-icon *ngIf="mapPowerService.isActual">check</mat-icon>
+                <mat-icon *ngIf="!mapPowerService.isActual"></mat-icon>
+                <span>Show actual demand (2016)</span>
+            </button>
+            <button mat-menu-item (click)="mapPowerService.predictedDemand()">
+                <mat-icon *ngIf="mapPowerService.isPredicted">check</mat-icon>
+                <mat-icon *ngIf="!mapPowerService.isPredicted"></mat-icon>
+                <span>Show predicted demand</span>
+            </button>
+        </mat-menu> 
+        <!-- about -->
+        <button mat-icon-button aria-label="About" style="margin-right: 20px" title="about" (click)="showAboutDialog()">
+            <mat-icon>info_outline</mat-icon>
+        </button>
+    </span>
+    <!-- main menu -->
+    <app-main-menu></app-main-menu>
+    <span>{{title}}</span>
+    <span style="margin-left: 60px" class="whiteCheckbox">
+        <mat-checkbox [(ngModel)]="mapDataService.showEVChargers">
+            Show public EV chargers
+        </mat-checkbox>
+    </span>
+</div>

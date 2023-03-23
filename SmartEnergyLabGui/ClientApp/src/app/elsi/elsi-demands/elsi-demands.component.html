@@ -1,0 +1,51 @@
+<div style="height: calc(100vh - 200px); overflow-y: scroll; padding-right: 1rem">
+    <table style="width: 100%;" #table mat-table [dataSource]="tableData" [trackBy]="getId" matSort>
+
+        <!-- Type Column -->
+        <ng-container matColumnDef="zoneStr">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Zone</th>
+            <td mat-cell *matCellDef="let element">{{element.zoneStr.value}}</td>
+        </ng-container>
+
+        <!-- Profile Column -->
+        <ng-container matColumnDef="profileStr">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Profile</th>
+            <td mat-cell *matCellDef="let element">{{element.profileStr.value}}</td>
+        </ng-container>
+
+        <!-- Community renewables Column -->
+        <ng-container matColumnDef="communityRenewables">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Community renewables</th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.communityRenewables" [decimalPlaces]="0" [readOnly]="isReadOnly"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <!-- Two degrees Column -->
+        <ng-container matColumnDef="twoDegrees">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Two degrees</th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.twoDegrees" [decimalPlaces]="0" [readOnly]="isReadOnly"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <!-- Steady progression Column -->
+        <ng-container matColumnDef="steadyProgression">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Steady progression</th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.steadyProgression" [decimalPlaces]="0" [readOnly]="isReadOnly"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <!-- Consumer evolution  Column -->
+        <ng-container matColumnDef="consumerEvolution">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Consumer evolution</th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.consumerEvolution" [decimalPlaces]="0" [readOnly]="isReadOnly"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+</div>

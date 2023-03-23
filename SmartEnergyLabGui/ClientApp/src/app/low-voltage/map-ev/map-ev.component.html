@@ -1,0 +1,4 @@
+<!-- vehicle charging stations -->
+<app-map-marker #chargingAppMapMarkers *ngFor="let markerOption of chargingMarkerOptions" [markerOption]="markerOption" (markerClickedEvent)="chargerMarkerClicked($event, markerOption.id)">
+    <app-charging-info-window></app-charging-info-window>
+</app-map-marker>

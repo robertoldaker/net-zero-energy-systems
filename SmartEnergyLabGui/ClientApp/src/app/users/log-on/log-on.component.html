@@ -1,0 +1,23 @@
+<app-dialog-header [dialogRef]="dialogRef">Log on</app-dialog-header>
+<div mat-dialog-content id="content">
+    <form [formGroup]="form">
+        <div>
+            <mat-form-field>
+                <mat-label>Email</mat-label>
+                <input matInput placeholder="Enter email" formControlName="email" [type]="'email'">
+                <mat-error>{{getError('email')}}</mat-error>    
+            </mat-form-field>
+        </div>
+        <div>
+            <mat-form-field>
+                <mat-label>Password</mat-label>
+                <input matInput placeholder="Enter password" formControlName="password" [type]="'password'">
+                <mat-error>{{getError('password')}}</mat-error>    
+            </mat-form-field>    
+        </div>
+    </form>
+</div>
+<app-dialog-footer [dialogRef]="dialogRef" (onOk)="logon()">
+</app-dialog-footer>
+
+

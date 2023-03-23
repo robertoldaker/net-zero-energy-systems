@@ -1,0 +1,342 @@
+<div class="parent">
+    <table class="main">
+        <thead class="main">
+            <tr class="row1">
+                <th class="sticky col1" style="padding-right: 30px" colspan="3" rowspan="2">
+                    <app-elsi-day-control (valueChanged)="dayChanged($event)"></app-elsi-day-control>
+                </th>
+                <ng-container *ngIf="d!==null">
+                    <th colspan="5" class="sticky day right borderRight"><b>Day {{d.day}}</b><span>&nbsp;({{service.elsiScenarioInfo.get(d.scenario)}},&nbsp;{{d.season}})</span></th>
+                </ng-container>
+               <td></td> 
+            </tr>
+            <tr class="row2">
+                <ng-container *ngIf="d!==null">
+                    <th class="sticky period right">Pk</th>
+                    <th class="sticky period right">Pl</th>
+                    <th class="sticky period right">So</th>
+                    <th class="sticky period right">Pu</th>
+                    <th class="sticky period right borderRight">Tr</th>    
+                </ng-container>
+               <td></td> 
+            </tr>    
+            <tr class="row3">
+                <th class="sticky col1 indentCol1">Hours</th>
+                <th class="sticky col2"></th>
+                <th class="sticky col3"></th>
+                <ng-container  *ngIf="d!==null">
+                    <th class="sticky period right" *ngFor="let r of d.periodResults">{{r.hours}}</th>
+                </ng-container>
+            </tr>
+            <tr class="row4">
+                <th class="sticky" colspan="8">
+                    <div class="header"></div>
+                </th>
+            </tr>
+        </thead>
+        <ng-container *ngIf="d!==null" >
+            <tbody elsiRowExpander [title1]="'Mismatches'" [size]="ElsiRowExpanderSize.Large" #mismatchExpander>
+            </tbody>
+            <tbody *ngIf="isMismatchExpanded()">
+                <tr>
+                    <td class="col1 indentCol1">Market mismatches</td>
+                    <td class="col2"></td>
+                    <td class="col3"></td>
+                    <td class="right" *ngFor="let r of d.mismatches.market">{{r.toExponential(2)}}</td>
+                </tr>
+                <tr>
+                    <td class="col1 indentCol1">Balance mismatches</td>
+                    <td class="col2"></td>
+                    <td class="col3"></td>
+                    <td class="right" *ngFor="let r of d.mismatches.balance">{{r.toExponential(2)}}</td>
+                </tr>
+            </tbody>
+            <!-- Availability -->
+            <tbody elsiRowExpander [title1]="'Availabilities'" [size]="ElsiRowExpanderSize.Large" #availabilityExpander class="oddAvailability">
+            </tbody>
+            <ng-container *ngIf="isAvailabilityExpanded()">
+                <tbody elsiRowExpander [title1]="'Demands'" class="oddAvailability">
+                    <tr *ngFor="let dr of d.availability.demandResults; index as i">
+                        <td class="col1 indentCol1">{{dr.zoneName}}</td>
+                        <td class="col2"></td>
+                        <td class="col3"></td>
+                        <td class="right" *ngFor="let r of d.availability.demandResults[i].demands">{{r.toFixed(0)}}</td>
+                    </tr>
+                </tbody>
+                <tbody elsiRowExpander [title1]="'Generators'" [title2]="'Costs'"  [title3]="'Capacity'" class="oddAvailability">
+                    <tr *ngFor="let gr of d.availability.generatorResults; index as i">
+                        <td class="col1 indentCol1">{{gr.zoneName}}:{{gr.genTypeName}}</td>
+                        <td class="col2 right">£{{gr.cost.toFixed(2)}}</td>
+                        <td class="col3 right borderRight">{{gr.capacity.toFixed(0)}}</td>
+                        <td class="right" *ngFor="let r of d.availability.generatorResults[i].capacities">{{r.toFixed(0)}}</td>
+                    </tr>
+                </tbody>        
+                <tbody elsiRowExpander [title1]="'Stores'" [title2]="'Costs'"  [title3]="'Capacity'" class="oddAvailability">
+                    <tr *ngFor="let sr of d.availability.storeResults; index as i">
+                        <td class="col1 indentCol1">{{sr.zoneName}}:{{sr.genTypeName}}</td>
+                        <td class="col2 right">£{{sr.cost.toFixed(2)}}</td>
+                        <td class="scol3 right borderRight">{{sr.capacity.toFixed(0)}}</td>
+                        <td class="right" *ngFor="let r of d.availability.storeResults[i].capacities">{{r.toFixed(0)}}</td>
+                    </tr>
+                </tbody>        
+                <tbody elsiRowExpander [title1]="'Links'" [title2]="'Costs'"  [title3]="'Capacity'" class="oddAvailability">
+                    <ng-container *ngFor="let lr of d.availability.linkResults; index as i">
+                        <tr>
+                            <td class="col1 indentCol1">{{lr.from.zoneName}}:{{lr.name}}</td>
+                            <td class="col2 right">£{{lr.from.cost.toFixed(2)}}</td>
+                            <td class="col3 right borderRight">{{lr.from.capacity.toFixed(0)}}</td>
+                            <td class="right" *ngFor="let r of d.availability.linkResults[i].from.capacities">{{r.toFixed(0)}}</td>
+                        </tr>    
+                        <tr>
+                            <td class="col1 indentCol1">{{lr.to.zoneName}}:{{lr.name}}</td>
+                            <td class="col2 right">£{{lr.to.cost.toFixed(2)}}</td>
+                            <td class="col3 right borderRight">{{lr.to.capacity.toFixed(0)}}</td>
+                            <td class="right" *ngFor="let r of d.availability.linkResults[i].to.capacities">{{r.toFixed(0)}}</td>
+                        </tr>    
+                    </ng-container>
+                </tbody>        
+            </ng-container>
+            <!-- Market phase -->
+            <tbody elsiRowExpander [title1]="'Market phase'" [size]="ElsiRowExpanderSize.Large" #marketPhaseExpander class="oddMarketPhase">
+            </tbody>
+            <ng-container *ngIf="isMarketPhaseExpanded()">
+                <tbody elsiRowExpander [title1]="'Generators'" [title2]="'Costs'"  [title3]="'Capacity'" class="oddMarketPhase">
+                    <tr *ngFor="let gr of d.market.generatorResults; index as i">
+                        <td class="col1 indentCol1">{{gr.zoneName}}:{{gr.genTypeName}}</td>
+                        <td class="col2 right">£{{gr.cost.toFixed(2)}}</td>
+                        <td class="col3 right borderRight">{{gr.capacity.toFixed(0)}}</td>
+                        <td class="right" *ngFor="let r of d.market.generatorResults[i].capacities">{{r.toFixed(0)}}</td>
+                    </tr>
+                </tbody>        
+                <tbody elsiRowExpander [title1]="'Stores'" [title2]="'Costs'"  [title3]="'Capacity'" class="oddMarketPhase">
+                    <tr *ngFor="let sr of d.market.storeResults; index as i">
+                        <td class="col1 indentCol1">{{sr.zoneName}}:{{sr.genTypeName}}</td>
+                        <td class="col2 right">£{{sr.cost.toFixed(2)}}</td>
+                        <td class="col3 right borderRight">{{sr.capacity.toFixed(0)}}</td>
+                        <td class="right" *ngFor="let r of d.market.storeResults[i].capacities">{{r.toFixed(0)}}</td>
+                    </tr>
+                </tbody>        
+                <tbody elsiRowExpander [title1]="'Links'" [title2]="'Costs'"  [title3]="'Capacity'" class="oddMarketPhase">
+                    <ng-container *ngFor="let lr of d.market.linkResults; index as i">
+                        <tr>
+                            <td class="col1 indentCol1">{{lr.from.zoneName}}:{{lr.name}}</td>
+                            <td class="col2 right">£{{lr.from.cost.toFixed(2)}}</td>
+                            <td class="col3 right borderRight">{{lr.from.capacity.toFixed(0)}}</td>
+                            <td class="right" *ngFor="let r of d.market.linkResults[i].from.capacities">{{r.toFixed(0)}}</td>
+                        </tr>    
+                        <tr>
+                            <td class="col1 indentCol1">{{lr.to.zoneName}}:{{lr.name}}</td>
+                            <td class="col2 right">£{{lr.to.cost.toFixed(2)}}</td>
+                            <td class="col3 right borderRight">{{lr.to.capacity.toFixed(0)}}</td>
+                            <td class="right" *ngFor="let r of d.market.linkResults[i].to.capacities">{{r.toFixed(0)}}</td>
+                        </tr>    
+                    </ng-container>
+                </tbody>
+                <tbody elsiRowExpander [title1]="'Marginal prices (£/MWh)'" class="oddMarketPhase">
+                    <tr *ngFor="let mp of d.market.marginalPrices; index as i">
+                        <td class="col1 indentCol1">{{mp.zoneName}}</td>
+                        <td class="col2 right"></td>
+                        <td class="col3 right borderRight"></td>
+                        <td class="right" *ngFor="let r of d.market.marginalPrices[i].prices">£{{r.toFixed(2)}}</td>
+                    </tr>
+                </tbody>  
+                <tbody elsiRowExpander [title1]="'Store prices'" [title2]="'Costs'"  [title3]="'Capacity'" class="oddMarketPhase">
+                    <tr *ngFor="let sp of d.market.storePrices; index as i">
+                        <td class="col1 indentCol1">{{sp.zoneName}}:{{sp.genTypeName}}{{sp.modeName}}</td>
+                        <td class="col2 right">£{{sp.cost.toFixed(2)}}</td>
+                        <td class="col3 right borderRight">{{sp.capacity.toFixed(0)}}</td>
+                        <td class="right" *ngFor="let r of d.market.storePrices[i].prices">£{{r.toFixed(2)}}</td>
+                    </tr>
+                </tbody>        
+                <tbody elsiRowExpander [title1]="'Link prices'" [title2]="'Costs'"  [title3]="'Capacity'" class="oddMarketPhase">
+                    <ng-container *ngFor="let lp of d.market.linkPrices; index as i">
+                        <tr>
+                            <td class="col1 indentCol1">{{lp.from.zoneName}}:{{lp.name}}</td>
+                            <td class="col2 right">£{{lp.from.cost.toFixed(2)}}</td>
+                            <td class="col3 right borderRight">{{lp.from.capacity.toFixed(0)}}</td>
+                            <td class="right" *ngFor="let r of d.market.linkPrices[i].from.prices">£{{r.toFixed(2)}}</td>
+                        </tr>    
+                        <tr>
+                            <td class="col1 indentCol1">{{lp.to.zoneName}}:{{lp.name}}</td>
+                            <td class="col2 right">£{{lp.to.cost.toFixed(2)}}</td>
+                            <td class="col3 right borderRight">{{lp.to.capacity.toFixed(0)}}</td>
+                            <td class="right" *ngFor="let r of d.market.linkPrices[i].to.prices">£{{r.toFixed(2)}}</td>
+                        </tr>    
+                    </ng-container>
+                </tbody>
+                <tbody elsiRowExpander [title1]="'Zone emmisions (tCo2/hour)'" class="oddMarketPhase">
+                    <tr *ngFor="let sp of d.market.zoneEmissionRates; index as i">
+                        <td class="col1 indentCol1">{{sp.zoneName}}</td>
+                        <td class="col2 right"></td>
+                        <td class="col3 right borderRight"></td>
+                        <td class="right" *ngFor="let r of d.market.zoneEmissionRates[i].rates">{{r.toFixed(1)}}</td>
+                    </tr>
+                </tbody>        
+                <tbody elsiRowExpander [title1]="'Miscelaneous'" class="oddMarketPhase">
+                    <tr>
+                        <td class="col1 indentCol1">Iterations</td>
+                        <td class="col2 right"></td>
+                        <td class="col3 right borderRight"></td>
+                        <td class="right" *ngFor="let r of d.market.miscData.iters">{{r}}</td>
+                    </tr>
+                    <tr>
+                        <td class="col1 indentCol1">Production costs</td>
+                        <td class="col2 right"></td>
+                        <td class="col3 right borderRight"></td>
+                        <td class="right" *ngFor="let r of d.market.miscData.productionCosts">£{{r.toFixed(0)}}</td>
+                    </tr>
+                    <tr>
+                        <td class="col1 indentCol1">Day error</td>
+                        <td class="col2 right"></td>
+                        <td class="col3 right borderRight"></td>
+                        <td class="right">£{{d.market.miscData.dayError.toFixed(0)}}</td>
+                        <td colspan="4"></td>
+                    </tr>
+                </tbody>        
+            </ng-container>
+            <!-- Balance phase -->
+            <tbody elsiRowExpander [title1]="'Balance phase'" [size]="ElsiRowExpanderSize.Large" #balancePhaseExpander class="" class="oddBalancePhase">
+            </tbody>
+            <ng-container *ngIf="isBalancePhaseExpanded()">
+                <tbody elsiRowExpander [title1]="'Generators'" [title2]="'Costs'"  [title3]="'Capacity'"  class=""  class="oddBalancePhase">
+                    <tr *ngFor="let gr of d.balance.generatorResults; index as i">
+                        <td class="col1 indentCol1">{{gr.zoneName}}:{{gr.genTypeName}}</td>
+                        <td class="col2 right">£{{gr.cost.toFixed(2)}}</td>
+                        <td class="col3 right borderRight">{{gr.capacity.toFixed(0)}}</td>
+                        <td class="right" *ngFor="let r of d.balance.generatorResults[i].capacities">{{r.toFixed(0)}}</td>
+                    </tr>
+                </tbody>        
+                <tbody elsiRowExpander [title1]="'Stores'" [title2]="'Costs'"  [title3]="'Capacity'"  class=""  class="oddBalancePhase">
+                    <tr *ngFor="let sr of d.balance.storeResults; index as i">
+                        <td class="col1 indentCol1">{{sr.zoneName}}:{{sr.genTypeName}}</td>
+                        <td class="col2 right">£{{sr.cost.toFixed(2)}}</td>
+                        <td class="col3 right borderRight">{{sr.capacity.toFixed(0)}}</td>
+                        <td class="right" *ngFor="let r of d.balance.storeResults[i].capacities">{{r.toFixed(0)}}</td>
+                    </tr>
+                </tbody>        
+                <tbody elsiRowExpander [title1]="'Links'" [title2]="'Costs'"  [title3]="'Capacity'"  class="oddBalancePhase">
+                    <ng-container *ngFor="let lr of d.balance.linkResults; index as i">
+                        <tr>
+                            <td class="col1 indentCol1">{{lr.from.zoneName}}:{{lr.name}}</td>
+                            <td class="col2 right">£{{lr.from.cost.toFixed(2)}}</td>
+                            <td class="col3 right borderRight">{{lr.from.capacity.toFixed(0)}}</td>
+                            <td class="right" *ngFor="let r of d.balance.linkResults[i].from.capacities">{{r.toFixed(0)}}</td>
+                        </tr>    
+                        <tr>
+                            <td class="col1 indentCol1">{{lr.to.zoneName}}:{{lr.name}}</td>
+                            <td class="col2 right">£{{lr.to.cost.toFixed(2)}}</td>
+                            <td class="col3 right borderRight">{{lr.to.capacity.toFixed(0)}}</td>
+                            <td class="right" *ngFor="let r of d.balance.linkResults[i].to.capacities">{{r.toFixed(0)}}</td>
+                        </tr>    
+                    </ng-container>
+                </tbody>
+                <tbody elsiRowExpander [title1]="'Marginal prices (£/MWh)'"  class="oddBalancePhase">
+                    <tr *ngFor="let mp of d.balance.marginalPrices; index as i">
+                        <td class="col1 indentCol1">{{mp.zoneName}}</td>
+                        <td class="col2 right"></td>
+                        <td class="col3 right borderRight"></td>
+                        <td class="right" *ngFor="let r of d.balance.marginalPrices[i].prices">£{{r.toFixed(2)}}</td>
+                    </tr>
+                </tbody>  
+                <tbody elsiRowExpander [title1]="'Store prices'" [title2]="'Costs'"  [title3]="'Capacity'"  class="oddBalancePhase">
+                    <tr *ngFor="let sp of d.balance.storePrices; index as i">
+                        <td class="col1 indentCol1">{{sp.zoneName}}:{{sp.genTypeName}}{{sp.modeName}}</td>
+                        <td class="col2 right">£{{sp.cost.toFixed(2)}}</td>
+                        <td class="col3 right borderRight">{{sp.capacity.toFixed(0)}}</td>
+                        <td class="right" *ngFor="let r of d.balance.storePrices[i].prices">£{{r.toFixed(2)}}</td>
+                    </tr>
+                </tbody>        
+                <tbody elsiRowExpander [title1]="'Link prices'" [title2]="'Costs'"  [title3]="'Capacity'"  class="oddBalancePhase">
+                    <ng-container *ngFor="let lp of d.balance.linkPrices; index as i">
+                        <tr>
+                            <td class="col1 indentCol1">{{lp.from.zoneName}}:{{lp.name}}</td>
+                            <td class="col2 right">£{{lp.from.cost.toFixed(2)}}</td>
+                            <td class="col3 right borderRight">{{lp.from.capacity.toFixed(0)}}</td>
+                            <td class="right" *ngFor="let r of d.balance.linkPrices[i].from.prices">£{{r.toFixed(2)}}</td>
+                        </tr>    
+                        <tr>
+                            <td class="col1 indentCol1">{{lp.to.zoneName}}:{{lp.name}}</td>
+                            <td class="col2 right">£{{lp.to.cost.toFixed(2)}}</td>
+                            <td class="col3 right borderRight">{{lp.to.capacity.toFixed(0)}}</td>
+                            <td class="right" *ngFor="let r of d.balance.linkPrices[i].to.prices">£{{r.toFixed(2)}}</td>
+                        </tr>    
+                    </ng-container>
+                </tbody>
+                <tbody elsiRowExpander [title1]="'Zone emmisions (tCo2/hour)'" class="oddBalancePhase">
+                    <tr *ngFor="let sp of d.balance.zoneEmissionRates; index as i">
+                        <td class="col1 indentCol1">{{sp.zoneName}}</td>
+                        <td class="col2 right"></td>
+                        <td class="col3 right borderRight"></td>
+                        <td class="right" *ngFor="let r of d.balance.zoneEmissionRates[i].rates">{{r.toFixed(1)}}</td>
+                    </tr>
+                </tbody>        
+                <tbody elsiRowExpander [title1]="'Miscelaneous'"  class="oddBalancePhase">
+                    <tr>
+                        <td class="col1 indentCol1">Iterations</td>
+                        <td class="col2 right"></td>
+                        <td class="col3 right borderRight"></td>
+                        <td class="right" *ngFor="let r of d.balance.miscData.iters">{{r}}</td>
+                    </tr>
+                    <tr>
+                        <td class="col1 indentCol1">Production costs</td>
+                        <td class="col2 right"></td>
+                        <td class="col3 right borderRight"></td>
+                        <td class="right" *ngFor="let r of d.balance.miscData.productionCosts">£{{r.toFixed(0)}}</td>
+                    </tr>
+                    <tr>
+                        <td class="col1 indentCol1">Day error</td>
+                        <td class="col2 right"></td>
+                        <td class="col3 right borderRight"></td>
+                        <td class="right" >£{{d.balance.miscData.dayError.toFixed(0)}}</td>
+                        <td class="" colspan="4"></td>
+                    </tr>
+                    <tr>
+                        <td class="col1 indentCol1">Resched</td>
+                        <td class="col2 right"></td>
+                        <td class="col3 right borderRight"></td>
+                        <td class="right" *ngFor="let r of d.balance.productionCostDiffs.diffs">£{{r.toFixed(0)}}</td>
+                    </tr>
+                </tbody>
+            </ng-container>
+            <!-- Balance mechanism phase -->
+            <tbody elsiRowExpander [title1]="'Balance mechanisms phase'" [size]="ElsiRowExpanderSize.Large" #balanceMechanismsExpander class="oddBalanceMechanism">
+            </tbody>
+            <ng-container *ngIf="isBalanceMechanismsExpanded()">
+                <ng-container *ngFor="let mi of d.balanceMechanism.marketInfo; index as i">
+                    <tbody elsiRowExpander [title1]="mi.marketName + ' BOA'" class="oddBalanceMechanism">
+                        <ng-container *ngFor="let info of mi.info; index as j">
+                            <tr>
+                                <td class="col1 indentCol1">{{info.zoneName}}:{{info.genTypeName}}</td>
+                                <td class="col2 right"></td>
+                                <td class="col3 right borderRight"></td>
+                                <td class="righ" *ngFor="let r of d.balanceMechanism.marketInfo[i].info[j].boa">{{r.toFixed(0)}}</td>
+                            </tr>    
+                        </ng-container>
+                        <tr>
+                            <td class="col1 indentCol1">Loss change</td>
+                            <td class="col2 right"></td>
+                            <td class="col3 right borderRight"></td>
+                            <td class="right" *ngFor="let r of d.balanceMechanism.marketInfo[i].lossChange">{{r.toFixed(0)}}</td>
+                        </tr>  
+                    </tbody>
+                    <tbody elsiRowExpander [title1]="mi.marketName + ' Costs'"  class="oddBalanceMechanism">
+                        <ng-container *ngFor="let info of mi.info; index as j">
+                            <tr>
+                                <td class="col1 indentCol1">{{info.zoneName}}:{{info.genTypeName}}</td>
+                                <td class="col2 right"></td>
+                                <td class="col3 right borderRight"></td>
+                                <td class="right" *ngFor="let r of d.balanceMechanism.marketInfo[i].info[j].costs">£{{r.toFixed(0)}}</td>
+                            </tr>    
+                        </ng-container>
+                        <tr>
+                            <td class="col1 indentCol1">{{mi.marketName}} Total</td>
+                            <td class="col2 right"></td>
+                            <td class="col3 right borderRight"></td>
+                            <td class="right" *ngFor="let r of d.balanceMechanism.marketInfo[i].total">£{{r.toFixed(0)}}</td>
+                        </tr>  
+                    </tbody>
+                </ng-container>
+            </ng-container>
+        </ng-container>
+    </table>
+</div>

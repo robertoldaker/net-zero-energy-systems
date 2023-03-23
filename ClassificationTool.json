@@ -1,0 +1,12 @@
+{
+  "elexonProfile": [
+    233,22,7,5,0,0,0,1
+  ],
+  "substationMount": 0,
+  "transformerRating": 500,
+  "percentIndustrialCustomers": 16,
+  "numberOfFeeders": 3,
+  "percentageHalfHourlyLoad": 0,
+  "totalLength": 1.404,
+  "percentageOverhead": 0
+}

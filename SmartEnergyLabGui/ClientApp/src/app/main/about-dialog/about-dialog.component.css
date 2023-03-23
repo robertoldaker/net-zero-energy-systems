@@ -1,0 +1,41 @@
+div#container {
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+div.version {
+}
+
+div.version #title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+div.version  #description {
+    font-size: 10pt;
+}
+
+div.version  #modification {
+    margin-bottom: 5px;
+}
+
+div.tag {
+    display: inline-block;
+    color: white;
+    border-radius: 10px;
+    padding-top: 4px;
+    padding-bottom: 3px;
+    padding-left: 6px;
+    padding-right: 6px;
+    line-height: 80%;
+    font-size: 7pt;
+    background-color: #333;
+}
+
+div.tag.bug {
+    background-color: darkred;
+}
+
+div.tag.enhancement {
+    background-color: darkseagreen;
+}

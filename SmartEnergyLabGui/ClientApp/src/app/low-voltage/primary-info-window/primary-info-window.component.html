@@ -1,0 +1,32 @@
+<div class="mapInfoWindow">
+    <div class="inlineFlexRow">
+        <img src="/assets/images/primary-substation.png" style="width: 30px">
+        <span>PRIMARY SUBSTATION</span>
+    </div>
+    <table id="table">
+        <tr>
+            <td>Name:</td>
+            <td>{{mapPowerService.SelectedPrimarySubstation?.name}}</td>
+        </tr>
+        <tr>
+            <td>NR:</td>
+            <td>{{mapPowerService.SelectedPrimarySubstation?.nr}}</td>
+        </tr>
+        <tr>
+            <td>Substations:</td>
+            <td>{{mapPowerService.NumberOfDistributionSubstations}}</td>
+        </tr>
+        <tr>
+            <td>Customers:</td>
+            <td>{{mapPowerService.NumberOfCustomers}}</td>
+        </tr>
+        <tr>
+            <td>Number of EVs:</td>
+            <td>{{mapPowerService.NumberOfEVs ? mapPowerService.NumberOfEVs.toFixed(0):''}}</td>
+        </tr>
+        <tr>
+            <td>Number of HPs:</td>
+            <td>{{mapPowerService.NumberOfHPs ? mapPowerService.NumberOfHPs.toFixed(0):''}}</td>
+        </tr>
+    </table>
+</div>

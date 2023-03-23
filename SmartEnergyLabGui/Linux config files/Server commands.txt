@@ -1,0 +1,81 @@
+#
+# Assumes you have a fresh installation of Ubuntu server
+#
+
+# Create user - logged on as root
+adduser roberto
+# add to group sudo
+usermod -aG sudo roberto
+
+#logout and re-login as "roberto"
+# prevent sudo from propting
+sudo visudo
+# then change  "%sudo ALL=(ALL) ALL" => "%sudo ALL=(ALL) NOPASSWD:ALL
+# create installs and websites folders
+mkdir installs
+mkdir websites
+mkdir websites/SmartEnergyLabGui
+
+# set up locale to uk
+sudo localectl set-locale LANG=en_GB.utf8
+# if en_GB not installed then generate it with
+sudo locale-gen en_GB.utf8
+# timezone
+sudo timedatectl set-timezone Europe/London
+
+# Install .net framework
+# (more info here https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu)
+sudo apt-get update; \
+  sudo apt-get install -y apt-transport-https && \
+  sudo apt-get update && \
+  sudo apt-get install -y dotnet-sdk-6.0
+defaul
+# should appear on list of runtime
+dotnet --list-runtimes
+
+#
+# install Nginx
+#
+# more info https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/linux-nginx?view=aspnetcore-2.1&tabs=aspnetcore2x
+sudo apt install nginx
+sudo nano /etc/nginx/sites-available/lv-app.net-zero-energy-systems.org                            # use one from "Server config files"
+sudo ln -s /etc/nginx/sites-available/lv-app.net-zero-energy-systems.org /etc/nginx/sites-enabled/energy # add symbolic link 
+sudo rm /etc/nginx/sites-available/default                                                          # remove default behaviour
+sudo nginx -t                                                                                       # to test configuration
+sudo nginx -s reload                                                                                # to reload config
+
+
+#
+# GO BACK to  development machine
+#
+# use private key instead of password
+ssh-copy-id roberto@<ip address or hostname>
+
+#
+# sFtp autoInstall.sh,SmartEnergyLabGuiApi.service to home directory
+#
+
+#
+# Configure services with port to list on and urls to serve
+# and move to system location
+sudo mv SmartEnergyLabGui.service /etc/systemd/system
+# enable service
+sudo systemctl enable SmartEnergyLabGui.service
+
+# install unzip
+sudo apt install unzip
+
+# edit BuildAndPublishProduction.sh to point to new server then run it
+bash BuildAndPublishProduction.sh
+
+#
+# Should work on http://lv-app.net-zero-energy-systems.org now!
+#
+# GO BACK to server and install certbot
+sudo snap install --classic certbot
+# run certbot to add support for https:
+sudo certbot --nginx -d lv-app.net-zero-energy-systems.org
+# test with https://lv-app.net-zero-energy-systems.org
+
+
+

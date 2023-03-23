@@ -1,0 +1,23 @@
+.mat-column-communityRenewables {
+    text-align: right;
+    width: 15rem;
+}
+
+.mat-column-twoDegrees {
+    text-align: right;
+    width: 15rem;
+}
+
+.mat-column-steadyProgression {
+    text-align: right;
+    width: 15rem;
+}
+
+.mat-column-consumerEvolution {
+    text-align: right;
+    width: 15rem;
+}
+
+.mat-column-profileStr {
+    width: 5rem;
+}

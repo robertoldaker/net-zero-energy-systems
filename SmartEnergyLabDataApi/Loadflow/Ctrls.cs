@@ -1,0 +1,60 @@
+using System.Text.Json.Serialization;
+using SmartEnergyLabDataApi.Data;
+
+namespace SmartEnergyLabDataApi.Loadflow
+{
+     public class Ctrls : DataStore<CtrlWrapper> {
+        public Ctrls(IList<Ctrl> cs, Branches branches)  {
+            foreach( var c in cs) {
+                var key = getLineName(c);
+                var branchWrapper = branches.get(key);
+                var branch = branchWrapper;
+                var ctrl = new CtrlWrapper(c, branch);
+                branch.Ctrl = ctrl;
+                base.add(key,ctrl);
+            }
+        }
+
+        private string getLineName(Ctrl b) {
+            return $"{b.Node1.Code}-{b.Node2.Code}:{b.Code}";
+        }
+
+        // Base
+        public double[]? BaseCVang {get; set; }
+
+        // Boundary xfer
+        public double[]? BoundaryCVang {get; set; }
+
+        public List<CtrlResult> GetCtrlResults() {
+            var results = Objs.Select(m=>new CtrlResult(m)).ToList();
+            return results;
+        }
+    }
+
+    public class CtrlWrapper : ObjectWrapper<Ctrl> {
+        public CtrlWrapper(Ctrl obj, BranchWrapper branchWrapper) : base(obj) {
+            Branch = branchWrapper;            
+            if ( obj.Type == LoadflowCtrlType.QB) {
+                InjMax = Loadflow.PUCONV * Obj.MaxCtrl / branchWrapper.Obj.X;
+            } else if ( obj.Type == LoadflowCtrlType.HVDC) {
+                InjMax = Obj.MaxCtrl;
+            } else {
+                throw new Exception($"Unknown ctrl type found [{obj.Type}]");
+            }
+        }
+
+        // Branch that it controls (cbid
+        public BranchWrapper Branch {get; private set;}
+
+        // Max control injection (injmax)
+        public double InjMax {get; private set; }
+
+        // Component Vang 0=base, 1 per max control (fwd direction)
+        [JsonIgnore()]
+        public double[]? CVang {get; set;} 
+        
+        // Control set point (csp)
+        public double? SetPoint {get; set;}
+
+    }
+}

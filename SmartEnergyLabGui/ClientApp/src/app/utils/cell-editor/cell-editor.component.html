@@ -1,0 +1,23 @@
+<div style="white-space: nowrap; position: relative">
+    <span *ngIf="readOnly; else editableBlock" [ngClass]="{'existing': data.userEdit}">{{value}}</span>
+    <ng-template #editableBlock>
+        <select *ngIf="options; else textEdit" [ngClass]="{'existing': data.userEdit}" [(ngModel)]="data.value" (ngModelChange)="saveSelect($event)">
+            <option *ngFor="let o of options" [value]="o">{{o}}</option>
+        </select>
+        <ng-template #textEdit>
+            <input class="editable" [ngClass]="{'existing': data.userEdit}" type="text" [value]="value" 
+            (focus)="onFocus()" (blur)="onBlur()" #input/>    
+        </ng-template>
+        <div class="editButtons">
+            <div class="save button" [ngClass]="{'hide': !hasFocus}" (click)="save($event)" (mousedown)="mouseDown()">
+                <mat-icon title="Save edit" [inline]="true">done</mat-icon>
+            </div>        
+            <div class="cancel button" [ngClass]="{'hide': !hasFocus}" (click)="cancel($event)" (mousedown)="mouseDown()">
+                <mat-icon title="Cancel edit" [inline]="true">close</mat-icon>
+            </div>    
+        </div>    
+        <div *ngIf="data.userEdit && !hasFocus" class="delete button">
+            <mat-icon (click)="delete()" title="Delete edit" [inline]="true">cancel</mat-icon>
+        </div>
+</ng-template>
+</div>

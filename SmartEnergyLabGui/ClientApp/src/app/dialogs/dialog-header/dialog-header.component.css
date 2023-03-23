@@ -1,0 +1,24 @@
+div.dialogHeader {
+    position: relative;
+    top: -24px;
+    left: -24px;
+    padding-left: 24px;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    background-color: #666;
+    width: calc(100% + 48px);
+    color: white;
+}
+
+.closeIcon {
+    position: absolute;
+    top: 8px;
+    right: 5px;
+    color: #ddd; 
+    cursor: pointer;
+    font-size: 15pt;
+}
+
+.closeIcon:hover {
+    color: white
+}

@@ -1,0 +1,7 @@
+div.title {
+    margin-left: 1.5rem;
+    margin-top: 2rem;
+    padding-bottom: 0.5rem;
+    color: var(--primary-colour);
+    border-bottom: 1px dotted #666
+}

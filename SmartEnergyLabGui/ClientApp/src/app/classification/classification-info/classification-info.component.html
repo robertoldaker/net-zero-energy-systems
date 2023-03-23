@@ -1,0 +1,6 @@
+<div *ngIf="classifications.length>0" style="height: 100%;">
+    <div class="chartHeader" style="align-items: center;">
+        <div style="font-size: 12pt; ">Classifications</div>
+    </div>
+    <app-e-charts-wrapper [options]="chartOptions" (chartInit)="onChartInit($event)" [styles]="{height: 'calc(100% - 42px)', paddingLeft: '1rem'}"></app-e-charts-wrapper>
+</div>

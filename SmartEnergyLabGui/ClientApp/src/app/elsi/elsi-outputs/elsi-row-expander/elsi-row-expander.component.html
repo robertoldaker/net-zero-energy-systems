@@ -1,0 +1,13 @@
+<tr>
+    <td class="col1 clickable" [class]="buttonClass" (click)="toggleExpanded()" [attr.colspan]="this.title2 ? '1' : '2'">
+        <mat-icon style="vertical-align: middle" inline="true">{{icon}}</mat-icon>
+        <span style="vertical-align: middle">{{title1}}</span>
+    </td>
+    <td *ngIf="this.title2" class="col2 right">{{title2}}</td>
+    <td class="col3 right borderRight">{{title3}}</td>
+    <td colspan="5"></td>
+</tr>
+<ng-content *ngIf="expanded">
+
+</ng-content>
+

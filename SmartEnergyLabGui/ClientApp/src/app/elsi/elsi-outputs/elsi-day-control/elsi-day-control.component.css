@@ -1,0 +1,17 @@
+div.dayControl {
+    font-size: 1rem;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+div.dayControl > span {
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+
+.slider {
+    width: 100%
+}
+

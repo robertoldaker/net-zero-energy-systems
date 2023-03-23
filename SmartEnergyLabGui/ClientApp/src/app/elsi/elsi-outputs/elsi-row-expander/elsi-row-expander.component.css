@@ -1,0 +1,18 @@
+.clickable {
+    cursor: pointer;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.small {
+    font-size: 0.8em;
+}
+
+.medium {
+}
+
+.large {
+    font-size: 1.2em
+}

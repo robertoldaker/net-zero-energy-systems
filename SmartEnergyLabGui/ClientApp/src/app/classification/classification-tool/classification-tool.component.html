@@ -1,0 +1,19 @@
+<div style="display: grid; grid-auto-flow: row; height: 100vh; max-height: 100vh; grid-template-rows: auto 1fr;">
+    <main-header title="Substation Classification Tool v1.0"></main-header>
+    <div style="display: grid; grid-auto-flow: column; grid-template-columns: 1fr 500px">
+        <div class="borderRight">
+            <app-classification-tool-input></app-classification-tool-input>
+        </div>
+        <div style="display: grid; grid-auto-flow: row; grid-template-rows: 80px 1fr 1fr">
+            <div class="content borderBottom" style="overflow-y: auto">
+                <app-classification-tool-results></app-classification-tool-results>
+            </div>
+            <div class="borderBottom">
+                <app-classification-tool-load></app-classification-tool-load>
+            </div>
+            <div>
+                <app-classification-tool-cluster-probabilities></app-classification-tool-cluster-probabilities>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,14 @@
+div.inputColumn {
+    padding: 2rem;
+}
+
+div.inputColumn > div.title {
+    font-size: 1rem;
+    color: #333;
+    border-bottom: 1px dotted #999
+}
+
+div.inputColumn > table {
+    margin-top: 1rem;
+    margin-left: 1rem;
+}

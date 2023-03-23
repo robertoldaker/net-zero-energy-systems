@@ -1,0 +1,36 @@
+<app-dialog-header [dialogRef]="dialogRef">Register user</app-dialog-header>
+<div mat-dialog-content id="content">
+    <form [formGroup]="form">
+        <div>
+            <mat-form-field>
+                <mat-label>Email</mat-label>
+                <input matInput placeholder="Enter email" formControlName="email" [type]="'email'" autocomplete="off">
+                <mat-error>{{getError('email')}}</mat-error>    
+            </mat-form-field>
+        </div>
+        <div>
+            <mat-form-field>
+                <mat-label>Name</mat-label>
+                <input matInput placeholder="Enter Name" formControlName="name"  [type]="'text'" >
+                <mat-error>{{getError('name')}}</mat-error>    
+            </mat-form-field>    
+        </div>
+        <div>
+            <mat-form-field>
+                <mat-label>Password</mat-label>
+                <input matInput placeholder="Enter password" formControlName="password" [type]="'password'" autocomplete="new-password">
+                <mat-error>{{getError('password')}}</mat-error>    
+            </mat-form-field>    
+        </div>
+        <div>
+            <mat-form-field>
+                <mat-label>Confirm password</mat-label>
+                <input matInput placeholder="Confirm password" formControlName="confirmPassword" [type]="'password'"  autocomplete="new-password">
+                <mat-error>{{getError('confirmPassword')}}</mat-error>    
+            </mat-form-field>    
+        </div>    
+    </form>
+</div>
+<app-dialog-footer [dialogRef]="dialogRef" (onOk)="save()">
+</app-dialog-footer>
+

@@ -1,0 +1,62 @@
+<app-dialog-header [dialogRef]="dialogRef">Classification tool input parameters</app-dialog-header>
+<div mat-dialog-content id="content">
+    <div id="title">Transformer type</div>
+    <table id="data">
+        <tr>
+            <td>
+                <mat-form-field appearance="fill">
+                    <mat-label>Substation mount</mat-label>
+                    <select matNativeControl [(ngModel)]="input.substationMount">
+                        <option value="0">Ground mounted</option>
+                        <option value="1">Pole mounted</option>
+                    </select>
+                </mat-form-field>    
+            </td>
+            <td>
+                <mat-form-field appearance="fill">
+                    <mat-label>Number of LV feeders</mat-label>
+                    <input [type]="'number'" matInput [(ngModel)]="input.numberOfFeeders" min="0">
+                </mat-form-field>    
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <mat-form-field appearance="fill">
+                    <mat-label>Transformer rating</mat-label>
+                    <input [type]="'number'" matInput [(ngModel)]="input.transformerRating" min="0">
+                </mat-form-field>    
+            </td>
+            <td>
+                <mat-form-field appearance="fill">
+                    <mat-label>Total length</mat-label>
+                    <input [type]="'number'" matInput [(ngModel)]="input.totalLength" min="0">
+                </mat-form-field>                                    
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <mat-form-field appearance="fill">
+                    <mat-label>Percentage industrial customers</mat-label>
+                    <input [type]="'number'" matInput [(ngModel)]="input.percentIndustrialCustomers" min="0" max="100">
+                </mat-form-field>    
+            </td>
+            <td>
+                <mat-form-field appearance="fill">
+                    <mat-label>Percentage overhead</mat-label>
+                    <input [type]="'number'" matInput [(ngModel)]="input.percentageOverhead" min="0" max="100">
+                </mat-form-field>                    
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <mat-form-field appearance="fill">
+                    <mat-label>Percentage half-hourly load</mat-label>
+                    <input [type]="'number'" matInput [(ngModel)]="input.percentageHalfHourlyLoad" min="0" max="100">
+                </mat-form-field>    
+            </td>
+            <td>
+            </td>
+        </tr>
+    </table>
+</div>
+<app-dialog-footer [data]="input" [dialogRef]="dialogRef"></app-dialog-footer>

@@ -1,0 +1,17 @@
+<app-dialog-header [dialogRef]="dialogRef">Smart Energy Tools ({{mode}})</app-dialog-header>
+<div id="container">
+    <div class="version" *ngFor="let version of versions" >
+        <div id="title">Version {{version.name}}</div>
+        <ul style="padding-left: 1rem">
+            <li id="modification" *ngFor="let mod of version.modifications">
+                <div id="description">{{mod.description}}</div>
+                <div style="line-height: 80%">
+                    <div *ngIf="mod.type == ModificationTypeEnum.Bug" class="tag bug">Bug fix</div>
+                    <div *ngIf="mod.type == ModificationTypeEnum.Enhancement" class="tag enhancement">Enhancement</div>    
+                </div>
+            </li>    
+        </ul>
+        <mat-divider style="margin-bottom: 1rem"></mat-divider>
+    </div>
+</div>
+<app-dialog-footer [dialogRef]="dialogRef" [buttons]="DialogFooterButtons.Close"></app-dialog-footer>

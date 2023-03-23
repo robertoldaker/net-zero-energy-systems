@@ -1,0 +1,18 @@
+.mat-column-x {
+    text-align: right;
+}
+
+.mat-column-cap {
+    text-align: right;
+    padding-right: 1rem;
+}
+
+.mat-column-freePower {
+    text-align: right;
+    font-style: italic;
+}
+
+.mat-column-powerFlow {
+    text-align: right;
+    font-style: italic;
+}

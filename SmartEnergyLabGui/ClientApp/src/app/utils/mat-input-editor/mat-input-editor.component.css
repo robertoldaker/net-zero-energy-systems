@@ -1,0 +1,37 @@
+.editable {
+    width: 5rem
+}
+
+.existing {
+    color: green
+}
+
+.button {
+    width: 17px;
+    height: 17px;
+    font-size: 16px;
+    cursor: pointer;
+    float: right;
+}
+
+.delete {
+    color: darkred;
+}
+
+.cancel {
+    color: darkred;
+}
+
+.save {
+    color: green;
+}
+
+.editButtons {
+    float: right;
+}
+
+.hide {
+    color: transparent !important;
+    cursor:default;
+}
+

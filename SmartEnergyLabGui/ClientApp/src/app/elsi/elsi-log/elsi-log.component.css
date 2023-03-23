@@ -1,0 +1,6 @@
+.log {
+    white-space: pre;
+    overflow-y: scroll;
+    padding: 1rem;
+    height: calc(100vh - 480px);
+}

@@ -1,0 +1,29 @@
+<div class="mapInfoWindow">
+    <div class="inlineFlexRow">
+        <img src="/assets/images/vehicle-charging-station.png" style="width: 30px">
+        <span>VEHICLE CHARGING STATION</span>
+    </div>    
+    <table id="table">
+        <tr>
+            <td>Name:</td>
+            <td>{{mapEvService.selectedVehicleChargingStation?.name}}</td>
+        </tr>
+        <tr>
+            <td>Id:</td>
+            <td>{{mapEvService.selectedVehicleChargingStation?.externalId}}</td>
+        </tr>
+    </table>
+    <table id="table">
+        <tr *ngFor="let con of mapEvService.selectedVehicleChargingStation?.connections">
+            <td>{{con.quantity}}x</td>
+            <td>
+                <div>{{con.connectionType.name}}</div>
+                <div>{{con.currentType.name}}</div>
+                <div><b>{{con.powerKw}}kw</b>, {{con.current}}amps, {{con.voltage}}v</div>
+            </td>
+        </tr>
+    </table>
+    <div id="buttonRow">
+        <mat-icon class="iconButton" (click)="edit()" title="edit">edit</mat-icon>
+    </div>
+</div>

@@ -1,0 +1,135 @@
+div.parent {
+    position: relative;
+    overflow-x: scroll;
+    white-space: nowrap;
+    height: calc(100vh - 150px);
+}
+
+table.main {
+    table-layout: fixed;
+    padding-right: 1rem;
+    padding-bottom: 1rem;
+    font-size: 0.8rem;
+    position: relative;
+}
+
+table.main tr:hover {
+    background-color: #ddd;
+    cursor: pointer;
+}
+
+thead.main > tr.row1 > th {
+    top: 0px;
+    padding-top: 20px;
+}
+
+thead.main > tr.row2 > th {
+    top: 57px;
+}
+
+thead.main > tr.row3 > th {
+    top: 88px;
+}
+
+thead.main > tr.row4 > th {
+    top: 110px;
+    z-index: 2;    
+}
+
+div.header {
+    border-top: 1px solid #666;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem
+}
+
+thead.main > tr > th.col1,
+thead.main > tr > th.col2,
+thead.main > tr > th.col3 {
+    z-index: 2;
+}
+
+:host ::ng-deep .sticky {
+    position: sticky;
+    background-color: white;;
+}
+
+:host ::ng-deep .col1 {
+    min-width: 150px;
+    max-width: 150px;
+    left: 0px;
+}
+
+.indentCol1 {
+    padding-left: 1em;
+}
+
+:host ::ng-deep .col2 {
+    min-width: 100px;
+    max-width: 100px;
+    left: 150px;
+}
+
+:host ::ng-deep .col3 {
+    min-width: 200px;
+    max-width: 200px;
+    left: 250px;
+    padding-right: 100px !important;
+}
+
+th.period {
+    min-width: 80px;
+    max-width: 80px; 
+}
+
+th {
+    font-weight: normal;
+}
+
+th.day {
+    font-style: italic;
+}
+
+:host ::ng-deep .right {
+    text-align: right;
+}
+
+td:nth-child(5n+3),
+th:nth-child(5n+3) {
+    padding-right: 10px;
+}
+
+:host ::ng-deep .borderRight {
+    padding-right: 10px;
+}
+
+.oddAvailability {
+    background-color: #FFECB3;
+}
+
+.evenAvailability {
+    background-color: #FFF2CC;
+}
+
+.oddMarketPhase {
+    background-color: #FCE4D6;
+}
+
+.evenMarketPhase {
+    background-color: #FAD8C0;
+}
+
+.oddBalancePhase {
+    background-color: #DDEBF7;
+}
+
+.evenBalancePhase {
+    background-color: #CCE0F2;
+}
+
+.oddBalanceMechanism {
+    background-color: #E2EFDA;
+}
+
+.evenBalanceMechanism {
+    background-color: #D3E8C6;
+}

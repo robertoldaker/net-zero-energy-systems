@@ -1,0 +1,13 @@
+<div style="display: grid; grid-auto-flow: row; height: 100vh; max-height: 100vh; grid-template-rows: auto 1fr;">
+    <main-header title="Low voltage network"></main-header>
+    <div>
+        <as-split direction="horizontal" (dragStart)="splitStart()" (dragEnd)="splitEnd()">
+            <as-split-area [size]="70">
+                <app-map></app-map>
+            </as-split-area>
+            <as-split-area  [size]="30">
+                <app-load-profiles style="height: 100%;"></app-load-profiles>
+            </as-split-area>
+        </as-split>
+    </div>
+</div>

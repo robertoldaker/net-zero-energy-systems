@@ -1,0 +1,36 @@
+.mat-column-efficiency {
+    text-align: right;    
+    padding-right: 5px;
+}
+
+.mat-column-emissionsRate {
+    text-align: right;
+}
+
+.mat-column-forcedDays {
+    text-align: right;
+}
+
+.mat-column-plannedDays {
+    text-align: right;
+}
+
+.mat-column-maintenanceCost {
+    text-align: right;
+}
+
+.mat-column-fuelCost {
+    text-align: right;
+}
+
+.mat-column-warmStart {
+    text-align: right;
+}
+
+.mat-column-wearAndTearStart {
+    text-align: right;
+}
+
+.mat-column-endurance {
+    text-align: right;
+}

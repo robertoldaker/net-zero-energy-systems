@@ -1,0 +1,25 @@
+<div id="container">
+    <table>
+        <tr>
+            <td>
+                <app-mat-input-editor [label]="'EU CO2 (£/tCO2)'" [data]="getCellData('eU_CO2')" [decimalPlaces]="2" [readOnly]="isReadOnly"></app-mat-input-editor>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <app-mat-input-editor [label]="'GB CO2 (£/tCO2)'" [data]="getCellData('gB_CO2')"  [decimalPlaces]="2" [readOnly]="isReadOnly"></app-mat-input-editor>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <app-mat-input-editor [label]="'VLL (£/MWh)'" [data]="getCellData('vll')"  [decimalPlaces]="0" [readOnly]="isReadOnly"></app-mat-input-editor>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <app-mat-input-editor [label]="'GBP to EURO conversion rate'" [data]="getCellData('gbpConv')" [decimalPlaces]="2" [readOnly]="isReadOnly"></app-mat-input-editor>
+            </td>
+        </tr>
+    </table>
+    
+</div>

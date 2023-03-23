@@ -1,0 +1,6 @@
+<map-marker #mapMarker [options]="markerOption.options" (mapClick)="markerClicked($event)">
+    <!-- info window for distribution substations -->
+    <map-info-window #infoWindow>
+        <ng-content></ng-content>
+    </map-info-window>        
+</map-marker>

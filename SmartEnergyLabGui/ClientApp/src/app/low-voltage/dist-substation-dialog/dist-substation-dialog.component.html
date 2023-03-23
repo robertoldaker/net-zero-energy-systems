@@ -1,0 +1,148 @@
+<app-dialog-header [dialogRef]="dialogRef">
+    <img src="/assets/images/distribution-substation.png" style="width: 30px">
+    <span>{{title}}</span>
+</app-dialog-header>
+<div mat-dialog-content id="content">
+    <mat-tab-group mat-align-tabs="start">
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <img src="/assets/images/power-plant.png" class="tabLabel"/>
+                Base Power
+            </ng-template>
+            <table id="data">
+                <tr>
+                    <td>
+                        <mat-form-field appearance="fill">
+                            <mat-label>Substation mount</mat-label>
+                            <select matNativeControl [(ngModel)]="params.mount">
+                                <option *ngFor="let nvp of mountKeys" [ngValue]="nvp.value">{{nvp.name}}</option>
+                            </select>
+                        </mat-form-field>    
+                    </td>
+                    <td>
+                        <mat-form-field appearance="fill">
+                            <mat-label>Number of LV feeders</mat-label>
+                            <input [type]="'number'" matInput [(ngModel)]="params.numberOfFeeders" min="0">
+                        </mat-form-field>    
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <mat-form-field appearance="fill">
+                            <mat-label>Transformer rating</mat-label>
+                            <input [type]="'number'" matInput [(ngModel)]="params.rating" min="0">
+                        </mat-form-field>    
+                    </td>
+                    <td>
+                        <mat-form-field appearance="fill">
+                            <mat-label>Total length</mat-label>
+                            <input [type]="'number'" matInput [(ngModel)]="params.totalLength" min="0">
+                        </mat-form-field>                                    
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <mat-form-field appearance="fill">
+                            <mat-label>Percentage industrial customers</mat-label>
+                            <input [type]="'number'" matInput [(ngModel)]="params.percentIndustrialCustomers" min="0" max="100">
+                        </mat-form-field>    
+                    </td>
+                    <td>
+                        <mat-form-field appearance="fill">
+                            <mat-label>Percentage overhead</mat-label>
+                            <input [type]="'number'" matInput [(ngModel)]="params.percentageOverhead" min="0" max="100">
+                        </mat-form-field>                    
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <mat-form-field appearance="fill">
+                            <mat-label>Percentage half-hourly load</mat-label>
+                            <input [type]="'number'" matInput [(ngModel)]="params.percentageHalfHourlyLoad" min="0" max="100">
+                        </mat-form-field>    
+                    </td>
+                    <td>
+                    </td>
+                </tr>
+            </table>        
+        </mat-tab>
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <img src="/assets/images/charging-station.png" class="tabLabel"/>
+                Vehicle charging
+            </ng-template>
+            <table id="data">
+                <tr>
+                    <td>
+                        <mat-form-field appearance="fill">
+                            <mat-label>Number of home chargers</mat-label>
+                            <input [type]="'number'" matInput [(ngModel)]="chargingParams.numHomeChargers" min="0">
+                        </mat-form-field>    
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <mat-form-field appearance="fill">
+                            <mat-label>Number of Type 1 EVs</mat-label>
+                            <input [type]="'number'" matInput [(ngModel)]="chargingParams.numType1EVs" min="0">
+                        </mat-form-field>    
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <mat-form-field appearance="fill">
+                            <mat-label>Number of Type 2 EVs</mat-label>
+                            <input [type]="'number'" matInput [(ngModel)]="chargingParams.numType2EVs" min="0">
+                        </mat-form-field>    
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <mat-form-field appearance="fill">
+                            <mat-label>Number of Type 3 EVs</mat-label>
+                            <input [type]="'number'" matInput [(ngModel)]="chargingParams.numType3EVs" min="0">
+                        </mat-form-field>    
+                    </td>
+                </tr>
+            </table>
+        </mat-tab>
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <img src="/assets/images/geothermal-energy.png" class="tabLabel"/>
+                Heat pumps
+            </ng-template>
+            <table id="data">
+                <tr>
+                    <td>
+                        <mat-form-field appearance="fill">
+                            <mat-label>Number of Type 1 heat pumps</mat-label>
+                            <input [type]="'number'" matInput [(ngModel)]="heatingParams.numType1HPs" min="0">
+                        </mat-form-field>    
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <mat-form-field appearance="fill">
+                            <mat-label>Number of Type 2 heat pumps</mat-label>
+                            <input [type]="'number'" matInput [(ngModel)]="heatingParams.numType2HPs" min="0">
+                        </mat-form-field>    
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <mat-form-field appearance="fill">
+                            <mat-label>Number of Type 3 heat pumps</mat-label>
+                            <input [type]="'number'" matInput [(ngModel)]="heatingParams.numType3HPs" min="0">
+                        </mat-form-field>    
+                    </td>
+                </tr>
+            </table>
+        </mat-tab>
+    </mat-tab-group>      
+</div>
+<mat-divider></mat-divider>
+<div mat-dialog-actions>
+    <button mat-raised-button color="primary" (click)="save()">OK</button>
+    <button mat-button color="primary" (click)="cancel()">Cancel</button>
+</div>
+

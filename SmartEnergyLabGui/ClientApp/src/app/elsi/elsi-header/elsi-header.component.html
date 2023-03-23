@@ -1,0 +1,15 @@
+<div class="main-header">
+    <app-main-menu></app-main-menu>
+    <span>{{title}}</span> 
+    <span style="float: right;">
+        <img src="/assets/images/bath-uni-logo (white).png" style="height: 40px; margin-right: 20px; vertical-align: middle;"/>
+        <button mat-icon-button aria-label="About" style="margin-right: 20px; vertical-align: middle;" title="about" (click)="showHelpDialog()">
+            <mat-icon>help_outline</mat-icon>
+        </button>
+        <button mat-icon-button aria-label="About" style="margin-right: 20px; vertical-align: middle;" title="about" (click)="showAboutDialog()">
+            <mat-icon>info_outline</mat-icon>
+        </button>
+        <app-user-header></app-user-header>
+    </span>
+</div>
+

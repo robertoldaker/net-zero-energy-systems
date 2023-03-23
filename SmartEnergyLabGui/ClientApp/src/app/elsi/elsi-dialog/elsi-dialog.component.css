@@ -1,0 +1,21 @@
+.numberInput {
+    width: 3rem;
+}
+
+.layout {
+    border-collapse: separate;
+    border-spacing: 1rem 1rem;    
+}
+
+.progressBar {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.datasetIcon {
+    font-size: 14px;
+    width: 18px;
+    height: 18px;
+}

@@ -1,0 +1,69 @@
+<table class="layout">
+    <tr>
+        <td colspan="3">
+            <mat-form-field appearance="fill" [color]="'primary'">
+                <mat-label>Dataset</mat-label>
+                <mat-select [value]="service.dataset?.id" (valueChange)="service.setDataset($event)">
+                    <mat-select-trigger>
+                        {{service.dataset?.name}}
+                    </mat-select-trigger>
+                    <mat-option *ngFor="let ds of datasets" [value]="ds.dataset.id">
+                        <span *ngIf="ds.indent==0">{{ds.dataset.name}}</span>    
+                        <ng-container *ngIf="ds.indent>0">
+                            <mat-icon class="datasetIcon" [ngStyle]="{'margin-right': '0px', 'margin-left': ds.indent +'rem'}">subdirectory_arrow_right</mat-icon><span>{{ds.dataset.name}}</span>
+                        </ng-container>
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-icon class="iconLink" (click)="addDataset()" [title]="'Add a new dataset'">add</mat-icon>
+            <!-- dont allow Default dataset to be edited or deleted-->
+            <ng-container *ngIf="service.dataset?.parent" >
+                <mat-icon class="iconLink" (click)="editDataset()" [title]="'Edit dataset'">edit</mat-icon>
+                <mat-icon class="iconLink" (click)="deleteDataset()" [title]="'Edit dataset'">delete_forever</mat-icon>    
+            </ng-container>
+        </td>
+    <tr>
+        <td colspan="3">
+            <mat-form-field appearance="fill" [color]="'primary'">
+                <mat-label>Scenario</mat-label>
+                <mat-select [value]="service.scenario" (valueChange)="scenarioChanged($event)">
+                    <mat-option *ngFor="let es of service.elsiScenarioInfo.keys" [value]="es">{{service.elsiScenarioInfo.get(es)}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </td>
+    </tr>
+    <tr>        
+        <td>
+            <button mat-raised-button color="primary" (click)="runSingleDay()" [disabled]="!canRun">Run Day</button>
+        </td>
+        <td>
+            <mat-form-field class="numberInput">
+                <mat-label>Day</mat-label>
+                <input matInput [(ngModel)]="day" type="number">
+            </mat-form-field>        
+        </td>
+        <td>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button mat-raised-button color="primary" (click)="runDays()" [disabled]="!canRun">Run Days</button>
+        </td>
+        <td>
+            <mat-form-field class="numberInput">
+                <mat-label>Start day</mat-label>
+                <input matInput [(ngModel)]="startDay" type="number">
+            </mat-form-field>        
+        </td>
+        <td>
+            <mat-form-field class="numberInput">
+                <mat-label>End day</mat-label>
+                <input matInput [(ngModel)]="endDay" type="number">
+            </mat-form-field>        
+        </td>
+    </tr>
+</table>
+<div class="progressBar">
+    <div style="height: 1.2rem">{{progressText}}</div>
+    <mat-progress-bar mode="determinate" [value]="percentComplete"></mat-progress-bar>
+</div>

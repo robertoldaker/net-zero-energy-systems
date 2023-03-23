@@ -1,0 +1,9 @@
+<div class="statusMessage" *ngIf="service.taskState!==undefined">
+    <div class="flexRow">
+        <div><button mat-button color="accent" (click)="closeOrCancel()">{{buttonText}}</button></div>
+        <div style="padding-left: 1rem; flex-grow: 1">
+            <div style="margin-bottom: 4px">{{service.taskState.message}}</div>
+            <div><mat-progress-bar [mode]="'determinate'" [color]="'accent'" [value]="service.taskState.progress"></mat-progress-bar></div>
+        </div>
+    </div>
+</div>

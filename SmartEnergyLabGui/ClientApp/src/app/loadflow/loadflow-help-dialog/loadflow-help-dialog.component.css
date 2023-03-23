@@ -1,0 +1,28 @@
+div#container {
+    overflow-y: auto;
+    max-height: 600px;
+    max-width: 900px;
+    padding-right: 1rem;
+}
+
+h1 {
+    font-size: 1.1rem;
+    color: var(--primary-colour);
+    margin-bottom: 0;
+
+}
+
+h2 {
+    font-size: 0.8rem;
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 0;
+    line-height: 120%;
+}
+
+div.compact {
+    margin-bottom: 0.5rem;
+}
+div.compact > p {
+    margin-bottom:0.2rem;
+}

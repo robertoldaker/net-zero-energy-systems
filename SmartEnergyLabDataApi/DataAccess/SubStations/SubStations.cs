@@ -1,0 +1,258 @@
+﻿using ExcelDataReader;
+using HaloSoft.DataAccess;
+using HaloSoft.EventLogger;
+using NHibernate;
+using NHibernate.Criterion;
+using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Models;
+using System.Diagnostics;
+using System.Text.Json;
+using System.Web;
+
+namespace SmartEnergyLabDataApi.Data
+{
+    public class Substations : DataSet
+    {
+        public Substations(DataAccess da) : base(da)
+        {
+
+        }
+
+        public DataAccess DataAccess
+        {
+            get
+            {
+                return (DataAccess) _dataAccess;
+            }
+        }
+
+        public string LoadDistributionSubstations(IFormFile file)
+        {
+            var loader = new DistributionSubstationLoader(DataAccess);
+            return loader.Load(file);
+        }
+        public void LoadFromSpreadsheet(string geographicalAreaName, IFormFile file)
+        {
+            var gan = DataAccess.Organisations.GetGeographicalArea(geographicalAreaName);
+            if ( gan==null ) {
+                throw new Exception($"Unknow geographical area [{geographicalAreaName}]");
+            }
+            var loader = new SubstationXlsLoader(DataAccess, gan);
+            loader.Load(file);
+        }
+
+        public void LoadPrimarySubstationsFromSpreadsheet(string geographicalAreaName, IFormFile file)
+        {
+            var gan = DataAccess.Organisations.GetGeographicalArea(geographicalAreaName);
+            if (gan == null) {
+                throw new Exception($"Unknow geographical area [{geographicalAreaName}]");
+            }
+            var loader = new PrimarySubstationXlsLoader(DataAccess, gan);
+            loader.Load(file);
+        }
+        public string LoadPrimarySubstations(string geographicalAreaName, IFormFile file)
+        {
+            var gan = DataAccess.Organisations.GetGeographicalArea(geographicalAreaName);
+            if (gan == null) {
+                throw new Exception($"Unknow geographical area [{geographicalAreaName}]");
+            }
+            var loader = new PrimarySubstationLoader(DataAccess, gan);
+            return loader.Load(file);
+        }
+
+
+        public IList<DistributionSubstation> Search(string str, int maxResults) {
+            var q = Session.QueryOver<DistributionSubstation>().
+                Where( m=>m.Name.IsInsensitiveLike(str, MatchMode.Anywhere) || m.ExternalId.IsInsensitiveLike(str));
+            return q.Take(maxResults).List();
+        }
+
+        public void SetSubstationParams(int id, SubstationParams sParams) {
+            var dss = Session.QueryOver<DistributionSubstation>().
+                Where(m=>m.Id == id).Take(1).SingleOrDefault();
+            if ( dss!=null) {
+                if ( dss.ChargingParams==null ) {
+                    dss.ChargingParams = new SubstationChargingParams(dss);
+                }
+                dss.SubstationParams.CopyFieldsFrom(sParams);
+            }
+        }
+        public void SetSubstationChargingParams(int id, SubstationChargingParams sParams) {
+            var dss = Session.QueryOver<DistributionSubstation>().
+                Where(m=>m.Id == id).Take(1).SingleOrDefault();
+            if ( dss!=null) {
+                if ( dss.ChargingParams==null) {
+                    dss.ChargingParams = new SubstationChargingParams(dss);
+                }
+                dss.ChargingParams.CopyFieldsFrom(sParams);
+            }
+        }
+        public void SetSubstationHeatingParams(int id, SubstationHeatingParams sParams) {
+            var dss = Session.QueryOver<DistributionSubstation>().
+                Where(m=>m.Id == id).Take(1).SingleOrDefault();
+            if ( dss!=null) {
+                if ( dss.HeatingParams==null ) {
+                    dss.HeatingParams = new SubstationHeatingParams(dss);
+                }
+                dss.HeatingParams.CopyFieldsFrom(sParams);
+            }
+        }
+
+
+        public void AutoFillGISData(string geographicalAreaName)
+        {
+            var gan = DataAccess.Organisations.GetGeographicalArea(geographicalAreaName);
+            if (gan == null) {
+                throw new Exception($"Unknow geographical area [{geographicalAreaName}]");
+            }
+            var finder = new SubstationGISFinder(DataAccess,gan);
+            finder.Find();
+        }
+
+        #region DistributionSubstations
+        public void Add(DistributionSubstation ds)
+        {
+            Session.Save(ds);
+        }
+        public void Delete(DistributionSubstation ds)
+        {
+            Session.Delete(ds);
+        }
+
+        public DistributionSubstation GetDistributionSubstation(string nr)
+        {
+            return Session.QueryOver<DistributionSubstation>().Where(m => m.NR == nr).Take(1).SingleOrDefault();
+        }
+        public DistributionSubstation GetDistributionSubstationByNRId(string nrId)
+        {
+            return Session.QueryOver<DistributionSubstation>().Where(m => m.NRId == nrId).Take(1).SingleOrDefault();
+        }
+        public DistributionSubstation GetDistributionSubstation(int id)
+        {
+            return Session.QueryOver<DistributionSubstation>().Where(m => m.Id == id).Take(1).SingleOrDefault();
+        }
+
+        public IList<DistributionSubstation> GetDistributionSubstations(DistributionNetworkOperator dno)
+        {
+            PrimarySubstation pss = null;
+            var q = Session.QueryOver<DistributionSubstation>().Left.JoinAlias(m=>m.PrimarySubstation,()=>pss).
+                Where(m => pss.DistributionNetworkOperator == dno);
+            return q.List();
+        }
+
+        public IList<DistributionSubstation> GetDistributionSubstationsByGAId(int gaId)
+        {
+            PrimarySubstation pss = null;
+            var q = Session.QueryOver<DistributionSubstation>().
+                Left.JoinAlias(m=>m.PrimarySubstation,()=>pss).
+                Where(m => pss.GeographicalArea.Id == gaId);
+            return q.List();
+        }
+
+        public IList<DistributionSubstation> GetDistributionSubstations(int primaryId)
+        {
+            var q = Session.QueryOver<DistributionSubstation>().
+                Where(m => m.PrimarySubstation.Id == primaryId);
+            return q.List();
+        }
+
+        public IList<DistributionSubstation> GetDistributionSubstationsWithNoGIS(GeographicalArea ga)
+        {
+            GISData gisData = null;
+            PrimarySubstation pss = null;
+            var q = Session.QueryOver<DistributionSubstation>().
+                Left.JoinAlias(m => m.GISData, () => gisData).
+                Left.JoinAlias(m => m.PrimarySubstation, () => pss).
+                Where(m=>pss.GeographicalArea == ga).
+                Where(m=>gisData.Latitude == 0 && gisData.Longitude == 0);
+
+            return q.List();
+
+        }
+
+        public DistributionSubstation GetDistributionSubstation(GeographicalArea ga, string name)
+        {
+            PrimarySubstation pss = null;
+            var q = Session.QueryOver<DistributionSubstation>().
+                Left.JoinAlias(m => m.PrimarySubstation, () => pss).
+                Where(m => pss.GeographicalArea == ga).
+                Where(m => m.Name.IsInsensitiveLike(name));
+
+            var dss = q.Take(1).SingleOrDefault();
+
+
+
+            return dss;
+
+        }
+
+        public IList<SubstationClassification> GetDistributionSubstationClassifications(int id)
+        {
+            var q = Session.QueryOver<SubstationClassification>().
+                Where(m=>m.DistributionSubstation.Id == id);
+
+            var list = q.List();
+            return list;
+        }
+
+        public void CreateSubstationParams() {
+            var dsss = Session.QueryOver<DistributionSubstation>().Where( m=>m.SubstationParams==null).List();
+            foreach( var dss in dsss) {
+                dss.SubstationParams = new SubstationParams(dss);
+            }
+        }
+
+
+        #endregion
+
+        #region PrimarySubstations
+        public void Add(PrimarySubstation ps)
+        {
+            Session.Save(ps);
+        }
+        public void Delete(PrimarySubstation ps)
+        {
+            Session.Delete(ps);
+        }
+        public PrimarySubstation GetPrimarySubstation(string nr)
+        {
+            return Session.QueryOver<PrimarySubstation>().Where(m => m.NR == nr).Take(1).SingleOrDefault();
+        }        
+        public PrimarySubstation GetPrimarySubstationByNRId(string nrId)
+        {
+            return Session.QueryOver<PrimarySubstation>().Where(m => m.NRId == nrId).Take(1).SingleOrDefault();
+        }
+        public IList<PrimarySubstation> GetPrimarySubstations(DistributionNetworkOperator dno)
+        {
+            return Session.QueryOver<PrimarySubstation>().Where(m=>m.DistributionNetworkOperator==dno).List();
+        }
+
+        public IList<PrimarySubstation> GetPrimarySubstationsByGeographicalAreaId(int gaId)
+        {
+            return Session.QueryOver<PrimarySubstation>().
+                Where(m => m.GeographicalArea.Id == gaId).
+                Fetch(SelectMode.Fetch,m=>m.GISData).
+                List();
+        }
+        public IList<PrimarySubstation> GetPrimarySubstationsByGridSupplyPointId(int gspId)
+        {
+            return Session.QueryOver<PrimarySubstation>().
+                Where(m => m.GridSupplyPoint.Id == gspId).
+                Fetch(SelectMode.Fetch,m=>m.GISData).
+                List();
+        }
+
+
+
+        #endregion
+
+        #region SubstationClassification
+
+        #endregion
+    }
+      
+
+    
+    
+    
+}

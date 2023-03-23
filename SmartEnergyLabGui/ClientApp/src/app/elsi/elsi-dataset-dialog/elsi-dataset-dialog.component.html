@@ -1,0 +1,14 @@
+<app-dialog-header [dialogRef]="dialogRef">{{title}}</app-dialog-header>
+<div mat-dialog-content id="content">
+    <div *ngIf="isNew" id="header"><b>Parent: </b><span>{{dataService.dataset?.name}}</span></div>
+    <form [formGroup]="form">
+        <div>
+            <mat-form-field>
+                <mat-label>Name</mat-label>
+                <input matInput placeholder="Enter Name" formControlName="name"  [type]="'text'" >
+                <mat-error>{{getError('name')}}</mat-error>    
+            </mat-form-field>    
+        </div>
+    </form>
+</div>
+<app-dialog-footer [dialogRef]="dialogRef" (onOk)="save()"></app-dialog-footer>

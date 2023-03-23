@@ -1,0 +1,32 @@
+Setting up PostgreSQL on Ubuntu
+-------------------------------
+
+# install
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+sudo apt-get update
+sudo apt-get -y install postgresql
+
+# creates a supoer user
+sudo -u postgres createuser --superuser rob
+touch .psql_history
+# change password
+psql
+ALTER USER rob WITH PASSWORD 'speedy';
+\q
+
+# edit config
+sudo nano /etc/postgresql/10/main/postgresql.conf
+# ensure this is uncommented
+listen_addresses = '*' 
+
+# edit this config
+sudo nano /etc/postgresql/10/main/pg_hba.conf
+# ensure this line is ,,,
+host    all             all             0.0.0.0/0               md5
+
+# restart service
+sudo systemctl restart postgresql.service
+
+
+

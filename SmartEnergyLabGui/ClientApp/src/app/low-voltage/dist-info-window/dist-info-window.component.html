@@ -1,0 +1,32 @@
+<div class="mapInfoWindow">
+    <div class="inlineFlexRow">
+        <img src="/assets/images/distribution-substation.png" style="width: 30px">
+        <span>DISTRIBUTION SUBSTATION</span>
+    </div>    
+    <table id="table">
+        <tr>
+            <td>Name:</td>
+            <td>{{mapPowerService.SelectedDistributionSubstation?.name}}</td>
+        </tr>
+        <tr>
+            <td>NR:</td>
+            <td>{{mapPowerService.SelectedDistributionSubstation?.nr}}</td>
+        </tr>
+        <tr>
+            <td>Customers (2016):</td>
+            <td>{{mapPowerService.NumberOfCustomers}}</td>
+        </tr>
+        <tr>
+            <td>Number of EVs:</td>
+            <td>{{mapPowerService.NumberOfEVs ? mapPowerService.NumberOfEVs.toFixed(0):''}}</td>
+        </tr>
+        <tr>
+            <td>Number of HPs:</td>
+            <td>{{mapPowerService.NumberOfHPs ? mapPowerService.NumberOfHPs.toFixed(0):''}}</td>
+        </tr>
+    </table>
+    <div id="buttonRow">
+        <mat-icon class="iconButton" (click)="edit()" title="edit">edit</mat-icon>
+        <mat-icon class="iconButton" (click)="runClassificationTool()" title="run classification tool">directions_run</mat-icon>
+    </div>
+</div>

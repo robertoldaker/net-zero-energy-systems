@@ -1,0 +1,10 @@
+div {
+    display: inline-block;
+    padding-right: 1rem;
+}
+
+span.link {
+    text-decoration: underline;
+    cursor: pointer;
+}
+

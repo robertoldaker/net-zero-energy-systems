@@ -1,0 +1,25 @@
+<map-polygon [paths]="gspBoundary" [options]="{ fillColor: 'none', fillOpacity: 0, strokeColor: 'red', strokeWeight: 1}"></map-polygon>
+<map-polygon [paths]="primaryBoundary" [options]="{ fillColor: 'none', fillOpacity: 0, strokeColor: '#4B0082', strokeWeight: 1}"></map-polygon>
+<map-polygon [paths]="distributionBoundary" [options]="{ fillColor: 'none', fillOpacity: 0, strokeColor: '#89AAFF', strokeWeight: 1}"></map-polygon>
+<!-- distribution markers -->
+<div *ngIf="canShowDistMarkers">
+    <map-marker  #distMarkers *ngFor="let markerOption of distMarkerOptions" [options]="markerOption.options" (mapClick)="distMarkerClicked($event, markerOption.id)"></map-marker>
+</div>
+<!-- primary markers -->
+<div *ngIf="canShowPrimaryMarkers">
+    <map-marker #primaryMarkers *ngFor="let markerOption of primaryMarkerOptions" [options]="markerOption.options" (mapClick)="primaryMarkerClicked(markerOption.id)"></map-marker>
+</div>
+<!-- grid supply points -->
+<map-marker #gspMarkers *ngFor="let markerOption of gspMarkerOptions" [options]="markerOption.options" (mapClick)="gspMarkerClicked(markerOption.id)"></map-marker>
+<!-- info window for distribution substations -->
+<map-info-window #distInfoWindow>
+    <app-dist-info-window></app-dist-info-window>
+</map-info-window>    
+<!-- info window for primary substations -->
+<map-info-window #primaryInfoWindow>
+    <app-primary-info-window></app-primary-info-window>
+</map-info-window>
+<!-- info window for grid supply points -->
+<map-info-window #gspInfoWindow>
+    <app-gsp-info-window></app-gsp-info-window>
+</map-info-window>    

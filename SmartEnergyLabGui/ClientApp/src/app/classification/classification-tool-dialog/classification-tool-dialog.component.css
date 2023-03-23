@@ -1,0 +1,23 @@
+
+div#content {
+
+}
+
+div#content> div#title {
+    font-size: 1.1rem;
+    color:darkblue;
+    border-bottom: 1px dotted black;
+    padding-bottom: 5px;
+}
+
+div#content > table#data {
+    margin-top: 1rem
+}
+
+div#content > table#data > tr > td {
+    padding-left: 1rem;
+}
+
+div#content > table#data > tr > td:nth-child(1) {
+    padding-left: 0rem;
+}

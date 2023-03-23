@@ -1,0 +1,7 @@
+div.menuRadioItem {
+    padding: 3px 3px 3px 10px
+}
+
+div.loadProfilePlot {
+    height: calc((100% - 45px) / 3);
+}

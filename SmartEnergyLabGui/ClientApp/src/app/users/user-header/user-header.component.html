@@ -1,0 +1,17 @@
+<div *ngIf="!user">
+    <span class="link" (click)="logon()">logon</span>&nbsp;|&nbsp;<span class="link" (click)="register()">register</span>
+</div>
+
+<div *ngIf="user">
+    <span class="link" [matMenuTriggerFor]="menu" aria-label="More options">{{user.name}}</span>
+    <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="logoff()">
+            <span >Log off</span>
+        </button>
+        <button mat-menu-item (click)="changePassword()">
+            <span >Change password</span>
+        </button>
+    </mat-menu>
+    
+</div>
+

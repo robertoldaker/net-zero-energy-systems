@@ -1,0 +1,27 @@
+<div style="height: calc(100vh - 370px); overflow: auto">
+    <table style="width: 100%;" mat-table [dataSource]="stageResults">
+
+        <!-- Stage Column -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Stage</th>
+          <td mat-cell *matCellDef="let element">{{element.name}}</td>
+        </ng-container>
+    
+        <!-- Result Column -->
+        <ng-container matColumnDef="result">
+          <th mat-header-cell *matHeaderCellDef>Result</th>
+          <td mat-cell *matCellDef="let element">            
+            <mat-icon [style]="{ color: getIconColor(element.result)}">{{getIconRef(element.result)}}</mat-icon>
+          </td>
+        </ng-container>
+    
+        <!-- Comment Column -->
+        <ng-container matColumnDef="comment">
+          <th mat-header-cell *matHeaderCellDef>Comment</th>
+          <td mat-cell *matCellDef="let element">{{element.comment}}</td>
+        </ng-container>
+    
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+</div>
