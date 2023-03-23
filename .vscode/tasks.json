@@ -1,0 +1,63 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build Gui",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/SmartEnergyLabGui/SmartEnergyLabGui.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/SmartEnergyLabGui/SmartEnergyLabGui.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "watch",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/SmartEnergyLabGui/SmartEnergyLabGui.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build Data api",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/SmartEnergyLabDataApi/SmartEnergyLabDataApi.csproj",
+                "/property:GenerateFullPaths=true",
+                //??"/p:DefineConstants=\"DEBUG_LEVEL2\"",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "type": "npm",
+            "script": "build",
+            "path": "SmartEnergyLabGui/ClientApp",
+            "group": "build",
+            "problemMatcher": [],
+            "label": "npm: build - SmartEnergyLabGui/ClientApp",
+            "detail": "ng build"
+        }
+    ]
+}

@@ -1,0 +1,11 @@
+bin
+obj
+/.vs/SmartEnergyLabDataApi
+Logs
+*.pack
+/SmartEnergyLabGui/ClientApp/package-lock.json
+/SmartEnergyLabGui/ClientApp/.angular
+ASP_BUILD
+SmartEnergyLabDataApi/SmartEnergyLabDataApi.zip
+SmartEnergyLabGui/SmartEnergyLabGui.zip
+package-lock.json

@@ -1,0 +1,50 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Data api",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build Data api",
+            "program": "${workspaceFolder}/SmartEnergyLabDataApi/bin/Debug/net6.0/SmartEnergyLabDataApi.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/SmartEnergyLabDataApi",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            //"serverReadyAction": {
+            //    "action": "openExternally",
+            //    "uriFormat": "%s/Elsi/RunSingleDay?day=1&scenario=2"
+            //}
+        },
+        {
+            "name": "Gui",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build Gui",
+            "program": "${workspaceFolder}/SmartEnergyLabGui/bin/Debug/net6.0/SmartEnergyLabGui.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/SmartEnergyLabGui",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach"
+        }
+    ]
+}
