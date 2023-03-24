@@ -1,0 +1,23 @@
+<div style="display: grid; grid-auto-flow: row; height: 100vh; max-height: 100vh; grid-template-rows: auto 1fr;">
+    <app-admin-header></app-admin-header>
+    <div style="display: grid; grid-auto-flow: column; grid-template-columns: auto 1fr;">
+        <div class="menu">
+            <ul class="menu">
+                <li (click)="show('general')" [class]="getClass('general')"><span>General</span></li>
+                <li (click)="show('users')"  [class]="getClass('users')"><span>Users</span></li>
+                <li (click)="show('logs')" [class]="getClass('logs')"><span>Logs</span></li>    
+            </ul>
+        </div>
+        <div class="content">
+            <div [class]="getClass('general')">
+                <app-admin-general></app-admin-general>
+            </div>
+            <div [class]="getClass('users')">
+                <app-admin-users></app-admin-users>
+            </div>
+            <div [class]="getClass('logs')">
+                <app-admin-logs></app-admin-logs>
+            </div>
+        </div>
+    </div>
+</div>

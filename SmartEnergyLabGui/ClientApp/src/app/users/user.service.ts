@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { User } from '../data/app.data';
+import { User, UserRole } from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 
 @Injectable({
@@ -26,6 +26,10 @@ export class UserService {
             this.user = undefined;
             this.LogoffEvent.emit() 
         })
+    }
+
+    get isAdmin() {
+        return this.user?.role == UserRole.Admin
     }
 
     user: User | undefined

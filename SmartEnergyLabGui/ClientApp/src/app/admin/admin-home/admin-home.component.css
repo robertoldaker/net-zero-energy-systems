@@ -1,0 +1,41 @@
+div.content {
+    padding-top: 2rem;
+    padding-left: 2rem;
+    padding-bottom: 2rem;
+    background: #f9f9f9
+}
+
+div.menu {
+    padding-top: 2rem;
+    padding-left: 1rem;
+    padding-right: 0.5rem;
+    padding-bottom: 1rem;
+
+    text-align: right;
+    
+}
+
+ul.menu {
+    list-style: none;
+}
+
+ul.menu > li {
+    margin-top: 1rem;
+    cursor: pointer;
+}
+
+ul.menu > li > span:hover {
+    border-bottom: 2px solid var(--primary-colour)
+}
+
+ul.menu > li.activated > span {
+    border-bottom: 2px solid var(--primary-colour)
+}
+
+div.content > div {
+    display: none;
+}
+
+div.content > div.activated {
+    display: block;
+}

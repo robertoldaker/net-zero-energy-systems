@@ -62,5 +62,13 @@ namespace SmartEnergyLabDataApi.Controllers
             }
             return Ok();
         }
+
+        [HttpGet]
+        [Route("Users")]
+        public IList<User> Users() {
+            using( var m = new UsersModel(this) ) {
+                return m.GetUsers();                
+            }
+        }
     }
 }

@@ -3,6 +3,8 @@ using NHibernate.Mapping.Attributes;
 
 namespace SmartEnergyLabDataApi.Data
 {
+    public enum UserRole { Basic, Admin}
+
     [Class(0, Table = "smart_energy_users")]
     public class User
     {
@@ -34,6 +36,16 @@ namespace SmartEnergyLabDataApi.Data
 
         [Property()]
         public virtual bool Enabled {get; set;}
+
+        [Property()]
+        public virtual UserRole Role {get; set;}
+
+        public virtual string RoleStr {
+            get {
+                return this.Role.ToString();
+            }
+        }
+
 
     }
 }

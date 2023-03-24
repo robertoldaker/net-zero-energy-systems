@@ -1,0 +1,7 @@
+div.toolbar {
+    margin-top: 1rem;
+}
+
+div.toolbar > button {    
+    margin-right: 0.5rem;
+}

@@ -26,8 +26,9 @@ sudo timedatectl set-timezone Europe/London
 
 # install postgres
 sudo apt install postgresql postgresql-contrib
-# creates a supoer user
+# creates a super user
 sudo -u postgres
+# logs in as postgres
 createuser --superuser rob
 # change password
 psql

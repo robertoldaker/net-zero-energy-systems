@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { User } from '../../data/app.data';
+import { User, UserRole } from '../../data/app.data';
 import { DialogService } from '../../dialogs/dialog.service';
 import { UserService } from '../user.service';
 
@@ -12,7 +12,7 @@ import { UserService } from '../user.service';
 export class UserHeaderComponent implements OnInit, OnDestroy {
 
     private subs: Subscription[]
-    constructor(private dialogService: DialogService, private userService: UserService) { 
+    constructor(private dialogService: DialogService, public userService: UserService) { 
         this.subs = [];
         this.subs.push( userService.LogonEvent.subscribe((user)=>{
             this.user = user
@@ -48,3 +48,4 @@ export class UserHeaderComponent implements OnInit, OnDestroy {
     user : User | undefined
 
 }
+

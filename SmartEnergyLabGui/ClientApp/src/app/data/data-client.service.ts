@@ -367,6 +367,9 @@ export class DataClientService {
         this.postDialogRequest<ChangePassword>('/Users/ChangePassword', changePassword, onLoad, onError);
     }
 
+    GetUsers(onLoad: (resp: User[])=> void | undefined) {
+        this.getRequest<User[]>('/Users/Users', onLoad);
+    }
     /* shared */
     private getRequest<T>(url: string, onLoad: (resp: T)=>void | undefined) {
         this.http.get<T>(this.baseUrl + url).subscribe(resp => {

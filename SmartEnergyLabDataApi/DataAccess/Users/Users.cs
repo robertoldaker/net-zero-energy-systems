@@ -43,6 +43,10 @@ namespace SmartEnergyLabDataApi.Data
             return user;
         }
 
+        public IList<User> GetUsers() {
+            return Session.QueryOver<User>().OrderBy(m=>m.Name).Asc.ThenBy(m=>m.Id).Asc.List();
+        }
+
         #endregion
 
     }

@@ -116,6 +116,11 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { GspInfoWindowComponent } from './low-voltage/gsp-info-window/gsp-info-window.component';
 import { MapKeyComponent } from './low-voltage/map/map-key/map-key.component';
+import { AdminHomeComponent } from './admin/admin-home/admin-home.component';
+import { AdminUsersComponent } from './admin/admin-users/admin-users.component';
+import { AdminGeneralComponent } from './admin/admin-general/admin-general.component';
+import { AdminLogsComponent } from './admin/admin-logs/admin-logs.component';
+import { AdminHeaderComponent } from './admin/admin-home/admin-header/admin-header.component';
 
 
 @NgModule({
@@ -190,7 +195,12 @@ import { MapKeyComponent } from './low-voltage/map/map-key/map-key.component';
         AboutElsiDialogComponent,
         ElsiHelpDialogComponent,
         GspInfoWindowComponent,
-        MapKeyComponent
+        MapKeyComponent,
+        AdminHomeComponent,
+        AdminUsersComponent,
+        AdminGeneralComponent,
+        AdminLogsComponent,
+        AdminHeaderComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -204,6 +214,7 @@ import { MapKeyComponent } from './low-voltage/map/map-key/map-key.component';
             { path: 'loadflow', component: LoadflowHomeComponent},
             { path: 'elsi', component: ElsiHomeComponent},
             { path: 'classificationTool', component: ClassificationToolComponent},
+            { path: 'admin', component: AdminHomeComponent}
         ]),
         NgxEchartsModule.forRoot({
             /**

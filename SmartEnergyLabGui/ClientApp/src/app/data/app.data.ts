@@ -635,6 +635,7 @@ export interface ElsiProgress {
 
 
 /* users */
+export enum UserRole {Basic, Admin}
 export interface NewUser {
     email: string,
     name: string,
@@ -648,9 +649,12 @@ export interface Logon {
 }
 
 export interface User {
+    id: number
     email: string
     name: string
     enabled : boolean
+    role: UserRole
+    roleStr: string
 }
 
 export interface ChangePassword {
