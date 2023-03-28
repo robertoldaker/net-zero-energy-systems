@@ -27,11 +27,9 @@ sudo timedatectl set-timezone Europe/London
 # install postgres
 sudo apt install postgresql postgresql-contrib
 # creates a super user
-sudo -u postgres
-# logs in as postgres
-createuser --superuser rob
+sudo -u postgres createuser --superuser rob
 # change password
-psql
+sudo -u postgres psql
 ALTER USER rob WITH PASSWORD 'speedy';
 CREATE USER smart_energy_lab;
 ALTER USER smart_energy_lab PASSWORD '1234567890';
@@ -99,11 +97,10 @@ sudo snap install --classic certbot
 sudo certbot --nginx -d lv-data.net-zero-energy-systems.org
 # test with https://lv-data.net-zero-energy-systems.org!
 
-
 #
 # install gdal
 #
-# download anaconda from https://repo.anaconda.com
+# download anaconda from https://www.anaconda.com
 bash Anaconda3-2023.03-Linux-x86_64.sh
 # then restart terminal and ...
 conda install gdal
