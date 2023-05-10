@@ -9,14 +9,19 @@ import { TaskState } from '../../data/app.data'
 export class BackgroundTasksService {
 
     constructor(private signalrService:SignalRService, private dataClientService: DataClientService) {
-        signalrService.hubConnection.on('BackgroundTaskUpdate_ClassificationTool', (data) => {
+        signalrService.hubConnection.on('BackgroundTaskUpdate', (data) => {
             this.taskState = data;
+            console.log(this.taskState)
         });    
     }
 
     taskState: TaskState | undefined
     cancel() {
-        this.dataClientService.CancelClassificationTool();
+        if ( this.taskState ) {
+            this.dataClientService.CancelBackgroundTask(this.taskState.taskId, ()=> {
+
+            });
+        }
     }
 
     close() {

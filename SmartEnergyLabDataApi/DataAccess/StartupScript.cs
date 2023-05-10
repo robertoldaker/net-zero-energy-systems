@@ -20,6 +20,11 @@ namespace SmartEnergyLabDataApi.Data
                 script.populateSubstationLoadProfileKeys();
             } else if ( newVersion==4) {
                 script.updateSubstationClassifications();
+            } else if ( newVersion==5) {
+                script.fixExistingDNOs();
+                script.fixExistingGAs();
+                script.createDefaultDNOs();
+                script.createDefaultGeographicalAreas();
             }
         }
 
@@ -42,52 +47,44 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
+        private void fixExistingDNOs() {
+            using( var da = new DataAccess() ) {
+                var dnos = da.Organisations.GetDistributionNetworkOperators();
+                foreach( var dno in dnos) {
+                    if ( (int) dno.Code==12) {
+                        var defaultDNO = DefaultDNO.Values.Where(m=>m.Code==DNOCode.NationalGridElectricityDistribution).FirstOrDefault();
+                        dno.Code = defaultDNO.Code;
+                        dno.Name = defaultDNO.Name;
+                    } else {
+                        da.Organisations.Delete(dno);
+                    }
+                }
+                //
+                da.CommitChanges();
+            }
+        }
+
+        private void fixExistingGAs() {
+            using( var da = new DataAccess() ) {
+                var ga = da.Organisations.GetGeographicalArea("South West");
+                var defaultDNO = DefaultArea.Values.Where(m=>m.Area == DNOAreas.SouthWestEngland).FirstOrDefault();
+                ga.Name = defaultDNO.Name;
+                ga.DNOArea = defaultDNO.Area;
+                //
+                da.CommitChanges();
+            }
+        }
+
         private void createDefaultDNOs()
         {
             using( var da = new DataAccess() ) {
-                // All DNOs
-                var dno = new DistributionNetworkOperator(
-                    DNOCodes.EasternPowerNetworks, "Eastern Power Networks Plc");
-                da.Organisations.Add(dno);
-                dno = new DistributionNetworkOperator(
-                    DNOCodes.ElectricityNorthWest, "Electricity North West Limited");
-                da.Organisations.Add(dno);
-                dno = new DistributionNetworkOperator(
-                    DNOCodes.LondonPowerNetworks, "London Power Networks Plc");
-                da.Organisations.Add(dno);
-                dno = new DistributionNetworkOperator(
-                    DNOCodes.NorthernPowergridNorthEast, "Northern Powergrid (Northeast) Limited");
-                da.Organisations.Add(dno);
-                dno = new DistributionNetworkOperator(
-                    DNOCodes.NorthernPowergridYorkshire, "Northern Powergrid (Yorkshire) Plc");
-                da.Organisations.Add(dno);
-                dno = new DistributionNetworkOperator(
-                    DNOCodes.ScottishHydroElectricPowerDistribution, "Scottish Hydro Electric Power Distribution Plc");
-                da.Organisations.Add(dno);
-                dno = new DistributionNetworkOperator(
-                    DNOCodes.SouthEasternPowerNetworks, "South Eastern Power Networks Plc");
-                da.Organisations.Add(dno);
-                dno = new DistributionNetworkOperator(
-                    DNOCodes.SouthernElectricPowerDistribution, "Southern Electric Power Distribution Plc");
-                da.Organisations.Add(dno);
-                dno = new DistributionNetworkOperator(
-                    DNOCodes.SPDistribution, "SP Distribution Plc");
-                da.Organisations.Add(dno);
-                dno = new DistributionNetworkOperator(
-                    DNOCodes.SPManweb, "SP Manweb Plc");
-                da.Organisations.Add(dno);
-                dno = new DistributionNetworkOperator(
-                    DNOCodes.WesternPowerDistributionEastMidlands, "Western Power Distribution (East Midlands) Plc");
-                da.Organisations.Add(dno);
-                dno = new DistributionNetworkOperator(
-                    DNOCodes.WesternPowerDistributionSouthWales, "Western Power Distribution (South Wales) Plc");
-                da.Organisations.Add(dno);
-                dno = new DistributionNetworkOperator(
-                    DNOCodes.WesternPowerDistributionSouthWest, "Western Power Distribution (South West) Plc");
-                da.Organisations.Add(dno);
-                dno = new DistributionNetworkOperator(
-                    DNOCodes.WesternPowerDistributionWestMidlands, "Western Power Distribution (West Midlands) Plc");
-                da.Organisations.Add(dno);
+                foreach( var dDno in DefaultDNO.Values) {
+                    var dno = da.Organisations.GetDistributionNetworkOperator(dDno.Code);
+                    if ( dno==null) {
+                        dno = new DistributionNetworkOperator(dDno.Code,dDno.Name);
+                        da.Organisations.Add(dno);
+                    }
+                }
                 //
                 da.CommitChanges();
             }
@@ -96,10 +93,14 @@ namespace SmartEnergyLabDataApi.Data
         private void createDefaultGeographicalAreas()
         {
             using( var da = new DataAccess() ) {
-                var dno = da.Organisations.GetDistributionNetworkOperator(DNOCodes.WesternPowerDistributionSouthWest);
-                // Geographical area
-                var ga = new GeographicalArea("Bath", dno);
-                da.Organisations.Add(ga);
+                foreach( var dArea in DefaultArea.Values) {
+                    var dno = da.Organisations.GetDistributionNetworkOperator(dArea.Code);
+                    var ga = da.Organisations.GetGeographicalArea(dArea.Area);
+                    if ( ga==null ) {
+                        ga = new GeographicalArea(dArea.Area,dArea.Name,dno);
+                        da.Organisations.Add(ga);
+                    }
+                }
                 //
                 da.CommitChanges();
             }

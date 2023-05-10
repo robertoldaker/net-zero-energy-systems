@@ -11,11 +11,16 @@ namespace EnergySystemLabDataApi
         {
         }
 
-        public String LoadLogFile()
+        public string LoadLogFile()
         {
             string logFile = Logger.Instance.LogFile;
             return File.ReadAllText(logFile);
         }
+
+        public string LoadGeoSpatialData() {
+            return "";
+        }
+        
     }
 
 

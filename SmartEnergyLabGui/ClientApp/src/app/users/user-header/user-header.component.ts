@@ -14,12 +14,6 @@ export class UserHeaderComponent implements OnInit, OnDestroy {
     private subs: Subscription[]
     constructor(private dialogService: DialogService, public userService: UserService) { 
         this.subs = [];
-        this.subs.push( userService.LogonEvent.subscribe((user)=>{
-            this.user = user
-        }))
-        this.subs.push( userService.LogoffEvent.subscribe(()=>{
-            this.user = undefined
-        }))
     }
 
     ngOnDestroy(): void {
@@ -45,7 +39,9 @@ export class UserHeaderComponent implements OnInit, OnDestroy {
         this.dialogService.showChangePasswordDialog()
     }
 
-    user : User | undefined
+    get user() : User | undefined {
+        return this.userService.user
+    }
 
 }
 

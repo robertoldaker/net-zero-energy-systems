@@ -202,12 +202,10 @@ export class DataClientService {
         }, error => { this.logErrorMessage(error) });
     }
 
-    CancelClassificationTool() {
-        this.http.post<ClassificationToolOutput>(this.baseUrl + `/ClassificationTool/Cancel`, {}).subscribe(result => {
-        }, error => { this.logErrorMessage(error) });
-    }
 
-    /* Loadflow */
+    /**
+     *  Loadflow 
+     */
     GetNetworkData( onLoad: (networkData: NetworkData)=> void | undefined) {
         this.http.get<NetworkData>(this.baseUrl + `/Loadflow/NetworkData`).subscribe( result => {
             if ( onLoad ) {
@@ -264,8 +262,9 @@ export class DataClientService {
             }
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
     }
-
-    /* Elsi */
+    /**
+     * Elsi
+     */    
     RunSingleDay(day: number, scenario: ElsiScenario, datasetId: number, onLoad: (results: ElsiDayResult)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.getRequestWithMessage<ElsiDayResult>(
@@ -370,7 +369,33 @@ export class DataClientService {
     GetUsers(onLoad: (resp: User[])=> void | undefined) {
         this.getRequest<User[]>('/Users/Users', onLoad);
     }
+
+    /* Admin */
+    BackupDb(onComplete: (resp: any)=> void | undefined) {
+        this.getBasicRequest('/Admin/BackupDb', onComplete);
+    }
+
+    Logs(onComplete: (resp: string)=> void | undefined) {
+        this.getRequest<string>('/Admin/Logs', onComplete);
+    }
+
+    CancelBackgroundTask(taskId: number, onComplete: (resp: any)=> void | undefined) {
+        this.getBasicRequest(`/Admin/Cancel?taskId=${taskId}`, onComplete)
+    }
+
+
+
     /* shared */
+    private getBasicRequest(url: string, onLoad: (resp: any)=>void | undefined) {
+        this.http.get(this.baseUrl + url).subscribe(resp => {
+            if ( onLoad) {
+                onLoad(resp);
+            }
+        },resp => { 
+            this.logErrorMessage(resp);
+        })
+    }
+
     private getRequest<T>(url: string, onLoad: (resp: T)=>void | undefined) {
         this.http.get<T>(this.baseUrl + url).subscribe(resp => {
             if ( onLoad) {
@@ -438,6 +463,7 @@ export class DataClientService {
         }        
         this.showMessageService.showModalErrorMessage(message)
     }
+
 
 
 }

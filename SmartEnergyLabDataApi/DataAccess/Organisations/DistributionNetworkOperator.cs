@@ -2,36 +2,42 @@
 
 namespace SmartEnergyLabDataApi.Data
 {
-    /// <summary>
-    /// Distrubtion network operators
-    /// </summary>
-    public enum DNOCodes
-    {
-        EasternPowerNetworks,
+    public enum DNOCode {
+        UKPowerNetworks,
+        NationalGridElectricityDistribution,
+        SPEnergyNetworks,
+        NorthernPowerGrid,
         ElectricityNorthWest,
-        LondonPowerNetworks,
-        NorthernPowergridNorthEast,
-        NorthernPowergridYorkshire,
-        ScottishHydroElectricPowerDistribution,
-        SouthEasternPowerNetworks,
-        SouthernElectricPowerDistribution,
-        SPDistribution,
-        SPManweb,
-        WesternPowerDistributionEastMidlands,
-        WesternPowerDistributionSouthWales,
-        WesternPowerDistributionSouthWest,
-        WesternPowerDistributionWestMidlands
+        ScottishAndSouthernElectricityNetworks,
+    }
+
+    public class DefaultDNO {
+        public readonly static DefaultDNO[] Values = {
+            new DefaultDNO(DNOCode.UKPowerNetworks,"UK Power Networks"),
+            new DefaultDNO(DNOCode.NationalGridElectricityDistribution,"National Grid Electricity Distribution"),
+            new DefaultDNO(DNOCode.SPEnergyNetworks,"SP Energy Networks"),
+            new DefaultDNO(DNOCode.NorthernPowerGrid,"Northern Power Grid"),
+            new DefaultDNO(DNOCode.ElectricityNorthWest,"Electricity North West"),
+            new DefaultDNO(DNOCode.ScottishAndSouthernElectricityNetworks,"Scottish and Southern Electricity Networks"),
+        };
+        public DefaultDNO(DNOCode code, string name) {
+            Code = code;
+            Name = name;
+        }
+        public string Name {get; set;}
+        public DNOCode Code {get; set;}
     }
 
     [Class(0, Table = "distribution_network_operators")]
     public class DistributionNetworkOperator
     {
+
         public DistributionNetworkOperator()
         {
 
         }
 
-        public DistributionNetworkOperator(DNOCodes code, string name)
+        public DistributionNetworkOperator(DNOCode code, string name)
         {
             Code = code;
             Name = name;
@@ -47,6 +53,7 @@ namespace SmartEnergyLabDataApi.Data
         public virtual string Name { get; set; }
 
         [Property()]
-        public virtual DNOCodes Code { get; set; }
+        public virtual DNOCode Code { get; set; }
+
     }
 }

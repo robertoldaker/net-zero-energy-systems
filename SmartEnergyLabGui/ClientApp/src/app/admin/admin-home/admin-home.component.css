@@ -24,12 +24,18 @@ ul.menu > li {
     cursor: pointer;
 }
 
+ul.menu > li > span {
+    color: #999;
+}
+
 ul.menu > li > span:hover {
-    border-bottom: 2px solid var(--primary-colour)
+    border-bottom: 2px solid var(--primary-colour);
+    color: black;
 }
 
 ul.menu > li.activated > span {
-    border-bottom: 2px solid var(--primary-colour)
+    border-bottom: 2px solid var(--primary-colour);
+    color: black;
 }
 
 div.content > div {

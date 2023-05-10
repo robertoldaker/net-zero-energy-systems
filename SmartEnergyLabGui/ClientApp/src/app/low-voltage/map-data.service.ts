@@ -12,7 +12,7 @@ export class MapDataService {
         this.geographicalArea = undefined
 
         this.DataClientService = dataClient
-        this.DataClientService.GetGeographicalArea("South West", (ga) => {
+        this.DataClientService.GetGeographicalArea("South West England", (ga) => {
             this.geographicalArea = ga;
             this.selectGeographicalArea()
         })

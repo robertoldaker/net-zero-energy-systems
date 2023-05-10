@@ -41,5 +41,9 @@ namespace HaloSoft.DataAccess
             //
             return rows;
         }
+
+        public T Get<T>(int id) {
+            return _dataAccess.Session.Get<T>(id);
+        }
     }
 }

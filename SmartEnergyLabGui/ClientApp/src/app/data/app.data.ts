@@ -334,13 +334,14 @@ export interface AllTripResult {
 }
 
 /**
- *  backgroud tasks
+ *  background tasks
  */
  export enum TaskStateEnum { Running = 0, Finished = 1 }
  export interface TaskState {
-     state: TaskStateEnum,
-     message: string
-     progress: number
+    taskId: number
+    state: TaskStateEnum
+    message: string
+    progress: number
  }
 
  /**

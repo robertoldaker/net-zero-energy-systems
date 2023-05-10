@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.SGT;
+using SmartEnergyLabDataApi.Models;
 using System.Text.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -15,8 +16,13 @@ namespace EnergySystemLabDataApi.SubStations
     [Route("Admin")]
     public class AdminController : ControllerBase
     {
-        public AdminController()
+        private IBackgroundTasks _backgroundTasks;
+        private DatabaseBackupBackgroundTask _backupDbTask;
+
+        public AdminController(IBackgroundTasks backgroundTasks)
         {
+            _backgroundTasks = backgroundTasks;
+            _backupDbTask = backgroundTasks.GetTask<DatabaseBackupBackgroundTask>(DatabaseBackupBackgroundTask.Id);
         }
 
         /// <summary>
@@ -39,6 +45,49 @@ namespace EnergySystemLabDataApi.SubStations
         public object SystemInfo() {
             return new { ProcessorCount=Environment.ProcessorCount };
         }
+
+        /// <summary>
+        /// Backsup database
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("BackupDb")]
+        public IActionResult BackupDb() {
+            _backupDbTask.Run();
+            return this.Ok();
+        }
+
+        /// <summary>
+        /// Cancels a running task
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("Cancel")]
+        public IActionResult Cancel(int taskId) {
+            try {
+                _backgroundTasks.GetTask<BackgroundTaskBase>(taskId)?.Cancel();
+                return this.Ok();
+            } catch( Exception e) {
+                return this.StatusCode(500,e.Message);
+            }
+        }
+
+        /// <summary>
+        /// Load geo spatial data
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("LoadGeoSpatialData")]
+        public IActionResult LoadGeoSpatialData() {
+            try {
+                var loader = new GeoSpatialDataLoader();
+                var message = loader.Load();
+                return this.Ok(message);
+            } catch( Exception e) {
+                return this.StatusCode(500,e.Message);
+            }
+        }
+
 
     }
 

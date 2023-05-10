@@ -10,10 +10,10 @@ namespace SmartEnergyLabDataApi.Controllers
     [ApiController]
     public class ClassificationToolController : ControllerBase
     {
-        private IBackgroundTasks _backgroundTasks;
+        private ClassificationToolBackgroundTask _classificationToolTask;
         public ClassificationToolController(IBackgroundTasks backgroundTasks)
         {
-            _backgroundTasks = backgroundTasks;
+            _classificationToolTask = backgroundTasks.GetTask<ClassificationToolBackgroundTask>(ClassificationToolBackgroundTask.Id);
         }
 
         /// <summary>
@@ -66,22 +66,7 @@ namespace SmartEnergyLabDataApi.Controllers
         public IActionResult RunAllAsync(int gaId, ClassificationToolInput input)
         {
             try {
-                _backgroundTasks.ClassificationTool.Run(gaId,input);
-                return this.Ok();
-            } catch( Exception e) {
-                return this.StatusCode(500,e.Message);
-            }
-        }
-
-        /// <summary>
-        /// Cancels a running classification tool task
-        /// </summary>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("Cancel")]
-        public IActionResult Cancel() {
-            try {
-                _backgroundTasks.ClassificationTool.Cancel();
+                _classificationToolTask.Run(gaId,input);
                 return this.Ok();
             } catch( Exception e) {
                 return this.StatusCode(500,e.Message);

@@ -18,6 +18,7 @@ namespace SmartEnergyLabDataApi.Data
             Loadflow = new Loadflow(this);
             Elsi = new Elsi(this);
             Users = new Users(this);
+            Admin = new Admin(this);
         }
 
         public SimplusGridTool SimplusGridTool { get; private set; }
@@ -30,6 +31,7 @@ namespace SmartEnergyLabDataApi.Data
         public Loadflow Loadflow { get; private set; }
         public Elsi Elsi { get; private set; }
         public Users Users {get; private set;}
+        public Admin Admin {get; private set;}
 
         public static void SchemaUpdated(int oldVersion, int newVersion)
         {

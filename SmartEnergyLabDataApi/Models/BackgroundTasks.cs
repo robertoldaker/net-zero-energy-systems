@@ -5,32 +5,60 @@ namespace SmartEnergyLabDataApi.Models
 {
     public interface IBackgroundTasks
     {
-        public ClassificationToolBackgroundTask ClassificationTool { get; }
+        public T GetTask<T>(int taskId) where T:BackgroundTaskBase;
+        public int Register(BackgroundTaskBase backgroundTask);
+        public void StateUpdate(TaskState state);
     }
+
     public class BackgroundTasks : IBackgroundTasks
     {
-        public enum BackgroundTasksEnum { ClassificationTool }
+        private Dictionary<int,BackgroundTaskBase> _tasksDict;
+        private int _taskId;
+        IHubContext<NotificationHub> _hubContext;
 
         public BackgroundTasks(IHubContext<NotificationHub> hubContext)
         {
-            ClassificationTool = new ClassificationToolBackgroundTask(hubContext);
+            _tasksDict = new Dictionary<int, BackgroundTaskBase>();
+            _taskId = 0;
+            _hubContext = hubContext;
         }
 
-        public ClassificationToolBackgroundTask ClassificationTool { get; }
-
-        public BackgroundTaskBase GetTask( BackgroundTasksEnum task) {
-            if ( task == BackgroundTasksEnum.ClassificationTool ) {
-                return ClassificationTool;
-            } else {
-                throw new Exception($"Unexpected task found [{task}]");
+        public int Register(BackgroundTaskBase task) {
+            lock(_tasksDict) {
+                _taskId++;
+                _tasksDict[_taskId] = task;
+                return _taskId;
             }
+        }
+
+        public T GetTask<T>( int taskId ) where T : BackgroundTaskBase {
+            if ( _tasksDict.TryGetValue(_taskId, out BackgroundTaskBase task)) {
+                return (T) task;
+            } else {
+                throw new Exception($"Task with id [{taskId}] not found. Has it been registered with a call to Register?");
+            }
+        }
+
+        public void StateUpdate(TaskState state) {
+            _hubContext.Clients.All.SendAsync("BackgroundTaskUpdate", state);
         }
 
     }
 
     public abstract class BackgroundTaskBase {
+        protected IBackgroundTasks _tasks;
+        protected int _id;
+        protected BackgroundTaskBase(IBackgroundTasks tasks) {
+            _tasks = tasks;
+            _id = tasks.Register(this);
+        }
         public abstract void Cancel();
         public abstract bool IsRunning { get; }
+
+        protected void stateUpdate(TaskState.RunningState state, string message, int progress=-1) {
+            var taskState = new TaskState(_id,state,message,progress);
+            _tasks.StateUpdate(taskState);
+        }
 
     }
 
@@ -39,33 +67,31 @@ namespace SmartEnergyLabDataApi.Models
         private TaskRunner _ctTask;
         private int _gaId;
         private ClassificationToolInput? _input = null;
-        private IHubContext<NotificationHub> _hubContext;
 
-        public ClassificationToolBackgroundTask(IHubContext<NotificationHub> hubContext){
-            _hubContext = hubContext;
-            _ctTask = new TaskRunner(_hubContext, (taskRunner) =>
+        public ClassificationToolBackgroundTask(IBackgroundTasks tasks) : base(tasks) {
+            _ctTask = new TaskRunner((taskRunner) =>
             {
                 if (_input == null)
                 {
                     throw new Exception("Null input found running background task.");
                 }
-                stateUpdate(new TaskState(TaskState.RunningState.Running, "Classification tool started", 0));
+                stateUpdate(TaskState.RunningState.Running, "Classification tool started", 0);
                 try {
                     using (var m = new ClassificationTool())
                     {
                         m.RunAll(_gaId, _input, (TaskRunner?)taskRunner);
                     }
-                    stateUpdate(new TaskState(TaskState.RunningState.Finished, "Classification tool finished", 100));
+                    stateUpdate(TaskState.RunningState.Finished, "Classification tool finished", 100);
                 } catch( Exception e) {
-                    stateUpdate(new TaskState(TaskState.RunningState.Finished, $"Classification tool aborted [{e.Message}]", 0));
+                    stateUpdate(TaskState.RunningState.Finished, $"Classification tool aborted [{e.Message}]", 0);
                 }
             });
             _ctTask.StateUpdateEvent+=stateUpdate;
 
         }
-        private void stateUpdate(TaskState state) {
-            _hubContext.Clients.All.SendAsync("BackgroundTaskUpdate_ClassificationTool", state);
-        }
+
+
+
         public override bool IsRunning =>  _ctTask.IsRunning;
 
         public override void Cancel()
@@ -83,6 +109,54 @@ namespace SmartEnergyLabDataApi.Models
             _input = input;
             _ctTask.Run();
         }
+        public static void Register(IBackgroundTasks tasks) {
+            var instance = new ClassificationToolBackgroundTask(tasks);
+            Id = instance._id;
+        }
+
+        public static int Id;
     }
 
+    public class DatabaseBackupBackgroundTask : BackgroundTaskBase
+    {
+        private TaskRunner _ctTask;
+
+        protected DatabaseBackupBackgroundTask(IBackgroundTasks tasks) : base(tasks) {
+            _ctTask = new TaskRunner( (taskRunner) =>
+            {
+                stateUpdate(TaskState.RunningState.Running, "Database backup started", 0);
+                try {
+                    var m = new DatabaseBackup((TaskRunner?)taskRunner);
+                    m.Run();
+                    stateUpdate(TaskState.RunningState.Finished, "Database backup finished", 100);
+                } catch( Exception e) {
+                    stateUpdate(TaskState.RunningState.Finished, $"Database task aborted aborted [{e.Message}]", 0);
+                }
+            });
+            _ctTask.StateUpdateEvent+=stateUpdate;
+
+        }
+        public override bool IsRunning =>  _ctTask.IsRunning;
+
+        public override void Cancel()
+        {
+            _ctTask.Cancel();
+        }
+
+        public void Run()
+        {
+            if (_ctTask.IsRunning)
+            {
+                throw new Exception("Database backup is currently in progress, please try again later");
+            }
+            _ctTask.Run();
+        }
+
+        public static void Register(IBackgroundTasks tasks) {
+            var instance = new DatabaseBackupBackgroundTask(tasks);
+            Id = instance._id;
+        }
+
+        public static int Id;
+    }
 }

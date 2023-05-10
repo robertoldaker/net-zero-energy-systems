@@ -37,9 +37,14 @@ namespace SmartEnergyLabDataApi.Data
             Session.Delete(dno);
         }
 
-        public DistributionNetworkOperator GetDistributionNetworkOperator(DNOCodes code)
+        public DistributionNetworkOperator GetDistributionNetworkOperator(DNOCode code)
         {
             return Session.QueryOver<DistributionNetworkOperator>().Where(m => m.Code == code ).Take(1).SingleOrDefault();
+        }
+
+        public IList<DistributionNetworkOperator> GetDistributionNetworkOperators()
+        {
+            return Session.QueryOver<DistributionNetworkOperator>().List();
         }
         #endregion
 
@@ -57,6 +62,14 @@ namespace SmartEnergyLabDataApi.Data
         {
             var q = Session.QueryOver<GeographicalArea>().
                         Where(m => m.Name.IsInsensitiveLike(name)).
+                        Fetch(SelectMode.Fetch, m=>m.GISData);
+            return q.Take(1).SingleOrDefault();
+        }
+
+        public GeographicalArea GetGeographicalArea(DNOAreas area)
+        {
+            var q = Session.QueryOver<GeographicalArea>().
+                        Where(m => m.DNOArea == area).
                         Fetch(SelectMode.Fetch, m=>m.GISData);
             return q.Take(1).SingleOrDefault();
         }

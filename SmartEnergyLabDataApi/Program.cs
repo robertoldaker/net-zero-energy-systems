@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using SmartEnergyLabDataApi.Data;
@@ -12,14 +13,15 @@ using SmartEnergyLabDataApi.Models;
 public static class Program
 {
     // Start the data access - this will check schema and run any startup scripts as needed
-    private const int SCHEMA_VERSION = 31;
-    private const int SCRIPT_VERSION = 4;
+    private const int SCHEMA_VERSION = 33;
+    private const int SCRIPT_VERSION = 5;
 
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
         //
         Logger.Initialise(builder.Environment.ContentRootPath);
+        AppFolders.Initialise(builder.Environment.ContentRootPath, builder.Environment.WebRootPath);        
 
         // Add services to the container.
 
@@ -69,7 +71,6 @@ public static class Program
                             options.Cookie.SecurePolicy = Microsoft.AspNetCore.Http.CookieSecurePolicy.SameAsRequest;
                         });
 
-
         // Add our own injectible classes
         builder.Services.AddSingleton<IBackgroundTasks,BackgroundTasks>();
         builder.Services.AddSingleton<ICarbonIntensityFetcher,CarbonIntensityFetcher>();
@@ -91,6 +92,13 @@ public static class Program
 
         app.MapControllers();
         app.MapHub<NotificationHub>("/NotificationHub");
+
+        var backgroundTasks = app.Services.GetService<IBackgroundTasks>();
+        if ( backgroundTasks!=null ) {
+            ClassificationToolBackgroundTask.Register(backgroundTasks);
+            DatabaseBackupBackgroundTask.Register(backgroundTasks);
+        }
+        
 
 #if DEBUG
         string host = "localhost";

@@ -8,14 +8,12 @@ namespace SmartEnergyLabDataApi.Models
         private Task _task;
         private Action<object?> _action;
         private CancellationTokenSource _tokenSource;
-        private IHubContext<NotificationHub> _hubContext;
 
-        public delegate void StateUpdateHandler(TaskState taskState);
+        public delegate void StateUpdateHandler(TaskState.RunningState state, string message, int progress=-1);
         public event StateUpdateHandler StateUpdateEvent;
 
-        public TaskRunner(IHubContext<NotificationHub> hubContext, Action<object?> action)
+        public TaskRunner(Action<object?> action)
         {
-            _hubContext = hubContext;
             _action = action;
         }
 
@@ -49,7 +47,7 @@ namespace SmartEnergyLabDataApi.Models
         }
 
         public void Notify(TaskState.RunningState state, string message, int progress=-1) {
-            StateUpdateEvent?.Invoke(new TaskState(state, message,progress));
+            StateUpdateEvent?.Invoke(state, message,progress);
         }
 
         public class TaskState
@@ -59,7 +57,9 @@ namespace SmartEnergyLabDataApi.Models
             public RunningState State { get; private set;}
             public string Message { get; private set; }
             public int Progress { get; private set; }
-            public TaskState(RunningState state, string message, int progress=-1) {
+            public int TaskId {get; set;}
+            public TaskState(int id, RunningState state, string message, int progress=-1) {
+                TaskId = id;
                 State = state;
                 Message = message;
                 Progress = progress;
