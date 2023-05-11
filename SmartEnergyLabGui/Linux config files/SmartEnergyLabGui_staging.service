@@ -1,0 +1,16 @@
+[Unit]
+Description=SmartEnergyLabGui .NET Web App running on Ubuntu
+
+[Service]
+User=rob
+WorkingDirectory=/home/rob/websites/SmartEnergyLabGui
+ExecStart=/usr/bin/dotnet /home/rob/websites/SmartEnergyLabGui/SmartEnergyLabGui.dll --urls="http://*:5021"
+Restart=always
+# Restart service after 10 seconds if the dotnet service crashes:
+RestartSec=10
+SyslogIdentifier=SmartEnergyLabGui
+Environment=ASPNETCORE_ENVIRONMENT=Staging
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+
+[Install]
+WantedBy=multi-user.target

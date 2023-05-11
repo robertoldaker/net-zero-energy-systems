@@ -3,7 +3,7 @@ Description=SmartEnergyLabDatApi .NET Web App running on Ubuntu
 
 [Service]
 WorkingDirectory=/home/rob/websites/SmartEnergyLabDataApi
-ExecStart=/usr/bin/dotnet /home/rob/websites/SmartEnergyLabDataApi/SmartEnergyLabDataApi.dll --urls="http://localhost:5020"
+ExecStart=/usr/bin/dotnet /home/rob/websites/SmartEnergyLabDataApi/SmartEnergyLabDataApi.dll --urls="http://*:5020"
 Restart=always
 # Restart service after 10 seconds if the dotnet service crashes:
 RestartSec=10

@@ -97,36 +97,50 @@ namespace SmartEnergyLabDataApi.Models
         private string processGpkg( DataAccess da, SpatialDataset spd) {
             var client = getHttpClientGpkg();
 
+
             var gPkgFile = AppFolders.Instance.GetTempFile(".gpkg");
             var geoJsonFile = gPkgFile.Replace(".gpkg",".geojson");
-
-            //
-            using (HttpRequestMessage message = getRequestMessage(HttpMethod.Get, spd.url)) {
+            try {
                 //
-                var response = client.SendAsync(message).Result;
-                //
-                if ( response.IsSuccessStatusCode) {
-                    var stream = response.Content.ReadAsStream();
-                    if ( stream!=null) {
-                        saveToFile(stream, gPkgFile);
-                        convertToGeoJson(gPkgFile,geoJsonFile);
+                using (HttpRequestMessage message = getRequestMessage(HttpMethod.Get, spd.url)) {
+                    //
+                    var response = client.SendAsync(message).Result;
+                    //
+                    if ( response.IsSuccessStatusCode) {
+                        var stream = response.Content.ReadAsStream();
+                        if ( stream!=null) {
+                            saveToFile(stream, gPkgFile);
+                            convertToGeoJson(gPkgFile,geoJsonFile);
+                        }
                     }
                 }
-            }
 
-            //
-            return processJson(da, spd, geoJsonFile);
+                //
+                return processJson(da, spd, geoJsonFile);
+
+            } finally {
+                if ( File.Exists(gPkgFile)) {
+                    File.Delete(gPkgFile);
+                }
+                if ( File.Exists(geoJsonFile)) {
+                    //??File.Delete(geoJsonFile);
+                }
+            }
         }
 
         private string processJson(DataAccess da, SpatialDataset spd, string geoJsonFile) {
             if ( spd.name.EndsWith("GSP") ) {
-                return loadGSPs(da, spd, geoJsonFile);
+                //??return loadGSPs(da, spd, geoJsonFile);
+                return "not implemented";
             } else if ( spd.name.EndsWith("BSP")) {
-                return loadBSPs(da, spd, geoJsonFile);
+                //??return loadBSPs(da, spd, geoJsonFile);
+                return "not implemented";
             } else if ( spd.name.EndsWith("Primary")) {
-                return loadPrimaries(da, spd, geoJsonFile);
+                //??return loadPrimaries(da, spd, geoJsonFile);
+                return "not implemented";
             } else if ( spd.name.EndsWith("Distribution")) {
-                return loadDistributions(da, spd,geoJsonFile);
+                //??return loadDistributions(da, spd,geoJsonFile);
+                return "not implemented";
             } else {
                 throw new Exception($"Unexpected SpatialDataset name found [{spd.name}]");
             }
@@ -267,7 +281,71 @@ namespace SmartEnergyLabDataApi.Models
             return msg;
         }
         private string loadDistributions(DataAccess da, SpatialDataset spd, string geoJsonFile) {
-            return "";
+            string msg="";
+            var ga = da.Organisations.GetGeographicalArea(spd.GetDNOArea());
+            int numNew = 0;
+            int numModified = 0;
+            int numIgnored=0;
+            var toAdd = new List<DistributionSubstation>();
+            using (var stream = new FileStream(geoJsonFile, FileMode.Open)) {
+                var geoJson = JsonSerializer.Deserialize<GeoJson>(stream);
+                int nDss = geoJson.features.Length;
+                int nDone=0;
+                Console.WriteLine($"Number of substations=[{nDss}]");
+                foreach( var feature in geoJson.features) {
+                    string nr = feature.properties.NR.ToString();
+                    Console.WriteLine($"Processing {nDone++} of {nDss}, [{feature.properties.NAME}] ");
+                    var dss = da.Substations.GetDistributionSubstation(nr);
+                    var pss = da.Substations.GetPrimarySubstation(feature.properties.primary_NR.ToString());
+                    if ( pss==null ) {
+                        msg+=$"Could not find Primary substation with PRIM_NRID=[{feature.properties.PRIM_NRID}]\n";
+                        numIgnored++;
+                        continue;
+                    }
+                    if ( dss==null ) {                        
+                        dss = new DistributionSubstation(nr,pss);
+                        toAdd.Add(dss);
+                        numNew++;
+                    } else {
+                        dss.PrimarySubstation = pss;
+                        numModified++;
+                    }
+                    //
+                    dss.Name = feature.properties.NAME;
+                    // location
+                    var eastings = feature.properties.dp2_x;                    
+                    var northings = feature.properties.dp2_y;
+                    var latLong=LatLonConversions.ConvertOSToLatLon(eastings,northings);
+                    dss.GISData.Latitude = latLong.Latitude;
+                    dss.GISData.Longitude = latLong.Longitude;
+                    // boundary
+                    var elements = feature.geometry.coordinates.Deserialize<double[][][][]>();
+                    int maxIndex=0;
+                    int maxLength = 0;
+                    for(int i=0;i<elements.Length;i++) {
+                        if ( elements[i][0].Length>maxLength) {
+                            maxIndex=i;
+                            maxLength = elements[i][0].Length;
+                        }
+                    }
+                    var length = elements[maxIndex][0].Length;
+                    dss.GISData.BoundaryLatitudes = new double[length];
+                    dss.GISData.BoundaryLongitudes = new double[length];
+                    for(int index=0; index<length; index++) {                            
+                        latLong=LatLonConversions.ConvertOSToLatLon(elements[maxIndex][0][index][0],elements[maxIndex][0][index][1]);
+                        dss.GISData.BoundaryLongitudes[index] = latLong.Longitude;
+                        dss.GISData.BoundaryLatitudes[index] = latLong.Latitude;
+                    }
+                }
+
+                // Add new ones to db
+                foreach( var dss in toAdd) {
+                    da.Substations.Add(dss);
+                }
+            }
+            msg+=$"{ga.Name} area, [{numNew}] distribution substations added, ";
+            msg+=$"[{numModified}] distibutions substations modified";
+            return msg;
         }
 
         private void saveToFile(Stream stream, string filename) {
@@ -488,7 +566,10 @@ namespace SmartEnergyLabDataApi.Models
             public string NR {get; set;}
             public int NRID {get; set;}
             public string NAME {get; set;}
-
+            //??
+            public int primary_NR {get; set;}
+            public int dp2_x {get; set;} 
+            public int dp2_y {get; set;}
         }
 
         public class Geometry {
