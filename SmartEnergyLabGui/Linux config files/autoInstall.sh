@@ -1,6 +1,6 @@
 #!/bin/bash
 app=$1
-folder="/home/roberto/installs"
+folder="$HOME/installs"
 installFile="$folder/$app.zip"
 installedFile="$folder/${app}_installed.zip"
 previousFile="$folder/${app}_previous.zip"
