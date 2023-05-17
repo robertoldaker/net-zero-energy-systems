@@ -53,6 +53,7 @@ namespace SmartEnergyLabDataApi.Models
             get
             {
                 string folder = Path.Combine(_baseFolder, "App_Data", "temp");
+                Directory.CreateDirectory(folder); 
                 return folder;
             }
         }
@@ -62,6 +63,7 @@ namespace SmartEnergyLabDataApi.Models
             get
             {
                 string folder = Path.Combine(_baseFolder, "App_Data", "Documents");
+                Directory.CreateDirectory(folder); 
                 return folder;
             }
         }
@@ -71,6 +73,7 @@ namespace SmartEnergyLabDataApi.Models
             get
             {
                 string folder = Path.Combine(_baseFolder, "Logs");
+                Directory.CreateDirectory(folder); 
                 return folder;
             }
         }
@@ -80,6 +83,7 @@ namespace SmartEnergyLabDataApi.Models
             get
             {
                 string folder = Path.Combine(_baseFolder, "Views", "Help");
+                Directory.CreateDirectory(folder); 
                 return folder;
             }
         }
@@ -89,6 +93,7 @@ namespace SmartEnergyLabDataApi.Models
             get
             {
                 string folder = Path.Combine(_baseFolder, "App_Data", "DbBackups");
+                Directory.CreateDirectory(folder); 
                 return folder;
             }
         }
