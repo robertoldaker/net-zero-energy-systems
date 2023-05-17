@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using HaloSoft.EventLogger;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.SGT;
@@ -31,7 +32,7 @@ namespace EnergySystemLabDataApi.SubStations
         /// <returns></returns>
         [HttpGet]
         [Route("Logs")]
-        public string Get()
+        public LogData Get()
         {
             return (new AdminModel()).LoadLogFile();
         }
@@ -88,7 +89,38 @@ namespace EnergySystemLabDataApi.SubStations
             }
         }
 
+        /// <summary>
+        /// Load geo spatial data
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("LoadDistributionData")]
+        public IActionResult LoadDistributionData() {
+            try {
+                var loader = new DistributionDataLoader();
+                var message = loader.Load();
+                return this.Ok(message);
+            } catch( Exception e) {
+                return this.StatusCode(500,e.Message);
+            }
+        }
 
+        /// <summary>
+        /// Test Log file
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("TestLog")]
+        public IActionResult TestLog() {
+            try {
+                for( int i=1; i<=100; i++) {
+                    Logger.Instance.LogInfoEvent($"Test log message [{i}]");
+                }
+                return this.Ok();
+            } catch( Exception e) {
+                return this.StatusCode(500,e.Message);
+            }
+        }
     }
 
 }

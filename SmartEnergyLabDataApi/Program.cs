@@ -20,6 +20,7 @@ public static class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         //
+        AppEnvironment.Initialise(builder.Environment);
         Logger.Initialise(builder.Environment.ContentRootPath);
         AppFolders.Initialise(builder.Environment.ContentRootPath, builder.Environment.WebRootPath);        
 
@@ -117,6 +118,7 @@ public static class Program
         // Needed to read spreadsheets
         System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
+        Logger.Instance.LogInfoEvent($"Starting AngelBooks...");
         app.Run();
 
     }

@@ -375,8 +375,8 @@ export class DataClientService {
         this.getBasicRequest('/Admin/BackupDb', onComplete);
     }
 
-    Logs(onComplete: (resp: string)=> void | undefined) {
-        this.getRequest<string>('/Admin/Logs', onComplete);
+    Logs(onComplete: (resp: any)=> void | undefined) {
+        this.getBasicRequest('/Admin/Logs', onComplete);
     }
 
     CancelBackgroundTask(taskId: number, onComplete: (resp: any)=> void | undefined) {

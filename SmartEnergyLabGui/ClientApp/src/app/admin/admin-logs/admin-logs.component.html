@@ -1,1 +1,5 @@
-<p>admin-logs works!</p>
+<button mat-raised-button color="primary" (click)="refresh()">
+    <mat-icon>refresh</mat-icon>
+    Refresh
+</button>
+<div class="log" style="margin-top: 1rem" #logDiv>{{Logs}}</div>

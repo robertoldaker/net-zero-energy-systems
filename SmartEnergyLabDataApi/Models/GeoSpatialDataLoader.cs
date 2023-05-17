@@ -9,7 +9,7 @@ namespace SmartEnergyLabDataApi.Models
 {
     public class GeoSpatialDataLoader {
         private string BASE_ADDRESS = "https://connecteddata.nationalgrid.co.uk";
-        private const string DATASET_URL = "/dataset/spatial-datasets/datapackage.json";
+        private const string PACKAGE_NAME = "spatial-datasets";
         private readonly string[] DATASET_NAMES = {
             "East Midlands GSP",
             "West Midlands GSP",
@@ -28,8 +28,6 @@ namespace SmartEnergyLabDataApi.Models
             "South Wales Distribution",
             "South West Distribution",
             };
-        private HttpClient _httpClient;
-        private static object _httpClientLock = new object();
         private HttpClient _httpClientGpkg;
         private static object _httpClientGpkgLock = new object();
 
@@ -37,66 +35,28 @@ namespace SmartEnergyLabDataApi.Models
 
         }
         public string Load() {
-            var spds = Get<SpatialDatasets>(DATASET_URL);
             var message = "";
+            var ckanLoader = new CKANDataLoader(BASE_ADDRESS,PACKAGE_NAME);
             //
-            using( var da = new DataAccess() ) {
-                var dsis = da.Admin.GetDataSourceInfos();
-                foreach ( var name in DATASET_NAMES) {
-                    var spd = spds.GetByName(name);
-                    if ( spd!=null ) {
-                        var dsi = GetDataSourceInfo(da, dsis, spd);
-                        if ( spd.NeedsImport(dsi) ) {
-                            try {
-                                message+=processGpkg(da,spd)+"\n";
-                                //
-                                dsi.LastImported = DateTime.UtcNow;
-                                dsi.State = ImportState.OK;
-                                dsi.Message = "";
-                                dsi.LastModified = spd.last_modified.ToUniversalTime();
-                            } catch( Exception e) {
-                                // This needs sorting out properly as it looks like the driver is allowing only UTC datetimes to be specified
-                                // but when loaded from the db they do not have the Kind flag set to UTC.
-                                // Hence we need to set all of them explicitly here
-                                if ( dsi.LastImported!=null ) {
-                                    DateTime.SpecifyKind((DateTime) dsi.LastImported,DateTimeKind.Utc);
-                                }
-                                if ( dsi.LastModified!=null) {
-                                    DateTime.SpecifyKind((DateTime) dsi.LastModified,DateTimeKind.Utc);
-                                }
-                                dsi.State = ImportState.Error;
-                                dsi.Message = e.Message;
-                                message+=e.Message+"\n";
-                            }
-                        } else {
-                            message+=$"Ignoring import for [{spd.name}] since it has not been modified since last import\n";
+            var cLoader = new ConditionalDataLoader();
+            foreach ( var name in DATASET_NAMES) {
+                var spd = ckanLoader.GetDatasetInfo(name);
+                if ( spd!=null ) {
+                    message = cLoader.Load(spd, ()=> {
+                        using ( var da = new DataAccess()) {
+                            return processGpkg(da, spd)+"\n";
                         }
-                    }
-
+                    });
                 }
-                //
-                da.CommitChanges();
+
             }
             //
             return message;
         }
 
-        private DataSourceInfo GetDataSourceInfo( DataAccess da, IList<DataSourceInfo> dsis, SpatialDataset spd) {
-            var dataSourceInfo = dsis.Where(m=>m.Reference == spd.id  ).FirstOrDefault();
-            if ( dataSourceInfo==null) {
-                dataSourceInfo = new DataSourceInfo();
-                da.Admin.Add(dataSourceInfo);
-            }
-            dataSourceInfo.Name = spd.name;
-            dataSourceInfo.Url = spd.url;
-            dataSourceInfo.Reference = spd.id;
-            //
-            return dataSourceInfo;
-        }
+        private string processGpkg( DataAccess da, CKANDataLoader.CKANDataset spd) {
 
-        private string processGpkg( DataAccess da, SpatialDataset spd) {
             var client = getHttpClientGpkg();
-
 
             var gPkgFile = AppFolders.Instance.GetTempFile(".gpkg");
             var geoJsonFile = gPkgFile.Replace(".gpkg",".geojson");
@@ -128,27 +88,39 @@ namespace SmartEnergyLabDataApi.Models
             }
         }
 
-        private string processJson(DataAccess da, SpatialDataset spd, string geoJsonFile) {
+        private string processJson(DataAccess da, CKANDataLoader.CKANDataset spd, string geoJsonFile) {
             if ( spd.name.EndsWith("GSP") ) {
-                //??return loadGSPs(da, spd, geoJsonFile);
-                return "not implemented";
+                return loadGSPs(da, spd, geoJsonFile);
             } else if ( spd.name.EndsWith("BSP")) {
-                //??return loadBSPs(da, spd, geoJsonFile);
-                return "not implemented";
+                return loadBSPs(da, spd, geoJsonFile);
             } else if ( spd.name.EndsWith("Primary")) {
-                //??return loadPrimaries(da, spd, geoJsonFile);
-                return "not implemented";
+                return loadPrimaries(da, spd, geoJsonFile);
             } else if ( spd.name.EndsWith("Distribution")) {
                 //??return loadDistributions(da, spd,geoJsonFile);
-                return "not implemented";
+                return "not impleented";
             } else {
                 throw new Exception($"Unexpected SpatialDataset name found [{spd.name}]");
             }
         }
 
-        private string loadGSPs(DataAccess da, SpatialDataset spd, string geoJsonFile) {
+        private DNOAreas GetDNOArea(CKANDataLoader.CKANDataset ds) {
+            if ( ds.name.StartsWith("East Midlands")) {
+                return DNOAreas.EastMidlands;
+            } else if ( ds.name.StartsWith("West Midlands")) {
+                return DNOAreas.WestMidlands;
+            } else if ( ds.name.StartsWith("South Wales")) {
+                return DNOAreas.SouthWales;
+            } else if ( ds.name.StartsWith("South West")) {
+                return DNOAreas.SouthWestEngland;
+            } else {
+                throw new Exception($"Unexpected SpatialDataset name [{ds.name}]");
+            }
+        }
 
-            var dnoArea = spd.GetDNOArea();
+
+        private string loadGSPs(DataAccess da, CKANDataLoader.CKANDataset spd, string geoJsonFile) {
+
+            var dnoArea = GetDNOArea(spd);
             var ga = da.Organisations.GetGeographicalArea(dnoArea);
             if ( ga==null) {
                 throw new Exception($"Could not find Geographical area for area code=[{dnoArea}]");
@@ -212,16 +184,16 @@ namespace SmartEnergyLabDataApi.Models
             return msg;
         }
 
-        private string loadBSPs(DataAccess da, SpatialDataset spd, string geoJsonFile) {
+        private string loadBSPs(DataAccess da, CKANDataLoader.CKANDataset spd, string geoJsonFile) {
             return "BSPs not implemented";
         }
-        private string loadPrimaries(DataAccess da, SpatialDataset spd, string geoJsonFile) {
+        private string loadPrimaries(DataAccess da, CKANDataLoader.CKANDataset spd, string geoJsonFile) {
             string msg="";
             int numNew = 0;
             int numModified = 0;
             int numIgnored=0;
             //
-            var ga = da.Organisations.GetGeographicalArea(spd.GetDNOArea());
+            var ga = da.Organisations.GetGeographicalArea(GetDNOArea(spd));
             var dno = ga.DistributionNetworkOperator;
             var primarySubstations = da.Substations.GetPrimarySubstations(dno);
             //
@@ -280,9 +252,9 @@ namespace SmartEnergyLabDataApi.Models
             msg+=$"[{numModified}] primary substations modified";
             return msg;
         }
-        private string loadDistributions(DataAccess da, SpatialDataset spd, string geoJsonFile) {
+        private string loadDistributions(DataAccess da, CKANDataLoader.CKANDataset  spd, string geoJsonFile) {
             string msg="";
-            var ga = da.Organisations.GetGeographicalArea(spd.GetDNOArea());
+            var ga = da.Organisations.GetGeographicalArea(GetDNOArea(spd));
             int numNew = 0;
             int numModified = 0;
             int numIgnored=0;
@@ -375,46 +347,6 @@ namespace SmartEnergyLabDataApi.Models
             process.WaitForExit();
         }
 
-        private T Get<T>(string method, params string[] queryParams) where T : class
-        {
-            T data = null;
-            //
-            HttpResponseMessage response;
-            //
-            method = appendQueryString(method, queryParams);
-            //
-            var client = getHttpClient();
-            //
-            using (HttpRequestMessage message = getRequestMessage(HttpMethod.Get, method)) {
-                //
-                response = client.SendAsync(message).Result;
-                //
-            }
-            //
-            if (response.IsSuccessStatusCode) {
-                var str = response.Content.ReadAsStringAsync().Result;
-                data = JsonSerializer.Deserialize<T>(str);
-
-            } else {
-                var str = response.Content.ReadAsStringAsync().Result;
-                var message = $"Problem calling method [{method}] [{response.StatusCode}] [{response.ReasonPhrase}] [{str}]";
-                Logger.Instance.LogErrorEvent(message);
-                throw new Exception(message);
-            }
-            return data;
-        }
-
-        private HttpClient getHttpClient()
-        {
-            if (_httpClient == null) {
-                lock (_httpClientLock) {
-                    _httpClient = new HttpClient();
-                    _httpClient.BaseAddress = new Uri(BASE_ADDRESS);
-                }
-            }
-            //
-            return _httpClient;
-        }
 
         private HttpClient getHttpClientGpkg()
         {
@@ -424,7 +356,7 @@ namespace SmartEnergyLabDataApi.Models
                 }
             }
             //
-            return _httpClient;
+            return _httpClientGpkg;
         }
 
         private HttpRequestMessage getRequestMessage(HttpMethod httpMethod, string method, object data = null)
@@ -490,60 +422,9 @@ namespace SmartEnergyLabDataApi.Models
             return string.Join("&", strs);
         }
 
-        private class SpatialDatasets {
-            public SpatialDataset[] resources {get; set;}
-
-            public SpatialDataset GetByName(string name) {
-                return resources.Where( m=>m.name == name).FirstOrDefault();
-            }
-        }
 
         private enum DataType { GSP, BSP, Primary, Distribution }
 
-        private class SpatialDataset {
-            public string name {get; set;}
-            public string id {get; set;}
-            public string format {get; set;}
-            public DateTime last_modified {get; set;}
-            public string url {get; set;}
-
-            public bool NeedsImport( DataSourceInfo info) {
-                if ( info?.LastModified!=null ) {
-                    return info.LastModified < last_modified;
-                } else {
-                    return true;
-                }
-            }
-
-            public DataType GetDataType() {
-                if ( name.EndsWith("GSP")) {
-                    return DataType.GSP;
-                } else if ( name.EndsWith("BSP")) {
-                    return DataType.BSP;
-                } else if ( name.EndsWith("Primary")) {
-                    return DataType.Primary;
-                } else if ( name.EndsWith("Distribution")) {
-                    return DataType.Distribution;
-                } else {
-                    throw new Exception($"Unexpected SpatialDataset name [{name}]");
-                }
-            }
-
-            public DNOAreas GetDNOArea() {
-                if ( name.StartsWith("East Midlands")) {
-                    return DNOAreas.EastMidlands;
-                } else if ( name.StartsWith("West Midlands")) {
-                    return DNOAreas.WestMidlands;
-                } else if ( name.StartsWith("South Wales")) {
-                    return DNOAreas.SouthWales;
-                } else if ( name.StartsWith("South West")) {
-                    return DNOAreas.SouthWestEngland;
-                } else {
-                    throw new Exception($"Unexpected SpatialDataset name [{name}]");
-                }
-            }
-
-        }
 
         public class GeoJson {
             public string type {get; set;}
