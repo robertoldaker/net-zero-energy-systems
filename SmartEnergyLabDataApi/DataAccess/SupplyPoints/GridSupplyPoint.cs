@@ -11,8 +11,9 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
-        public GridSupplyPoint(string nr, string nrId, GeographicalArea ga, DistributionNetworkOperator dno)
+        public GridSupplyPoint(string name, string nr, string nrId, GeographicalArea ga, DistributionNetworkOperator dno)
         {
+            Name = name;
             NR = nr;
             NRId = nrId;
             DistributionNetworkOperator = dno;

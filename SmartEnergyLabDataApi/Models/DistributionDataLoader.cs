@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
 
 namespace SmartEnergyLabDataApi.Models
@@ -7,10 +8,21 @@ namespace SmartEnergyLabDataApi.Models
 
         private string BASE_ADDRESS = "https://connecteddata.nationalgrid.co.uk";
         private const string DATASET_NAME = "Distribution Substations";
+        private TaskRunner? _taskRunner;
 
         //
+        private ProcessInfo _gspInfo;
+        private ProcessInfo _primaryInfo;
+        private ProcessInfo _distInfo;
 
         //
+        public DistributionDataLoader(TaskRunner? taskRunner) {
+            _taskRunner = taskRunner;
+            _gspInfo = new ProcessInfo();
+            _primaryInfo = new ProcessInfo();
+            _distInfo = new ProcessInfo();
+        }
+
         public string Load() {
             string message = "";
             var ckanLoader = new CKANDataLoader(BASE_ADDRESS,"distribution-substations");
@@ -85,15 +97,40 @@ namespace SmartEnergyLabDataApi.Models
         } 
 
         private string processDistributionData(CKANDataLoader loader, CKANDataLoader.CKANDataset spd)  {
-            string message = "";
 
             var dds = loader.LoadInitial<DistributionData>(DATASET_NAME,1000);
-            using ( var dp = new DataProcessor() ) {
-                dp.Run(dds.result.records);
+            int totalRead=dds.result.records.Count;
+            processDistributionDataRecords(dds.result.records);
+            updateProgress(totalRead,dds.result.total);
+            var cont = dds.result.total>totalRead;
+            while( cont ) {
+                dds=loader.LoadNext<DistributionData>(dds);
+                processDistributionDataRecords(dds.result.records);
+                updateProgress(totalRead,dds.result.total);
+                totalRead+=dds.result.records.Count;
+                cont = dds.result.total > totalRead;
             }
 
-            //??var dis = loader.LoadAll<DistributionData>(DATASET_NAME);
+            var message = $"GSPs {_gspInfo}\n";
+            message += $"Primaries {_primaryInfo}\n";
+            message += $"Distribution {_primaryInfo}\n";
+
             return message;
+        }
+
+        private void updateProgress(int totalRead, int totalCount) {
+            int percent = (100*totalRead)/totalCount;
+            _taskRunner?.Update(percent);
+        }
+
+        private void processDistributionDataRecords(List<DistributionData> records) {
+            using ( var dp = new DataProcessor() ) {
+                dp.Run(records);
+                // store results
+                _gspInfo.Add(dp.GSPInfo);
+                _primaryInfo.Add(dp.PrimaryInfo);
+                _distInfo.Add(dp.DistInfo);
+            }
         }
 
 
@@ -106,7 +143,7 @@ namespace SmartEnergyLabDataApi.Models
                 _addedGSPs = new List<GridSupplyPoint>();
                 GSPInfo = new ProcessInfo();
                 PrimaryInfo = new ProcessInfo();
-                DisInfo = new ProcessInfo();
+                DistInfo = new ProcessInfo();
             }
 
 
@@ -118,7 +155,6 @@ namespace SmartEnergyLabDataApi.Models
                 gaDict.Add("South Wales",_da.Organisations.GetGeographicalArea(DNOAreas.SouthWales));
                 gaDict.Add("South West",_da.Organisations.GetGeographicalArea(DNOAreas.SouthWestEngland));
                 gaDict.Add("West Midlands",_da.Organisations.GetGeographicalArea(DNOAreas.WestMidlands));
-                //
                 //
                 foreach( var dd in dds) {
                     //                    
@@ -132,28 +168,50 @@ namespace SmartEnergyLabDataApi.Models
                     if ( gaDict.TryGetValue(dd.LicenseArea, out ga)) {
                         gsp.GeographicalArea = ga;
                         gsp.DistributionNetworkOperator = ga.DistributionNetworkOperator;
-                        gsp.Name= dd.GridSupplyPointName;
-                        gsp.NR = dd.GridSupplyPointNumber.ToString();
+                        var updated = updateGSP(gsp,dd);
                         if ( needsAdding ) {
                             _addedGSPs.Add(gsp);
                             GSPInfo.NumAdded++;
-                        } else {
+                        } else if ( updated ) {
                             GSPInfo.NumModified++;
                         }
                     } else {
                         GSPInfo.NumIgnored++;
                     }
-
                 }
+
+                // add new ones to db
+                foreach( var gsp in _addedGSPs) {
+                    //                    
+                    Logger.Instance.LogInfoEvent($"Added GSP=[{gsp.Name}] [{gsp.GeographicalArea.Name}]");
+                    _da.SupplyPoints.Add(gsp);
+                }
+
+                //
+                _da.CommitChanges();
             }
 
+            private bool updateGSP(GridSupplyPoint gsp, DistributionData dd) {
+                bool update = false;
+                if (gsp.Name!=dd.GridSupplyPointName) {
+                    gsp.Name=dd.GridSupplyPointName;
+                    update = true;
+                }
+                if (gsp.NR!=dd.GridSupplyPointNumber.ToString()) {
+                    gsp.NR=dd.GridSupplyPointNumber.ToString();
+                    update = true;
+                }
+                return update;
+            }
 
             private GridSupplyPoint getExistingGridSupplyPoint(DistributionData dd) {
+                // first try list of ones to add
                 var gsp = _addedGSPs.Where( m=>m.NR == dd.GridSupplyPointNumber.ToString() || m.Name==dd.GridSupplyPointName).FirstOrDefault();
                 if ( gsp!=null) {
                     return gsp;
                 }
-                return _da.SupplyPoints.GetGridSupplyPointByNrAndName(dd.GridSupplyPointNumber.ToString(), dd.GridSupplyPointName);
+                // if no result go to db and see if it exists there
+                return _da.SupplyPoints.GetGridSupplyPointByNrOrName(dd.GridSupplyPointNumber.ToString(), dd.GridSupplyPointName);
             }
 
             public void Dispose()
@@ -163,13 +221,23 @@ namespace SmartEnergyLabDataApi.Models
 
             public ProcessInfo GSPInfo;
             public ProcessInfo PrimaryInfo;
-            public ProcessInfo DisInfo;
+            public ProcessInfo DistInfo;
         }
 
         private class ProcessInfo {
             public int NumAdded {get; set;}
             public int NumModified {get; set;}
             public int NumIgnored {get; set;}
+
+            public void Add(ProcessInfo pi) {
+                NumAdded+=pi.NumAdded;
+                NumModified+=pi.NumModified;
+                NumIgnored+=pi.NumIgnored;
+            }
+
+            public override string ToString() {
+                return $"num added=[{NumAdded}], num modified=[{NumModified}], num ignored=[{NumIgnored}]";
+            }
         }
 
     }

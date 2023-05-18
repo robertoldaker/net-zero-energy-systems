@@ -20,12 +20,12 @@ namespace SmartEnergyLabDataApi.Models
             }
             upload(fileName);
             Logger.Instance.LogInfoEvent("Database backup completed");
-            _taskRunner?.Notify(TaskRunner.TaskState.RunningState.Running,"Databasebackup completed");
+            _taskRunner?.Update(TaskRunner.TaskState.RunningState.Running,"Databasebackup completed");
         }
 
         private string create() {
             Logger.Instance.LogInfoEvent("Creating database backup ...");
-            _taskRunner?.Notify(TaskRunner.TaskState.RunningState.Running,"Creating backup ...");
+            _taskRunner?.Update(TaskRunner.TaskState.RunningState.Running,"Creating backup ...");
 
             var dbName = "smart_energy_lab";
 
@@ -35,7 +35,9 @@ namespace SmartEnergyLabDataApi.Models
 
             var backup = new Execute();
             var args = $"-c -f \"{filename}\" {dbName}";
-            var exitCode = backup.Run("pg_dump",args,LOCAL_PATH);
+            // explicitly using /usr/bin to ensure it picks up v14.
+            // installing gdal brings in postgres12 which then means "pg_dump" is v12
+            var exitCode = backup.Run("/usr/bin/pg_dump",args,LOCAL_PATH);
             if ( exitCode!=0) {
                 throw new Exception(backup.StandardError);
             }
@@ -44,7 +46,7 @@ namespace SmartEnergyLabDataApi.Models
 
         private void upload(string filename) {
             Logger.Instance.LogInfoEvent("Uploading database backup ...");
-            _taskRunner?.Notify(TaskRunner.TaskState.RunningState.Running,"Uploading to SFTP site ...");
+            _taskRunner?.Update(TaskRunner.TaskState.RunningState.Running,"Uploading to SFTP site ...");
 
             sFtpToServer(DB_NAME,filename,Path.Combine(LOCAL_PATH,filename));
         }
@@ -102,7 +104,7 @@ namespace SmartEnergyLabDataApi.Models
                     var newProgress = (100*(long) prog)/length;
                     if ( newProgress!=progress) {
                         progress = newProgress;
-                        _taskRunner?.Notify(TaskRunner.TaskState.RunningState.Running,"Uploading to SFTP site ...",(int) progress);
+                        _taskRunner?.Update(TaskRunner.TaskState.RunningState.Running,"Uploading to SFTP site ...",(int) progress);
                     }
                 });
             }

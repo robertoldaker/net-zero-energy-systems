@@ -19,11 +19,13 @@ namespace EnergySystemLabDataApi.SubStations
     {
         private IBackgroundTasks _backgroundTasks;
         private DatabaseBackupBackgroundTask _backupDbTask;
+        private LoadNetworkDataBackgroundTask _loadNetworkDataTask;
 
         public AdminController(IBackgroundTasks backgroundTasks)
         {
             _backgroundTasks = backgroundTasks;
             _backupDbTask = backgroundTasks.GetTask<DatabaseBackupBackgroundTask>(DatabaseBackupBackgroundTask.Id);
+            _loadNetworkDataTask = backgroundTasks.GetTask<LoadNetworkDataBackgroundTask>(LoadNetworkDataBackgroundTask.Id);
         }
 
         /// <summary>
@@ -74,32 +76,16 @@ namespace EnergySystemLabDataApi.SubStations
         }
 
         /// <summary>
-        /// Load geo spatial data
+        /// Loads substations and supply points from external websites
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Route("LoadGeoSpatialData")]
-        public IActionResult LoadGeoSpatialData() {
+        [Route("LoadNetworkData")]
+        public IActionResult LoadNetworkData() {
             try {
-                var loader = new GeoSpatialDataLoader();
-                var message = loader.Load();
-                return this.Ok(message);
-            } catch( Exception e) {
-                return this.StatusCode(500,e.Message);
-            }
-        }
-
-        /// <summary>
-        /// Load geo spatial data
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("LoadDistributionData")]
-        public IActionResult LoadDistributionData() {
-            try {
-                var loader = new DistributionDataLoader();
-                var message = loader.Load();
-                return this.Ok(message);
+                //
+                _loadNetworkDataTask.Run();
+                return this.Ok();
             } catch( Exception e) {
                 return this.StatusCode(500,e.Message);
             }

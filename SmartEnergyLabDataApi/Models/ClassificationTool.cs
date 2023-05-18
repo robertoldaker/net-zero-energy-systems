@@ -89,7 +89,7 @@ namespace SmartEnergyLabDataApi.Models
                     var message = $"Created data for [{dss.Name}]";
                     if ( taskRunner!=null ) {
                         int percentCompleted = (i*100)/dsss.Count;
-                        taskRunner.Notify(TaskState.RunningState.Running, message, percentCompleted);
+                        taskRunner.Update(TaskState.RunningState.Running, message, percentCompleted);
                     }
                     Logger.Instance.LogInfoEvent(message);
                 }

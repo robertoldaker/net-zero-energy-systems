@@ -375,6 +375,10 @@ export class DataClientService {
         this.getBasicRequest('/Admin/BackupDb', onComplete);
     }
 
+    LoadNetworkData(onComplete: (resp: any)=> void | undefined) {
+        this.getBasicRequest('/Admin/LoadNetworkData', onComplete);
+    }
+
     Logs(onComplete: (resp: any)=> void | undefined) {
         this.getBasicRequest('/Admin/Logs', onComplete);
     }

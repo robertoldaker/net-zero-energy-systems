@@ -13,10 +13,8 @@ export class AdminGeneralComponent implements OnInit {
      }
 
     backupDb() {
-        this.message = "Working ..."
         this.dataClientService.BackupDb((result)=>{
             console.log(result)
-            this.message = result
         })
     }
 
@@ -26,6 +24,11 @@ export class AdminGeneralComponent implements OnInit {
 
     stopMaintenance() {
 
+    }
+
+    loadNetworkData() {
+        this.dataClientService.LoadNetworkData((result)=>{
+        })
     }
 
     ngOnInit(): void {

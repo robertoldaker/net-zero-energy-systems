@@ -11,6 +11,11 @@ namespace SmartEnergyLabDataApi.Models
 
         public delegate void StateUpdateHandler(TaskState.RunningState state, string message, int progress=-1);
         public event StateUpdateHandler StateUpdateEvent;
+        public delegate void ProgressUpdateHandler(int progress);
+        public event ProgressUpdateHandler ProgressUpdateEvent;
+        public delegate void MessageUpdateHandler(string message);
+        public event MessageUpdateHandler MessageUpdateEvent;
+
 
         public TaskRunner(Action<object?> action)
         {
@@ -46,8 +51,15 @@ namespace SmartEnergyLabDataApi.Models
             }
         }
 
-        public void Notify(TaskState.RunningState state, string message, int progress=-1) {
+        public void Update(TaskState.RunningState state, string message, int progress=-1) {
             StateUpdateEvent?.Invoke(state, message,progress);
+        }
+        
+        public void Update(int progress) {
+            ProgressUpdateEvent?.Invoke(progress);
+        }
+        public void Update(string message) {
+            MessageUpdateEvent?.Invoke(message);
         }
 
         public class TaskState
@@ -55,8 +67,8 @@ namespace SmartEnergyLabDataApi.Models
             public enum RunningState { Running, Finished }
 
             public RunningState State { get; private set;}
-            public string Message { get; private set; }
-            public int Progress { get; private set; }
+            public string Message { get; set; }
+            public int Progress { get; set; }
             public int TaskId {get; set;}
             public TaskState(int id, RunningState state, string message, int progress=-1) {
                 TaskId = id;

@@ -1,3 +1,4 @@
+using HaloSoft.EventLogger;
 using Microsoft.AspNetCore.SignalR;
 using static SmartEnergyLabDataApi.Models.TaskRunner;
 
@@ -32,7 +33,7 @@ namespace SmartEnergyLabDataApi.Models
         }
 
         public T GetTask<T>( int taskId ) where T : BackgroundTaskBase {
-            if ( _tasksDict.TryGetValue(_taskId, out BackgroundTaskBase task)) {
+            if ( _tasksDict.TryGetValue(taskId, out BackgroundTaskBase task)) {
                 return (T) task;
             } else {
                 throw new Exception($"Task with id [{taskId}] not found. Has it been registered with a call to Register?");
@@ -46,6 +47,7 @@ namespace SmartEnergyLabDataApi.Models
     }
 
     public abstract class BackgroundTaskBase {
+        private TaskState _lastTaskState;
         protected IBackgroundTasks _tasks;
         protected int _id;
         protected BackgroundTaskBase(IBackgroundTasks tasks) {
@@ -58,8 +60,24 @@ namespace SmartEnergyLabDataApi.Models
         protected void stateUpdate(TaskState.RunningState state, string message, int progress=-1) {
             var taskState = new TaskState(_id,state,message,progress);
             _tasks.StateUpdate(taskState);
+            Logger.Instance.LogInfoEvent(message);
+            _lastTaskState = taskState;
         }
 
+        protected void percentUpdate(int progress) {
+            if ( _lastTaskState!=null) {
+                _lastTaskState.Progress = progress;
+                _tasks.StateUpdate(_lastTaskState);
+            }
+        }
+
+        protected void messageUpdate(string message) {
+            if ( _lastTaskState!=null) {
+                _lastTaskState.Message = message;
+                _tasks.StateUpdate(_lastTaskState);
+                Logger.Instance.LogInfoEvent(message);
+            }
+        }
     }
 
     public class ClassificationToolBackgroundTask : BackgroundTaskBase
@@ -87,7 +105,8 @@ namespace SmartEnergyLabDataApi.Models
                 }
             });
             _ctTask.StateUpdateEvent+=stateUpdate;
-
+            _ctTask.ProgressUpdateEvent+=percentUpdate;
+            _ctTask.MessageUpdateEvent+=messageUpdate;
         }
 
 
@@ -134,7 +153,8 @@ namespace SmartEnergyLabDataApi.Models
                 }
             });
             _ctTask.StateUpdateEvent+=stateUpdate;
-
+            _ctTask.ProgressUpdateEvent+=percentUpdate;
+            _ctTask.MessageUpdateEvent+=messageUpdate;
         }
         public override bool IsRunning =>  _ctTask.IsRunning;
 
@@ -154,6 +174,55 @@ namespace SmartEnergyLabDataApi.Models
 
         public static void Register(IBackgroundTasks tasks) {
             var instance = new DatabaseBackupBackgroundTask(tasks);
+            Id = instance._id;
+        }
+
+        public static int Id;
+    }
+
+    public class LoadNetworkDataBackgroundTask : BackgroundTaskBase
+    {
+        private TaskRunner _ctTask;
+        private const string NAME="Network data load";
+
+        protected LoadNetworkDataBackgroundTask(IBackgroundTasks tasks) : base(tasks) {
+            _ctTask = new TaskRunner( (taskRunner) =>
+            {
+                stateUpdate(TaskState.RunningState.Running, $"{NAME} started", 0);
+                try {
+                    stateUpdate(TaskState.RunningState.Running,"Started loading Distribution Data");
+                    var dataLoader = new DistributionDataLoader((TaskRunner?)taskRunner);
+                    dataLoader.Load();
+                    stateUpdate(TaskState.RunningState.Running,"Started loading Geo Spatial data");
+                    var spatialLoader = new GeoSpatialDataLoader((TaskRunner?)taskRunner);
+                    spatialLoader.Load();
+                    stateUpdate(TaskState.RunningState.Finished, $"{NAME} finished", 100);
+                } catch( Exception e) {
+                    stateUpdate(TaskState.RunningState.Finished, $"{NAME} aborted aborted [{e.Message}]", 0);
+                }
+            });
+            _ctTask.StateUpdateEvent+=stateUpdate;
+            _ctTask.ProgressUpdateEvent+=percentUpdate;
+            _ctTask.MessageUpdateEvent+=messageUpdate;
+        }
+        public override bool IsRunning =>  _ctTask.IsRunning;
+
+        public override void Cancel()
+        {
+            _ctTask.Cancel();
+        }
+
+        public void Run()
+        {
+            if (_ctTask.IsRunning)
+            {
+                throw new Exception("Database backup is currently in progress, please try again later");
+            }
+            _ctTask.Run();
+        }
+
+        public static void Register(IBackgroundTasks tasks) {
+            var instance = new LoadNetworkDataBackgroundTask(tasks);
             Id = instance._id;
         }
 

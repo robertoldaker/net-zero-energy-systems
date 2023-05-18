@@ -98,6 +98,7 @@ public static class Program
         if ( backgroundTasks!=null ) {
             ClassificationToolBackgroundTask.Register(backgroundTasks);
             DatabaseBackupBackgroundTask.Register(backgroundTasks);
+            LoadNetworkDataBackgroundTask.Register(backgroundTasks);
         }
         
 

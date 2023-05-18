@@ -15,7 +15,7 @@ namespace SmartEnergyLabDataApi.Models
             "West Midlands GSP",
             "South Wales GSP",
             "South West GSP",
-            "East Midlands BSP",
+          /*  "East Midlands BSP",
             "South Wales BSP",
             "South West BSP",
             "West Midlands BSP",
@@ -26,25 +26,33 @@ namespace SmartEnergyLabDataApi.Models
             "East Midlands Distribution",
             "West Midlands Distribution",
             "South Wales Distribution",
-            "South West Distribution",
+            "South West Distribution",*/
             };
         private HttpClient _httpClientGpkg;
         private static object _httpClientGpkgLock = new object();
+        private TaskRunner? _taskRunner;
 
-        public GeoSpatialDataLoader() {
-
+        public GeoSpatialDataLoader(TaskRunner? taskRunner) {
+            _taskRunner = taskRunner;
         }
         public string Load() {
             var message = "";
             var ckanLoader = new CKANDataLoader(BASE_ADDRESS,PACKAGE_NAME);
             //
             var cLoader = new ConditionalDataLoader();
+            int done=0;
             foreach ( var name in DATASET_NAMES) {
+                done++;
+                var percent = (100*done)/DATASET_NAMES.Length;
                 var spd = ckanLoader.GetDatasetInfo(name);
                 if ( spd!=null ) {
-                    message = cLoader.Load(spd, ()=> {
+                    message += cLoader.Load(spd, ()=> {
                         using ( var da = new DataAccess()) {
-                            return processGpkg(da, spd)+"\n";
+                            var msg = processGpkg(da, spd)+"\n";
+                            _taskRunner?.Update($"Processing [{spd.name}] ...");
+                            _taskRunner?.Update(percent);
+                            da.CommitChanges();
+                            return msg;
                         }
                     });
                 }
@@ -83,7 +91,7 @@ namespace SmartEnergyLabDataApi.Models
                     File.Delete(gPkgFile);
                 }
                 if ( File.Exists(geoJsonFile)) {
-                    //??File.Delete(geoJsonFile);
+                    File.Delete(geoJsonFile);
                 }
             }
         }
@@ -125,32 +133,42 @@ namespace SmartEnergyLabDataApi.Models
             if ( ga==null) {
                 throw new Exception($"Could not find Geographical area for area code=[{dnoArea}]");
             }
+            Logger.Instance.LogInfoEvent($"Started reading GSPs from GeoSpatial dataset [{spd.name}]");
 
-            var gridSupplyPoints = da.SupplyPoints.GetGridSupplyPoints();
             string msg = "";
+
+            var addedGSPs = new List<GridSupplyPoint>();
 
             using( var fs = new FileStream(geoJsonFile,FileMode.Open)) {
                 var geoJson = JsonSerializer.Deserialize<GeoJson>(fs);
                 var geoName = geoJson.name;
                 int numNew = 0;
                 int numModified = 0;
+                int numIgnored = 0;
                 if ( geoName==null || !geoName.Contains("GSP")) {
                     throw new Exception("Name of geojson file needs to contain \"GSP\"");
                 }
                 int nSupplyPoints = geoJson.features.Length;
                 foreach( var feature in geoJson.features) {                    
-                    string nr = feature.properties.NR.ToString();                    
-                    var gsp = gridSupplyPoints.Where( m=>m.NR == nr ).FirstOrDefault();
+                    string nrId = feature.properties.GSP_NRID.ToString();
+                    string name = feature.properties.GSP_NRID_NAME;
+                    // Ignore if name is empty (West midlands has this)
+                    if (string.IsNullOrEmpty(name)) {
+                        numIgnored++;
+                        continue;
+                    }
+                    var gsp = da.SupplyPoints.GetGridSupplyPointByNrIdOrName(nrId,name);
                     if ( gsp==null ) {
-                        gsp = new GridSupplyPoint(feature.properties.NR.ToString(), feature.properties.GSP_NRID.ToString(),ga,ga.DistributionNetworkOperator);
-                        da.SupplyPoints.Add(gsp);
+                        gsp = new GridSupplyPoint(name,"", nrId,ga,ga.DistributionNetworkOperator);
+                        Logger.Instance.LogInfoEvent($"Added new GSP [{name}] nrId=[{nrId}]");
+                        addedGSPs.Add(gsp);
                         numNew++;
                     } else {
-                        numModified++;
+                        if ( updateGSP(gsp,feature.properties)) {
+                            Logger.Instance.LogInfoEvent($"Modifiing existing GSP [{gsp.Name}] nrId=[{gsp.NRId}] nr=[{gsp.NR}]");
+                            numModified++;
+                        }
                     }
-                    gsp.Name = feature.properties.NAME;
-                    //
-
                     var elements = feature.geometry.coordinates.Deserialize<double[][][][]>();
                     int maxIndex=0;
                     int maxLength = 0;
@@ -161,6 +179,9 @@ namespace SmartEnergyLabDataApi.Models
                         }
                     }
                     var length = elements[maxIndex][0].Length;
+                    if ( gsp.GISData==null) {
+                        gsp.GISData = new GISData();
+                    }
                     gsp.GISData.BoundaryLatitudes = new double[length];
                     gsp.GISData.BoundaryLongitudes = new double[length];
                     for(int index=0; index<length; index++) {
@@ -178,10 +199,28 @@ namespace SmartEnergyLabDataApi.Models
                         gsp.GISData.Longitude = gsp.GISData.BoundaryLongitudes.Sum()/gsp.GISData.BoundaryLongitudes.Length;
                     }
                     //
-                    msg = $"{ga.Name} area, [{numNew}] Grid Supply Points added, [{numModified}] Grid Supply Points modified";
                 }                
+                msg = $"{ga.Name} area, [{numNew}] GSPs added, [{numModified}] GSPs modified, [{numIgnored} GSPs ignored]";
+            }
+
+            // add new ones found
+            foreach( var gsp in addedGSPs) {
+                da.SupplyPoints.Add(gsp);
             }
             return msg;
+        }
+
+        private bool updateGSP(GridSupplyPoint gsp, Props props) {
+            bool updated = false;
+            if ( gsp.Name!=props.GSP_NRID_NAME) {
+                gsp.Name = props.GSP_NRID_NAME;
+                updated=true;
+            } 
+            if ( gsp.NRId!=props.GSP_NRID.ToString()) {
+                gsp.NRId = props.GSP_NRID.ToString();
+                updated=true;
+            }
+            return updated;
         }
 
         private string loadBSPs(DataAccess da, CKANDataLoader.CKANDataset spd, string geoJsonFile) {
@@ -268,7 +307,7 @@ namespace SmartEnergyLabDataApi.Models
                     string nr = feature.properties.NR.ToString();
                     Console.WriteLine($"Processing {nDone++} of {nDss}, [{feature.properties.NAME}] ");
                     var dss = da.Substations.GetDistributionSubstation(nr);
-                    var pss = da.Substations.GetPrimarySubstation(feature.properties.primary_NR.ToString());
+                    var pss = da.Substations.GetPrimarySubstation(feature.properties.PRIM_NRID.ToString());
                     if ( pss==null ) {
                         msg+=$"Could not find Primary substation with PRIM_NRID=[{feature.properties.PRIM_NRID}]\n";
                         numIgnored++;
@@ -285,11 +324,11 @@ namespace SmartEnergyLabDataApi.Models
                     //
                     dss.Name = feature.properties.NAME;
                     // location
-                    var eastings = feature.properties.dp2_x;                    
+                    /*var eastings = feature.properties.dp2_x;                    
                     var northings = feature.properties.dp2_y;
                     var latLong=LatLonConversions.ConvertOSToLatLon(eastings,northings);
                     dss.GISData.Latitude = latLong.Latitude;
-                    dss.GISData.Longitude = latLong.Longitude;
+                    dss.GISData.Longitude = latLong.Longitude;*/
                     // boundary
                     var elements = feature.geometry.coordinates.Deserialize<double[][][][]>();
                     int maxIndex=0;
@@ -303,6 +342,7 @@ namespace SmartEnergyLabDataApi.Models
                     var length = elements[maxIndex][0].Length;
                     dss.GISData.BoundaryLatitudes = new double[length];
                     dss.GISData.BoundaryLongitudes = new double[length];
+                    LatLon latLong;
                     for(int index=0; index<length; index++) {                            
                         latLong=LatLonConversions.ConvertOSToLatLon(elements[maxIndex][0][index][0],elements[maxIndex][0][index][1]);
                         dss.GISData.BoundaryLongitudes[index] = latLong.Longitude;
@@ -440,17 +480,16 @@ namespace SmartEnergyLabDataApi.Models
         }
 
         public class Props {
-            public int fid {get; set;}
-            public int GSP_NRID {get; set;}
-            public int BSP_NRID {get; set;}
-            public int PRIM_NRID {get; set;}
-            public string NR {get; set;}
             public int NRID {get; set;}
+            public string NR {get; set;}
+            public int NR_TYPE_ID {get; set;}
             public string NAME {get; set;}
-            //??
-            public int primary_NR {get; set;}
-            public int dp2_x {get; set;} 
-            public int dp2_y {get; set;}
+            public int PRIM_NRID {get; set;}
+            public string PRIM_NRID_NAME {get; set;}
+            public int BSP_NRID {get; set;}
+            public string BSP_NRID_NAME {get; set;}
+            public int GSP_NRID {get; set;}
+            public string GSP_NRID_NAME {get; set;}
         }
 
         public class Geometry {

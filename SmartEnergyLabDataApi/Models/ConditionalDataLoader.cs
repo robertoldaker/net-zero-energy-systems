@@ -39,7 +39,7 @@ namespace SmartEnergyLabDataApi.Models
                     }
                 }
                 //
-                da.CommitChanges();
+                //??da.CommitChanges();
             }
             //
             return message;

@@ -19,7 +19,11 @@ export class AdminLogsComponent implements OnInit {
         this.dataService.Logs((resp)=>{
             this.Logs = resp.log;
             if ( this.logDiv) {
-                this.logDiv.nativeElement.scrollTop = this.logDiv.nativeElement.scrollHeight;
+                window.setTimeout(()=>{
+                    if ( this.logDiv ) {
+                        this.logDiv.nativeElement.scrollTop = this.logDiv.nativeElement.scrollHeight;
+                    }
+                }, 200)
             }
         })
     }
