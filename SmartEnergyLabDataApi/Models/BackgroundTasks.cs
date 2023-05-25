@@ -190,9 +190,9 @@ namespace SmartEnergyLabDataApi.Models
             {
                 stateUpdate(TaskState.RunningState.Running, $"{NAME} started", 0);
                 try {
-                    stateUpdate(TaskState.RunningState.Running,"Started loading Distribution Data");
-                    var dataLoader = new DistributionDataLoader((TaskRunner?)taskRunner);
-                    dataLoader.Load();
+                    //??stateUpdate(TaskState.RunningState.Running,"Started loading Distribution Data");
+                    //??var dataLoader = new DistributionDataLoader((TaskRunner?)taskRunner);
+                    //??dataLoader.Load();
                     stateUpdate(TaskState.RunningState.Running,"Started loading Geo Spatial data");
                     var spatialLoader = new GeoSpatialDataLoader((TaskRunner?)taskRunner);
                     spatialLoader.Load();

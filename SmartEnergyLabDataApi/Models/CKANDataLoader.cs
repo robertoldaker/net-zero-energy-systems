@@ -24,24 +24,26 @@ namespace SmartEnergyLabDataApi.Models
         }
 
 
-        public List<T> LoadAll<T>(string datasetName) {
+        public List<T> LoadAll<T>(string datasetName, Action<int>? progress=null) {
             var list = new List<T>();
             var limit = 5000;
             var initial = LoadInitial<T>(datasetName, limit);
-            addContainer(list,initial,datasetName);
+            int percent=addContainer(list,initial,datasetName);
+            progress?.Invoke(percent);
             var total = initial.result.total;
             var next = initial;
             while ( list.Count<total) {
                 next = LoadNext<T>(next);
                 addContainer(list,next,datasetName);
-                Console.WriteLine($"Loaded {list.Count}");
+                progress?.Invoke(percent);
             }
             return list;
         }
 
-        private void addContainer<T>(List<T> list, DatasetContainer<T> container, string datasetName) {
+        private int addContainer<T>(List<T> list, DatasetContainer<T> container, string datasetName) {
             if ( container.success ) {
                 list.AddRange(container.result.records);
+                return (list.Count*100)/container.result.total;
             } else {
                 throw new Exception($"Had unsuccessful load for dataset [{datasetName}], package name [{_packageName}]");
             }

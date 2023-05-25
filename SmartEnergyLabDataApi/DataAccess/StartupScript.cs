@@ -25,6 +25,8 @@ namespace SmartEnergyLabDataApi.Data
                 script.fixExistingGAs();
                 script.createDefaultDNOs();
                 script.createDefaultGeographicalAreas();
+            } else if ( newVersion==6) {
+                script.createIndexes2();
             }
         }
 
@@ -40,6 +42,29 @@ namespace SmartEnergyLabDataApi.Data
                     DataAccess.RunSql("CREATE INDEX ix_day_month_num ON substation_load_profiles (day,monthnumber)");
                     DataAccess.RunSql("CREATE INDEX ix_year_source ON substation_load_profiles (year,source)");
                     DataAccess.RunSql("CREATE INDEX ix_num ON substation_classifications (num)");
+                }
+            }
+            catch (Exception e) {
+                Logger.Instance.LogErrorEvent($"Error creating initial indexes [{e.Message}]");
+            }
+        }
+
+        private void createIndexes2()
+        {
+            try {
+                if (DataAccess.DbConnection.DbProvider == DbProvider.PostgreSQL) {
+                    // dist substations
+                    DataAccess.RunSql("CREATE INDEX ix_dss_nr_id ON distribution_substations (nr)");
+                    DataAccess.RunSql("CREATE INDEX ix_dss_nrid_id ON distribution_substations (nrid)");
+                    DataAccess.RunSql("CREATE INDEX ix_dss_name_id ON distribution_substations (name)");
+                    // primary substations
+                    DataAccess.RunSql("CREATE INDEX ix_pss_nr_id ON primary_substations (nr)");
+                    DataAccess.RunSql("CREATE INDEX ix_pss_nrid_id ON primary_substations (nrid)");
+                    DataAccess.RunSql("CREATE INDEX ix_pss_name_id ON primary_substations (name)");
+                    // grid supply points
+                    DataAccess.RunSql("CREATE INDEX ix_gsps_nr_id ON grid_supply_points (nr)");
+                    DataAccess.RunSql("CREATE INDEX ix_gsps_nrid_id ON grid_supply_points (nrid)");
+                    DataAccess.RunSql("CREATE INDEX ix_gsps_name_id ON grid_supply_points (name)");
                 }
             }
             catch (Exception e) {

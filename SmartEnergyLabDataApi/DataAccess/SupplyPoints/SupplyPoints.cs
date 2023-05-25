@@ -39,11 +39,21 @@ namespace SmartEnergyLabDataApi.Data
         }
 
         public GridSupplyPoint GetGridSupplyPointByNrOrName(string nr, string name) {
-            return Session.QueryOver<GridSupplyPoint>().Where( m=>m.NR == nr || m.Name == name).Take(1).SingleOrDefault();
+            var gsp=Session.QueryOver<GridSupplyPoint>().Where( m=>m.NR == nr).Take(1).SingleOrDefault();
+            if ( gsp!=null) {
+                return gsp;
+            } else {
+                return Session.QueryOver<GridSupplyPoint>().Where( m=>m.Name == name).Take(1).SingleOrDefault();
+            }
         }
 
         public GridSupplyPoint GetGridSupplyPointByNrIdOrName(string nrId, string name) {
-            return Session.QueryOver<GridSupplyPoint>().Where( m=>m.NRId == nrId || m.Name == name).Take(1).SingleOrDefault();
+            var gsp=Session.QueryOver<GridSupplyPoint>().Where( m=>m.NRId == nrId).Take(1).SingleOrDefault();
+            if ( gsp!=null ) {
+                return gsp;
+            } else {
+                return Session.QueryOver<GridSupplyPoint>().Where( m=>m.Name == name).Take(1).SingleOrDefault();
+            }
         }
 
         public GridSupplyPoint GetGridSupplyPoint(GeographicalArea ga, string name) {

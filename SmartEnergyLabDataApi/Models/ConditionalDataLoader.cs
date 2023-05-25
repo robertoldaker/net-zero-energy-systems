@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
 
 namespace SmartEnergyLabDataApi.Models
@@ -21,6 +22,8 @@ namespace SmartEnergyLabDataApi.Models
                             dsi.Message = "";
                             dsi.LastModified = spd.last_modified.ToUniversalTime();
                         } catch( Exception e) {
+                            Logger.Instance.LogErrorEvent("Exception processing CKAN info");
+                            Logger.Instance.LogException(e);
                             // This needs sorting out properly as it looks like the driver is allowing only UTC datetimes to be specified
                             // but when loaded from the db they do not have the Kind flag set to UTC.
                             // Hence we need to set all of them explicitly here

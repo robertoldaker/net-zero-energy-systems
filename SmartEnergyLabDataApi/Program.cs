@@ -14,7 +14,7 @@ public static class Program
 {
     // Start the data access - this will check schema and run any startup scripts as needed
     private const int SCHEMA_VERSION = 33;
-    private const int SCRIPT_VERSION = 5;
+    private const int SCRIPT_VERSION = 6;
 
     public static void Main(string[] args)
     {

@@ -186,6 +186,26 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
+        public DistributionSubstation GetDistributionSubstationByNrOrName(string nr, string name)
+        {
+            var dss = Session.QueryOver<DistributionSubstation>().Where( m=>m.NR==nr).Take(1).SingleOrDefault();
+            if ( dss!=null ) {
+                return dss;
+            } else {
+                return Session.QueryOver<DistributionSubstation>().Where( m=>m.Name==name).Take(1).SingleOrDefault();
+            }
+        }
+        public DistributionSubstation GetDistributionSubstationByNrIdOrName(string nrId, string name)
+        {
+            var dss = Session.QueryOver<DistributionSubstation>().Where( m=>m.NRId==nrId).Take(1).SingleOrDefault();
+            if ( dss!=null ) {
+                return dss;
+            } else {
+                return Session.QueryOver<DistributionSubstation>().Where( m=>m.Name==name).Take(1).SingleOrDefault();
+            }
+        }
+
+
         public IList<SubstationClassification> GetDistributionSubstationClassifications(int id)
         {
             var q = Session.QueryOver<SubstationClassification>().
@@ -221,6 +241,24 @@ namespace SmartEnergyLabDataApi.Data
         public PrimarySubstation GetPrimarySubstationByNRId(string nrId)
         {
             return Session.QueryOver<PrimarySubstation>().Where(m => m.NRId == nrId).Take(1).SingleOrDefault();
+        }
+        public PrimarySubstation GetPrimarySubstationByNrOrName(string nr, string name)
+        {
+            var pss=Session.QueryOver<PrimarySubstation>().Where(m => m.NR == nr).Take(1).SingleOrDefault();
+            if ( pss!=null) {
+                return pss;
+            } else {
+                return Session.QueryOver<PrimarySubstation>().Where(m => m.Name == name).Take(1).SingleOrDefault();
+            }
+        }
+        public PrimarySubstation GetPrimarySubstationByNrIdOrName(string nrId, string name)
+        {
+            var pss=Session.QueryOver<PrimarySubstation>().Where(m => m.NRId == nrId).Take(1).SingleOrDefault();
+            if ( pss!=null) {
+                return pss;
+            } else {
+                return Session.QueryOver<PrimarySubstation>().Where(m => m.Name == name).Take(1).SingleOrDefault();
+            }
         }
         public IList<PrimarySubstation> GetPrimarySubstations(DistributionNetworkOperator dno)
         {
