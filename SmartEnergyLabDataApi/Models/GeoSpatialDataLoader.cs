@@ -21,7 +21,7 @@ namespace SmartEnergyLabDataApi.Models
             "South West BSP",
             "West Midlands BSP",
             */
-            /*
+            
             "East Midlands Primary",
             "West Midlands Primary",
             "South Wales Primary",
@@ -29,8 +29,7 @@ namespace SmartEnergyLabDataApi.Models
             "East Midlands Distribution", 
             "West Midlands Distribution",
             "South Wales Distribution",
-            "South West Distribution",
-            */
+            "South West Distribution",         
             
             };
         private HttpClient _httpClientGpkg;
@@ -99,7 +98,7 @@ namespace SmartEnergyLabDataApi.Models
                     File.Delete(gPkgFile);
                 }
                 if ( File.Exists(geoJsonFile)) {
-                    //??File.Delete(geoJsonFile);
+                    File.Delete(geoJsonFile);
                 }
             }
         }
