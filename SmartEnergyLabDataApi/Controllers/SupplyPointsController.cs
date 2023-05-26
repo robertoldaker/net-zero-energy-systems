@@ -23,6 +23,19 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Gets all grid supply points
         /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("GridSupplyPoints/All")]
+        public IEnumerable<GridSupplyPoint> GetAllGridSupplyPoints()
+        {
+            using( var da = new DataAccess()) {
+                return da.SupplyPoints.GetGridSupplyPoints();
+            }
+        }
+
+        /// <summary>
+        /// Gets grid supply points for a geographical area
+        /// </summary>
         /// <param name="gaId">Geographical area id</param>
         /// <returns></returns>
         [HttpGet]

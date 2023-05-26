@@ -93,6 +93,13 @@ export class DataClientService {
             }
         }, error =>  this.logErrorMessage(error));
     }
+    GetAllGridSupplyPoints(onLoad: ((gsp: GridSupplyPoint[]) => void) | undefined) {
+        this.http.get<GridSupplyPoint[]>(this.baseUrl + `/SupplyPoints/GridSupplyPoints/All`).subscribe(result => {
+            if (onLoad !== undefined) {
+                onLoad(result);
+            }
+        }, error =>  this.logErrorMessage(error));
+    }
 
 
     /**

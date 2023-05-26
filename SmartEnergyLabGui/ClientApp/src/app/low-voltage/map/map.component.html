@@ -2,7 +2,7 @@
     <div #key>
         <app-map-key></app-map-key>
     </div>
-    <!-- note using strok colour of none until we can get polygon from the GSPs -->
+    <!-- note using stroke colour of none until we can get polygon from the GSPs -->
     <map-polygon [paths]="areaBoundary" [options]="{ fillColor: 'none', fillOpacity: 0, strokeColor: 'red', strokeWeight: 0}" (polygonClick)="setGeographicalArea($event)"></map-polygon>
     <!-- power -->
     <app-map-power></app-map-power>

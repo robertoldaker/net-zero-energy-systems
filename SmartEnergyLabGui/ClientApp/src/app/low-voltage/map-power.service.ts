@@ -26,6 +26,7 @@ export class MapPowerService {
             this.setSelectedGeographicalArea();
         })
         this.year = 2021;
+        this.loadAllGridSupplyPoints();
     }
 
     private geographicalArea: GeographicalArea | undefined
@@ -234,6 +235,14 @@ export class MapPowerService {
             })
         } 
         this.fireObjectSelectedEvent()
+    }
+
+    loadAllGridSupplyPoints() {
+        this.DataClientService.GetAllGridSupplyPoints((gsps) => {
+            this.GridSupplyPoints = gsps
+            this.NumberOfPrimarySubstationsForGa = this.getNumberOfPrimarySubstations(gsps)
+            this.GridSupplyPointsLoaded.emit(gsps)
+        });    
     }
 
     reloadLoadProfiles() {

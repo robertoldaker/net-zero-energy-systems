@@ -12,10 +12,10 @@ export class MapDataService {
         this.geographicalArea = undefined
 
         this.DataClientService = dataClient
-        this.DataClientService.GetGeographicalArea("South West England", (ga) => {
-            this.geographicalArea = ga;
-            this.selectGeographicalArea()
-        })
+        //??this.DataClientService.GetGeographicalArea("South West England", (ga) => {
+        //??    this.geographicalArea = ga;
+        //??    this.selectGeographicalArea()
+        //??})
     }
 
     private _showEVChargers: boolean = false;

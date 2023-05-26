@@ -11,7 +11,6 @@ namespace SmartEnergyLabDataApi.Models
         private string BASE_ADDRESS = "https://connecteddata.nationalgrid.co.uk";
         private const string PACKAGE_NAME = "spatial-datasets";
         private readonly string[] DATASET_NAMES = {            
-            
             "East Midlands GSP",
             "West Midlands GSP",
             "South Wales GSP",
@@ -22,7 +21,7 @@ namespace SmartEnergyLabDataApi.Models
             "South West BSP",
             "West Midlands BSP",
             */
-            
+            /*
             "East Midlands Primary",
             "West Midlands Primary",
             "South Wales Primary",
@@ -31,6 +30,7 @@ namespace SmartEnergyLabDataApi.Models
             "West Midlands Distribution",
             "South Wales Distribution",
             "South West Distribution",
+            */
             
             };
         private HttpClient _httpClientGpkg;
@@ -91,7 +91,6 @@ namespace SmartEnergyLabDataApi.Models
                         }
                     }
                 }
-                geoJsonFile  = Path.Combine(AppFolders.Instance.Temp,"South West Distribution.geojson");
                 //
                 return processJson(geoJsonFile);
 
@@ -100,7 +99,7 @@ namespace SmartEnergyLabDataApi.Models
                     File.Delete(gPkgFile);
                 }
                 if ( File.Exists(geoJsonFile)) {
-                    File.Delete(geoJsonFile);
+                    //??File.Delete(geoJsonFile);
                 }
             }
         }
@@ -147,6 +146,7 @@ namespace SmartEnergyLabDataApi.Models
                 }
 
                 var addedGSPs = new List<GridSupplyPoint>();
+                bool isNew = false;
 
                 using( var fs = new FileStream(geoJsonFile,FileMode.Open)) {
                     var geoJson = JsonSerializer.Deserialize<GeoJson>(fs);
@@ -171,6 +171,7 @@ namespace SmartEnergyLabDataApi.Models
                             gsp = new GridSupplyPoint(name,"", nrId,ga,ga.DistributionNetworkOperator);
                             Logger.Instance.LogInfoEvent($"Added new GSP [{name}] nrId=[{nrId}]");
                             addedGSPs.Add(gsp);
+                            isNew = true;
                             numNew++;
                         } else {
                             if ( updateGSP(gsp,feature.properties)) {
@@ -179,6 +180,7 @@ namespace SmartEnergyLabDataApi.Models
                             }
                         }
                         var elements = feature.geometry.coordinates.Deserialize<double[][][][]>();
+                        // work out polygon that is longest
                         int maxIndex=0;
                         int maxLength = 0;
                         for(int i=0;i<elements.Length;i++) {
@@ -187,27 +189,24 @@ namespace SmartEnergyLabDataApi.Models
                                 maxLength = elements[i][0].Length;
                             }
                         }
-                        var length = elements[maxIndex][0].Length;
-                        if ( gsp.GISData==null) {
-                            gsp.GISData = new GISData();
+                        if ( gsp.Name == "Seabank Sgp") {
+                            Logger.Instance.LogInfoEvent($"[{gsp.Name}] maxLength=[{maxLength}]");
                         }
-                        gsp.GISData.BoundaryLatitudes = new double[length];
-                        gsp.GISData.BoundaryLongitudes = new double[length];
-                        for(int index=0; index<length; index++) {
-                            var eastings = elements[maxIndex][0][index][0];
-                            var northings = elements[maxIndex][0][index][1];
-                            var latLong=LatLonConversions.ConvertOSToLatLon(eastings,northings);
-                            gsp.GISData.BoundaryLatitudes[index] = latLong.Latitude;
-                            gsp.GISData.BoundaryLongitudes[index] = latLong.Longitude;
+                        // If currently apears in a different geographical area then only update points
+                        if ( !isNew && gsp.GeographicalArea.Id!=ga.Id ) {
+                            int boundaryLength = gsp.GetBoundaryLength();
+                            // Border GSPs are often mentioned in both geographical areas so choose the one with most points
+                            // - a bit esoteric but not sure of a better way of doing just now
+                            if (  maxLength > boundaryLength ) {
+                                Logger.Instance.LogInfoEvent($"{gsp.Name}, moving from [{gsp.GeographicalArea.Name}] to [{ga.Name}], lengths=[{maxLength}/{boundaryLength}] ");
+                                gsp.GeographicalArea = ga;
+                                gsp.DistributionNetworkOperator = ga.DistributionNetworkOperator;
+                                updateBoundaryPoints(gsp,elements,maxIndex);
+                            }
+                        } else {
+                            updateBoundaryPoints(gsp,elements,maxIndex);
                         }
-                        //
-                        if ( gsp.GISData.BoundaryLatitudes.Length!=0 ) {
-                            gsp.GISData.Latitude = gsp.GISData.BoundaryLatitudes.Sum()/gsp.GISData.BoundaryLatitudes.Length;
-                        }
-                        if ( gsp.GISData.BoundaryLongitudes.Length!=0 ) {
-                            gsp.GISData.Longitude = gsp.GISData.BoundaryLongitudes.Sum()/gsp.GISData.BoundaryLongitudes.Length;
-                        }
-                        //
+
                     }                
                     msg = $"{ga.Name} area, [{numNew}] GSPs added, [{numModified}] modified, [{numIgnored}] ignored";
                 }
@@ -220,6 +219,29 @@ namespace SmartEnergyLabDataApi.Models
                 da.CommitChanges();
             }
             return msg;
+        }
+
+        private void updateBoundaryPoints(GridSupplyPoint gsp, double[][][][] elements, int maxIndex) {
+            var length = elements[maxIndex][0].Length;
+            if ( gsp.GISData==null) {
+                gsp.GISData = new GISData();
+            }
+            gsp.GISData.BoundaryLatitudes = new double[length];
+            gsp.GISData.BoundaryLongitudes = new double[length];
+            for(int index=0; index<length; index++) {
+                var eastings = elements[maxIndex][0][index][0];
+                var northings = elements[maxIndex][0][index][1];
+                var latLong=LatLonConversions.ConvertOSToLatLon(eastings,northings);
+                gsp.GISData.BoundaryLatitudes[index] = latLong.Latitude;
+                gsp.GISData.BoundaryLongitudes[index] = latLong.Longitude;
+            }
+            //
+            if ( gsp.GISData.BoundaryLatitudes.Length!=0 ) {
+                gsp.GISData.Latitude = gsp.GISData.BoundaryLatitudes.Sum()/gsp.GISData.BoundaryLatitudes.Length;
+            }
+            if ( gsp.GISData.BoundaryLongitudes.Length!=0 ) {
+                gsp.GISData.Longitude = gsp.GISData.BoundaryLongitudes.Sum()/gsp.GISData.BoundaryLongitudes.Length;
+            }
         }
 
         private bool updateGSP(GridSupplyPoint gsp, Props props) {

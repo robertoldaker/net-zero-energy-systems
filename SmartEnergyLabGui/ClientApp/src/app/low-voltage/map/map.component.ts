@@ -37,14 +37,14 @@ export class MapComponent extends ComponentBase implements OnInit, AfterViewInit
 
     }
 
-    zoom = 8
+    zoom = 7
     center: google.maps.LatLngLiteral = {
-        lat: 50.853, lng: -3.714
+        lat: 52.561928, lng: -1.464854
     }
     options: google.maps.MapOptions = {            
         disableDoubleClickZoom: true,
         mapTypeId: 'roadmap',
-        minZoom: 8,
+        minZoom: 7,
         styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }, { stylers: [{ gamma: 1.5 }] }],
         mapTypeControl: false,
         scaleControl: true
