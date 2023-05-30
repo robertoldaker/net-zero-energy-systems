@@ -197,7 +197,7 @@ namespace SmartEnergyLabDataApi.Models
                     //??var spatialLoader = new GeoSpatialDataLoader((TaskRunner?)taskRunner);
                     //??spatialLoader.Load();
                     stateUpdate(TaskState.RunningState.Running,"Started loading UK Power Network data");
-                    var ukPowerNetworksLoader = new UKPowerNetworkLoader();
+                    var ukPowerNetworksLoader = new UKPowerNetworkLoader((TaskRunner?)taskRunner);
                     ukPowerNetworksLoader.Load();
                     stateUpdate(TaskState.RunningState.Finished, $"{NAME} finished", 100);
                 } catch( Exception e) {

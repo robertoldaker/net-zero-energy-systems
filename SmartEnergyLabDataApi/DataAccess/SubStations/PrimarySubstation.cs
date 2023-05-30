@@ -15,12 +15,23 @@ namespace SmartEnergyLabDataApi.Data
         {
             NR = nr;
             NRId = nrId;
+            SetGSP(gsp);
+            GISData = new GISData(this);
+        }
+
+        public PrimarySubstation(string siteFunctionalLocation, GridSupplyPoint gsp)
+        {
+            SiteFunctionalLocation = siteFunctionalLocation;
+            SetGSP(gsp);
+            GISData = new GISData(this);
+        }
+
+        private void SetGSP(GridSupplyPoint gsp) {
             GridSupplyPoint = gsp;
             if ( gsp!=null) {
                 DistributionNetworkOperator = gsp.DistributionNetworkOperator;
                 GeographicalArea = gsp.GeographicalArea;
             }
-            GISData = new GISData(this);
         }
 
         [Id(0, Name = "Id", Type = "int")]
@@ -35,6 +46,9 @@ namespace SmartEnergyLabDataApi.Data
 
         [Property()]
         public virtual string NRId { get; set; }
+
+        [Property()]
+        public virtual string SiteFunctionalLocation { get; set; }
 
         [Property()]
         public virtual string Name { get; set; }

@@ -272,6 +272,7 @@ namespace SmartEnergyLabDataApi.Data
                 Fetch(SelectMode.Fetch,m=>m.GISData).
                 List();
         }
+
         public IList<PrimarySubstation> GetPrimarySubstationsByGridSupplyPointId(int gspId)
         {
             return Session.QueryOver<PrimarySubstation>().
@@ -280,7 +281,13 @@ namespace SmartEnergyLabDataApi.Data
                 List();
         }
 
-
+        public PrimarySubstation GetPrimarySubstationBySiteFunctionalLocation(string siteFunctionalLocation)
+        {
+            return Session.QueryOver<PrimarySubstation>().
+                Where(m => m.SiteFunctionalLocation == siteFunctionalLocation).
+                Fetch(SelectMode.Fetch,m=>m.GISData).
+                Take(1).SingleOrDefault();
+        }
 
         #endregion
 
