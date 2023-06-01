@@ -40,7 +40,7 @@ namespace SmartEnergyLabDataApi.Models
                         continue;
                     }
                     if ( pss==null ) {                        
-                        pss = new PrimarySubstation(nr,feature.properties.PRIM_NRID.ToString(), gsp);
+                        pss = new PrimarySubstation(ImportSource.File,nr,feature.properties.PRIM_NRID.ToString(), gsp);
                         _da.Substations.Add(pss);
                         numNew++;
                     } else {

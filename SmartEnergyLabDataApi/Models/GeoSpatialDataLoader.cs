@@ -11,26 +11,30 @@ namespace SmartEnergyLabDataApi.Models
         private string BASE_ADDRESS = "https://connecteddata.nationalgrid.co.uk";
         private const string PACKAGE_NAME = "spatial-datasets";
         private readonly string[] DATASET_NAMES = {            
-            "East Midlands GSP",
-            "West Midlands GSP",
+            /*"East Midlands GSP",
+            "West Midlands GSP",            
             "South Wales GSP",
             "South West GSP",
+            */
             /*
             "East Midlands BSP",
             "South Wales BSP",
             "South West BSP",
             "West Midlands BSP",
             */
-            
-            "East Midlands Primary",
+            /*
+            "East Midlands Primary",            
             "West Midlands Primary",
             "South Wales Primary",
             "South West Primary",
+            */
+            /*
+            */
             "East Midlands Distribution", 
             "West Midlands Distribution",
             "South Wales Distribution",
             "South West Distribution",         
-            
+
             };
         private HttpClient _httpClientGpkg;
         private static object _httpClientGpkgLock = new object();
@@ -78,6 +82,7 @@ namespace SmartEnergyLabDataApi.Models
             var geoJsonFile = gPkgFile.Replace(".gpkg",".geojson");
             try {
                 //
+                //
                 using (HttpRequestMessage message = getRequestMessage(HttpMethod.Get, _spd.url)) {
                     //
                     var response = client.SendAsync(message).Result;
@@ -90,6 +95,9 @@ namespace SmartEnergyLabDataApi.Models
                         }
                     }
                 }
+                
+                //??
+                //??geoJsonFile = Path.Combine(AppFolders.Instance.Temp,"South West Distribution.geojson");
                 //
                 return processJson(geoJsonFile);
 
@@ -98,6 +106,7 @@ namespace SmartEnergyLabDataApi.Models
                     File.Delete(gPkgFile);
                 }
                 if ( File.Exists(geoJsonFile)) {
+                    //??
                     File.Delete(geoJsonFile);
                 }
             }
@@ -165,9 +174,9 @@ namespace SmartEnergyLabDataApi.Models
                             numIgnored++;
                             continue;
                         }
-                        var gsp = da.SupplyPoints.GetGridSupplyPointByNrIdOrName(nrId,name);
+                        var gsp = da.SupplyPoints.GetGridSupplyPoint(ImportSource.NationalGridDistributionOpenData,null,nrId,name);
                         if ( gsp==null ) {
-                            gsp = new GridSupplyPoint(name,"", nrId,ga,ga.DistributionNetworkOperator);
+                            gsp = new GridSupplyPoint(ImportSource.NationalGridDistributionOpenData,name,null, nrId,ga,ga.DistributionNetworkOperator);
                             Logger.Instance.LogInfoEvent($"Added new GSP [{name}] nrId=[{nrId}]");
                             addedGSPs.Add(gsp);
                             isNew = true;
@@ -187,9 +196,6 @@ namespace SmartEnergyLabDataApi.Models
                                 maxIndex=i;
                                 maxLength = elements[i][0].Length;
                             }
-                        }
-                        if ( gsp.Name == "Seabank Sgp") {
-                            Logger.Instance.LogInfoEvent($"[{gsp.Name}] maxLength=[{maxLength}]");
                         }
                         // If currently apears in a different geographical area then only update points
                         if ( !isNew && gsp.GeographicalArea.Id!=ga.Id ) {
@@ -249,10 +255,6 @@ namespace SmartEnergyLabDataApi.Models
                 gsp.Name = props.GSP_NRID_NAME;
                 updated=true;
             } 
-            if ( gsp.NRId!=props.GSP_NRID.ToString()) {
-                gsp.NRId = props.GSP_NRID.ToString();
-                updated=true;
-            }
             return updated;
         }
 
@@ -267,22 +269,24 @@ namespace SmartEnergyLabDataApi.Models
             using( var da = new DataAccess() ) {
                 var ga = da.Organisations.GetGeographicalArea(GetDNOArea(_spd));
                 var dno = ga.DistributionNetworkOperator;
-                var primaryCache = new PrimaryCache(da, dno);
 
                 //
                 using (var stream = new FileStream(geoJsonFile,FileMode.Open)) {
                     var geoJson = JsonSerializer.Deserialize<GeoJson>(stream);
                     int nPrimaries = geoJson.features.Length;
                     foreach( var feature in geoJson.features) {
-                        var pss = primaryCache.Get(feature.properties.PRIM_NRID.ToString(),feature.properties.PRIM_NRID_NAME);
-                        var gsp =  da.SupplyPoints.GetGridSupplyPointByNrIdOrName(feature.properties.GSP_NRID.ToString(),feature.properties.GSP_NRID_NAME);
+                        var pss = da.Substations.GetPrimarySubstation(ImportSource.NationalGridDistributionOpenData,null,
+                                        feature.properties.PRIM_NRID.ToString(),
+                                        feature.properties.PRIM_NRID_NAME);
+                        var gsp =  da.SupplyPoints.GetGridSupplyPoint(ImportSource.NationalGridDistributionOpenData,null,feature.properties.GSP_NRID.ToString());
                         if ( gsp==null ) {
                             Logger.Instance.LogErrorEvent($"Could not find GSP with GSP_NRID=[{feature.properties.GSP_NRID}] [{feature.properties.GSP_NRID_NAME}]");
                             numIgnored++;
                             continue;
                         }
-                        if ( pss==null ) {                        
-                            pss = new PrimarySubstation(null,feature.properties.PRIM_NRID.ToString(), gsp);
+                        if ( pss==null ) {
+
+                            pss = new PrimarySubstation(ImportSource.NationalGridDistributionOpenData,null,feature.properties.PRIM_NRID.ToString(), gsp);
                             da.Substations.Add(pss);
                             numNew++;
                         } else {
@@ -291,8 +295,8 @@ namespace SmartEnergyLabDataApi.Models
                         }
                         //
                         pss.Name = feature.properties.PRIM_NRID_NAME;
-                        if ( string.IsNullOrEmpty(pss.NRId) && feature.properties.PRIM_NRID!=0) {
-                            pss.NRId = feature.properties.PRIM_NRID.ToString();
+                        if ( string.IsNullOrEmpty(pss.ExternalId2) && feature.properties.PRIM_NRID!=0) {
+                            pss.ExternalId2 = feature.properties.PRIM_NRID.ToString();
                         }
                         if ( pss.GISData==null) {
                             pss.GISData = new GISData(pss);
@@ -333,46 +337,6 @@ namespace SmartEnergyLabDataApi.Models
             }
         }
 
-        private class PrimaryCache {
-            private Dictionary<string,PrimarySubstation> _byNrId;
-            private Dictionary<string,PrimarySubstation> _byName;
-
-            public PrimaryCache(DataAccess da, DistributionNetworkOperator dno) {
-                _byNrId = new Dictionary<string, PrimarySubstation>();
-                _byName = new Dictionary<string, PrimarySubstation>();
-                var psss = da.Substations.GetPrimarySubstations(dno);
-                foreach( var pss in psss) {
-                    if ( !string.IsNullOrEmpty(pss.NRId)) {
-                        if ( _byNrId.ContainsKey(pss.NRId)) {
-                            Logger.Instance.LogErrorEvent($"More than one Primary substation has NRId [{pss.NRId}]");
-                        } else {
-                            _byNrId.Add(pss.NRId,pss);
-                        }
-                    }                    
-                    if ( !string.IsNullOrEmpty(pss.Name)) {
-                        if ( _byName.ContainsKey(pss.Name)) {
-                            Logger.Instance.LogErrorEvent($"More than one Primary substation has name  [{pss.Name}]");
-                        } else {
-                            _byName.Add(pss.Name,pss);
-                        }
-                    }
-                }
-            }
-            public PrimarySubstation Get(string nrId, string name ) {
-                if ( !string.IsNullOrEmpty(nrId) ) {
-                    if ( _byNrId.TryGetValue(nrId,out PrimarySubstation pss)) {
-                        return pss;
-                    }
-                }
-                if (!string.IsNullOrEmpty(name)) {
-                    if ( _byName.TryGetValue(name, out PrimarySubstation pss)) {
-                        return pss;
-                    }
-                }
-                return null;
-            }
-        }
-
         private string loadDistributions(string geoJsonFile) {
             var loader = new DistributionLoader(this,_spd,geoJsonFile);
             return loader.Load();
@@ -401,7 +365,7 @@ namespace SmartEnergyLabDataApi.Models
                 }
                 //
                 var area = _loader.GetDNOArea(_spd);
-                int bufferSize=1000;
+                int bufferSize=100;
                 int processed = 0;
                 int percent = 0;
                 int prevPercent=0;
@@ -411,8 +375,8 @@ namespace SmartEnergyLabDataApi.Models
                     if ( length+start>_features.Length) {
                         length = _features.Length-start;
                     }
-                    var featureSpan = new ReadOnlySpan<Feature>(_features,start,length);
-                    PartialLoad( featureSpan);
+                    //??var featureSpan = new ReadOnlySpan<Feature>(_features,start,length);
+                    partialLoad( _features, start, length);
                     Logger.Instance.LogInfoEvent($"{area} area, [{_numNew}] distribution substations added, [{_numModified}] modified, [{_numIgnored}] ignored");
                     processed += length;
                     percent = processed*100/_features.Length;
@@ -425,91 +389,115 @@ namespace SmartEnergyLabDataApi.Models
                 return msg;
             }
 
-            private void PartialLoad( ReadOnlySpan<Feature> features) {  
+
+            private void partialLoad( Feature[] features, int start, int num) {  
                 int prevNrId=0;
-                using( var da = new DataAccess() ) {
-                    var ga = da.Organisations.GetGeographicalArea(_loader.GetDNOArea(_spd));
-                    var dno = ga.DistributionNetworkOperator;
-                    var toAdd = new List<DistributionSubstation>();
 
-                    foreach( var feature in features) {
-                        // Various entries are repeated so only process it the NRId changes
-                        if ( prevNrId==feature.properties.NRID) {
-                            continue;
-                        }
-                        prevNrId = feature.properties.NRID;
-                        //
-                        var nr = feature.properties.NR.ToString();
-                        var nrId = feature.properties.NRID.ToString();
-                        var name = feature.properties.NAME;
+                // Needed to speed up searching for existing distribution substations
+                // without this speed taken to call GetDistributionSubstations get slower and slower as we progress through the data
+                using( var daRead = new DataAccess() ) {
 
-                        var dss = da.Substations.GetDistributionSubstationByNrOrName(nr,name);
-                        var pss = da.Substations.GetPrimarySubstationByNrIdOrName(feature.properties.PRIM_NRID.ToString(), feature.properties.PRIM_NRID_NAME);
-                        if ( pss==null ) {
-                            Logger.Instance.LogErrorEvent($"Could not find Primary substation with PRIM_NRID=[{feature.properties.PRIM_NRID}] PRIM_NRID_NAME=[{feature.properties.PRIM_NRID_NAME}]");
-                            _numIgnored++;
-                            continue;
-                        }
-                        if ( dss==null ) {                        
-                            dss = new DistributionSubstation(nr,pss);
-                            dss.NRId = nrId;
-                            toAdd.Add(dss);
-                            _numNew++;
-                        } else {
-                            dss.PrimarySubstation = pss;
-                            _numModified++;
-                        }
-                        //
-                        if ( string.IsNullOrEmpty(dss.NR) && !string.IsNullOrEmpty(nr)) {
-                            dss.NR = nr;
-                        }
-                        if ( string.IsNullOrEmpty(dss.NRId) && !string.IsNullOrEmpty(nrId)) {
-                            dss.NRId = nrId;
-                        }
-                        dss.Name = feature.properties.NAME;
-                        // location
-                        /*var eastings = feature.properties.dp2_x;                    
-                        var northings = feature.properties.dp2_y;
-                        var latLong=LatLonConversions.ConvertOSToLatLon(eastings,northings);
-                        dss.GISData.Latitude = latLong.Latitude;
-                        dss.GISData.Longitude = latLong.Longitude;*/
-                        // boundary
-                        var elements = feature.geometry.coordinates.Deserialize<double[][][][]>();
-                        int maxIndex=0;
-                        int maxLength = 0;
-                        for(int i=0;i<elements.Length;i++) {
-                            if ( elements[i][0].Length>maxLength) {
-                                maxIndex=i;
-                                maxLength = elements[i][0].Length;
+                    using( var da = new DataAccess() ) {
+                        var ga = da.Organisations.GetGeographicalArea(_loader.GetDNOArea(_spd));
+                        var dno = ga.DistributionNetworkOperator;
+                        var toAdd = new List<DistributionSubstation>();
+                        var primCache = new Dictionary<int,PrimarySubstation>();
+
+                        for( int idx=start;idx<start+num;idx++) {
+                            var feature = features[idx];
+                            // Various entries are repeated so only process it if the NRId changes
+                            if ( prevNrId==feature.properties.NRID) {
+                                continue;
                             }
-                        }
-                        var length = elements[maxIndex][0].Length;
-                        dss.GISData.BoundaryLatitudes = new double[length];
-                        dss.GISData.BoundaryLongitudes = new double[length];
-                        LatLon latLong;
-                        for(int index=0; index<length; index++) {                            
-                            latLong=LatLonConversions.ConvertOSToLatLon(elements[maxIndex][0][index][0],elements[maxIndex][0][index][1]);
-                            dss.GISData.BoundaryLongitudes[index] = latLong.Longitude;
-                            dss.GISData.BoundaryLatitudes[index] = latLong.Latitude;
-                        }
-                        if ( dss.GISData.BoundaryLatitudes.Length!=0 ) {
-                            dss.GISData.Latitude = (dss.GISData.BoundaryLatitudes.Max()+dss.GISData.BoundaryLatitudes.Min())/2;
-                        }
-                        if ( dss.GISData.BoundaryLongitudes.Length!=0 ) {
-                            dss.GISData.Longitude = (dss.GISData.BoundaryLongitudes.Max()+dss.GISData.BoundaryLongitudes.Min())/2;
+                            prevNrId = feature.properties.NRID;
+                            //
+                            var nr = feature.properties.NR.ToString();
+                            var nrId = feature.properties.NRID.ToString();
+                            var name = feature.properties.NAME;
+
+                            DistributionSubstation dss=null;
+                            var dssRead = daRead.Substations.GetDistributionSubstation(ImportSource.NationalGridDistributionOpenData,nr,nrId,name);
+                            if ( dssRead!=null) {
+                                dss = da.Substations.GetDistributionSubstation(dssRead.Id);
+                            }
+                            PrimarySubstation pss = null;
+                            // look in cache first
+                            if ( !primCache.TryGetValue(feature.properties.PRIM_NRID, out pss)) {
+                                pss = da.Substations.GetPrimarySubstation(ImportSource.NationalGridDistributionOpenData,
+                                    null,
+                                    feature.properties.PRIM_NRID.ToString(), 
+                                    feature.properties.PRIM_NRID_NAME);
+                                if ( pss!=null ) {
+                                    primCache.Add(feature.properties.PRIM_NRID,pss);
+                                }
+                            }
+                            //
+                            if ( pss==null ) {
+                                Logger.Instance.LogErrorEvent($"Could not find Primary substation with PRIM_NRID=[{feature.properties.PRIM_NRID}] PRIM_NRID_NAME=[{feature.properties.PRIM_NRID_NAME}]");
+                                _numIgnored++;
+                                continue;
+                            }
+                            if ( dss==null ) {                        
+                                dss = new DistributionSubstation(ImportSource.NationalGridDistributionOpenData,nr,nrId,pss);
+                                toAdd.Add(dss);
+                                _numNew++;
+                            } else {
+                                dss.PrimarySubstation = pss;
+                                _numModified++;
+                            }
+                            //
+                            if ( string.IsNullOrEmpty(dss.ExternalId) && !string.IsNullOrEmpty(nr)) {
+                                dss.ExternalId = nr;
+                            }
+                            if ( string.IsNullOrEmpty(dss.ExternalId2) && !string.IsNullOrEmpty(nrId)) {
+                                dss.ExternalId2 = nrId;
+                            }
+                            dss.Name = feature.properties.NAME;
+                            // location
+                            /*var eastings = feature.properties.dp2_x;                    
+                            var northings = feature.properties.dp2_y;
+                            var latLong=LatLonConversions.ConvertOSToLatLon(eastings,northings);
+                            dss.GISData.Latitude = latLong.Latitude;
+                            dss.GISData.Longitude = latLong.Longitude;*/
+                            // boundary
+                            var elements = feature.geometry.coordinates.Deserialize<double[][][][]>();
+                            int maxIndex=0;
+                            int maxLength = 0;
+                            for(int i=0;i<elements.Length;i++) {
+                                if ( elements[i][0].Length>maxLength) {
+                                    maxIndex=i;
+                                    maxLength = elements[i][0].Length;
+                                }
+                            }
+                            var length = elements[maxIndex][0].Length;
+                            dss.GISData.BoundaryLatitudes = new double[length];
+                            dss.GISData.BoundaryLongitudes = new double[length];
+                            LatLon latLong;
+                            for(int index=0; index<length; index++) {                            
+                                latLong=LatLonConversions.ConvertOSToLatLon(elements[maxIndex][0][index][0],elements[maxIndex][0][index][1]);
+                                dss.GISData.BoundaryLongitudes[index] = latLong.Longitude;
+                                dss.GISData.BoundaryLatitudes[index] = latLong.Latitude;
+                            }
+                            if ( dss.GISData.BoundaryLatitudes.Length!=0 ) {
+                                dss.GISData.Latitude = (dss.GISData.BoundaryLatitudes.Max()+dss.GISData.BoundaryLatitudes.Min())/2;
+                            }
+                            if ( dss.GISData.BoundaryLongitudes.Length!=0 ) {
+                                dss.GISData.Longitude = (dss.GISData.BoundaryLongitudes.Max()+dss.GISData.BoundaryLongitudes.Min())/2;
+                            }
+
                         }
 
+                        // Add new ones to db
+                        foreach( var dss in toAdd) {
+                            da.Substations.Add(dss);
+                        }
+
+                        da.CommitChanges();
                     }
-
-                    // Add new ones to db
-                    foreach( var dss in toAdd) {
-                        da.Substations.Add(dss);
-                    }
-
-                    da.CommitChanges();
 
                 }
 
+                //??Logger.Instance.LogInfoEvent($"Elapsed = getDist=[{sw1.Elapsed}] getPrim=[{sw2.Elapsed}] total=[{sw3.Elapsed}]");
             }
         }
 

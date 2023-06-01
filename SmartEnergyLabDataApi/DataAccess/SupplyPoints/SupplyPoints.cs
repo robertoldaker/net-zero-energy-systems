@@ -47,13 +47,18 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
-        public GridSupplyPoint GetGridSupplyPointByNrIdOrName(string nrId, string name) {
-            var gsp=Session.QueryOver<GridSupplyPoint>().Where( m=>m.NRId == nrId).Take(1).SingleOrDefault();
-            if ( gsp!=null ) {
-                return gsp;
-            } else {
-                return Session.QueryOver<GridSupplyPoint>().Where( m=>m.Name == name).Take(1).SingleOrDefault();
+        public GridSupplyPoint GetGridSupplyPoint(ImportSource source, string externalId, string externalId2=null, string name=null) {
+            GridSupplyPoint gsp=null;
+            if ( externalId!=null) {
+                gsp = Session.QueryOver<GridSupplyPoint>().Where( m=>m.Source == source && m.ExternalId == externalId).Take(1).SingleOrDefault();
             }
+            if ( gsp==null && externalId2!=null ) {
+                gsp = Session.QueryOver<GridSupplyPoint>().Where( m=>m.Source == source && m.ExternalId2 == externalId2).Take(1).SingleOrDefault();
+            }
+            if ( gsp==null && name!=null ) {
+                gsp = Session.QueryOver<GridSupplyPoint>().Where( m=>m.Source == source && m.Name == name).Take(1).SingleOrDefault();
+            }
+            return gsp;
         }
 
         public GridSupplyPoint GetGridSupplyPointByName(string name) {

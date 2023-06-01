@@ -26,6 +26,9 @@ namespace SmartEnergyLabDataApi.Data
                 script.createDefaultDNOs();
                 script.createDefaultGeographicalAreas();
             } else if ( newVersion==6) {
+                script.fixGridSupplyPoints();
+                script.fixPrimaries();
+                script.fixDistributions();
                 script.createIndexes2();
             }
         }
@@ -49,22 +52,58 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
+        private void fixGridSupplyPoints() {
+            using ( var da = new DataAccess() ) {
+                var gsps = da.SupplyPoints.GetGridSupplyPoints();
+                foreach( var gsp in gsps) {
+                    gsp.Source = ImportSource.NationalGridDistributionOpenData;
+                    gsp.ExternalId = gsp.NR;
+                    gsp.ExternalId2 = gsp.NRId;
+                }
+                da.CommitChanges();
+            }
+        }
+
+        private void fixPrimaries() {
+            using ( var da = new DataAccess() ) {
+                var psss = da.Substations.GetPrimarySubstations();
+                foreach( var pss in psss) {
+                    pss.Source = ImportSource.NationalGridDistributionOpenData;
+                    pss.ExternalId = pss.NR;
+                    pss.ExternalId2 = pss.NRId;
+                }
+                da.CommitChanges();
+            }
+        }
+
+        private void fixDistributions() {
+            using ( var da = new DataAccess() ) {
+                var dsss = da.Substations.GetDistributionSubstations();
+                foreach( var dss in dsss) {
+                    dss.Source = ImportSource.NationalGridDistributionOpenData;
+                    dss.ExternalId = dss.NR;
+                    dss.ExternalId2 = dss.NRId;
+                }
+                da.CommitChanges();
+            }
+        }
+
         private void createIndexes2()
         {
             try {
                 if (DataAccess.DbConnection.DbProvider == DbProvider.PostgreSQL) {
                     // dist substations
-                    DataAccess.RunSql("CREATE INDEX ix_dss_nr_id ON distribution_substations (nr)");
-                    DataAccess.RunSql("CREATE INDEX ix_dss_nrid_id ON distribution_substations (nrid)");
-                    DataAccess.RunSql("CREATE INDEX ix_dss_name_id ON distribution_substations (name)");
+                    DataAccess.RunSql("CREATE INDEX ix_dss_source_externalId ON distribution_substations (source,externalid)");
+                    DataAccess.RunSql("CREATE INDEX ix_dss_source_externalId2 ON distribution_substations (source,externalid2)");
+                    DataAccess.RunSql("CREATE INDEX ix_dss_source_name ON distribution_substations (source,name)");
                     // primary substations
-                    DataAccess.RunSql("CREATE INDEX ix_pss_nr_id ON primary_substations (nr)");
-                    DataAccess.RunSql("CREATE INDEX ix_pss_nrid_id ON primary_substations (nrid)");
-                    DataAccess.RunSql("CREATE INDEX ix_pss_name_id ON primary_substations (name)");
+                    DataAccess.RunSql("CREATE INDEX ix_pss_source_externalId ON primary_substations (source,externalid)");
+                    DataAccess.RunSql("CREATE INDEX ix_pss_source_externalId2 ON primary_substations (source,externalid2)");
+                    DataAccess.RunSql("CREATE INDEX ix_pss_source_name ON primary_substations (source,name)");
                     // grid supply points
-                    DataAccess.RunSql("CREATE INDEX ix_gsps_nr_id ON grid_supply_points (nr)");
-                    DataAccess.RunSql("CREATE INDEX ix_gsps_nrid_id ON grid_supply_points (nrid)");
-                    DataAccess.RunSql("CREATE INDEX ix_gsps_name_id ON grid_supply_points (name)");
+                    DataAccess.RunSql("CREATE INDEX ix_gsp_source_externalId ON grid_supply_points (source,externalid)");
+                    DataAccess.RunSql("CREATE INDEX ix_gsp_source_externalId2 ON grid_supply_points (source,externalid2)");
+                    DataAccess.RunSql("CREATE INDEX ix_gsp_source_name ON grid_supply_points (source,name)");
                 }
             }
             catch (Exception e) {

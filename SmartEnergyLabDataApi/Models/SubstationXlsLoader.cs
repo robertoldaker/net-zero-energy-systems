@@ -80,7 +80,7 @@ namespace SmartEnergyLabDataApi.Models
                 DistributionSubstation distributionSubstation = _cache.GetDistributionSubstation(externalId);
                 // Create and save distribution substation if we haven't got one
                 if (distributionSubstation == null) {
-                    distributionSubstation = new DistributionSubstation(externalId, primarySubstation);
+                    distributionSubstation = new DistributionSubstation(ImportSource.File,externalId,null,primarySubstation);
                     _da.Substations.Add(distributionSubstation);
                     _cache.Add(distributionSubstation);
                 }

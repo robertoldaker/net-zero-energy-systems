@@ -38,7 +38,7 @@ namespace SmartEnergyLabDataApi.Models
                     string nr = feature.properties.NR.ToString();                    
                     var gsp = _gridSupplyPoints.Where( m=>m.NR == nr ).FirstOrDefault();
                     if ( gsp==null ) {
-                        gsp = new GridSupplyPoint(feature.properties.NAME,feature.properties.NR.ToString(), feature.properties.GSP_NRID.ToString(),_ga,_dno);
+                        gsp = new GridSupplyPoint(ImportSource.File,feature.properties.NAME,feature.properties.NR.ToString(), feature.properties.GSP_NRID.ToString(),_ga,_dno);
                         _da.SupplyPoints.Add(gsp);
                         numNew++;
                     } else {

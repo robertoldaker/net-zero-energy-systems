@@ -11,9 +11,14 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
-        public DistributionSubstation(string nr, PrimarySubstation primarySubstation)
-        {
-            NR = nr;
+        public DistributionSubstation(ImportSource source, string externalId, string externalId2, PrimarySubstation primarySubstation) {
+            Source = source;
+            ExternalId = externalId;
+            ExternalId2 = externalId2;
+            initialise(primarySubstation);
+        }
+
+        private void initialise(PrimarySubstation primarySubstation) {
             PrimarySubstation = primarySubstation;
             GISData = new GISData(this);
             SubstationParams = new SubstationParams(this);
@@ -23,21 +28,38 @@ namespace SmartEnergyLabDataApi.Data
         /// Database identifier
         /// </summary>
         [Id(0, Name = "Id", Type = "int")]
-        [Generator(1, Class = "identity")]
+        [Generator(1, Class = "identity")]        
         public virtual int Id { get; set; }
 
         /// <summary>
-        /// External identifier
+        /// Source from where the object was imported
+        /// </summary>
+        /// <value></value>
+        [Property()]
+        public virtual ImportSource Source {get; set;}
+
+        /// <summary>
+        /// External reference to object
         /// </summary>
         [Property()]
         public virtual string ExternalId { get; set; }
 
         /// <summary>
-        /// External identifier
+        /// Extra reference used by some importers
+        /// </summary>
+        [Property()]
+        public virtual string ExternalId2 { get; set; }
+
+        /// <summary>
+        /// Reference used by National Grid Distribution
         /// </summary>
         [Property()]
         public virtual string NR { get; set; }
 
+        /// <summary>
+        /// Another reference used by National Grid Distribution
+        /// </summary>
+        /// <value></value>
         [Property()]
         public virtual string NRId { get; set; }
 

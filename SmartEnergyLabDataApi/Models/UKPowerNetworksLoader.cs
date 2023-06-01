@@ -29,9 +29,10 @@ namespace SmartEnergyLabDataApi.Models
         public void Load() {
             updateMessage("Loading LTDS demand records ...");
             _ltdsRecords = loadData<LTDSDemandRecord>("/api/records/1.0/search/?dataset=ltds-table-3a-load-data-observed&q=&facet=licencearea&facet=gridsupplypoint&facet=substation&facet=season&facet=year&refine.season=Winter&refine.year=22-23");
-            updateProgress();
-            loadGSPs();
+            //??updateProgress();
+            //??loadGSPs();
             loadPrimaries();
+            //??loadSecondarySites();
         }
 
         private void updateMessage(string message) {
@@ -43,8 +44,6 @@ namespace SmartEnergyLabDataApi.Models
             int percent = (100*_tasksDone) / NTASKS;
             _taskRunner?.Update(percent);
         }
-
-
 
         private void loadGSPs() {
 
@@ -81,7 +80,7 @@ namespace SmartEnergyLabDataApi.Models
                             Logger.Instance.LogErrorEvent($"Could not find LTDS record for GSP=[{gspRecord.gsp}], ignoring ...");
                             continue;
                         }
-                        gsp = new GridSupplyPoint(gspRecord.gsp,null,null,ga,ga.DistributionNetworkOperator);
+                        gsp = new GridSupplyPoint(ImportSource.UKPowerNetworksOpenData,gspRecord.gsp,null,null,ga,ga.DistributionNetworkOperator);
                         Logger.Instance.LogInfoEvent($"Added new GSP=[{gspRecord.gsp}]");
                         toAdd.Add(gsp);
                     }
@@ -135,7 +134,10 @@ namespace SmartEnergyLabDataApi.Models
 
         private void loadPrimaries() {
             updateMessage("Loading Primary area records ...");
-            var primAreaRecords = loadData<PrimaryAreaRecord>("/api/records/1.0/search/?dataset=ukpn_primary_postcode_area&facet=demandrag");
+            var primAreaRecords = loadData<PrimaryAreaRecord>("/api/records/1.0/search/?dataset=ukpn_primary_postcode_area&facet=demandrag",
+                        100,(loaded,total,records)=>{
+                            updateMessage($"Loaded Primary area records [{loaded}] of [{total}]...");
+            });
             updateProgress();
             foreach( var primRecord in primAreaRecords) {
                 if ( primRecord.geo_shape.type=="Polygon") {
@@ -150,7 +152,7 @@ namespace SmartEnergyLabDataApi.Models
             using( var da = new DataAccess()) {
                 var toAdd = new List<PrimarySubstation>();
                 foreach( var primRecord in primAreaRecords) {
-                    var pss = da.Substations.GetPrimarySubstationBySiteFunctionalLocation(primRecord.primary_site_functional_location);
+                    var pss = da.Substations.GetPrimarySubstation(ImportSource.UKPowerNetworksOpenData,primRecord.primary_feeder);
                     if ( pss==null) {
                         var ltdsRecord = _ltdsRecords.Where( m=>m.site_functional_location == primRecord.primary_site_functional_location).FirstOrDefault();
                         if ( ltdsRecord==null) {
@@ -159,8 +161,7 @@ namespace SmartEnergyLabDataApi.Models
                         if ( ltdsRecord!=null) {
                             var gsp = da.SupplyPoints.GetGridSupplyPointByName(ltdsRecord.grid_supply_point);
                             if ( gsp!=null) {
-                                pss = new PrimarySubstation(primRecord.primary_site_functional_location,gsp);
-                                pss.Name = primRecord.primary_substation_name;
+                                pss = new PrimarySubstation(ImportSource.NationalGridDistributionOpenData,primRecord.primary_feeder,primRecord.primary_site_functional_location,gsp);
                                 Logger.Instance.LogInfoEvent($"Added new Primary=[{primRecord.primary_substation_name}]");
                                 toAdd.Add(pss);
                             } else {
@@ -172,6 +173,7 @@ namespace SmartEnergyLabDataApi.Models
                             continue;
                         }
                     }
+                    pss.Name = primRecord.primary_substation_name;
                     // Position of GSP
                     pss.GISData.Latitude = primRecord.geo_point_2d[0];
                     pss.GISData.Longitude = primRecord.geo_point_2d[1];
@@ -193,8 +195,55 @@ namespace SmartEnergyLabDataApi.Models
             updateProgress();
         }
 
-        private List<T> loadData<T>(string methodUrl) where T : class {
-            int rows = 100;
+        private void loadSecondarySites() {
+            updateMessage("Loading Secondary Site records ...");
+            var secondarySiteRecords = loadData<SecondarySiteRecord>(
+                            "/api/records/1.0/search/?dataset=ukpn-secondary-sites&facet=dno&facet=substationdesign&facet=substationvoltage&facet=numberoftransformers&facet=localauthority&facet=indooroutdoor",
+                            1000,(loaded,total,records)=>{
+                                updateMessage($"Processing Secondary Site records [{loaded}] of [{total}]...");
+                                processSecondarySites(records);
+            });
+            //
+            updateProgress();
+        }
+
+        private void processSecondarySites(IEnumerable<SecondarySiteRecord> records) {
+            using( var da = new DataAccess() ) {
+                var toAdd = new List<DistributionSubstation>();
+                foreach( var record in records) {
+                    if ( record.llsoaname==null || record.geopoint==null ) {
+                        Logger.Instance.LogInfoEvent("Ignoring blank record");
+                        continue;
+                    }
+                    var dss = da.Substations.GetDistributionSubstation(ImportSource.UKPowerNetworksOpenData,record.functional_location);
+                    if ( dss==null) {
+                        var pss = da.Substations.GetPrimarySubstation(ImportSource.UKPowerNetworksOpenData,record.primary_feeder);
+                        if ( pss!=null ) {
+                            dss = new DistributionSubstation(ImportSource.UKPowerNetworksOpenData,record.functional_location,null,pss);
+                            Logger.Instance.LogInfoEvent($"Added new Distribution substation=[{record.llsoaname}]");
+                            toAdd.Add(dss);
+                        } else {
+                            Logger.Instance.LogWarningEvent($"Could not find Primary substation [{record.primary_feeder}], ignoring secondary site [{record.functional_location}]");
+                            continue;
+                        }
+                    }
+                    //
+                    dss.Name = record.llsoaname;
+                    dss.GISData.Latitude = record.geopoint[0];
+                    dss.GISData.Longitude = record.geopoint[1];
+                }
+
+                //
+                foreach( var pss in toAdd) {
+                    da.Substations.Add(pss);
+                }
+
+                //
+                //??da.CommitChanges();
+            }
+        }
+
+        private List<T> loadData<T>(string methodUrl,int rows=100, Action<int,int,IEnumerable<T>>? progress=null) where T : class {
             int start=0;
             Container<T> container;
             List<T> records=new List<T>();
@@ -206,11 +255,28 @@ namespace SmartEnergyLabDataApi.Models
                     foreach( var record in container.records) {
                         records.Add(record.fields);
                     }
+                    progress?.Invoke(records.Count,container.nhits,container.records.Select(m=>m.fields));
                 }
                 start += container.records.Length;
             } while( container.records.Length>0 );
             //
             return records;
+        }
+
+        private class SecondarySiteRecord {
+            public string llsoaname {get; set;}
+
+            public double[] geopoint {get; set;}
+                        
+            public string postcode {get; set;}
+
+            [JsonPropertyName("primaryfeeder")]
+            public string primary_feeder {get; set;}
+            
+            public int customer_count {get; set;}
+
+            [JsonPropertyName("functionallocation")]
+            public string functional_location {get; set;}
         }
 
         private class LTDSDemandRecord {
@@ -227,7 +293,10 @@ namespace SmartEnergyLabDataApi.Models
         }
 
         private class PrimaryAreaRecord {
-            public string primary {get; set;}
+            [JsonPropertyName("primary")]
+            public string primary_feeder {get; set;}
+
+            [JsonPropertyName("primarysubstationname")]
             public string primary_substation_name {get; set;}
 
             [JsonPropertyName("primarysitefunctionallocation")]
@@ -258,6 +327,7 @@ namespace SmartEnergyLabDataApi.Models
         }
 
         private class Container<T> {
+            public int nhits {get; set;}
             public Fields<T>[] records {get; set;}
         }
 

@@ -38,7 +38,7 @@ namespace SmartEnergyLabDataApi.Models
                         continue;
                     }
                     if ( dss==null ) {                        
-                        dss = new DistributionSubstation(nr,pss);
+                        dss = new DistributionSubstation(ImportSource.File,nr,null,pss);
                         toAdd.Add(dss);
                         numNew++;
                     } else {

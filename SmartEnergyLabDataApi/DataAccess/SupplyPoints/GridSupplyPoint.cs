@@ -3,6 +3,13 @@ using System.Text.Json.Serialization;
 
 namespace SmartEnergyLabDataApi.Data
 {
+
+    public enum ImportSource {
+        File,
+        NationalGridDistributionOpenData,
+        UKPowerNetworksOpenData
+    }
+
     [Class(0, Table = "grid_supply_points")]
     public class GridSupplyPoint
     {
@@ -11,11 +18,12 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
-        public GridSupplyPoint(string name, string nr, string nrId, GeographicalArea ga, DistributionNetworkOperator dno)
+        public GridSupplyPoint(ImportSource source, string name, string externalId, string externalId2, GeographicalArea ga, DistributionNetworkOperator dno)
         {
+            Source = source;
             Name = name;
-            NR = nr;
-            NRId = nrId;
+            ExternalId = externalId;
+            ExternalId2 = externalId2;
             DistributionNetworkOperator = dno;
             GeographicalArea = ga;
             GISData = new GISData();
@@ -26,10 +34,19 @@ namespace SmartEnergyLabDataApi.Data
         public virtual int Id { get; set; }
 
         [Property()]
+        public virtual ImportSource Source {get; set;}
+
+        [Property()]
         public virtual string NR { get; set; }
 
         [Property()]
         public virtual string NRId { get; set; }
+
+        [Property()]
+        public virtual string ExternalId { get; set; }
+
+        [Property()]
+        public virtual string ExternalId2 { get; set; }
 
         [Property()]
         public virtual string Name { get; set; }

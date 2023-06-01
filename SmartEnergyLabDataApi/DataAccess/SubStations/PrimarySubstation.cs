@@ -11,17 +11,11 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
-        public PrimarySubstation(string nr, string nrId, GridSupplyPoint gsp)
+        public PrimarySubstation(ImportSource source,string externalId, string externalId2, GridSupplyPoint gsp)
         {
-            NR = nr;
-            NRId = nrId;
-            SetGSP(gsp);
-            GISData = new GISData(this);
-        }
-
-        public PrimarySubstation(string siteFunctionalLocation, GridSupplyPoint gsp)
-        {
-            SiteFunctionalLocation = siteFunctionalLocation;
+            Source = source;
+            ExternalId = externalId;
+            ExternalId2 = externalId2;
             SetGSP(gsp);
             GISData = new GISData(this);
         }
@@ -38,20 +32,43 @@ namespace SmartEnergyLabDataApi.Data
         [Generator(1, Class = "identity")]
         public virtual int Id { get; set; }
 
+        /// <summary>
+        /// Source of object import
+        /// </summary>
+        /// <value></value>
         [Property()]
-        public virtual string ExternalId { get; set; }
-
-        [Property()]
-        public virtual string NR { get; set; }
-
-        [Property()]
-        public virtual string NRId { get; set; }
-
-        [Property()]
-        public virtual string SiteFunctionalLocation { get; set; }
+        public virtual ImportSource Source {get; set;}
 
         [Property()]
         public virtual string Name { get; set; }
+
+        /// <summary>
+        /// Used to identify object during import
+        /// </summary>
+        /// <value></value>
+        [Property()]
+        public virtual string ExternalId { get; set; }
+
+        /// <summary>
+        /// Used to identify object 
+        /// </summary>
+        /// <value></value>
+        [Property()]
+        public virtual string ExternalId2 { get; set; }
+
+        /// <summary>
+        /// Used by National Grid Distribution as a reference
+        /// </summary>
+        /// <value></value>
+        [Property()]
+        public virtual string NR { get; set; }
+
+        /// <summary>
+        /// Another reference used by National Grid Distribution
+        /// </summary>
+        /// <value></value>
+        [Property()]
+        public virtual string NRId { get; set; }
 
         [Property(0)]
         [Formula(1, Content = "( select count(*) from distribution_substations ds where (ds.primarysubstationid = id) )")] 

@@ -119,17 +119,41 @@ namespace SmartEnergyLabDataApi.Data
             Session.Delete(ds);
         }
 
+        public DistributionSubstation GetDistributionSubstation(ImportSource source, string externalId, string externalId2=null, string name=null)
+        {
+            DistributionSubstation dss=null;
+            if ( externalId!=null  ) {
+                //?? Seems to have better pefromance than using QueryOver ??
+                dss = Session.Query<DistributionSubstation>().Where(m => m.ExternalId == externalId).Take(1).SingleOrDefault();
+            }
+            if ( dss==null && externalId2!=null) {
+                //?? Seems to have better pefromance than using QueryOver ??
+                dss = Session.Query<DistributionSubstation>().Where(m => m.ExternalId2 == externalId2).Take(1).SingleOrDefault();
+            }
+            if ( dss==null && name!=null) {
+                //?? Seems to have better pefromance than using QueryOver ??
+                dss = Session.Query<DistributionSubstation>().Where(m => m.Name == name).Take(1).SingleOrDefault();
+            }
+            return dss;
+        }
+
         public DistributionSubstation GetDistributionSubstation(string nr)
         {
             return Session.QueryOver<DistributionSubstation>().Where(m => m.NR == nr).Take(1).SingleOrDefault();
         }
+
         public DistributionSubstation GetDistributionSubstationByNRId(string nrId)
         {
             return Session.QueryOver<DistributionSubstation>().Where(m => m.NRId == nrId).Take(1).SingleOrDefault();
         }
+
         public DistributionSubstation GetDistributionSubstation(int id)
         {
-            return Session.QueryOver<DistributionSubstation>().Where(m => m.Id == id).Take(1).SingleOrDefault();
+            return Session.Get<DistributionSubstation>(id);
+        }
+
+        public T Import<T>(int obj) where T: class {
+            return Session.Load<T>(obj);
         }
 
         public IList<DistributionSubstation> GetDistributionSubstations(DistributionNetworkOperator dno)
@@ -138,6 +162,11 @@ namespace SmartEnergyLabDataApi.Data
             var q = Session.QueryOver<DistributionSubstation>().Left.JoinAlias(m=>m.PrimarySubstation,()=>pss).
                 Where(m => pss.DistributionNetworkOperator == dno);
             return q.List();
+        }
+
+        public IList<DistributionSubstation> GetDistributionSubstations()
+        {
+            return Session.QueryOver<DistributionSubstation>().List();
         }
 
         public IList<DistributionSubstation> GetDistributionSubstationsByGAId(int gaId)
@@ -195,6 +224,7 @@ namespace SmartEnergyLabDataApi.Data
                 return Session.QueryOver<DistributionSubstation>().Where( m=>m.Name==name).Take(1).SingleOrDefault();
             }
         }
+
         public DistributionSubstation GetDistributionSubstationByNrIdOrName(string nrId, string name)
         {
             var dss = Session.QueryOver<DistributionSubstation>().Where( m=>m.NRId==nrId).Take(1).SingleOrDefault();
@@ -204,7 +234,6 @@ namespace SmartEnergyLabDataApi.Data
                 return Session.QueryOver<DistributionSubstation>().Where( m=>m.Name==name).Take(1).SingleOrDefault();
             }
         }
-
 
         public IList<SubstationClassification> GetDistributionSubstationClassifications(int id)
         {
@@ -230,18 +259,31 @@ namespace SmartEnergyLabDataApi.Data
         {
             Session.Save(ps);
         }
+
         public void Delete(PrimarySubstation ps)
         {
             Session.Delete(ps);
         }
+
+        public PrimarySubstation GetPrimarySubstation(ImportSource source, string externalId, string externalId2=null, string name=null) {
+            PrimarySubstation pss=null;
+            if ( externalId!=null ) {
+                pss = Session.QueryOver<PrimarySubstation>().Where( m=>m.Source==source && m.ExternalId==externalId).Take(1).SingleOrDefault();
+            }
+            if ( pss==null && externalId2!=null ) {
+                pss = Session.QueryOver<PrimarySubstation>().Where(m=>m.Source==source && m.ExternalId2 == externalId2).Take(1).SingleOrDefault();
+            } 
+            if ( pss==null && name!=null ) {
+                pss = Session.QueryOver<PrimarySubstation>().Where(m=>m.Source==source && m.Name == name).Take(1).SingleOrDefault();
+            } 
+            return pss;
+        }
+
         public PrimarySubstation GetPrimarySubstation(string nr)
         {
             return Session.QueryOver<PrimarySubstation>().Where(m => m.NR == nr).Take(1).SingleOrDefault();
-        }        
-        public PrimarySubstation GetPrimarySubstationByNRId(string nrId)
-        {
-            return Session.QueryOver<PrimarySubstation>().Where(m => m.NRId == nrId).Take(1).SingleOrDefault();
         }
+
         public PrimarySubstation GetPrimarySubstationByNrOrName(string nr, string name)
         {
             var pss=Session.QueryOver<PrimarySubstation>().Where(m => m.NR == nr).Take(1).SingleOrDefault();
@@ -260,6 +302,11 @@ namespace SmartEnergyLabDataApi.Data
                 return Session.QueryOver<PrimarySubstation>().Where(m => m.Name == name).Take(1).SingleOrDefault();
             }
         }
+        public IList<PrimarySubstation> GetPrimarySubstations()
+        {
+            return Session.QueryOver<PrimarySubstation>().List();
+        }
+
         public IList<PrimarySubstation> GetPrimarySubstations(DistributionNetworkOperator dno)
         {
             return Session.QueryOver<PrimarySubstation>().Where(m=>m.DistributionNetworkOperator==dno).List();
@@ -279,14 +326,6 @@ namespace SmartEnergyLabDataApi.Data
                 Where(m => m.GridSupplyPoint.Id == gspId).
                 Fetch(SelectMode.Fetch,m=>m.GISData).
                 List();
-        }
-
-        public PrimarySubstation GetPrimarySubstationBySiteFunctionalLocation(string siteFunctionalLocation)
-        {
-            return Session.QueryOver<PrimarySubstation>().
-                Where(m => m.SiteFunctionalLocation == siteFunctionalLocation).
-                Fetch(SelectMode.Fetch,m=>m.GISData).
-                Take(1).SingleOrDefault();
         }
 
         #endregion
