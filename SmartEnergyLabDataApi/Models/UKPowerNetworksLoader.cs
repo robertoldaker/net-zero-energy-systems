@@ -29,10 +29,15 @@ namespace SmartEnergyLabDataApi.Models
         public void Load() {
             updateMessage("Loading LTDS demand records ...");
             _ltdsRecords = loadData<LTDSDemandRecord>("/api/records/1.0/search/?dataset=ltds-table-3a-load-data-observed&q=&facet=licencearea&facet=gridsupplypoint&facet=substation&facet=season&facet=year&refine.season=Winter&refine.year=22-23");
-            //??updateProgress();
-            //??loadGSPs();
+            checkCancelled();
+            updateProgress();
+            loadGSPs();
             loadPrimaries();
-            //??loadSecondarySites();
+            loadSecondarySites();
+        }
+
+        private void checkCancelled() {
+            _taskRunner?.CheckCancelled();
         }
 
         private void updateMessage(string message) {
@@ -55,9 +60,10 @@ namespace SmartEnergyLabDataApi.Models
                 } else if ( gspRecord.geo_shape.type == "MultiPolygon") {
                     gspRecord.geo_shape.multiPolygonCoords = gspRecord.geo_shape.coordinates.Deserialize<double[][][][]>();
                 }
-            }
+            }            
 
             // Add GSP
+            checkCancelled();
             updateProgress();
             updateMessage("Processing GSP records ...");
             using( var da = new DataAccess()) {
@@ -94,13 +100,16 @@ namespace SmartEnergyLabDataApi.Models
                     } catch (Exception e) {
                         Logger.Instance.LogErrorEvent(e.Message + $", for entry [{gsp.Name}]");
                     }
+                    checkCancelled();
                 }
 
                 foreach( var gsp in toAdd) {
                     da.SupplyPoints.Add(gsp);
+                    checkCancelled();
                 }
 
                 //
+                checkCancelled();
                 da.CommitChanges();
             }
             updateProgress();
@@ -149,6 +158,7 @@ namespace SmartEnergyLabDataApi.Models
 
             // Add primaries
             updateMessage("Processing Primary area records ...");
+            checkCancelled();
             using( var da = new DataAccess()) {
                 var toAdd = new List<PrimarySubstation>();
                 foreach( var primRecord in primAreaRecords) {
@@ -161,7 +171,7 @@ namespace SmartEnergyLabDataApi.Models
                         if ( ltdsRecord!=null) {
                             var gsp = da.SupplyPoints.GetGridSupplyPointByName(ltdsRecord.grid_supply_point);
                             if ( gsp!=null) {
-                                pss = new PrimarySubstation(ImportSource.NationalGridDistributionOpenData,primRecord.primary_feeder,primRecord.primary_site_functional_location,gsp);
+                                pss = new PrimarySubstation(ImportSource.UKPowerNetworksOpenData,primRecord.primary_feeder,primRecord.primary_site_functional_location,gsp);
                                 Logger.Instance.LogInfoEvent($"Added new Primary=[{primRecord.primary_substation_name}]");
                                 toAdd.Add(pss);
                             } else {
@@ -183,13 +193,16 @@ namespace SmartEnergyLabDataApi.Models
                     } catch (Exception e) {
                         Logger.Instance.LogErrorEvent(e.Message + $", for entry [{pss.Name}]");
                     }
+                    checkCancelled();
                 }
 
                 foreach( var pss in toAdd) {
                     da.Substations.Add(pss);
+                    checkCancelled();
                 }
 
                 //
+                checkCancelled();
                 da.CommitChanges();
             }
             updateProgress();
@@ -231,12 +244,17 @@ namespace SmartEnergyLabDataApi.Models
                     dss.Name = record.llsoaname;
                     dss.GISData.Latitude = record.geopoint[0];
                     dss.GISData.Longitude = record.geopoint[1];
+                    checkCancelled();
                 }
 
+                checkCancelled();
                 //
                 foreach( var pss in toAdd) {
                     da.Substations.Add(pss);
                 }
+
+                //
+                checkCancelled();
 
                 //
                 //??da.CommitChanges();
@@ -251,6 +269,7 @@ namespace SmartEnergyLabDataApi.Models
             do {
                 methodStr = methodUrl + $"&rows={rows}&start={start}";
                 container = get<Container<T>>(methodStr);
+                checkCancelled();
                 if ( container.records.Length>0) {
                     foreach( var record in container.records) {
                         records.Add(record.fields);
