@@ -7,41 +7,37 @@ using SmartEnergyLabDataApi.Model;
 
 namespace SmartEnergyLabDataApi.Models
 {
-    public class GeoSpatialDataLoader {
+    public class NationalGridDistributionLoader {
         private string BASE_ADDRESS = "https://connecteddata.nationalgrid.co.uk";
         private const string PACKAGE_NAME = "spatial-datasets";
         private readonly string[] DATASET_NAMES = {            
-            /*"East Midlands GSP",
+            "East Midlands GSP",
             "West Midlands GSP",            
             "South Wales GSP",
             "South West GSP",
-            */
+            
             /*
             "East Midlands BSP",
             "South Wales BSP",
             "South West BSP",
             "West Midlands BSP",
             */
-            /*
+            
             "East Midlands Primary",            
             "West Midlands Primary",
             "South Wales Primary",
-            "South West Primary",
-            */
-            /*
-            */
+            "South West Primary",            
             "East Midlands Distribution", 
             "West Midlands Distribution",
             "South Wales Distribution",
             "South West Distribution",         
-
             };
         private HttpClient _httpClientGpkg;
         private static object _httpClientGpkgLock = new object();
         private TaskRunner? _taskRunner;
         private CKANDataLoader.CKANDataset _spd;
 
-        public GeoSpatialDataLoader(TaskRunner? taskRunner) {
+        public NationalGridDistributionLoader(TaskRunner? taskRunner) {
             _taskRunner = taskRunner;
         }
         public string Load() {
@@ -63,14 +59,18 @@ namespace SmartEnergyLabDataApi.Models
                     });
                     message+="\n";
                 }
-
+                checkCancelled();
             }
             //
             return message;
         }
 
-        private void updateMessage(string msg) {
-            _taskRunner?.Update(msg);
+        private void updateMessage(string msg, bool addToLog=true) {
+            _taskRunner?.Update(msg,addToLog);
+        }
+
+        private void checkCancelled() {
+            _taskRunner?.CheckCancelled();
         }
 
         private string processGpkg() {
@@ -78,11 +78,12 @@ namespace SmartEnergyLabDataApi.Models
             updateMessage($"Downloading [{_spd.name}] geopackage ...");
             var client = getHttpClientGpkg();
 
-            var gPkgFile = AppFolders.Instance.GetTempFile(".gpkg");
+            //??var gPkgFile = AppFolders.Instance.GetTempFile(".gpkg");
+            var gPkgFile = Path.Combine(AppFolders.Instance.Temp,getPackageFile());
             var geoJsonFile = gPkgFile.Replace(".gpkg",".geojson");
-            try {
-                //
-                //
+
+            // Download json file unless we are developing
+            if ( AppEnvironment.Instance.Context != Context.Development || !File.Exists(geoJsonFile) ) {
                 using (HttpRequestMessage message = getRequestMessage(HttpMethod.Get, _spd.url)) {
                     //
                     var response = client.SendAsync(message).Result;
@@ -91,25 +92,20 @@ namespace SmartEnergyLabDataApi.Models
                         var stream = response.Content.ReadAsStream();
                         if ( stream!=null) {
                             saveToFile(stream, gPkgFile);
+                            checkCancelled();
                             convertToGeoJson(gPkgFile,geoJsonFile);
                         }
                     }
                 }
-                
-                //??
-                //??geoJsonFile = Path.Combine(AppFolders.Instance.Temp,"South West Distribution.geojson");
-                //
-                return processJson(geoJsonFile);
 
-            } finally {
-                if ( File.Exists(gPkgFile)) {
-                    File.Delete(gPkgFile);
-                }
-                if ( File.Exists(geoJsonFile)) {
-                    //??
-                    File.Delete(geoJsonFile);
-                }
             }
+            checkCancelled();
+            return processJson(geoJsonFile);
+
+        }
+
+        private string getPackageFile() {
+            return _spd.name + ".gpkg";
         }
 
         private string processJson(string geoJsonFile) {
@@ -214,13 +210,20 @@ namespace SmartEnergyLabDataApi.Models
 
                     }                
                     msg = $"{ga.Name} area, [{numNew}] GSPs added, [{numModified}] modified, [{numIgnored}] ignored";
+
+                    //
+                    checkCancelled();
+
+
                 }
 
                 // add new ones found
                 foreach( var gsp in addedGSPs) {
                     da.SupplyPoints.Add(gsp);
+                    checkCancelled();
                 }
                 //
+                checkCancelled();
                 da.CommitChanges();
             }
             return msg;
@@ -327,8 +330,10 @@ namespace SmartEnergyLabDataApi.Models
                         if ( pss.GISData.BoundaryLongitudes.Length!=0 ) {
                             pss.GISData.Longitude = (pss.GISData.BoundaryLongitudes.Max()+pss.GISData.BoundaryLongitudes.Min())/2;
                         }
+                        checkCancelled();
                     }
                     //
+                    checkCancelled();
                     da.CommitChanges();
                 }
 
@@ -343,7 +348,7 @@ namespace SmartEnergyLabDataApi.Models
         }
 
         private class DistributionLoader {
-            private GeoSpatialDataLoader _loader;
+            private NationalGridDistributionLoader _loader;
             private string _geoJsonFile;
             private CKANDataLoader.CKANDataset _spd;
             private Feature[] _features;
@@ -351,7 +356,7 @@ namespace SmartEnergyLabDataApi.Models
             private int _numModified = 0;
             private int _numIgnored=0;
             private Dictionary<int,bool> _processedDict = new Dictionary<int,bool>();
-            public DistributionLoader(GeoSpatialDataLoader loader, CKANDataLoader.CKANDataset  spd, string geoJsonFile) {
+            public DistributionLoader(NationalGridDistributionLoader loader, CKANDataLoader.CKANDataset  spd, string geoJsonFile) {
                 _loader = loader;
                 _spd = spd;
                 _geoJsonFile = geoJsonFile;
@@ -375,13 +380,12 @@ namespace SmartEnergyLabDataApi.Models
                     if ( length+start>_features.Length) {
                         length = _features.Length-start;
                     }
-                    //??var featureSpan = new ReadOnlySpan<Feature>(_features,start,length);
-                    partialLoad( _features, start, length);
-                    Logger.Instance.LogInfoEvent($"{area} area, [{_numNew}] distribution substations added, [{_numModified}] modified, [{_numIgnored}] ignored");
+                    var featureSpan = new ReadOnlySpan<Feature>(_features,start,length);
+                    partialLoad(featureSpan);
                     processed += length;
                     percent = processed*100/_features.Length;
                     if ( percent!=prevPercent) {
-                        _loader.updateMessage($"Processing [{_spd.name}] {percent}%");
+                        _loader.updateMessage($"Processing [{_spd.name}] {percent}%",false);
                         prevPercent = percent;
                     }
                 }
@@ -390,21 +394,23 @@ namespace SmartEnergyLabDataApi.Models
             }
 
 
-            private void partialLoad( Feature[] features, int start, int num) {  
+            private void partialLoad( ReadOnlySpan<Feature> featureSpan) {  
                 int prevNrId=0;
 
                 // Needed to speed up searching for existing distribution substations
                 // without this speed taken to call GetDistributionSubstations get slower and slower as we progress through the data
                 using( var daRead = new DataAccess() ) {
 
+
                     using( var da = new DataAccess() ) {
+
                         var ga = da.Organisations.GetGeographicalArea(_loader.GetDNOArea(_spd));
                         var dno = ga.DistributionNetworkOperator;
                         var toAdd = new List<DistributionSubstation>();
                         var primCache = new Dictionary<int,PrimarySubstation>();
+                        prevNrId=0;
 
-                        for( int idx=start;idx<start+num;idx++) {
-                            var feature = features[idx];
+                        foreach( var feature in featureSpan) {
                             // Various entries are repeated so only process it if the NRId changes
                             if ( prevNrId==feature.properties.NRID) {
                                 continue;
@@ -420,6 +426,7 @@ namespace SmartEnergyLabDataApi.Models
                             if ( dssRead!=null) {
                                 dss = da.Substations.GetDistributionSubstation(dssRead.Id);
                             }
+
                             PrimarySubstation pss = null;
                             // look in cache first
                             if ( !primCache.TryGetValue(feature.properties.PRIM_NRID, out pss)) {
@@ -485,21 +492,23 @@ namespace SmartEnergyLabDataApi.Models
                                 dss.GISData.Longitude = (dss.GISData.BoundaryLongitudes.Max()+dss.GISData.BoundaryLongitudes.Min())/2;
                             }
 
+                            _loader.checkCancelled();
+
                         }
 
                         // Add new ones to db
                         foreach( var dss in toAdd) {
                             da.Substations.Add(dss);
+                            _loader.checkCancelled();
                         }
 
                         da.CommitChanges();
                     }
 
                 }
-
-                //??Logger.Instance.LogInfoEvent($"Elapsed = getDist=[{sw1.Elapsed}] getPrim=[{sw2.Elapsed}] total=[{sw3.Elapsed}]");
             }
         }
+
 
         private void saveToFile(Stream stream, string filename) {
 

@@ -151,11 +151,7 @@ namespace SmartEnergyLabDataApi.Data
         {
             return Session.Get<DistributionSubstation>(id);
         }
-
-        public T Import<T>(int obj) where T: class {
-            return Session.Load<T>(obj);
-        }
-
+        
         public IList<DistributionSubstation> GetDistributionSubstations(DistributionNetworkOperator dno)
         {
             PrimarySubstation pss = null;
@@ -168,6 +164,13 @@ namespace SmartEnergyLabDataApi.Data
         {
             return Session.QueryOver<DistributionSubstation>().List();
         }
+
+        public IList<DistributionSubstation> GetDistributionSubstationsByExternalIds(string[] externalIds)
+        {
+            var q = Session.QueryOver<DistributionSubstation>().Where( m=>m.ExternalId.IsIn(externalIds));
+            return q.List();
+        }
+
 
         public IList<DistributionSubstation> GetDistributionSubstationsByGAId(int gaId)
         {

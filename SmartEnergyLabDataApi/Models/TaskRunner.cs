@@ -13,7 +13,7 @@ namespace SmartEnergyLabDataApi.Models
         public event StateUpdateHandler StateUpdateEvent;
         public delegate void ProgressUpdateHandler(int progress);
         public event ProgressUpdateHandler ProgressUpdateEvent;
-        public delegate void MessageUpdateHandler(string message);
+        public delegate void MessageUpdateHandler(string message, bool addToLog=true);
         public event MessageUpdateHandler MessageUpdateEvent;
 
 
@@ -51,6 +51,10 @@ namespace SmartEnergyLabDataApi.Models
             }
         }
 
+        public void CheckCancelled() {
+            _tokenSource.Token.ThrowIfCancellationRequested();
+        }
+
         public void Update(TaskState.RunningState state, string message, int progress=-1) {
             StateUpdateEvent?.Invoke(state, message,progress);
         }
@@ -58,8 +62,8 @@ namespace SmartEnergyLabDataApi.Models
         public void Update(int progress) {
             ProgressUpdateEvent?.Invoke(progress);
         }
-        public void Update(string message) {
-            MessageUpdateEvent?.Invoke(message);
+        public void Update(string message,bool addToLog=true) {
+            MessageUpdateEvent?.Invoke(message,addToLog);
         }
 
         public class TaskState

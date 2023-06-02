@@ -71,11 +71,13 @@ namespace SmartEnergyLabDataApi.Models
             }
         }
 
-        protected void messageUpdate(string message) {
+        protected void messageUpdate(string message, bool addToLog=true) {
             if ( _lastTaskState!=null) {
                 _lastTaskState.Message = message;
                 _tasks.StateUpdate(_lastTaskState);
-                Logger.Instance.LogInfoEvent(message);
+                if ( addToLog ) {
+                    Logger.Instance.LogInfoEvent(message);
+                }
             }
         }
     }
@@ -193,12 +195,12 @@ namespace SmartEnergyLabDataApi.Models
                     //??stateUpdate(TaskState.RunningState.Running,"Started loading Distribution Data");
                     //??var dataLoader = new DistributionDataLoader((TaskRunner?)taskRunner);
                     //??dataLoader.Load();
-                    stateUpdate(TaskState.RunningState.Running,"Started loading Geo Spatial data");
-                    var spatialLoader = new GeoSpatialDataLoader((TaskRunner?)taskRunner);
-                    spatialLoader.Load();
-                    //??stateUpdate(TaskState.RunningState.Running,"Started loading UK Power Network data");
-                    //??var ukPowerNetworksLoader = new UKPowerNetworkLoader((TaskRunner?)taskRunner);
-                    //??ukPowerNetworksLoader.Load();
+                    //??stateUpdate(TaskState.RunningState.Running,"Started loading National Grid Distribution data");
+                    //??var spatialLoader = new NationalGridDistributionLoader((TaskRunner?)taskRunner);
+                    //??spatialLoader.Load();
+                    stateUpdate(TaskState.RunningState.Running,"Started loading UK Power Network data");
+                    var ukPowerNetworksLoader = new UKPowerNetworkLoader((TaskRunner?)taskRunner);
+                    ukPowerNetworksLoader.Load();
                     stateUpdate(TaskState.RunningState.Finished, $"{NAME} finished", 100);
                 } catch( Exception e) {
                     stateUpdate(TaskState.RunningState.Finished, $"{NAME} aborted [{e.Message}]", 0);
