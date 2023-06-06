@@ -666,6 +666,7 @@ export interface ChangePassword {
 
 export interface DataModel {
     rows: DataRow[];
+    size: string;
 }
 
 export interface DataRow {

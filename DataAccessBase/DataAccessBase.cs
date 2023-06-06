@@ -329,6 +329,7 @@ namespace HaloSoft.DataAccess
                 var version = cmd.ExecuteNonQuery().ToString();
             }
         }
+        
         public static void RunPostgreSQLQuery(string sql, Action<NpgsqlDataReader> rowRead)
         {
             var connStr = _dbConnection.GetConnectionString();
