@@ -74,6 +74,11 @@ namespace SmartEnergyLabDataApi.Data
             return q.Take(1).SingleOrDefault();
         }
 
+        public IList<GeographicalArea> GetGeographicalAreas()
+        {
+            return Session.QueryOver<GeographicalArea>().List();
+        }
+
         public void AutoFillGISData(string name) {
             /*var gisFinder = new OpenMapsGISFinder();
             var gasEmptyGis = Session.QueryOver<GeographicalArea>().Where(m=>m.GISData==null).List();

@@ -21,10 +21,12 @@ namespace SmartEnergyLabDataApi.Models
             {"London Power Networks (LPN)", DNOAreas.London}
         };
         private ProcessResult _distProcessResult = new ProcessResult("Distribution Substations");
+        private ProcessResult _gspProcessResult = new ProcessResult("Grid Supply Points");
+        private ProcessResult _primProcessResult = new ProcessResult("Primary Substations");
         private Regex _primaryFeederRegEx = new Regex(@"^(\w+\d+) ");
         private Dictionary<string,PrimarySubstation?> _primaryDict = new Dictionary<string, PrimarySubstation?>();
 
-        private const int NTASKS = 5;
+        private const int NTASKS = 6;
         private int _tasksDone=0;
 
         public UKPowerNetworkLoader(TaskRunner taskRunner) {
@@ -32,12 +34,12 @@ namespace SmartEnergyLabDataApi.Models
         }
         
         public void Load() {
-            //??updateMessage("Loading LTDS demand records ...");
-            //??_ltdsRecords = loadData<LTDSDemandRecord>("/api/records/1.0/search/?dataset=ltds-table-3a-load-data-observed&q=&facet=licencearea&facet=gridsupplypoint&facet=substation&facet=season&facet=year&refine.season=Winter&refine.year=22-23");
-            //??checkCancelled();
-            //??updateProgress();
-            //??loadGSPs();
-            //??loadPrimaries();
+            updateMessage("Loading LTDS demand records ...");
+            _ltdsRecords = loadData<LTDSDemandRecord>("/api/records/1.0/search/?dataset=ltds-table-3a-load-data-observed&q=&facet=licencearea&facet=gridsupplypoint&facet=substation&facet=season&facet=year&refine.season=Winter&refine.year=22-23");
+            checkCancelled();
+            updateProgress();
+            loadGSPs();
+            loadPrimaries();
             loadSecondarySites();
         }
 
@@ -58,6 +60,7 @@ namespace SmartEnergyLabDataApi.Models
         private void loadGSPs() {
 
             updateMessage("Loading GSP records ...");
+            _gspProcessResult.Reset();
             var gspRecords = loadData<GSPRecord>($"/api/records/1.0/search/?dataset=ukpn-grid-supply-points&facet=gsp");
             foreach( var gspRecord in gspRecords) {
                 if ( gspRecord.geo_shape.type=="Polygon") {
@@ -76,7 +79,9 @@ namespace SmartEnergyLabDataApi.Models
 
                 // Need a way of working out the GA since no info in api data                
                 foreach( var gspRecord in gspRecords) {
+                    _gspProcessResult.NumProcessed++;
                     var gsp = da.SupplyPoints.GetGridSupplyPointByName(gspRecord.gsp);
+                    bool added = false;
                     if ( gsp==null) {
                         GeographicalArea ga=null;
                         var ltdsRecord = _ltdsRecords.Where( m=>m.grid_supply_point == gspRecord.gsp).FirstOrDefault();
@@ -85,20 +90,27 @@ namespace SmartEnergyLabDataApi.Models
                                 ga = da.Organisations.GetGeographicalArea(area);
                             } else {
                                 Logger.Instance.LogErrorEvent($"Unexpected licence area [{ltdsRecord.license_area}] for GSP=[{gspRecord.gsp}], ignoring ...");
+                                _gspProcessResult.NumIgnored++;
                                 continue;
                             }
                         } else {
                             Logger.Instance.LogErrorEvent($"Could not find LTDS record for GSP=[{gspRecord.gsp}], ignoring ...");
+                            _gspProcessResult.NumIgnored++;
                             continue;
                         }
                         gsp = new GridSupplyPoint(ImportSource.UKPowerNetworksOpenData,gspRecord.gsp,null,null,ga,ga.DistributionNetworkOperator);
                         Logger.Instance.LogInfoEvent($"Added new GSP=[{gspRecord.gsp}]");
+                        _gspProcessResult.NumAdded++;
+                        added = true;
                         toAdd.Add(gsp);
                     }
                     
                     // Position of GSP
                     gsp.GISData.Latitude = gspRecord.geo_point_2d[0];
                     gsp.GISData.Longitude = gspRecord.geo_point_2d[1];
+                    if ( !added ) {
+                        _gspProcessResult.NumModified++;
+                    }
                     // Boundary
                     try {
                         loadBoundaryData(gsp.GISData,gspRecord.geo_shape);
@@ -118,6 +130,8 @@ namespace SmartEnergyLabDataApi.Models
                 da.CommitChanges();
             }
             updateProgress();
+            //
+            Logger.Instance.LogInfoEvent(_gspProcessResult.ToString());
         }
 
         private void loadBoundaryData(GISData gisData, GeoShape geoShape) {
@@ -148,9 +162,10 @@ namespace SmartEnergyLabDataApi.Models
 
         private void loadPrimaries() {
             updateMessage("Loading Primary area records ...");
+            _primProcessResult.Reset();
             var primAreaRecords = loadData<PrimaryAreaRecord>("/api/records/1.0/search/?dataset=ukpn_primary_postcode_area&facet=demandrag",
                         100,(loaded,total,records)=>{
-                            updateMessage($"Loaded Primary area records [{loaded}] of [{total}]...");
+                            updateMessage($"Loaded Primary area records [{loaded}] of [{total}]...",false);
             });
             updateProgress();
             foreach( var primRecord in primAreaRecords) {
@@ -167,6 +182,8 @@ namespace SmartEnergyLabDataApi.Models
             using( var da = new DataAccess()) {
                 var toAdd = new List<PrimarySubstation>();
                 foreach( var primRecord in primAreaRecords) {
+                    _primProcessResult.NumProcessed++;
+                    bool added = false;
                     var pss = da.Substations.GetPrimarySubstation(ImportSource.UKPowerNetworksOpenData,primRecord.primary_feeder);
                     if ( pss==null) {
                         var ltdsRecord = _ltdsRecords.Where( m=>m.site_functional_location == primRecord.primary_site_functional_location).FirstOrDefault();
@@ -177,21 +194,29 @@ namespace SmartEnergyLabDataApi.Models
                             var gsp = da.SupplyPoints.GetGridSupplyPointByName(ltdsRecord.grid_supply_point);
                             if ( gsp!=null) {
                                 pss = new PrimarySubstation(ImportSource.UKPowerNetworksOpenData,primRecord.primary_feeder,primRecord.primary_site_functional_location,gsp);
-                                Logger.Instance.LogInfoEvent($"Added new Primary=[{primRecord.primary_substation_name}]");
+                                _primProcessResult.NumAdded++;
+                                added = true;
                                 toAdd.Add(pss);
                             } else {
                                 Logger.Instance.LogWarningEvent($"Could not find GSP with name [{ltdsRecord.grid_supply_point}] for primary substation [{primRecord.primary_substation_name}], ignoring ....");
+                                _primProcessResult.NumIgnored++;
                                 continue;
                             }
                         } else {
                             Logger.Instance.LogWarningEvent($"Could not find LTDS record with for primary substation [{primRecord.primary_site_functional_location}], ignoring ....");
+                            _primProcessResult.NumIgnored++;
                             continue;
                         }
                     }
+                    //
                     pss.Name = primRecord.primary_substation_name;
                     // Position of GSP
                     pss.GISData.Latitude = primRecord.geo_point_2d[0];
                     pss.GISData.Longitude = primRecord.geo_point_2d[1];
+                    //
+                    if ( !added ) {
+                        _primProcessResult.NumModified++;
+                    }
                     // Boundary
                     try {
                         loadBoundaryData(pss.GISData,primRecord.geo_shape);
@@ -211,6 +236,7 @@ namespace SmartEnergyLabDataApi.Models
                 da.CommitChanges();
             }
             updateProgress();
+            Logger.Instance.LogInfoEvent(_primProcessResult.ToString());
         }
 
         private void loadSecondarySites() {
@@ -428,7 +454,6 @@ namespace SmartEnergyLabDataApi.Models
             public string gsp {get; set;}
             public double[] geo_point_2d {get; set;}
             public GeoShape geo_shape {get; set;}
-
         }
 
         private class GeoShape {

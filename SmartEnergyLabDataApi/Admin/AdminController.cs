@@ -107,6 +107,18 @@ namespace EnergySystemLabDataApi.SubStations
                 return this.StatusCode(500,e.Message);
             }
         }
+
+        /// <summary>
+        /// Returns data about the low voltage network
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("DataModel")]
+        public DataModel GetDataModel() {
+            var m = new DataModel();
+            m.Load();
+            return m;
+        }
     }
 
 }

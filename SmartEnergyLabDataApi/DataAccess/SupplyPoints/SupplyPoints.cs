@@ -95,6 +95,11 @@ namespace SmartEnergyLabDataApi.Data
             var loader = new GridSupplyPointLoader(DataAccess, gan);
             return loader.Load(file);
         }
+
+        public int GetNumGridSupplyPoints(int gaId) {
+            var num = Session.QueryOver<GridSupplyPoint>().Where( m=>m.GeographicalArea.Id == gaId).RowCount();
+            return num;
+        }
     }
 
 

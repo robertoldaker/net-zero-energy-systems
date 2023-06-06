@@ -121,6 +121,7 @@ import { AdminUsersComponent } from './admin/admin-users/admin-users.component';
 import { AdminGeneralComponent } from './admin/admin-general/admin-general.component';
 import { AdminLogsComponent } from './admin/admin-logs/admin-logs.component';
 import { AdminHeaderComponent } from './admin/admin-home/admin-header/admin-header.component';
+import { AdminDataComponent } from './admin/admin-data/admin-data.component';
 
 
 @NgModule({
@@ -200,7 +201,8 @@ import { AdminHeaderComponent } from './admin/admin-home/admin-header/admin-head
         AdminUsersComponent,
         AdminGeneralComponent,
         AdminLogsComponent,
-        AdminHeaderComponent
+        AdminHeaderComponent,
+        AdminDataComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

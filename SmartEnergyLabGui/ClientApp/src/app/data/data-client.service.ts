@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 
@@ -392,6 +392,10 @@ export class DataClientService {
 
     CancelBackgroundTask(taskId: number, onComplete: (resp: any)=> void | undefined) {
         this.getBasicRequest(`/Admin/Cancel?taskId=${taskId}`, onComplete)
+    }
+
+    DataModel(onComplete: (resp: DataModel)=>void | undefined) {
+        this.getRequest<DataModel>('/Admin/DataModel',onComplete);
     }
 
 

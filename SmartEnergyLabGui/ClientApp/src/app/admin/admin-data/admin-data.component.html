@@ -1,0 +1,39 @@
+<div>
+    <table style="width: 100%;" #table mat-table [dataSource]="tableData" matSort>
+
+        <!-- Geographical areas -->
+        <ng-container matColumnDef="geoGraphicalArea">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Geographical areas</th>
+            <td mat-cell *matCellDef="let element">{{element.geoGraphicalArea}}</td>
+        </ng-container>
+    
+        <!-- DNOs -->
+        <ng-container matColumnDef="dno">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>DNO</th>
+            <td mat-cell *matCellDef="let element">{{element.dno}}</td>
+        </ng-container>
+    
+        <!--Grid Supply points -->
+        <ng-container matColumnDef="numGsps">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Grid Supply Points</th>
+            <td mat-cell *matCellDef="let element">{{element.numGsps}}</td>
+        </ng-container>
+    
+        <!-- primaries -->
+        <ng-container matColumnDef="numPrimary">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Primary substations</th>
+            <td mat-cell *matCellDef="let element">{{element.numPrimary}}</td>
+        </ng-container>
+
+        <!-- dist -->
+        <ng-container matColumnDef="numDist">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Distribution substations</th>
+            <td mat-cell *matCellDef="let element">{{element.numDist}}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    
+    </table>
+    
+</div>

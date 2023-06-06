@@ -664,6 +664,18 @@ export interface ChangePassword {
     newPassword2: string
 }
 
+export interface DataModel {
+    rows: DataRow[];
+}
+
+export interface DataRow {
+    geoGraphicalArea: string;
+    dno: string;
+    numGsps: number;
+    numPrimary: number;
+    numDist: number;
+}
+
 
 
 

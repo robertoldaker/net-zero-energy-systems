@@ -254,6 +254,11 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
+        public int GetNumDistributionSubstations(int gaId) {
+            PrimarySubstation pss=null;
+            var num = Session.QueryOver<DistributionSubstation>().Left.JoinAlias(m=>m.PrimarySubstation,()=>pss).Where( m=>pss.GeographicalArea.Id==gaId).RowCount();
+            return num;
+        }
 
         #endregion
 
@@ -343,6 +348,11 @@ namespace SmartEnergyLabDataApi.Data
                 Where(m => m.GridSupplyPoint.Id == gspId).
                 Fetch(SelectMode.Fetch,m=>m.GISData).
                 List();
+        }
+
+        public int GetNumPrimarySubstations(int gaId) {
+            var num = Session.QueryOver<PrimarySubstation>().Where( m=>m.GeographicalArea.Id==gaId).RowCount();
+            return num;
         }
 
         #endregion
