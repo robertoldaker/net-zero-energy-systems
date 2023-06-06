@@ -3,6 +3,8 @@ using System.Text.Json;
 using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
 using System.Text.Json.Serialization;
+using NHibernate.Criterion;
+using System.Text.RegularExpressions;
 
 namespace SmartEnergyLabDataApi.Models
 {
@@ -18,6 +20,9 @@ namespace SmartEnergyLabDataApi.Models
             {"South Eastern Power Networks (SPN)", DNOAreas.SouthEastEngland},
             {"London Power Networks (LPN)", DNOAreas.London}
         };
+        private ProcessResult _distProcessResult = new ProcessResult("Distribution Substations");
+        private Regex _primaryFeederRegEx = new Regex(@"^(\w+\d+) ");
+        private Dictionary<string,PrimarySubstation?> _primaryDict = new Dictionary<string, PrimarySubstation?>();
 
         private const int NTASKS = 5;
         private int _tasksDone=0;
@@ -27,12 +32,12 @@ namespace SmartEnergyLabDataApi.Models
         }
         
         public void Load() {
-            updateMessage("Loading LTDS demand records ...");
-            _ltdsRecords = loadData<LTDSDemandRecord>("/api/records/1.0/search/?dataset=ltds-table-3a-load-data-observed&q=&facet=licencearea&facet=gridsupplypoint&facet=substation&facet=season&facet=year&refine.season=Winter&refine.year=22-23");
-            checkCancelled();
-            updateProgress();
-            loadGSPs();
-            loadPrimaries();
+            //??updateMessage("Loading LTDS demand records ...");
+            //??_ltdsRecords = loadData<LTDSDemandRecord>("/api/records/1.0/search/?dataset=ltds-table-3a-load-data-observed&q=&facet=licencearea&facet=gridsupplypoint&facet=substation&facet=season&facet=year&refine.season=Winter&refine.year=22-23");
+            //??checkCancelled();
+            //??updateProgress();
+            //??loadGSPs();
+            //??loadPrimaries();
             loadSecondarySites();
         }
 
@@ -40,8 +45,8 @@ namespace SmartEnergyLabDataApi.Models
             _taskRunner?.CheckCancelled();
         }
 
-        private void updateMessage(string message) {
-            _taskRunner?.Update(message);
+        private void updateMessage(string message,bool addToLog=true) {
+            _taskRunner?.Update(message,addToLog);
         }
 
         private void updateProgress() {
@@ -210,40 +215,54 @@ namespace SmartEnergyLabDataApi.Models
 
         private void loadSecondarySites() {
             updateMessage("Loading Secondary Site records ...");
-            var secondarySiteRecords = loadData<SecondarySiteRecord>(
-                            "/api/records/1.0/search/?dataset=ukpn-secondary-sites&facet=dno&facet=substationdesign&facet=substationvoltage&facet=numberoftransformers&facet=localauthority&facet=indooroutdoor",
-                            1000,(loaded,total,records)=>{
-                                updateMessage($"Processing Secondary Site records [{loaded}] of [{total}]...");
+            _distProcessResult.Reset();
+            _primaryDict.Clear();
+            exportDataAsJson<SecondarySiteRecord>(
+                            "/api/explore/v2.1/catalog/datasets/ukpn-secondary-sites/exports/json?lang=en&timezone=Europe%2FLondon",
+                            // Note - its quicker to process using 100 instead of 1000
+                            100,(loaded,total,records)=>{
+                                updateMessage($"Processing Secondary Site records [{loaded}] of [{total}]...",false);
                                 processSecondarySites(records);
             });
             //
             updateProgress();
+            //
+            var missingPrimaries = _primaryDict.Where( m=>m.Value==null).Select(m=>m.Key).Distinct();
+            foreach( var pFeeder in missingPrimaries) {
+                Logger.Instance.LogWarningEvent($"Could not find primary [{pFeeder}]");
+            }
+            //
+            Logger.Instance.LogInfoEvent(_distProcessResult.ToString());
         }
 
         private void processSecondarySites(IEnumerable<SecondarySiteRecord> records) {
             using( var da = new DataAccess() ) {
                 var toAdd = new List<DistributionSubstation>();
                 foreach( var record in records) {
+                    bool added = false;
                     if ( record.llsoaname==null || record.geopoint==null ) {
-                        Logger.Instance.LogInfoEvent("Ignoring blank record");
+                        _distProcessResult.NumBlank++;
                         continue;
                     }
                     var dss = da.Substations.GetDistributionSubstation(ImportSource.UKPowerNetworksOpenData,record.functional_location);
                     if ( dss==null) {
-                        var pss = da.Substations.GetPrimarySubstation(ImportSource.UKPowerNetworksOpenData,record.primary_feeder);
+                        var pss = getPrimarySubstation(da,record.primary_feeder);
                         if ( pss!=null ) {
                             dss = new DistributionSubstation(ImportSource.UKPowerNetworksOpenData,record.functional_location,null,pss);
-                            Logger.Instance.LogInfoEvent($"Added new Distribution substation=[{record.llsoaname}]");
+                            //??Logger.Instance.LogInfoEvent($"Added new Distribution substation=[{record.llsoaname}]");
+                            _distProcessResult.NumAdded++;
+                            added=true;
                             toAdd.Add(dss);
                         } else {
-                            Logger.Instance.LogWarningEvent($"Could not find Primary substation [{record.primary_feeder}], ignoring secondary site [{record.functional_location}]");
+                            //??Logger.Instance.LogWarningEvent($"Could not find Primary substation [{record.primary_feeder}], ignoring secondary site [{record.functional_location}]");
+                            _distProcessResult.NumIgnored++;
                             continue;
                         }
                     }
                     //
-                    dss.Name = record.llsoaname;
-                    dss.GISData.Latitude = record.geopoint[0];
-                    dss.GISData.Longitude = record.geopoint[1];
+                    if ( record.update(dss) && !added ) {
+                        _distProcessResult.NumModified++;
+                    }
                     checkCancelled();
                 }
 
@@ -257,8 +276,29 @@ namespace SmartEnergyLabDataApi.Models
                 checkCancelled();
 
                 //
-                //??da.CommitChanges();
+                da.CommitChanges();
+                //
+                _distProcessResult.NumProcessed+=records.Count();
             }
+        }
+
+        private PrimarySubstation getPrimarySubstation(DataAccess da, string primaryFeeder) {
+            PrimarySubstation pss=null;
+            if ( primaryFeeder==null) {
+                return null;
+            }
+            if ( _primaryDict.TryGetValue(primaryFeeder, out pss)) {
+                return pss;
+            }
+            var match = _primaryFeederRegEx.Match(primaryFeeder);
+            if ( match.Success ) {
+                var pFeeder = match.Groups[1].Value;
+                pss = da.Substations.GetPrimarySubstationLike(MatchMode.Start,ImportSource.UKPowerNetworksOpenData,pFeeder);
+            } else {
+                pss = da.Substations.GetPrimarySubstation(ImportSource.UKPowerNetworksOpenData,primaryFeeder);
+            }
+            _primaryDict.Add(primaryFeeder,pss);
+            return pss;
         }
 
         private List<T> loadData<T>(string methodUrl,int rows=100, Action<int,int,IEnumerable<T>>? progress=null) where T : class {
@@ -282,10 +322,50 @@ namespace SmartEnergyLabDataApi.Models
             return records;
         }
 
+        private void exportDataAsJson<T>(string methodUrl,int rows=100, Action<int,int,IEnumerable<T>>? progress=null) where T : class {
+            IEnumerable<T> records=null;
+            var allRecords = get<List<T>>(methodUrl);;
+            int start=0;
+            do {
+                checkCancelled();
+                records = allRecords.Skip(start).Take(rows);
+                progress?.Invoke(start,allRecords.Count,records);
+                start += rows;
+            } while( start<allRecords.Count );
+            //
+        }
+
+        private class ProcessResult {
+            private string _name;
+            public ProcessResult(string name) {
+                _name = name;
+            }
+            public override string ToString()
+            {
+                return $"{NumProcessed} {_name} processed, {NumAdded} added, {NumModified} modified, {NumIgnored} ignored, {NumBlank} blank";
+            }
+            public int NumAdded {get; set;}
+            public int NumModified {get; set;}
+            public int NumProcessed {get; set;}
+            public int NumIgnored {get; set;}
+            public int NumBlank {get; set;}
+            public string Name {
+                get {
+                    return _name;
+                }
+            }
+            public void Reset() {
+                NumAdded= 0;
+                NumModified = 0;
+                NumIgnored=0;
+                NumBlank=0;
+            }
+        }
+
         private class SecondarySiteRecord {
             public string llsoaname {get; set;}
 
-            public double[] geopoint {get; set;}
+            public GeoPoint geopoint {get; set;}
                         
             public string postcode {get; set;}
 
@@ -296,6 +376,26 @@ namespace SmartEnergyLabDataApi.Models
 
             [JsonPropertyName("functionallocation")]
             public string functional_location {get; set;}
+
+            public bool update(DistributionSubstation dss) {
+                bool updated = false;
+                if ( dss.Name!=llsoaname ) {
+                    dss.Name = llsoaname;
+                    updated = true;
+                }
+                if ( dss.GISData.Latitude!=geopoint.lat) {
+                    dss.GISData.Latitude = geopoint.lat;
+                }
+                if ( dss.GISData.Longitude!=geopoint.lon) {
+                    dss.GISData.Longitude = geopoint.lon;
+                }
+                return updated;
+            }
+        }
+
+        private class GeoPoint {
+            public double lat {get; set;}
+            public double lon {get ;set;}
         }
 
         private class LTDSDemandRecord {

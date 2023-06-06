@@ -282,6 +282,20 @@ namespace SmartEnergyLabDataApi.Data
             return pss;
         }
 
+        public PrimarySubstation GetPrimarySubstationLike(MatchMode matchMode, ImportSource source, string externalId, string externalId2=null, string name=null) {
+            PrimarySubstation pss=null;
+            if ( externalId!=null ) {
+                pss = Session.QueryOver<PrimarySubstation>().Where( m=>m.Source==source && m.ExternalId.IsLike(externalId,matchMode)).Take(1).SingleOrDefault();
+            }
+            if ( pss==null && externalId2!=null ) {
+                pss = Session.QueryOver<PrimarySubstation>().Where(m=>m.Source==source && m.ExternalId2.IsLike(externalId2,matchMode)).Take(1).SingleOrDefault();
+            } 
+            if ( pss==null && name!=null ) {
+                pss = Session.QueryOver<PrimarySubstation>().Where(m=>m.Source==source && m.Name.IsLike(name,matchMode)).Take(1).SingleOrDefault();
+            } 
+            return pss;
+        }
+
         public PrimarySubstation GetPrimarySubstation(string nr)
         {
             return Session.QueryOver<PrimarySubstation>().Where(m => m.NR == nr).Take(1).SingleOrDefault();

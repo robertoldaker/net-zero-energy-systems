@@ -222,7 +222,7 @@ namespace SmartEnergyLabDataApi.Models
         {
             if (_ctTask.IsRunning)
             {
-                throw new Exception("Database backup is currently in progress, please try again later");
+                throw new Exception($"{NAME} is currently in progress, please try again later");
             }
             _ctTask.Run();
         }
