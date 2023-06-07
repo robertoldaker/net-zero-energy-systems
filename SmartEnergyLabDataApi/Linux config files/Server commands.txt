@@ -101,11 +101,16 @@ sudo certbot --nginx -d lv-data.net-zero-energy-systems.org
 # install gdal
 #
 # download anaconda from https://www.anaconda.com
-bash Anaconda3-2023.03-Linux-x86_64.sh
+wget https://repo.anaconda.com/archive/Anaconda3-2023.03-1-Linux-x86_64.sh
+bash Anaconda3-2023.03-1-Linux-x86_64.sh
 # then restart terminal and ...
 conda install gdal
 # then run this to check it works
 ogr2ogr
+# add symbolic link to websites install dir
+cd websites/SmartEnergyLabDataApi
+ln -s /home/rob/anaconda3/bin/ogr2ogr .
+
 
 
 
