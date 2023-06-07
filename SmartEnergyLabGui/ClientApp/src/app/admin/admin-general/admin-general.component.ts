@@ -12,23 +12,12 @@ export class AdminGeneralComponent implements OnInit {
         
      }
 
-    backupDb() {
-        this.dataClientService.BackupDb((result)=>{
-            console.log(result)
-        })
-    }
-
     startMaintenance() {
 
     }
 
     stopMaintenance() {
 
-    }
-
-    loadNetworkData() {
-        this.dataClientService.LoadNetworkData((result)=>{
-        })
     }
 
     ngOnInit(): void {

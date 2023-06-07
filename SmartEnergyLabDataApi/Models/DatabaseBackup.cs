@@ -19,12 +19,9 @@ namespace SmartEnergyLabDataApi.Models
                 return;
             }
             upload(fileName);
-            Logger.Instance.LogInfoEvent("Database backup completed");
-            _taskRunner?.Update(TaskRunner.TaskState.RunningState.Running,"Databasebackup completed");
         }
 
         private string create() {
-            Logger.Instance.LogInfoEvent("Creating database backup ...");
             _taskRunner?.Update(TaskRunner.TaskState.RunningState.Running,"Creating backup ...");
 
             var dbName = "smart_energy_lab";
@@ -104,7 +101,7 @@ namespace SmartEnergyLabDataApi.Models
                     var newProgress = (100*(long) prog)/length;
                     if ( newProgress!=progress) {
                         progress = newProgress;
-                        _taskRunner?.Update(TaskRunner.TaskState.RunningState.Running,"Uploading to SFTP site ...",(int) progress);
+                        _taskRunner?.Update((int) progress);
                     }
                 });
             }

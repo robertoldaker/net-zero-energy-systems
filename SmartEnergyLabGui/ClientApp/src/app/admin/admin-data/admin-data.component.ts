@@ -45,4 +45,11 @@ export class AdminDataComponent extends ComponentBase {
         });
     }
 
+    backupDb() {
+        this.dataService.BackupDb((result)=>{
+            console.log(result)
+        })
+    }
+
+
 }
