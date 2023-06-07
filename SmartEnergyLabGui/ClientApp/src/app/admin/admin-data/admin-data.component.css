@@ -4,9 +4,11 @@ div.tableContainer {
 div.size {
     margin-bottom: 1rem;
     font-size: 1rem;
+    float: right;
 }
 
 table.data {
+    margin-top: 1rem;
     width: 100%;
 }
 
@@ -14,6 +16,10 @@ img.dnoImg {
     width: 50px;
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+div.toolbar > button {    
     margin-right: 0.5rem;
 }
 

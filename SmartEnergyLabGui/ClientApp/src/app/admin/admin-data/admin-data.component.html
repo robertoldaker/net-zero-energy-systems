@@ -1,5 +1,12 @@
 <div style="overflow: auto; height: calc(100vh - 120px)">
     <div class="size">Database size: <b>{{model?.size}}</b></div>
+    <div class="toolbar">
+        <button mat-raised-button color="primary" (click)="loadNetworkData()">Load network data</button>
+        <button mat-raised-button color="primary" (click)="refresh()">
+            <mat-icon>refresh</mat-icon>
+            Refresh
+        </button>
+    </div>
     <table class="data" #table mat-table [dataSource]="tableData" matSort>
 
         <!-- Geographical areas -->

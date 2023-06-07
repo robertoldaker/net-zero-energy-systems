@@ -16,14 +16,8 @@ export class AdminDataComponent extends ComponentBase {
         super()
         this.sort = null
         this.displayedColumns = ['geoGraphicalArea','dno','numGsps','numPrimary','numDist']
-        this.dataService.DataModel((dm)=>{
-            this.model = dm;
-            this.tableData = new MatTableDataSource(this.model.rows)
-            this.tableData.sortingDataAccessor = this.sortDataAccessor
-            this.tableData.sort = this.sort
-
-        });
         this.tableData = new MatTableDataSource()
+        this.refresh();
     }
 
     tableData: MatTableDataSource<DataRow>
@@ -35,6 +29,20 @@ export class AdminDataComponent extends ComponentBase {
 
     sortDataAccessor(data: any, headerId: string): number | string {
         return data[headerId];
+    }
+
+    loadNetworkData() {
+        this.dataService.LoadNetworkData((result)=>{
+        })
+    }
+
+    refresh() {
+        this.dataService.DataModel((dm)=>{
+            this.model = dm;
+            this.tableData = new MatTableDataSource(this.model.rows)
+            this.tableData.sortingDataAccessor = this.sortDataAccessor
+            this.tableData.sort = this.sort
+        });
     }
 
 }
