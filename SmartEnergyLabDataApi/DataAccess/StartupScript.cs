@@ -10,22 +10,22 @@ namespace SmartEnergyLabDataApi.Data
         public static void Run(int oldVersion, int newVersion)
         {
             var script = new StartupScript();
-            if (newVersion == 1) {
+            if (oldVersion<1) {
                 script.createInitialIndexes();
                 script.createDefaultDNOs();
                 script.createDefaultGeographicalAreas();
-            } else if (newVersion ==2 ) {
+            } else if (oldVersion<2 ) {
                 script.createSubstationParams();
-            } else if (newVersion ==3 ) {
+            } else if (oldVersion <3 ) {
                 script.populateSubstationLoadProfileKeys();
-            } else if ( newVersion==4) {
+            } else if ( oldVersion<4) {
                 script.updateSubstationClassifications();
-            } else if ( newVersion==5) {
+            } else if ( oldVersion<5) {
                 script.fixExistingDNOs();
                 script.fixExistingGAs();
                 script.createDefaultDNOs();
                 script.createDefaultGeographicalAreas();
-            } else if ( newVersion==6) {
+            } else if ( oldVersion<6) {
                 script.fixGridSupplyPoints();
                 script.fixPrimaries();
                 script.fixDistributions();
