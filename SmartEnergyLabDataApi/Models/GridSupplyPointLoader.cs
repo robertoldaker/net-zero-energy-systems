@@ -58,21 +58,22 @@ namespace SmartEnergyLabDataApi.Models
                         }
                     }
                     var length = elements[maxIndex][0].Length;
-                    gsp.GISData.BoundaryLatitudes = new double[length];
-                    gsp.GISData.BoundaryLongitudes = new double[length];
+                    var boundary = gsp.GISData.GetFirstBoundary(_da);
+                    boundary.Latitudes = new double[length];
+                    boundary.Longitudes = new double[length];
                     for(int index=0; index<length; index++) {
                         var eastings = elements[maxIndex][0][index][0];
                         var northings = elements[maxIndex][0][index][1];
                         var latLong=LatLonConversions.ConvertOSToLatLon(eastings,northings);
-                        gsp.GISData.BoundaryLatitudes[index] = latLong.Latitude;
-                        gsp.GISData.BoundaryLongitudes[index] = latLong.Longitude;
+                        boundary.Latitudes[index] = latLong.Latitude;
+                        boundary.Longitudes[index] = latLong.Longitude;
                     }
                     //
-                    if ( gsp.GISData.BoundaryLatitudes.Length!=0 ) {
-                        gsp.GISData.Latitude = gsp.GISData.BoundaryLatitudes.Sum()/gsp.GISData.BoundaryLatitudes.Length;
+                    if ( boundary.Latitudes.Length!=0 ) {
+                        gsp.GISData.Latitude = boundary.Latitudes.Sum()/boundary.Latitudes.Length;
                     }
                     if ( gsp.GISData.BoundaryLongitudes.Length!=0 ) {
-                        gsp.GISData.Longitude = gsp.GISData.BoundaryLongitudes.Sum()/gsp.GISData.BoundaryLongitudes.Length;
+                        gsp.GISData.Longitude = boundary.Longitudes.Sum()/boundary.Longitudes.Length;
                     }
                     //
                     msg = $"[{numNew}] Grid Supply Points added\n[{numModified}] Grid Supply Points modified";

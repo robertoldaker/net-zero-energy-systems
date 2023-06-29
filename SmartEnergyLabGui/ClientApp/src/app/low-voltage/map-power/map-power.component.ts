@@ -1,11 +1,12 @@
 import { AfterViewInit, Component, Input, OnInit, ViewChild, ViewChildren } from '@angular/core';
 import { GoogleMap, MapInfoWindow, MapMarker } from '@angular/google-maps';
-import { DistributionSubstation, GISData, GridSupplyPoint, PrimarySubstation } from '../../data/app.data';
+import { DistributionSubstation, GISBoundary, GISData, GridSupplyPoint, PrimarySubstation } from '../../data/app.data';
 import { MapMarkerComponent } from '../map-marker/map-marker.component';
 import { MapDataService } from '../map-data.service';
 import { MapPowerService } from '../map-power.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { MapComponent } from '../map/map.component';
+import { DataClientService } from 'src/app/data/data-client.service';
 
 @Component({
     selector: 'app-map-power',
@@ -22,7 +23,7 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
     @ViewChild('primaryInfoWindow', { read: MapInfoWindow }) primaryInfoWindow: MapInfoWindow | undefined;
     @ViewChild('distInfoWindow', { read: MapInfoWindow }) distInfoWindow: MapInfoWindow | undefined;
 
-    constructor(private mapComponent: MapComponent, private mapPowerService: MapPowerService, private mapDataService: MapDataService) {
+    constructor(private mapComponent: MapComponent, private mapPowerService: MapPowerService, private dataClientService: DataClientService) {
         super()
         if ( this.mapPowerService.GridSupplyPoints ) {
             this.addGridSupplyPointMarkers()
@@ -58,23 +59,33 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
         lat: 51.381, lng: -2.3590
     }
 
-    gspBoundary: google.maps.LatLngLiteral[] = []
-    primaryBoundary: google.maps.LatLngLiteral[] = []
-    distributionBoundary: google.maps.LatLngLiteral[] = []
+    gspBoundaries: google.maps.LatLngLiteral[][] = []
+    primaryBoundaries: google.maps.LatLngLiteral[][] = []
+    distributionBoundaries: google.maps.LatLngLiteral[][] = []
 
-    getBoundaryPoints(gisData: GISData) {
-        let boundary:google.maps.LatLngLiteral[] = []
-        let lats = gisData.boundaryLatitudes;
-        let lngs = gisData.boundaryLongitudes;
-        if ( lats!=null && lngs!=null ) {
-            boundary.length = lats.length
-            for( let i=0; i<lats?.length;i++) {
-                boundary[i] = { lat: lats[i], lng: lngs[i]};
-            }        
-        }
-        return boundary;
+    getBoundaryPoints(gisData: GISData, onLoad: ((boundary: google.maps.LatLngLiteral[][]) => void | undefined)) {
+
+        this.dataClientService.GetGISBoundaries(gisData.id, (gisBoundaries: GISBoundary[])=>{
+            let boundaries:google.maps.LatLngLiteral[][] = new Array(gisBoundaries.length)
+            for(let i=0;i<gisBoundaries.length;i++) {
+                let lats = gisBoundaries[i].latitudes;
+                let lngs = gisBoundaries[i].longitudes;
+                if ( lats!=null && lngs!=null ) {
+                    boundaries[i] = new Array(lats.length)
+                    for( let j=0; j<lats?.length;j++) {
+                        boundaries[i][j] = { lat: lats[j], lng: lngs[j]};
+                    }        
+                }
+                if ( onLoad ) {
+                    onLoad(boundaries);
+                }
+    
+            }
+        });
     }
 
+    /*
+    ??
     getBounds(gisData: GISData) : google.maps.LatLngBounds {
         let lats = gisData.boundaryLatitudes;
         let lngs = gisData.boundaryLongitudes;
@@ -100,6 +111,7 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
         console.log(b)
         return new google.maps.LatLngBounds(b)
     }
+    */
 
 
     selectedMarker: MapMarker | null = null
@@ -262,9 +274,11 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
                 mapMarker.marker?.setOpacity(1)
                 this.selectedMarker = mapMarker 
                 this.gspInfoWindow?.open(mapMarker)
-                this.primaryBoundary = []
-                this.distributionBoundary = []
-                this.gspBoundary = this.getBoundaryPoints(selectedGsp.gisData)
+                this.primaryBoundaries = []
+                this.distributionBoundaries = []
+                this.getBoundaryPoints(selectedGsp.gisData, (boundaries: google.maps.LatLngLiteral[][]) =>{
+                    this.gspBoundaries = boundaries
+                })
             }    
         }
     }
@@ -279,8 +293,10 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
                 mapMarker.marker?.setOpacity(1);
                 this.selectedMarker = mapMarker;    
                 this.primaryInfoWindow?.open(mapMarker);
-                this.distributionBoundary = []
-                this.primaryBoundary = this.getBoundaryPoints(selectedPrimary.gisData)
+                this.distributionBoundaries = []
+                this.getBoundaryPoints(selectedPrimary.gisData, (boundaries: google.maps.LatLngLiteral[][]) =>{
+                    this.primaryBoundaries = boundaries
+                })
             }    
         }
     }
@@ -296,7 +312,9 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
                 this.selectedMarker = mapMarker   
                 // Add info window
                 this.distInfoWindow?.open(mapMarker);
-                this.distributionBoundary = this.getBoundaryPoints(selectedDist.gisData)
+                this.getBoundaryPoints(selectedDist.gisData, (boundaries: google.maps.LatLngLiteral[][]) =>{
+                    this.distributionBoundaries = boundaries
+                })
             } 
         }
     }

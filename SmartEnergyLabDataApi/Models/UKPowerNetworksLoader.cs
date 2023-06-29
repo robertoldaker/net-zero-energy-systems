@@ -113,7 +113,7 @@ namespace SmartEnergyLabDataApi.Models
                     }
                     // Boundary
                     try {
-                        loadBoundaryData(gsp.GISData,gspRecord.geo_shape);
+                        loadBoundaryData(gsp.GISData,da,gspRecord.geo_shape);
                     } catch (Exception e) {
                         Logger.Instance.LogErrorEvent(e.Message + $", for entry [{gsp.Name}]");
                     }
@@ -134,25 +134,30 @@ namespace SmartEnergyLabDataApi.Models
             Logger.Instance.LogInfoEvent(_gspProcessResult.ToString());
         }
 
-        private void loadBoundaryData(GISData gisData, GeoShape geoShape) {
+        private void loadBoundaryData(GISData gisData, DataAccess da, GeoShape geoShape) {
             if ( geoShape.type=="MultiPolygon" ) {
-                int length = geoShape.multiPolygonCoords[0][0].Length;
-                gisData.BoundaryLatitudes = new double[length];
-                gisData.BoundaryLongitudes = new double[length];
-                int index=0;
-                foreach( var coord in geoShape.multiPolygonCoords[0][0] ) {
-                    gisData.BoundaryLongitudes[index] = coord[0];
-                    gisData.BoundaryLatitudes[index] = coord[1];
-                    index++;
+                int numBoundaries = geoShape.multiPolygonCoords[0].Length;
+                var boundaries = gisData.GetBoundariesAndUpdate(da, numBoundaries);
+                for( int i=0;i<numBoundaries;i++) {
+                    int length = geoShape.multiPolygonCoords[0][i].Length;
+                    boundaries[i].Latitudes = new double[length];
+                    boundaries[i].Longitudes = new double[length];
+                    int index=0;
+                    foreach( var coord in geoShape.multiPolygonCoords[0][i] ) {
+                        boundaries[i].Longitudes[index] = coord[0];
+                        boundaries[i].Latitudes[index] = coord[1];
+                        index++;
+                    }
                 }
             } else if ( geoShape.type=="Polygon") {
+                var boundary = gisData.GetBoundariesAndUpdate(da,1)[0];
                 int length = geoShape.polygonCoords[0].Length;
-                gisData.BoundaryLatitudes = new double[length];
-                gisData.BoundaryLongitudes = new double[length];
+                boundary.Latitudes = new double[length];
+                boundary.Longitudes = new double[length];
                 int index=0;
                 foreach( var coord in geoShape.polygonCoords[0] ) {
-                    gisData.BoundaryLongitudes[index] = coord[0];
-                    gisData.BoundaryLatitudes[index] = coord[1];
+                    boundary.Longitudes[index] = coord[0];
+                    boundary.Latitudes[index] = coord[1];
                     index++;
                 }
             } else {
@@ -219,7 +224,7 @@ namespace SmartEnergyLabDataApi.Models
                     }
                     // Boundary
                     try {
-                        loadBoundaryData(pss.GISData,primRecord.geo_shape);
+                        loadBoundaryData(pss.GISData,da,primRecord.geo_shape);
                     } catch (Exception e) {
                         Logger.Instance.LogErrorEvent(e.Message + $", for entry [{pss.Name}]");
                     }

@@ -60,17 +60,18 @@ namespace SmartEnergyLabDataApi.Models
                         }
                     }
                     var length = elements[maxIndex][0].Length;
-                    pss.GISData.BoundaryLatitudes = new double[length];
-                    pss.GISData.BoundaryLongitudes = new double[length];
+                    var boundary = pss.GISData.GetFirstBoundary(_da);
+                    boundary.Latitudes = new double[length];
+                    boundary.Longitudes = new double[length];
                     for(int index=0; index<length; index++) {                            
-                        pss.GISData.BoundaryLongitudes[index] = elements[maxIndex][0][index][0];
-                        pss.GISData.BoundaryLatitudes[index] = elements[maxIndex][0][index][1];
+                        boundary.Longitudes[index] = elements[maxIndex][0][index][0];
+                        boundary.Latitudes[index] = elements[maxIndex][0][index][1];
                     }
-                    if ( pss.GISData.Latitude==0 && pss.GISData.BoundaryLatitudes.Length!=0 ) {
-                        pss.GISData.Latitude = (pss.GISData.BoundaryLatitudes.Max()+pss.GISData.BoundaryLatitudes.Min())/2;
+                    if ( pss.GISData.Latitude==0 && boundary.Latitudes.Length!=0 ) {
+                        pss.GISData.Latitude = (boundary.Latitudes.Max()+boundary.Latitudes.Min())/2;
                     }
-                    if ( pss.GISData.Longitude==0 && pss.GISData.BoundaryLongitudes.Length!=0 ) {
-                        pss.GISData.Longitude = (pss.GISData.BoundaryLongitudes.Max()+pss.GISData.BoundaryLongitudes.Min())/2;
+                    if ( pss.GISData.Longitude==0 && boundary.Longitudes.Length!=0 ) {
+                        pss.GISData.Longitude = (boundary.Longitudes.Max()+boundary.Longitudes.Min())/2;
                     }
 
                 }

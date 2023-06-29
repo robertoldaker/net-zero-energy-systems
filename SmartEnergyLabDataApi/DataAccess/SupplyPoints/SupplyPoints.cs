@@ -77,9 +77,8 @@ namespace SmartEnergyLabDataApi.Data
         }
 
         public IList<GridSupplyPoint> GetGridSupplyPoints() {
-            return Session.QueryOver<GridSupplyPoint>().
-                    Fetch(SelectMode.Fetch,m=>m.GISData).
-                    List();
+            var q = Session.QueryOver<GridSupplyPoint>().Fetch(SelectMode.Fetch,m=>m.GISData);
+            return q.List();
         }
 
         public IList<GridSupplyPoint> GetGridSupplyPoints(DistributionNetworkOperator dno) {

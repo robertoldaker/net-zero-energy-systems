@@ -55,7 +55,7 @@ namespace SmartEnergyLabDataApi.Models
                 if ( vcs == null ) {
                     PrimarySubstation pss = null;
                     if ( poi.addressInfo.latitude!=null && poi.addressInfo.longitude!=null ) {
-                        pss = getPrimarySubstation((double) poi.addressInfo.latitude,(double) poi.addressInfo.longitude);
+                        pss = getPrimarySubstation(_da,(double) poi.addressInfo.latitude,(double) poi.addressInfo.longitude);
                     }
                     if ( pss==null ) {
                         Logger.Instance.LogInfoEvent($"Ignoring charging station [{poi.addressInfo.title}] [${poi.addressInfo.latitude},${poi.addressInfo.longitude}] since we cannot find an enclosing primary substation");
@@ -70,7 +70,7 @@ namespace SmartEnergyLabDataApi.Models
                 //?? can be removed since this may need to set manually??
                 // update primary substation
                 if ( poi.addressInfo.latitude!=null && poi.addressInfo.longitude!=null ) {
-                    var pss = getPrimarySubstation((double) poi.addressInfo.latitude,(double) poi.addressInfo.longitude);
+                    var pss = getPrimarySubstation(_da,(double) poi.addressInfo.latitude,(double) poi.addressInfo.longitude);
                     if ( pss==null ) {
                         pss = _primarySubstations[0];
                     }
@@ -140,11 +140,11 @@ namespace SmartEnergyLabDataApi.Models
             }
         }
 
-        private PrimarySubstation getPrimarySubstation(double lat, double lng) {
+        private PrimarySubstation getPrimarySubstation(DataAccess da, double lat, double lng) {
             foreach( var pss in _primarySubstations) {
-                if( pss.GISData.BoundaryLatitudes!=null && pss.GISData.BoundaryLongitudes!=null) {
-                    var pointIn = GISUtilities.IsPointInPolygon(lat,lng,pss.GISData.BoundaryLatitudes,pss.GISData.BoundaryLongitudes);
-                    if ( pointIn ) {
+                var boundaries = pss.GISData.GetBoundaries(da);
+                foreach( var boundary in boundaries) {
+                    if ( boundary.IsPtInside(lat,lng)) {
                         return pss;
                     }
                 }

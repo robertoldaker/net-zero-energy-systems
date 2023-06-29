@@ -183,6 +183,11 @@ namespace SmartEnergyLabDataApi.Models
                                 numModified++;
                             }
                         }
+                        //
+                        if ( gsp.GISData==null) {
+                            gsp.GISData = new GISData();
+                        }
+                        //
                         var elements = feature.geometry.coordinates.Deserialize<double[][][][]>();
                         // work out polygon that is longest
                         int maxIndex=0;
@@ -195,17 +200,17 @@ namespace SmartEnergyLabDataApi.Models
                         }
                         // If currently apears in a different geographical area then only update points
                         if ( !isNew && gsp.GeographicalArea.Id!=ga.Id ) {
-                            int boundaryLength = gsp.GetBoundaryLength();
+                            int boundaryLength = gsp.GetMaxBoundaryLength(da);
                             // Border GSPs are often mentioned in both geographical areas so choose the one with most points
                             // - a bit esoteric but not sure of a better way of doing just now
                             if (  maxLength > boundaryLength ) {
                                 Logger.Instance.LogInfoEvent($"{gsp.Name}, moving from [{gsp.GeographicalArea.Name}] to [{ga.Name}], lengths=[{maxLength}/{boundaryLength}] ");
                                 gsp.GeographicalArea = ga;
                                 gsp.DistributionNetworkOperator = ga.DistributionNetworkOperator;
-                                updateBoundaryPoints(gsp,elements,maxIndex);
+                                updateBoundaryPoints(gsp.GISData,da,elements,maxIndex);
                             }
                         } else {
-                            updateBoundaryPoints(gsp,elements,maxIndex);
+                            updateBoundaryPoints(gsp.GISData,da,elements,maxIndex);
                         }
 
                     }                
@@ -229,27 +234,8 @@ namespace SmartEnergyLabDataApi.Models
             return msg;
         }
 
-        private void updateBoundaryPoints(GridSupplyPoint gsp, double[][][][] elements, int maxIndex) {
-            var length = elements[maxIndex][0].Length;
-            if ( gsp.GISData==null) {
-                gsp.GISData = new GISData();
-            }
-            gsp.GISData.BoundaryLatitudes = new double[length];
-            gsp.GISData.BoundaryLongitudes = new double[length];
-            for(int index=0; index<length; index++) {
-                var eastings = elements[maxIndex][0][index][0];
-                var northings = elements[maxIndex][0][index][1];
-                var latLong=LatLonConversions.ConvertOSToLatLon(eastings,northings);
-                gsp.GISData.BoundaryLatitudes[index] = latLong.Latitude;
-                gsp.GISData.BoundaryLongitudes[index] = latLong.Longitude;
-            }
-            //
-            if ( gsp.GISData.BoundaryLatitudes.Length!=0 ) {
-                gsp.GISData.Latitude = gsp.GISData.BoundaryLatitudes.Sum()/gsp.GISData.BoundaryLatitudes.Length;
-            }
-            if ( gsp.GISData.BoundaryLongitudes.Length!=0 ) {
-                gsp.GISData.Longitude = gsp.GISData.BoundaryLongitudes.Sum()/gsp.GISData.BoundaryLongitudes.Length;
-            }
+        private void updateBoundaryPoints(GISData gisData, DataAccess da, double[][][][] elements, int maxIndex) {
+            gisData.UpdateBoundaryPoints(da,elements,maxIndex);
         }
 
         private bool updateGSP(GridSupplyPoint gsp, Props props) {
@@ -314,22 +300,7 @@ namespace SmartEnergyLabDataApi.Models
                                 maxLength = elements[i][0].Length;
                             }
                         }
-                        var length = elements[maxIndex][0].Length;
-                        pss.GISData.BoundaryLatitudes = new double[length];
-                        pss.GISData.BoundaryLongitudes = new double[length];
-                        for(int index=0; index<length; index++) {
-                            var eastings = elements[maxIndex][0][index][0];
-                            var northings = elements[maxIndex][0][index][1];
-                            var latLong=LatLonConversions.ConvertOSToLatLon(eastings,northings);
-                            pss.GISData.BoundaryLatitudes[index] = latLong.Latitude;
-                            pss.GISData.BoundaryLongitudes[index] = latLong.Longitude;
-                        }
-                        if ( pss.GISData.BoundaryLatitudes.Length!=0 ) {
-                            pss.GISData.Latitude = (pss.GISData.BoundaryLatitudes.Max()+pss.GISData.BoundaryLatitudes.Min())/2;
-                        }
-                        if ( pss.GISData.BoundaryLongitudes.Length!=0 ) {
-                            pss.GISData.Longitude = (pss.GISData.BoundaryLongitudes.Max()+pss.GISData.BoundaryLongitudes.Min())/2;
-                        }
+                        updateBoundaryPoints(pss.GISData,da,elements,maxIndex);
                         checkCancelled();
                     }
                     //
@@ -476,22 +447,7 @@ namespace SmartEnergyLabDataApi.Models
                                     maxLength = elements[i][0].Length;
                                 }
                             }
-                            var length = elements[maxIndex][0].Length;
-                            dss.GISData.BoundaryLatitudes = new double[length];
-                            dss.GISData.BoundaryLongitudes = new double[length];
-                            LatLon latLong;
-                            for(int index=0; index<length; index++) {                            
-                                latLong=LatLonConversions.ConvertOSToLatLon(elements[maxIndex][0][index][0],elements[maxIndex][0][index][1]);
-                                dss.GISData.BoundaryLongitudes[index] = latLong.Longitude;
-                                dss.GISData.BoundaryLatitudes[index] = latLong.Latitude;
-                            }
-                            if ( dss.GISData.BoundaryLatitudes.Length!=0 ) {
-                                dss.GISData.Latitude = (dss.GISData.BoundaryLatitudes.Max()+dss.GISData.BoundaryLatitudes.Min())/2;
-                            }
-                            if ( dss.GISData.BoundaryLongitudes.Length!=0 ) {
-                                dss.GISData.Longitude = (dss.GISData.BoundaryLongitudes.Max()+dss.GISData.BoundaryLongitudes.Min())/2;
-                            }
-
+                            _loader.updateBoundaryPoints(dss.GISData,da,elements,maxIndex);
                             _loader.checkCancelled();
 
                         }

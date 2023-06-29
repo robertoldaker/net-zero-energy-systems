@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 
@@ -174,6 +174,17 @@ export class DataClientService {
      */
      GetGeographicalArea(areaName: string, onLoad: (ga: GeographicalArea) => void | undefined) {
         this.http.get<GeographicalArea>(this.baseUrl + `/Organisations/GeographicalArea?areaName=${areaName}`).subscribe(result => {
+            if (onLoad !== undefined) {
+                onLoad(result);
+            }
+        }, error =>  this.logErrorMessage(error));
+    }
+
+    /**
+     * GIS
+     */
+    GetGISBoundaries(gisDataId: number, onLoad: (boundaries: GISBoundary[]) => void | undefined) {
+        this.http.get<GISBoundary[]>(this.baseUrl + `/GIS/Boundaries?gisDataId=${gisDataId}`).subscribe(result => {
             if (onLoad !== undefined) {
                 onLoad(result);
             }

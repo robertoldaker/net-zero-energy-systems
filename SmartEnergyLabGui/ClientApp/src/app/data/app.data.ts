@@ -20,10 +20,17 @@ export interface PrimarySubstation {
 }
 
 export interface GISData {
+    id: number,
     latitude: number,
     longitude: number,
-    boundaryLatitudes: number[] | null,
-    boundaryLongitudes: number[] | null,
+    //?? Now done via GISBoundary
+    //??boundaryLatitudes: number[] | null,
+    //??boundaryLongitudes: number[] | null,
+}
+
+export interface GISBoundary {
+    latitudes: number[] | null;
+    longitudes: number[] | null;
 }
 
 export interface DistributionSubstation {

@@ -101,8 +101,9 @@ namespace SmartEnergyLabDataApi.Data
                 double south = gsps.Select(m=>m.GISData.Latitude).Min();
                 ga.GISData.Longitude = (east+west)/2;
                 ga.GISData.Latitude = (north+south)/2;
-                ga.GISData.BoundaryLongitudes = new double[] { east,east,west,west };
-                ga.GISData.BoundaryLatitudes  = new double[] { south,north,north,south };
+                var boundary = ga.GISData.GetFirstBoundary(this.DataAccess);
+                boundary.Longitudes = new double[] { east,east,west,west };
+                boundary.Latitudes  = new double[] { south,north,north,south };
             } else {
                 throw new Exception($"Could not find geographical are with name [{name}]");
             }

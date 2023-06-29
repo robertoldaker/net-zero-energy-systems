@@ -1,9 +1,10 @@
 import { Component, OnInit, AfterViewInit, ViewChild, Inject, OnDestroy, ViewChildren, ElementRef } from '@angular/core'
 import { GoogleMap, GoogleMapsModule, MapInfoWindow, MapMarker } from '@angular/google-maps'
-import { DistributionSubstation, GISData, PrimarySubstation, VehicleChargingStation } from '../../data/app.data';
+import { DistributionSubstation, GISBoundary, GISData, PrimarySubstation, VehicleChargingStation } from '../../data/app.data';
 import { MapMarkerComponent } from '../map-marker/map-marker.component';
 import { MapDataService} from '../map-data.service';
 import { ComponentBase } from 'src/app/utils/component-base';
+import { DataClientService } from 'src/app/data/data-client.service';
 
 @Component({
     selector: 'app-map',
@@ -17,7 +18,7 @@ export class MapComponent extends ComponentBase implements OnInit, AfterViewInit
     @ViewChild('areaInfoWindow', { read: MapInfoWindow }) areaInfoWindow: MapInfoWindow | undefined;
     @ViewChild('key') key: ElementRef | undefined
 
-    constructor(public mapDataService: MapDataService) {
+    constructor(public mapDataService: MapDataService, private dataClientService: DataClientService) {
         super()
         if ( mapDataService.geographicalArea) {
             this.showGeographicalAreaSelected()
@@ -53,7 +54,9 @@ export class MapComponent extends ComponentBase implements OnInit, AfterViewInit
     areaBoundary: google.maps.LatLngLiteral[] = []
     setBoundaryPoints() {
         if ( this.mapDataService.geographicalArea) {
-            this.areaBoundary = this.getBoundaryPoints(this.mapDataService.geographicalArea.gisData)
+            this.getBoundaryPoints(this.mapDataService.geographicalArea.gisData, (boundary: google.maps.LatLngLiteral[])=>{
+                this.areaBoundary = boundary
+            })
         }
     }
 
@@ -74,17 +77,21 @@ export class MapComponent extends ComponentBase implements OnInit, AfterViewInit
         this.firstCall = false
     }
 
-    getBoundaryPoints(gisData: GISData) {
-        let boundary:google.maps.LatLngLiteral[] = []
-        let lats = gisData.boundaryLatitudes;
-        let lngs = gisData.boundaryLongitudes;
-        if ( lats!=null && lngs!=null ) {
-            boundary.length = lats.length
-            for( let i=0; i<lats?.length;i++) {
-                boundary[i] = { lat: lats[i], lng: lngs[i]};
-            }        
-        }
-        return boundary;
+    getBoundaryPoints(gisData: GISData, onLoad: ((boundary: google.maps.LatLngLiteral[]) => void | undefined)) {
+        this.dataClientService.GetGISBoundaries(gisData.id, (gisBoundaries: GISBoundary[])=>{
+            let boundary:google.maps.LatLngLiteral[] = []
+            let lats = gisBoundaries[0].latitudes;
+            let lngs = gisBoundaries[0].longitudes;
+            if ( lats!=null && lngs!=null ) {
+                boundary.length = lats.length
+                for( let i=0; i<lats?.length;i++) {
+                    boundary[i] = { lat: lats[i], lng: lngs[i]};
+                }        
+            }
+            if ( onLoad ) {
+                onLoad(boundary)
+            }
+        })
     } 
     
     zoomChanged() {

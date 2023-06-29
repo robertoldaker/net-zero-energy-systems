@@ -1,6 +1,6 @@
-<map-polygon [paths]="gspBoundary" [options]="{ fillColor: 'none', fillOpacity: 0, strokeColor: 'red', strokeWeight: 1}"></map-polygon>
-<map-polygon [paths]="primaryBoundary" [options]="{ fillColor: 'none', fillOpacity: 0, strokeColor: '#4B0082', strokeWeight: 1}"></map-polygon>
-<map-polygon [paths]="distributionBoundary" [options]="{ fillColor: 'none', fillOpacity: 0, strokeColor: '#89AAFF', strokeWeight: 1}"></map-polygon>
+<map-polygon *ngFor="let boundary of gspBoundaries" [paths]="boundary" [options]="{ fillColor: 'none', fillOpacity: 0, strokeColor: 'red', strokeWeight: 1}"></map-polygon>
+<map-polygon *ngFor="let boundary of primaryBoundaries" [paths]="boundary" [options]="{ fillColor: 'none', fillOpacity: 0, strokeColor: '#4B0082', strokeWeight: 1}"></map-polygon>
+<map-polygon *ngFor="let boundary of distributionBoundaries" [paths]="boundary" [options]="{ fillColor: 'none', fillOpacity: 0, strokeColor: '#89AAFF', strokeWeight: 1}"></map-polygon>
 <!-- distribution markers -->
 <div *ngIf="canShowDistMarkers">
     <map-marker  #distMarkers *ngFor="let markerOption of distMarkerOptions" [options]="markerOption.options" (mapClick)="distMarkerClicked($event, markerOption.id)"></map-marker>

@@ -64,12 +64,13 @@ namespace SmartEnergyLabDataApi.Models
                         }
                     }
                     var length = elements[maxIndex][0].Length;
-                    dss.GISData.BoundaryLatitudes = new double[length];
-                    dss.GISData.BoundaryLongitudes = new double[length];
+                    var boundary = dss.GISData.GetFirstBoundary(_da);
+                    boundary.Latitudes = new double[length];
+                    boundary.Longitudes = new double[length];
                     for(int index=0; index<length; index++) {                            
                         latLong=LatLonConversions.ConvertOSToLatLon(elements[maxIndex][0][index][0],elements[maxIndex][0][index][1]);
-                        dss.GISData.BoundaryLongitudes[index] = latLong.Longitude;
-                        dss.GISData.BoundaryLatitudes[index] = latLong.Latitude;
+                        boundary.Longitudes[index] = latLong.Longitude;
+                        boundary.Latitudes[index] = latLong.Latitude;
                     }
                 }
 

@@ -1,9 +1,9 @@
 using SmartEnergyLabDataApi.Data;
 
 public static class GridSupplyPointMethods {
-    public static int GetBoundaryLength(this GridSupplyPoint gsp) {
-        if ( gsp.GISData!=null && gsp.GISData.BoundaryLatitudes!=null) {
-            return gsp.GISData.BoundaryLatitudes.Length;
+    public static int GetMaxBoundaryLength(this GridSupplyPoint gsp, DataAccess da) {
+        if ( gsp.GISData!=null) {
+            return gsp.GISData.GetMaxBoundaryLength(da);
         } else {
             return 0;
         }

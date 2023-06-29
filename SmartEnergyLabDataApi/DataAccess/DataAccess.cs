@@ -1,4 +1,5 @@
 ﻿using HaloSoft.DataAccess;
+using HaloSoft.EventLogger;
 using NHibernate;
 
 namespace SmartEnergyLabDataApi.Data
@@ -19,6 +20,7 @@ namespace SmartEnergyLabDataApi.Data
             Elsi = new Elsi(this);
             Users = new Users(this);
             Admin = new Admin(this);
+            GIS = new GIS(this);
         }
 
         public SimplusGridTool SimplusGridTool { get; private set; }
@@ -32,6 +34,7 @@ namespace SmartEnergyLabDataApi.Data
         public Elsi Elsi { get; private set; }
         public Users Users {get; private set;}
         public Admin Admin {get; private set;}
+        public GIS GIS {get; private set;}
 
         public static void SchemaUpdated(int oldVersion, int newVersion)
         {
@@ -41,6 +44,41 @@ namespace SmartEnergyLabDataApi.Data
             if ( oldVersion<30) {
                 updateSubstationClassifications();
             }
+            if ( oldVersion<35) {
+                updateBoundaries();
+            }
+        }
+
+        public static void updateBoundaries() {
+            Logger.Instance.LogInfoEvent("Start updating boundaries ...");
+            int numGISData;
+            using ( var da = new DataAccess() ) {
+                numGISData = da.GIS.GetGISDataCount();
+            }
+            Logger.Instance.LogInfoEvent($"Num boundaries = [{numGISData}]");
+            //
+            int take = 1000;
+            for( int skip=0; skip<numGISData; skip+=take) {
+                using ( var da = new DataAccess() ) {
+                    var gisData = da.GIS.GetGISData(skip,take);
+                    Logger.Instance.LogInfoEvent($"Updating boundaries [{skip}] to [{skip+gisData.Count}]");
+                    foreach( var gd in gisData) {
+                        var boundary = new GISBoundary(gd);
+                        if ( gd.BoundaryLatitudes!=null ) {
+                            boundary.Latitudes = new double[gd.BoundaryLatitudes.Length];
+                            Array.Copy(gd.BoundaryLatitudes,boundary.Latitudes,boundary.Latitudes.Length);
+                        }
+                        if ( gd.BoundaryLongitudes!=null ) {
+                            boundary.Longitudes = new double[gd.BoundaryLongitudes.Length];
+                            Array.Copy(gd.BoundaryLongitudes,boundary.Longitudes,boundary.Longitudes.Length);
+                        }
+                        da.GIS.Add(boundary);
+                    }
+                    da.CommitChanges();
+                }
+            }
+            Logger.Instance.LogInfoEvent("Finsihed updating boundaries ...");
+
         }
 
         private static void updateSubstationIds() {
