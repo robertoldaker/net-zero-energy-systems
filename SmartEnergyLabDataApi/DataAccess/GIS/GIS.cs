@@ -1,4 +1,6 @@
 using HaloSoft.DataAccess;
+using HaloSoft.EventLogger;
+using NHibernate.Criterion;
 
 namespace SmartEnergyLabDataApi.Data
 {
@@ -17,25 +19,33 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
-        public IList<GISBoundary> GetBoundariesAndUpdate(int gisDataId, int numBoundaries=1) {
+        public IList<GISBoundary> GetBoundariesAndUpdate(int gisDataId, int numBoundaries, List<GISBoundary> boundariesToAdd) {
             var boundaries = Session.QueryOver<GISBoundary>().Where( m=>m.GISData.Id==gisDataId).List();
             if ( boundaries.Count<numBoundaries) {
                 // Add some boundaries if we haven't enough
                 var gisData = base.Get<GISData>(gisDataId);
                 if ( gisData!=null ) {
-                    for ( int i=0;i<numBoundaries - boundaries.Count; i++) {
+                    //??Logger.Instance.LogInfoEvent($"Adding boundaries [{numBoundaries - boundaries.Count}]");
+                    int toAdd = numBoundaries - boundaries.Count;
+                    for ( int i=0;i<toAdd; i++) {
                         var boundary = new GISBoundary(gisData);
-                        Session.Save(boundary);
+                        //Session.Save(boundary);
+                        boundariesToAdd.Add(boundary);
                         boundaries.Add(boundary);
                     }
+                } else {
+                    throw new Exception($"Could not find GISData object for id [{gisDataId}]");
                 } 
             } else if ( boundaries.Count>numBoundaries) {
                 // Remove too many boundaries
                 var gisData = base.Get<GISData>(gisDataId);
                 if ( gisData!=null ) {
+                    //??Logger.Instance.LogInfoEvent($"Removing boundaries [{boundaries.Count-numBoundaries}]");
                     for ( int i=numBoundaries;i<boundaries.Count; i++) {
                         Session.Delete(boundaries[i]);
                     }
+                } else {
+                    throw new Exception($"Could not find GISData object for id [{gisDataId}]");
                 } 
             }
             return boundaries;
@@ -52,9 +62,26 @@ namespace SmartEnergyLabDataApi.Data
             }
             return boundaries;
         }
+
+        public Dictionary<int,IList<GISBoundary>> GetBoundaryDict(int[] gisDataIds) {
+            var boundaries = Session.QueryOver<GISBoundary>().Where( m=>m.GISData.Id.IsIn(gisDataIds)).List();
+            var dict = new Dictionary<int,IList<GISBoundary>>();
+            foreach( var b in boundaries) {
+                if ( !dict.ContainsKey(b.GISData.Id) ) {
+                    var list = new List<GISBoundary>();
+                    list.Add(b);
+                    dict.Add(b.GISData.Id,list);
+                } else {
+                    dict[b.GISData.Id].Add(b);
+                }
+            }
+            //
+            return dict;
+        }
+
         public int GetMaxBoundaryLength(int gisDataId) {
             var boundaries = Session.QueryOver<GISBoundary>().Where( m=>m.GISData.Id==gisDataId).List();
-            if ( boundaries!=null ) {
+            if ( boundaries!=null && boundaries.Count>0 ) {
                 return boundaries.Max(m=>m.Latitudes.Length);
             } else {
                 return 0;
@@ -71,6 +98,9 @@ namespace SmartEnergyLabDataApi.Data
 
         public void Add(GISBoundary boundary) {
             Session.Save(boundary);
+        }
+        public void Delete(GISBoundary boundary) {
+            Session.Delete(boundary);
         }
     }
 }

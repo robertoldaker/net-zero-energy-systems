@@ -30,6 +30,8 @@ namespace SmartEnergyLabDataApi.Data
                 script.fixPrimaries();
                 script.fixDistributions();
                 script.createIndexes2();
+            } else if ( oldVersion<7) {
+                script.createIndexes3();
             }
         }
 
@@ -104,6 +106,19 @@ namespace SmartEnergyLabDataApi.Data
                     DataAccess.RunSql("CREATE INDEX ix_gsp_source_externalId ON grid_supply_points (source,externalid)");
                     DataAccess.RunSql("CREATE INDEX ix_gsp_source_externalId2 ON grid_supply_points (source,externalid2)");
                     DataAccess.RunSql("CREATE INDEX ix_gsp_source_name ON grid_supply_points (source,name)");
+                }
+            }
+            catch (Exception e) {
+                Logger.Instance.LogErrorEvent($"Error creating initial indexes [{e.Message}]");
+            }
+        }
+
+        private void createIndexes3()
+        {
+            try {
+                if (DataAccess.DbConnection.DbProvider == DbProvider.PostgreSQL) {
+                    // dist substations
+                    DataAccess.RunSql("CREATE INDEX ix_gis_boundaries_gisDataId ON gis_boundaries (gisdataid)");
                 }
             }
             catch (Exception e) {

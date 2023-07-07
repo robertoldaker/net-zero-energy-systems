@@ -23,14 +23,17 @@ namespace SmartEnergyLabDataApi.Models
             "West Midlands BSP",
             */
             
-            "East Midlands Primary",            
+            "East Midlands Primary",                       
             "West Midlands Primary",
             "South Wales Primary",
-            "South West Primary",            
+            "South West Primary", 
+                
             "East Midlands Distribution", 
             "West Midlands Distribution",
             "South Wales Distribution",
             "South West Distribution",         
+            
+            
             };
         private HttpClient _httpClientGpkg;
         private static object _httpClientGpkgLock = new object();
@@ -141,6 +144,12 @@ namespace SmartEnergyLabDataApi.Models
         private string loadGSPs(string geoJsonFile) {
 
             string msg = "";
+            var boundaryLoader = new GISBoundaryLoader(this);
+            int numNew = 0;
+            int numModified = 0;
+            int numIgnored = 0;
+            string gaName = "";
+
             using( var da = new DataAccess()) {
 
                 var dnoArea = GetDNOArea(_spd);
@@ -148,6 +157,7 @@ namespace SmartEnergyLabDataApi.Models
                 if ( ga==null) {
                     throw new Exception($"Could not find Geographical area for area code=[{dnoArea}]");
                 }
+                gaName = ga.Name;
 
                 var addedGSPs = new List<GridSupplyPoint>();
                 bool isNew = false;
@@ -155,9 +165,6 @@ namespace SmartEnergyLabDataApi.Models
                 using( var fs = new FileStream(geoJsonFile,FileMode.Open)) {
                     var geoJson = JsonSerializer.Deserialize<GeoJson>(fs);
                     var geoName = geoJson.name;
-                    int numNew = 0;
-                    int numModified = 0;
-                    int numIgnored = 0;
                     if ( geoName==null || !geoName.Contains("GSP")) {
                         throw new Exception("Name of geojson file needs to contain \"GSP\"");
                     }
@@ -188,18 +195,17 @@ namespace SmartEnergyLabDataApi.Models
                             gsp.GISData = new GISData();
                         }
                         //
+                        //
                         var elements = feature.geometry.coordinates.Deserialize<double[][][][]>();
-                        // work out polygon that is longest
-                        int maxIndex=0;
-                        int maxLength = 0;
-                        for(int i=0;i<elements.Length;i++) {
-                            if ( elements[i][0].Length>maxLength) {
-                                maxIndex=i;
-                                maxLength = elements[i][0].Length;
-                            }
-                        }
                         // If currently apears in a different geographical area then only update points
                         if ( !isNew && gsp.GeographicalArea.Id!=ga.Id ) {
+                            // work out polygon that is longest
+                            int maxLength = 0;
+                            for(int i=0;i<elements.Length;i++) {
+                                if ( elements[i][0].Length>maxLength) {
+                                    maxLength = elements[i][0].Length;
+                                }
+                            }
                             int boundaryLength = gsp.GetMaxBoundaryLength(da);
                             // Border GSPs are often mentioned in both geographical areas so choose the one with most points
                             // - a bit esoteric but not sure of a better way of doing just now
@@ -207,19 +213,15 @@ namespace SmartEnergyLabDataApi.Models
                                 Logger.Instance.LogInfoEvent($"{gsp.Name}, moving from [{gsp.GeographicalArea.Name}] to [{ga.Name}], lengths=[{maxLength}/{boundaryLength}] ");
                                 gsp.GeographicalArea = ga;
                                 gsp.DistributionNetworkOperator = ga.DistributionNetworkOperator;
-                                updateBoundaryPoints(gsp.GISData,da,elements,maxIndex);
+                                boundaryLoader.AddGISData(gsp.GISData,feature);
                             }
                         } else {
-                            updateBoundaryPoints(gsp.GISData,da,elements,maxIndex);
+                            boundaryLoader.AddGISData(gsp.GISData,feature);
                         }
 
                     }                
-                    msg = $"{ga.Name} area, [{numNew}] GSPs added, [{numModified}] modified, [{numIgnored}] ignored";
-
                     //
                     checkCancelled();
-
-
                 }
 
                 // add new ones found
@@ -228,14 +230,14 @@ namespace SmartEnergyLabDataApi.Models
                     checkCancelled();
                 }
                 //
-                checkCancelled();
                 da.CommitChanges();
             }
-            return msg;
-        }
 
-        private void updateBoundaryPoints(GISData gisData, DataAccess da, double[][][][] elements, int maxIndex) {
-            gisData.UpdateBoundaryPoints(da,elements,maxIndex);
+            //
+            boundaryLoader.Load();
+            //
+            msg = $"{gaName} area, [{numNew}] GSPs added, [{numModified}] modified, [{numIgnored}] ignored";
+            return msg;
         }
 
         private bool updateGSP(GridSupplyPoint gsp, Props props) {
@@ -254,9 +256,13 @@ namespace SmartEnergyLabDataApi.Models
             int numNew = 0;
             int numModified = 0;
             int numIgnored=0;
+            string name;
+            //
+            var boundaryLoader = new GISBoundaryLoader(this);
             //
             using( var da = new DataAccess() ) {
                 var ga = da.Organisations.GetGeographicalArea(GetDNOArea(_spd));
+                name = ga.Name;
                 var dno = ga.DistributionNetworkOperator;
 
                 //
@@ -291,31 +297,88 @@ namespace SmartEnergyLabDataApi.Models
                             pss.GISData = new GISData(pss);
                         }
                         //
-                        var elements = feature.geometry.coordinates.Deserialize<double[][][][]>();
-                        int maxIndex=0;
-                        int maxLength = 0;
-                        for(int i=0;i<elements.Length;i++) {
-                            if ( elements[i][0].Length>maxLength) {
-                                maxIndex=i;
-                                maxLength = elements[i][0].Length;
-                            }
-                        }
-                        updateBoundaryPoints(pss.GISData,da,elements,maxIndex);
+                        boundaryLoader.AddGISData(pss.GISData,feature);
+                        //
                         checkCancelled();
                     }
                     //
                     checkCancelled();
                     da.CommitChanges();
                 }
-
-                var msg=$"{ga.Name} area, [{numNew}] primary substations added, [{numModified}] modified, [{numIgnored}] ignored";
-                return msg;
             }
+            //
+            boundaryLoader.Load();
+            var msg=$"{name} area, [{numNew}] primary substations added, [{numModified}] modified, [{numIgnored}] ignored";
+            return msg;
         }
 
         private string loadDistributions(string geoJsonFile) {
             var loader = new DistributionLoader(this,_spd,geoJsonFile);
             return loader.Load();
+        }
+
+        private class GISBoundaryLoader {
+            private Dictionary<int,Feature> _featureDict = new Dictionary<int, Feature>();
+
+            private NationalGridDistributionLoader _parentLoader;
+
+            public GISBoundaryLoader(NationalGridDistributionLoader parentLoader) {
+                _parentLoader = parentLoader;
+            }
+            public void AddGISData( GISData data, Feature feature) {
+                if ( _featureDict.ContainsKey(data.Id)) {
+                    Logger.Instance.LogWarningEvent($"Duplicate key found in feature dict for gidDataId=[{data.Id}]");
+                } else {
+                    _featureDict.Add(data.Id,feature);
+                }
+            }
+
+            public void Load() {
+                //??var sw = new Stopwatch();
+                //??sw.Start();
+                using( var da = new DataAccess() ) {
+                    _parentLoader.checkCancelled();
+                    var boundaryDict = da.GIS.GetBoundaryDict(_featureDict.Keys.ToArray());
+                    _parentLoader.checkCancelled();
+
+                    var boundariesToAdd = new List<GISBoundary>();
+                    var boundariesToDelete = new List<GISBoundary>();
+                    foreach( var k in _featureDict.Keys) {
+                        var gisData = da.GIS.Get<GISData>(k);
+                        if ( gisData!=null ) {
+                            var feature = _featureDict[k];
+                            IList<GISBoundary> boundaries;
+                            if ( boundaryDict.ContainsKey(k)) {
+                                boundaries = boundaryDict[k];
+                            } else {
+                                boundaries = new List<GISBoundary>();
+                            }
+                            var elements = feature.geometry.coordinates.Deserialize<double[][][][]>();
+                            if ( elements!=null && boundaries!=null) {
+                                gisData.UpdateBoundaryPoints(elements,boundaries, boundariesToAdd, boundariesToDelete);
+                            }
+                        }
+                        _parentLoader.checkCancelled();
+                    }
+                    // add boundaries
+                    foreach( var boundary in boundariesToAdd) {
+                       da.GIS.Add(boundary);
+                        _parentLoader.checkCancelled();
+                    }
+                    // remove boundaries
+                    foreach( var boundary in boundariesToDelete) {
+                       da.GIS.Delete(boundary);
+                        _parentLoader.checkCancelled();
+                    }
+                    _parentLoader.checkCancelled();
+                    //
+                    da.CommitChanges();
+                }
+                //
+                //??sw.Stop();
+                //
+                //??Logger.Instance.LogInfoEvent($"Boundary load for [{_featureDict.Keys.Count}] features done in {sw.Elapsed}s");
+            }
         }
 
         private class DistributionLoader {
@@ -368,6 +431,7 @@ namespace SmartEnergyLabDataApi.Models
             private void partialLoad( ReadOnlySpan<Feature> featureSpan) {  
                 int prevNrId=0;
 
+                var boundaryLoader = new GISBoundaryLoader(_loader);
                 // Needed to speed up searching for existing distribution substations
                 // without this speed taken to call GetDistributionSubstations get slower and slower as we progress through the data
                 using( var daRead = new DataAccess() ) {
@@ -380,6 +444,7 @@ namespace SmartEnergyLabDataApi.Models
                         var toAdd = new List<DistributionSubstation>();
                         var primCache = new Dictionary<int,PrimarySubstation>();
                         prevNrId=0;
+
 
                         foreach( var feature in featureSpan) {
                             // Various entries are repeated so only process it if the NRId changes
@@ -431,23 +496,8 @@ namespace SmartEnergyLabDataApi.Models
                                 dss.ExternalId2 = nrId;
                             }
                             dss.Name = feature.properties.NAME;
-                            // location
-                            /*var eastings = feature.properties.dp2_x;                    
-                            var northings = feature.properties.dp2_y;
-                            var latLong=LatLonConversions.ConvertOSToLatLon(eastings,northings);
-                            dss.GISData.Latitude = latLong.Latitude;
-                            dss.GISData.Longitude = latLong.Longitude;*/
                             // boundary
-                            var elements = feature.geometry.coordinates.Deserialize<double[][][][]>();
-                            int maxIndex=0;
-                            int maxLength = 0;
-                            for(int i=0;i<elements.Length;i++) {
-                                if ( elements[i][0].Length>maxLength) {
-                                    maxIndex=i;
-                                    maxLength = elements[i][0].Length;
-                                }
-                            }
-                            _loader.updateBoundaryPoints(dss.GISData,da,elements,maxIndex);
+                            boundaryLoader.AddGISData(dss.GISData,feature);
                             _loader.checkCancelled();
 
                         }
@@ -462,6 +512,10 @@ namespace SmartEnergyLabDataApi.Models
                     }
 
                 }
+
+                // load boundaries
+                boundaryLoader.Load();
+
             }
         }
 

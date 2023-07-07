@@ -74,9 +74,12 @@ namespace SmartEnergyLabDataApi.Models
             checkCancelled();
             updateProgress();
             updateMessage("Processing GSP records ...");
+            var boundaryLoader = new GISBoundaryLoader(this);
+
+            //
             using( var da = new DataAccess()) {
                 var toAdd = new List<GridSupplyPoint>();
-
+              
                 // Need a way of working out the GA since no info in api data                
                 foreach( var gspRecord in gspRecords) {
                     _gspProcessResult.NumProcessed++;
@@ -113,7 +116,7 @@ namespace SmartEnergyLabDataApi.Models
                     }
                     // Boundary
                     try {
-                        loadBoundaryData(gsp.GISData,da,gspRecord.geo_shape);
+                        boundaryLoader.AddGISData(gsp.GISData,gspRecord.geo_shape);
                     } catch (Exception e) {
                         Logger.Instance.LogErrorEvent(e.Message + $", for entry [{gsp.Name}]");
                     }
@@ -124,44 +127,80 @@ namespace SmartEnergyLabDataApi.Models
                     da.SupplyPoints.Add(gsp);
                     checkCancelled();
                 }
+                //
+                checkCancelled();
 
                 //
                 checkCancelled();
                 da.CommitChanges();
             }
+            // loads all boundaries separately
+            boundaryLoader.Load();
+            //
             updateProgress();
             //
             Logger.Instance.LogInfoEvent(_gspProcessResult.ToString());
         }
 
-        private void loadBoundaryData(GISData gisData, DataAccess da, GeoShape geoShape) {
-            if ( geoShape.type=="MultiPolygon" ) {
-                int numBoundaries = geoShape.multiPolygonCoords[0].Length;
-                var boundaries = gisData.GetBoundariesAndUpdate(da, numBoundaries);
-                for( int i=0;i<numBoundaries;i++) {
-                    int length = geoShape.multiPolygonCoords[0][i].Length;
-                    boundaries[i].Latitudes = new double[length];
-                    boundaries[i].Longitudes = new double[length];
-                    int index=0;
-                    foreach( var coord in geoShape.multiPolygonCoords[0][i] ) {
-                        boundaries[i].Longitudes[index] = coord[0];
-                        boundaries[i].Latitudes[index] = coord[1];
-                        index++;
+        private class GISBoundaryLoader {
+            private Dictionary<int,GeoShape> _geoShapeDict = new Dictionary<int, GeoShape>();
+
+            private UKPowerNetworkLoader _parentLoader;
+
+            public GISBoundaryLoader(UKPowerNetworkLoader parentLoader) {
+                _parentLoader = parentLoader;
+            }
+            public void AddGISData( GISData data, GeoShape geoShape) {
+                if ( _geoShapeDict.ContainsKey(data.Id)) {
+                    Logger.Instance.LogWarningEvent($"Duplicate key found in feature dict for gidDataId=[{data.Id}]");
+                } else {
+                    _geoShapeDict.Add(data.Id,geoShape);
+                }
+            }
+
+            public void Load() {
+                using( var da = new DataAccess() ) {
+                    _parentLoader.checkCancelled();
+                    var boundaryDict = da.GIS.GetBoundaryDict(_geoShapeDict.Keys.ToArray());
+                    _parentLoader.checkCancelled();
+
+                    var boundariesToAdd = new List<GISBoundary>();
+                    var boundariesToDelete = new List<GISBoundary>();
+
+                    foreach( var k in _geoShapeDict.Keys) {
+                        var gisData = da.GIS.Get<GISData>(k);
+                        if ( gisData!=null ) {
+                            var geoShape = _geoShapeDict[k];
+                            IList<GISBoundary> boundaries;
+                            if ( boundaryDict.ContainsKey(k)) {
+                                boundaries = boundaryDict[k];
+                            } else {
+                                boundaries = new List<GISBoundary>();
+                            }
+                            if ( boundaries!=null) {
+                                gisData.UpdateBoundaryPoints(geoShape,boundaries, boundariesToAdd, boundariesToDelete);
+                            }
+                        }
+                        _parentLoader.checkCancelled();
                     }
+                    // add boundaries
+                    foreach( var boundary in boundariesToAdd) {
+                       da.GIS.Add(boundary);
+                        _parentLoader.checkCancelled();
+                    }
+                    // remove boundaries
+                    foreach( var boundary in boundariesToDelete) {
+                       da.GIS.Delete(boundary);
+                        _parentLoader.checkCancelled();
+                    }
+                    _parentLoader.checkCancelled();
+                    //
+                    da.CommitChanges();
                 }
-            } else if ( geoShape.type=="Polygon") {
-                var boundary = gisData.GetBoundariesAndUpdate(da,1)[0];
-                int length = geoShape.polygonCoords[0].Length;
-                boundary.Latitudes = new double[length];
-                boundary.Longitudes = new double[length];
-                int index=0;
-                foreach( var coord in geoShape.polygonCoords[0] ) {
-                    boundary.Longitudes[index] = coord[0];
-                    boundary.Latitudes[index] = coord[1];
-                    index++;
-                }
-            } else {
-                throw new Exception($"Unexpected geometry type=[{geoShape.type}]");
+                //
+                //??sw.Stop();
+                //
+                //??Logger.Instance.LogInfoEvent($"Boundary load for [{_featureDict.Keys.Count}] features done in {sw.Elapsed}s");
             }
         }
 
@@ -183,9 +222,11 @@ namespace SmartEnergyLabDataApi.Models
 
             // Add primaries
             updateMessage("Processing Primary area records ...");
+            var boundaryLoader = new GISBoundaryLoader(this);
             checkCancelled();
             using( var da = new DataAccess()) {
                 var toAdd = new List<PrimarySubstation>();
+
                 foreach( var primRecord in primAreaRecords) {
                     _primProcessResult.NumProcessed++;
                     bool added = false;
@@ -224,7 +265,7 @@ namespace SmartEnergyLabDataApi.Models
                     }
                     // Boundary
                     try {
-                        loadBoundaryData(pss.GISData,da,primRecord.geo_shape);
+                        boundaryLoader.AddGISData(pss.GISData,primRecord.geo_shape);
                     } catch (Exception e) {
                         Logger.Instance.LogErrorEvent(e.Message + $", for entry [{pss.Name}]");
                     }
@@ -240,6 +281,7 @@ namespace SmartEnergyLabDataApi.Models
                 checkCancelled();
                 da.CommitChanges();
             }
+            boundaryLoader.Load();
             updateProgress();
             Logger.Instance.LogInfoEvent(_primProcessResult.ToString());
         }
@@ -461,7 +503,7 @@ namespace SmartEnergyLabDataApi.Models
             public GeoShape geo_shape {get; set;}
         }
 
-        private class GeoShape {
+        public class GeoShape {
             public string type {get; set;}
             public JsonElement coordinates{ get; set; }
 

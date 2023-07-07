@@ -45,7 +45,7 @@ namespace SmartEnergyLabDataApi.Data
                 updateSubstationClassifications();
             }
             if ( oldVersion<35) {
-                updateBoundaries();
+               //?? updateBoundaries();
             }
         }
 
