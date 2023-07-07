@@ -72,7 +72,7 @@ namespace SmartEnergyLabDataApi.Models
                     if ( boundary.Latitudes.Length!=0 ) {
                         gsp.GISData.Latitude = boundary.Latitudes.Sum()/boundary.Latitudes.Length;
                     }
-                    if ( gsp.GISData.BoundaryLongitudes.Length!=0 ) {
+                    if ( boundary.Longitudes.Length!=0 ) {
                         gsp.GISData.Longitude = boundary.Longitudes.Sum()/boundary.Longitudes.Length;
                     }
                     //

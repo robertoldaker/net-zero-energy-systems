@@ -45,13 +45,13 @@ namespace SmartEnergyLabDataApi.Data
         [Property()]
         public virtual double Longitude { get; set; }
 
-        [Property(Type="HaloSoft.DataAccess.DoubleArrayType, DataAccessBase")]
-        [Column(SqlType = "double precision[]", Name = "BoundaryLatitudes")]
-        public virtual double[] BoundaryLatitudes { get; set; }
+        //??[Property(Type="HaloSoft.DataAccess.DoubleArrayType, DataAccessBase")]
+        //??[Column(SqlType = "double precision[]", Name = "BoundaryLatitudes")]
+        //??public virtual double[] BoundaryLatitudes { get; set; }
 
-        [Property(Type="HaloSoft.DataAccess.DoubleArrayType, DataAccessBase")]
-        [Column(SqlType = "double precision[]", Name = "BoundaryLongitudes")]
-        public virtual double[] BoundaryLongitudes { get; set; }
+        //??[Property(Type="HaloSoft.DataAccess.DoubleArrayType, DataAccessBase")]
+        //??[Column(SqlType = "double precision[]", Name = "BoundaryLongitudes")]
+        //??public virtual double[] BoundaryLongitudes { get; set; }
 
         [JsonIgnore]
         [ManyToOne(Column = "GeographicalAreaId", Cascade = "none")]

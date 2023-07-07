@@ -49,38 +49,6 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
-        public static void updateBoundaries() {
-            Logger.Instance.LogInfoEvent("Start updating boundaries ...");
-            int numGISData;
-            using ( var da = new DataAccess() ) {
-                numGISData = da.GIS.GetGISDataCount();
-            }
-            Logger.Instance.LogInfoEvent($"Num boundaries = [{numGISData}]");
-            //
-            int take = 1000;
-            for( int skip=0; skip<numGISData; skip+=take) {
-                using ( var da = new DataAccess() ) {
-                    var gisData = da.GIS.GetGISData(skip,take);
-                    Logger.Instance.LogInfoEvent($"Updating boundaries [{skip}] to [{skip+gisData.Count}]");
-                    foreach( var gd in gisData) {
-                        var boundary = new GISBoundary(gd);
-                        if ( gd.BoundaryLatitudes!=null ) {
-                            boundary.Latitudes = new double[gd.BoundaryLatitudes.Length];
-                            Array.Copy(gd.BoundaryLatitudes,boundary.Latitudes,boundary.Latitudes.Length);
-                        }
-                        if ( gd.BoundaryLongitudes!=null ) {
-                            boundary.Longitudes = new double[gd.BoundaryLongitudes.Length];
-                            Array.Copy(gd.BoundaryLongitudes,boundary.Longitudes,boundary.Longitudes.Length);
-                        }
-                        da.GIS.Add(boundary);
-                    }
-                    da.CommitChanges();
-                }
-            }
-            Logger.Instance.LogInfoEvent("Finsihed updating boundaries ...");
-
-        }
-
         private static void updateSubstationIds() {
             using( var da = new DataAccess() ) {
                 var pss = da.Substations.GetPrimarySubstationsByGeographicalAreaId(1);
