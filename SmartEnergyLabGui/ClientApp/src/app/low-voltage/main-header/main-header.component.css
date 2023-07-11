@@ -7,3 +7,10 @@ div {
   color: white;
 }
 
+span.mode {
+    margin-left: 2em;
+    font-size: 20pt;
+    font-weight: bold;
+    color:red;
+}
+

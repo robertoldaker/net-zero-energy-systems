@@ -97,7 +97,7 @@ namespace SmartEnergyLabDataApi.Models
             {
                 AllowRefresh = true,
                 IsPersistent = true,
-                ExpiresUtc = DateTime.UtcNow + new TimeSpan(14, 0, 0, 0),
+                ExpiresUtc = DateTime.UtcNow + new TimeSpan(365, 0, 0, 0),
             }).Wait();
         }
 

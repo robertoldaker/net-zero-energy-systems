@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Inject, Input, ViewChild } from '@angular/core';
 import { DistributionSubstation, NameValuePair } from '../../data/app.data';
 import { DataClientService } from '../../data/data-client.service';
 import { DialogService } from '../../dialogs/dialog.service';
@@ -20,7 +20,8 @@ export class MainHeaderComponent implements AfterViewInit {
         public mapDataService: MapDataService, 
         public mapPowerService: MapPowerService, 
         public searchService: SearchService, 
-        private dataClientService: DataClientService) {
+        private dataClientService: DataClientService,
+        @Inject('MODE') public mode: string) {
 
     }
     ngAfterViewInit(): void {

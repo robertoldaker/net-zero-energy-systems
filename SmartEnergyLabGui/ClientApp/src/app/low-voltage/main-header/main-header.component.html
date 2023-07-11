@@ -1,5 +1,4 @@
 <div class="main-header">
-
     <span style="float: right">
         <img src="/assets/images/bath-uni-logo (white).png" style="height: 40px; margin-right: 20px; vertical-align: middle;"/>
         <!-- search -->
@@ -53,4 +52,5 @@
             Show public EV chargers
         </mat-checkbox>
     </span>
+    <span *ngIf="mode!='Production'" class="mode">! {{mode}} !</span>
 </div>
