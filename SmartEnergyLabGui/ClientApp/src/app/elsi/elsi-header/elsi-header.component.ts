@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Inject, Input, OnInit } from '@angular/core';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 
 @Component({
@@ -8,7 +8,7 @@ import { DialogService } from 'src/app/dialogs/dialog.service';
 })
 export class ElsiHeaderComponent implements OnInit {
 
-    constructor(private dialogService: DialogService) { }
+    constructor(private dialogService: DialogService,  @Inject('MODE') public mode: string) { }
 
     ngOnInit(): void {
     }

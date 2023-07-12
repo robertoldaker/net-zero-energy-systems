@@ -365,5 +365,11 @@ namespace HaloSoft.DataAccess
             Session.Dispose();
         }
 
+        public static void PerformCleanup() {
+            if ( _dbConnection.DbProvider == DbProvider.PostgreSQL) {
+                runPostgreSQL("VACUUM FULL ANALYZE");
+            }
+        }
+
     }
 }

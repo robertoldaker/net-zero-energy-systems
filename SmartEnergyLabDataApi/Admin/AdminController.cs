@@ -1,4 +1,5 @@
-﻿using HaloSoft.EventLogger;
+﻿using HaloSoft.DataAccess;
+using HaloSoft.EventLogger;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using SmartEnergyLabDataApi.Data;
@@ -118,6 +119,16 @@ namespace EnergySystemLabDataApi.SubStations
             var m = new DataModel();
             m.Load();
             return m;
+        }
+
+        /// <summary>
+        /// Performs a database cleanup operation to release diskspace (does a VACUUM FULL ANALYZE)
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("PerformCleanup")]
+        public void PerformCleanup() {
+            DataAccessBase.PerformCleanup();
         }
     }
 

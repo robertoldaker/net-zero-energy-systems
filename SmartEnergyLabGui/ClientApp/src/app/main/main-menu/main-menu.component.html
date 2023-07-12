@@ -14,6 +14,12 @@
     <button mat-menu-item routerLink="/elsi" routerLinkActive="active">
         <span>GB Electricity Market Simulator</span>
     </button>
+    <ng-container *ngIf="userService.isAdmin">
+        <hr style="margin: 0">    
+        <button mat-menu-item routerLink="/admin" routerLinkActive="active">
+            <span >Admin</span>
+        </button>
+    </ng-container>
     <hr style="margin: 0">
     <div mat-menu-item>
         Version {{version}}

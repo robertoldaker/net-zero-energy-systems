@@ -14,6 +14,7 @@ export class AdminDataComponent extends ComponentBase {
     
     constructor(private dataService: DataClientService) {
         super()
+        this.inCleanup = false;
         this.sort = null
         this.displayedColumns = ['geoGraphicalArea','dno','numGsps','numPrimary','numDist']
         this.tableData = new MatTableDataSource()
@@ -50,6 +51,17 @@ export class AdminDataComponent extends ComponentBase {
             console.log(result)
         })
     }
+
+    performCleanup() {
+        this.inCleanup = true;
+        this.dataService.PerformCleanup( (result)=>{
+            console.log(result)
+            this.inCleanup = false;
+            this.refresh()
+        });
+    }
+
+    inCleanup: boolean
 
 
 }

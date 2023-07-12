@@ -27,6 +27,7 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatListModule } from '@angular/material/list'; 
 import { MatTableModule } from '@angular/material/table'; 
 import { MatSortModule } from '@angular/material/sort';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; 
 
 // google maps
 import { GoogleMapsModule } from '@angular/google-maps'
@@ -254,7 +255,8 @@ import { AdminDataComponent } from './admin/admin-data/admin-data.component';
           // Register the ServiceWorker as soon as the application is stable
           // or after 30 seconds (whichever comes first).
           registrationStrategy: 'registerWhenStable:30000'
-        })
+        }),
+        MatProgressSpinnerModule
     ],
     providers: [
         // Http Interceptor(s) -  adds with Client Credentials

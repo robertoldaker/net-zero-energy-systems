@@ -409,6 +409,10 @@ export class DataClientService {
         this.getRequest<DataModel>('/Admin/DataModel',onComplete);
     }
 
+    PerformCleanup(onComplete: (resp: any)=>void | undefined) {
+        this.getBasicRequest('/Admin/PerformCleanup', onComplete)
+    }
+
 
 
     /* shared */

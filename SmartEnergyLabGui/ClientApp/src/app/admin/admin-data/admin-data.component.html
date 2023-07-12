@@ -2,6 +2,13 @@
     <div class="size">Database size: <b>{{model?.size}}</b></div>
     <div class="toolbar">
         <button mat-raised-button color="primary" (click)="backupDb()">Backup Database</button>
+        <button mat-raised-button color="primary" (click)="performCleanup()" disabled="{{inCleanup}}">            
+            <div *ngIf="inCleanup" style="display: inline-block">
+                <mat-spinner diameter="20"></mat-spinner>
+            </div>
+            <mat-icon *ngIf="!inCleanup">build</mat-icon>
+            Perform cleanup
+        </button>
         <button mat-raised-button color="primary" (click)="loadNetworkData()">Load network data</button>        
         <button mat-raised-button color="primary" (click)="refresh()">
             <mat-icon>refresh</mat-icon>

@@ -11,12 +11,6 @@
         <button mat-menu-item (click)="changePassword()">
             <span >Change password</span>
         </button>
-        <ng-container *ngIf="userService.isAdmin">
-            <hr style="margin: 0">    
-            <button mat-menu-item routerLink="/admin" routerLinkActive="active">
-                <span >Admin</span>
-            </button>
-        </ng-container>
     </mat-menu>
     
 </div>

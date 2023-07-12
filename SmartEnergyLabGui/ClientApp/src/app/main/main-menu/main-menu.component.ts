@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MainService } from '../main.service';
+import { UserService } from 'src/app/users/user.service';
 
 @Component({
     selector: 'app-main-menu',
@@ -8,7 +9,7 @@ import { MainService } from '../main.service';
 })
 export class MainMenuComponent implements OnInit {
 
-    constructor(private mainService: MainService) { }
+    constructor(private mainService: MainService, public userService: UserService) { }
 
     ngOnInit(): void {
 
