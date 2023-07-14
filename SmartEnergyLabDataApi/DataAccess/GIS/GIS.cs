@@ -102,5 +102,12 @@ namespace SmartEnergyLabDataApi.Data
         public void Delete(GISBoundary boundary) {
             Session.Delete(boundary);
         }
+        
+        public void Add(GISLine line) {
+            Session.Save(line);
+        }
+        public void Delete(GISLine line) {
+            Session.Delete(line);
+        }
     }
 }

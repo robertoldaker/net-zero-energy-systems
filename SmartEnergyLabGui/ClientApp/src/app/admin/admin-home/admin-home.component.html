@@ -6,6 +6,7 @@
                 <li (click)="show('general')" [class]="getClass('general')"><span>General</span></li>
                 <li (click)="show('users')"  [class]="getClass('users')"><span>Users</span></li>
                 <li (click)="show('data')"  [class]="getClass('data')"><span>Data</span></li>
+                <li (click)="show('test')"  [class]="getClass('test')"><span>Test</span></li>
                 <li (click)="show('logs')" [class]="getClass('logs')"><span>Logs</span></li>    
             </ul>
         </div>
@@ -18,6 +19,9 @@
             </div>
             <div [class]="getClass('data')">
                 <app-admin-data></app-admin-data>
+            </div>
+            <div [class]="getClass('test')">
+                <app-admin-test></app-admin-test>
             </div>
             <div [class]="getClass('logs')">
                 <app-admin-logs></app-admin-logs>

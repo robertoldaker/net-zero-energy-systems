@@ -519,7 +519,6 @@ namespace SmartEnergyLabDataApi.Models
             }
         }
 
-
         private void saveToFile(Stream stream, string filename) {
 
             var buffer = new byte[32768];

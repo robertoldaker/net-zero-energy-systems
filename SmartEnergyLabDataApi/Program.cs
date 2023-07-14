@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using SmartEnergyLabDataApi.Data;
@@ -13,7 +14,7 @@ using SmartEnergyLabDataApi.Models;
 public static class Program
 {
     // Start the data access - this will check schema and run any startup scripts as needed
-    private const int SCHEMA_VERSION = 35;
+    private const int SCHEMA_VERSION = 36;
     private const int SCRIPT_VERSION = 7;
 
     public static void Main(string[] args)
@@ -79,6 +80,16 @@ public static class Program
 
         var app = builder.Build();
 
+        // server files from wwwroot
+        // Set up custom content types - associating file extension to MIME type
+        var provider = new FileExtensionContentTypeProvider();
+        // Add new mappings
+        provider.Mappings[".geojson"] = "application/geo+json";
+
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            ContentTypeProvider = provider
+        });        
 
         // Configure the HTTP request pipeline.
         app.UseSwagger();

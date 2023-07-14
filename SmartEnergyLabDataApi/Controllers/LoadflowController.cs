@@ -18,6 +18,16 @@ namespace SmartEnergyLabDataApi.Controllers
             _hubContext = hubContext;
         }
 
+        /// <summary>
+        /// Loads Loadflow geometry data from NationalGrid's website
+        /// </summary>
+        [HttpPost]        
+        [Route("LoadNodeGeometry")]
+        public void LoadNodeGeometry() {
+            var m = new LoadflowNodeGeometry();
+            m.Load();
+        }
+
 
         /// <summary>
         /// Loads data from Loadflow spreadsheet

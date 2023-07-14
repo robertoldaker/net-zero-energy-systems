@@ -123,6 +123,7 @@ import { AdminGeneralComponent } from './admin/admin-general/admin-general.compo
 import { AdminLogsComponent } from './admin/admin-logs/admin-logs.component';
 import { AdminHeaderComponent } from './admin/admin-home/admin-header/admin-header.component';
 import { AdminDataComponent } from './admin/admin-data/admin-data.component';
+import { AdminTestComponent } from './admin/admin-test/admin-test.component';
 
 
 @NgModule({
@@ -203,7 +204,8 @@ import { AdminDataComponent } from './admin/admin-data/admin-data.component';
         AdminGeneralComponent,
         AdminLogsComponent,
         AdminHeaderComponent,
-        AdminDataComponent
+        AdminDataComponent,
+        AdminTestComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
