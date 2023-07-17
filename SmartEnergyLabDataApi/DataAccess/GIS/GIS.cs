@@ -109,5 +109,20 @@ namespace SmartEnergyLabDataApi.Data
         public void Delete(GISLine line) {
             Session.Delete(line);
         }
+        public Dictionary<int,IList<GISLine>> GetLineDict(int[] gisDataIds) {
+            var lines = Session.QueryOver<GISLine>().Where( m=>m.GISData.Id.IsIn(gisDataIds)).List();
+            var dict = new Dictionary<int,IList<GISLine>>();
+            foreach( var b in lines) {
+                if ( !dict.ContainsKey(b.GISData.Id) ) {
+                    var list = new List<GISLine>();
+                    list.Add(b);
+                    dict.Add(b.GISData.Id,list);
+                } else {
+                    dict[b.GISData.Id].Add(b);
+                }
+            }
+            //
+            return dict;
+        }
     }
 }

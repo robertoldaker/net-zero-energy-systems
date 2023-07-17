@@ -11,6 +11,13 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
+        public static GridOverheadLine Create(string reference) {
+            var ohl = new GridOverheadLine();
+            ohl.Reference = reference;
+            ohl.GISData = new GISData();
+            return ohl;
+        }
+
         /// <summary>
         /// Database identifier
         /// </summary>

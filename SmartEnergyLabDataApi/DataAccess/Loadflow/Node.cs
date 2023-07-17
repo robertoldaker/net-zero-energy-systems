@@ -49,5 +49,13 @@ namespace SmartEnergyLabDataApi.Data
         [ManyToOne(Column = "ZoneId", Cascade = "none")]
         public virtual Zone Zone {get; set;}
 
+        /// <summary>
+        /// Grid substation its linked to
+        /// </summary>
+        [JsonIgnore()]
+        [ManyToOne(Column = "GridSubstation", Cascade = "none")]
+        public virtual GridSubstation GridSubstation { get; set; }
+
+
     }
 }

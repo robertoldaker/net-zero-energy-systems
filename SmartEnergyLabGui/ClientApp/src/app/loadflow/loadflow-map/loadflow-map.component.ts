@@ -3,12 +3,12 @@ import { GoogleMap } from '@angular/google-maps';
 import { ComponentBase } from 'src/app/utils/component-base';
 
 @Component({
-  selector: 'app-admin-test',
-  templateUrl: './admin-test.component.html',
-  styleUrls: ['./admin-test.component.css']
+  selector: 'app-loadflow-map',
+  templateUrl: './loadflow-map.component.html',
+  styleUrls: ['./loadflow-map.component.css']
 })
 
-export class AdminTestComponent extends ComponentBase implements OnInit, AfterViewInit {
+export class LoadflowMapComponent extends ComponentBase implements OnInit, AfterViewInit {
 
     @ViewChild(GoogleMap, { static: false }) map: GoogleMap | undefined
 
@@ -45,14 +45,14 @@ export class AdminTestComponent extends ComponentBase implements OnInit, AfterVi
 
 
 
-    zoom = 7
+    zoom = 6
     center: google.maps.LatLngLiteral = {
         lat: 52.561928, lng: -1.464854
     }
     options: google.maps.MapOptions = {            
         disableDoubleClickZoom: true,
         mapTypeId: 'roadmap',
-        minZoom: 7,
+        minZoom: 5,
         styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }, { stylers: [{ gamma: 5 }] }],
         mapTypeControl: false,
         scaleControl: true

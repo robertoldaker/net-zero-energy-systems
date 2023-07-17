@@ -28,5 +28,15 @@ namespace SmartEnergyLabDataApi.Controllers
             m.Load();
         }
 
+        /// <summary>
+        /// Gets substations
+        /// </summary>
+        [HttpGet]        
+        [Route("GetSubstations")]
+        public IList<GridSubstation> GetSubstations() {
+            using( var da = new DataAccess()) {
+                return da.NationalGrid.GetGridSubstations();
+            }
+        }
     }
 }

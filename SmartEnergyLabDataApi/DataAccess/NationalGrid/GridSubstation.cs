@@ -49,5 +49,10 @@ namespace SmartEnergyLabDataApi.Data
         [ManyToOne(Column = "GISDataId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
         public virtual GISData GISData { get; set; }
 
+        /// <summary>
+        /// Loadflow node
+        /// </summary>
+        [ManyToOne(Column = "LoadflowNodeId", Cascade = "none")]
+        public virtual Node LoadflowNode { get; set; }
     }
 }

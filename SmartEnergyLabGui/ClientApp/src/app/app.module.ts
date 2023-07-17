@@ -124,6 +124,7 @@ import { AdminLogsComponent } from './admin/admin-logs/admin-logs.component';
 import { AdminHeaderComponent } from './admin/admin-home/admin-header/admin-header.component';
 import { AdminDataComponent } from './admin/admin-data/admin-data.component';
 import { AdminTestComponent } from './admin/admin-test/admin-test.component';
+import { LoadflowMapComponent } from './loadflow/loadflow-map/loadflow-map.component';
 
 
 @NgModule({
@@ -205,7 +206,8 @@ import { AdminTestComponent } from './admin/admin-test/admin-test.component';
         AdminLogsComponent,
         AdminHeaderComponent,
         AdminDataComponent,
-        AdminTestComponent
+        AdminTestComponent,
+        LoadflowMapComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

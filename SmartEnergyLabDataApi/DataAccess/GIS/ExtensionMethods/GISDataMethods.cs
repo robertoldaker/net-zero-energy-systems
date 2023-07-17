@@ -121,7 +121,29 @@ namespace SmartEnergyLabDataApi.Data
                     boundariesToDelete.Add(boundaries[i]);
                 }
             }
+        }
 
+        public static void AdjustLineLists(this GISData gisData,int numLines, 
+            IList<GISLine> lines, 
+            IList<GISLine> linesToAdd,
+            IList<GISLine> linesToDelete) {
+            if ( lines.Count<numLines) {
+                // Add some boundaries if we haven't enough
+                //??Logger.Instance.LogInfoEvent($"Adding boundaries [{numBoundaries}/{boundaries.Count}] gisDataId=[{gisData.Id}]");
+                int toAdd = numLines - lines.Count;
+                for ( int i=0;i<toAdd; i++) {
+                    var boundary = new GISLine(gisData);
+                    //Session.Save(boundary);
+                    linesToAdd.Add(boundary);
+                    lines.Add(boundary);
+                }
+            } else if ( lines.Count>numLines) {
+                // Remove too many boundaries
+                //??Logger.Instance.LogInfoEvent($"Removing boundaries [{numBoundaries}/{boundaries.Count}]  gisDataId=[{gisData.Id}]");
+                for ( int i=numLines;i<lines.Count; i++) {
+                    linesToDelete.Add(lines[i]);
+                }
+            }
         }
     }
 }
