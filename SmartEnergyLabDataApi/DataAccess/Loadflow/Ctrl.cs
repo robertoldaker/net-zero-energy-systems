@@ -48,6 +48,18 @@ namespace SmartEnergyLabDataApi.Data
         [JsonIgnore]
         [ManyToOne(Column = "Node2Id", Cascade = "none")]
         public virtual Node Node2 {get; set;}
+
+        public virtual string Node1Code {
+            get {
+                return Node1.Code;
+            }
+        }
+        
+        public virtual string Node2Code {
+            get {
+                return Node2.Code;
+            }
+        }
     }
 }
 

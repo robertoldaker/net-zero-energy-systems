@@ -36,6 +36,13 @@ namespace SmartEnergyLabDataApi.Data
             return Session.QueryOver<GridSubstation>().Fetch(SelectMode.Fetch, m=>m.GISData).List();
         }
 
+        public IList<GridSubstation> GetLoadflowGridSubstations() {
+            return Session.QueryOver<GridSubstation>().Where(m=>m.LoadflowNode!=null).
+                        Fetch(SelectMode.Fetch,m=>m.LoadflowNode).
+                        Fetch(SelectMode.Fetch,m=>m.LoadflowNode.Zone).
+                        Fetch(SelectMode.Fetch, m=>m.GISData).List();
+        }
+
         public void Delete(GridOverheadLine ohl)
         {
             Session.Delete(ohl);

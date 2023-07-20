@@ -273,10 +273,12 @@ export interface NodeWrapper {
 export interface Node {
     id: number
     code: string
+    name: string
     demand: number
     generation: number
     ext: boolean
     zone: Zone
+    gisData: GISData | undefined
 }
 
 export interface BranchWrapper {
@@ -299,6 +301,8 @@ export interface Branch {
     linkType: string
     node1Code: string
     node2Code: string
+    node1: Node
+    node2: Node
 }
 
 export interface CtrlWrapper {
@@ -318,7 +322,11 @@ export interface Ctrl {
     minCtrl: number
     maxCtrl: number
     cost: number
-    type: LoadflowCtrlType    
+    type: LoadflowCtrlType
+    node1Code: string
+    node2Code: string
+    node1: Node
+    node2: Node
 }
 
 export interface Zone {
@@ -683,6 +691,16 @@ export interface DataRow {
     numGsps: number;
     numPrimary: number;
     numDist: number;
+}
+
+/* National grid */
+export interface GridSubstation {
+    id: number,
+    name: string,
+    reference: string,
+    voltage: string,
+    loadflowNode: Node,
+    gisData: GISData    
 }
 
 

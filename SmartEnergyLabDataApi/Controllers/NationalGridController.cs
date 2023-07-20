@@ -32,10 +32,21 @@ namespace SmartEnergyLabDataApi.Controllers
         /// Gets substations
         /// </summary>
         [HttpGet]        
-        [Route("GetSubstations")]
+        [Route("Substations")]
         public IList<GridSubstation> GetSubstations() {
             using( var da = new DataAccess()) {
                 return da.NationalGrid.GetGridSubstations();
+            }
+        }
+
+        /// <summary>
+        /// Gets loadflow substations
+        /// </summary>
+        [HttpGet]        
+        [Route("Loadflow/GridSubstations")]
+        public IList<GridSubstation> GetLoadflowGridSubstations() {
+            using( var da = new DataAccess()) {
+                return da.NationalGrid.GetLoadflowGridSubstations();
             }
         }
     }

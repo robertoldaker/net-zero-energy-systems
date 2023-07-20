@@ -22,6 +22,9 @@ namespace SmartEnergyLabDataApi.Data
         [Property()]
         public virtual string Code {get; set;}
 
+        [Property()]        
+        public virtual string Name {get; set;}
+
         [Property()]
         public virtual double Demand {get; set;}
 
@@ -50,11 +53,17 @@ namespace SmartEnergyLabDataApi.Data
         public virtual Zone Zone {get; set;}
 
         /// <summary>
+        /// GIS data
+        /// </summary>
+        [ManyToOne(Column = "GISDataId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
+        public virtual GISData GISData { get; set; }
+
+        /// <summary>
         /// Grid substation its linked to
         /// </summary>
-        [JsonIgnore()]
-        [ManyToOne(Column = "GridSubstation", Cascade = "none")]
-        public virtual GridSubstation GridSubstation { get; set; }
+        //[JsonIgnore()]
+        //[ManyToOne(Column = "GridSubstation", Cascade = "none")]
+        //public virtual GridSubstation GridSubstation { get; set; }
 
 
     }

@@ -195,3 +195,11 @@ span.mode {
     font-weight: bold;
     color:red;
 }
+
+.hidden {
+    visibility:hidden;
+}
+
+.visible {
+    visibility:visible;
+}
