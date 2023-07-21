@@ -340,6 +340,26 @@ export interface NetworkData {
     ctrls: CtrlWrapper[]
 }
 
+export interface LocationData {
+    locations: LoadflowLocation[]
+    branches: LoadflowBranch[]
+}
+
+export interface LoadflowLocation {
+    id: number
+    name: string
+    gisData: GISData
+    isQB: boolean
+}
+
+export interface LoadflowBranch {
+    id: number
+    voltage: number
+    gisData1: GISData,
+    gisData2: GISData
+}
+
+
 export interface AllTripResult {
     surplus: number,
     capacity: number,

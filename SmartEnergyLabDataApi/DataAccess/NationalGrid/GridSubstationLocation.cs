@@ -3,16 +3,16 @@ using System.Text.Json.Serialization;
 
 namespace SmartEnergyLabDataApi.Data
 {
-    [Class(0, Table = "grid_substations")]
-    public class GridSubstation
+    [Class(0, Table = "grid_substation_locations")]
+    public class GridSubstationLocation
     {
-        public GridSubstation()
+        public GridSubstationLocation()
         {
 
         }
 
-        public static GridSubstation Create(string reference) {
-            var gs = new GridSubstation();
+        public static GridSubstationLocation Create(string reference) {
+            var gs = new GridSubstationLocation();
             gs.GISData = new GISData();
             gs.Reference = reference;
             return gs;
@@ -26,28 +26,23 @@ namespace SmartEnergyLabDataApi.Data
         public virtual int Id { get; set; }
 
         /// <summary>
-        /// Reference for grid substation
-        /// </summary>
-        [Property()]
-        public virtual string Reference { get; set; }
-
-        /// <summary>
         /// Name of grid substation
         /// </summary>
         [Property()]
         public virtual string Name { get; set; }
 
         /// <summary>
-        /// Voltage
+        /// Reference for grid substation
         /// </summary>
         [Property()]
-        public virtual string Voltage { get; set; }
+        public virtual string Reference { get; set; }              
 
         /// <summary>
         /// GIS data
         /// </summary>
         [ManyToOne(Column = "GISDataId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
         public virtual GISData GISData { get; set; }
+
 
     }
 }

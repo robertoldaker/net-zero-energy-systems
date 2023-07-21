@@ -230,5 +230,18 @@ namespace SmartEnergyLabDataApi.Data
             fsr.FileDownloadName = $"BoundaryZones.csv";
             return fsr;
         }
+
+        public IList<Branch> GetVisibleBranches() {
+            Node node1=null, node2=null;
+            GridSubstationLocation location1=null, location2=null;
+            var branches = Session.QueryOver<Branch>().
+                Left.JoinAlias(m=>m.Node1,()=>node1).
+                Left.JoinAlias(m=>m.Node2,()=>node2).
+                Left.JoinAlias(()=>node1.Location,()=>location1).
+                Left.JoinAlias(()=>node2.Location,()=>location2).
+                Where( m=>!m.LinkType.IsInsensitiveLike("Transformer")).
+                Where( m=>location1.Id!=location2.Id).List();
+            return branches;
+        }
     }
 }

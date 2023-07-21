@@ -2,7 +2,7 @@ import { AfterViewInit, Component, OnInit, ViewChild, ViewChildren } from '@angu
 import { GoogleMap, MapMarker } from '@angular/google-maps';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { LoadflowDataService } from '../loadflow-data-service.service';
-import { Node, GridSubstation, NodeWrapper, Branch, CtrlWrapper, LoadflowCtrlType } from 'src/app/data/app.data';
+import { Node, GridSubstation, NodeWrapper, Branch, CtrlWrapper, LoadflowCtrlType, LoadflowLocation, LoadflowBranch } from 'src/app/data/app.data';
 
 @Component({
   selector: 'app-loadflow-map',
@@ -29,7 +29,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         if ( this.map ) {
             console.log('after view init');
             this.curZoom = this.map.googleMap?.getZoom()
-            this.addSub(this.loadflowDataService.NetworkDataLoaded.subscribe(()=>{
+            this.addSub(this.loadflowDataService.LocationDataLoaded.subscribe(()=>{
                 // add markers and lines to represent loadflow nodes, branches and ctrls           
                 this.addMapData()
             }))  
@@ -67,139 +67,67 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     selectedMarker: MapMarker | null = null
 
-    nodeMarkerOptions: { options: google.maps.MarkerOptions, id:number }[]=[]
-    qbMarkerOptions: { options: google.maps.MarkerOptions, id:number }[]=[]
+    locMarkerOptions: { options: google.maps.MarkerOptions, id:number }[]=[]
     branchOptions: { options: google.maps.PolylineOptions,  id: number}[]=[]
-    hvdcLineOptions: { options: google.maps.PolylineOptions,  id: number}[]=[]
     addMapData() {
-        this.nodeMarkerOptions = []
-        this.loadflowDataService.networkData.nodes.forEach(nodeWrapper => {
-            if ( nodeWrapper.obj.gisData) {
-                this.addNodeMarker(nodeWrapper.obj)
-            }
+        this.locMarkerOptions = []
+        this.loadflowDataService.locationData.locations.forEach(loc => {
+            this.addLocMarker(loc)
+        })
+        this.branchOptions=[];
+        this.loadflowDataService.locationData.branches.forEach(branch => {
+            this.addBranch(branch)
         })
 
-        this.loadflowDataService.networkData.branches.forEach(branchWrapper => {
-            let b = branchWrapper.obj;
-            if ( b.node1.gisData && b.node2.gisData) {
-                this.addBranch(b)
-            }
-        })
-
-        let hvdcLinks = this.loadflowDataService.networkData.ctrls.filter(m=>m.obj.type == LoadflowCtrlType.HVDC);
-        // add links to coutries on the other end of the links
-        hvdcLinks.forEach(ctrlWrapper => {
-            let c = ctrlWrapper.obj;
-            if ( c.node1 && c.node2) {
-                if ( c.node1.gisData && c.node2.gisData) {
-                    this.addHVDCLink(ctrlWrapper)
-                }    
-            } else {
-                console.log(`Node(s) undefined for HVDC ctrl [${c.code}], n1=[${c.node1}], n2=${c.node2}`)
-            }
-        })
-        // add marker to show the QB
-        this.loadflowDataService.networkData.ctrls.forEach(ctrlWrapper => {
-            let c = ctrlWrapper.obj;
-            if ( c.node1 && c.node2) {
-                if ( c.node1.gisData && c.node2.gisData) {
-                    this.addQBMarker(ctrlWrapper)
-                }    
-            } 
-        })
     }
 
-    addBranch(b: Branch) {
-        let node1 = b.node1
-        let node2 = b.node2
-        //console.log(`add branch ${node1.name} to ${node2.name}`)
-        if ( node1.gisData && node2.gisData) {
-            this.branchOptions.push( {
-                options: {
-                    path: [
-                        {lat: node1.gisData.latitude, lng: node1.gisData.longitude },
-                        {lat: node2.gisData.latitude, lng: node2.gisData.longitude },        
-                    ],
-                    strokeColor: 'blue',
-                    strokeWeight: 1
-                },
-                id: b.id
-            })    
-        }
+    addBranch(b: LoadflowBranch) {
+        let colour = this.getColour(b);
+        this.branchOptions.push( {
+            options: {
+                path: [
+                    {lat: b.gisData1.latitude, lng: b.gisData1.longitude },
+                    {lat: b.gisData2.latitude, lng: b.gisData2.longitude },        
+                ],
+                strokeColor: colour,
+                strokeWeight: 1
+            },
+            id: b.id
+        })    
     }
 
-    addHVDCLink(cw: CtrlWrapper) {
-        let c = cw.obj
-        let node1 = c.node1
-        let node2 = c.node2
-        if ( node1.gisData && node2.gisData) {
-            //console.log(`add ctrl [${c.code}] ${node1.name} to ${node2.name}`)
-            this.hvdcLineOptions.push( {
-                options: {
-                    path: [
-                        {lat: node1.gisData.latitude, lng: node1.gisData.longitude },
-                        {lat: node2.gisData.latitude, lng: node2.gisData.longitude },        
-                    ],
-                    strokeColor: 'red',
-                    strokeWeight: 1,
-
-                },
-                id: cw.obj.id
-            })    
+    private getColour(b: LoadflowBranch): string {
+        if ( b.voltage==400) {
+            return 'blue'
+        } else if ( b.voltage==275) {
+            return 'red'
         } else {
-            console.log(`missing GIS data for ctrl [${c.code}] ${node1.name} to ${node2.name}`)
+            return 'black'
         }
     }
 
-    addNodeMarker(node: Node) {
+    addLocMarker(loc: LoadflowLocation) {
+        let image= ( loc.isQB) ? 'loadflowQB.png' : 'loadflowNode.png'
         let icon = {
-            url: "/assets/images/loadflowNode.png", // url
+            url: `/assets/images/${image}`, // url
             scaledSize: new google.maps.Size(40, 40), // scaled size
             origin: new google.maps.Point(0, 0), // origin
             anchor: new google.maps.Point(20, 20), // anchor
         };
 
-        if ( node.gisData ) {
-            this.nodeMarkerOptions.push({ 
-                options: { 
-                    icon: icon,
-                    position: {
-                        lat: node.gisData.latitude,
-                        lng: node.gisData.longitude,
-                    },
-                    title: node.name,
-                    opacity: 1,
-                    zIndex: 15
-                }, 
-                id: node.id
-            } )    
-        }
-    }
-
-    addQBMarker(cw: CtrlWrapper) {
-        let node = cw.obj.node1
-        let icon = {
-            url: "/assets/images/loadflowQB.png", // url
-            scaledSize: new google.maps.Size(40, 40), // scaled size
-            origin: new google.maps.Point(0, 0), // origin
-            anchor: new google.maps.Point(20, 20), // anchor
-        };
-
-        if ( node.gisData ) {
-            this.qbMarkerOptions.push({ 
-                options: { 
-                    icon: icon,
-                    position: {
-                        lat: node.gisData.latitude,
-                        lng: node.gisData.longitude,
-                    },
-                    title: node.name,
-                    opacity: 1,
-                    zIndex: 16
-                }, 
-                id: node.id
-            } )    
-        }
+        this.locMarkerOptions.push({ 
+            options: { 
+                icon: icon,
+                position: {
+                    lat: loc.gisData.latitude,
+                    lng: loc.gisData.longitude,
+                },
+                title: loc.name,
+                opacity: 1,
+                zIndex: 15
+            }, 
+            id: loc.id
+        } )    
     }
 
     nodeMarkerClicked(id: number) {

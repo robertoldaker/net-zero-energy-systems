@@ -36,13 +36,6 @@ namespace SmartEnergyLabDataApi.Data
             return Session.QueryOver<GridSubstation>().Fetch(SelectMode.Fetch, m=>m.GISData).List();
         }
 
-        public IList<GridSubstation> GetLoadflowGridSubstations() {
-            return Session.QueryOver<GridSubstation>().Where(m=>m.LoadflowNode!=null).
-                        Fetch(SelectMode.Fetch,m=>m.LoadflowNode).
-                        Fetch(SelectMode.Fetch,m=>m.LoadflowNode.Zone).
-                        Fetch(SelectMode.Fetch, m=>m.GISData).List();
-        }
-
         public void Delete(GridOverheadLine ohl)
         {
             Session.Delete(ohl);
@@ -50,6 +43,44 @@ namespace SmartEnergyLabDataApi.Data
 
         public GridOverheadLine GetGridOverheadline(string reference) {
             return Session.QueryOver<GridOverheadLine>().Where( m=>m.Reference == reference).Take(1).SingleOrDefault();
+        }
+
+        public void Add(GridSubstationLocation loc) 
+        {
+            Session.Save(loc);
+        }
+
+        public void Delete(GridSubstationLocation loc)
+        {                   
+            Session.Delete(loc);
+        }
+
+        public GridSubstationLocation GetGridSubstationLocation(string reference) {
+            return Session.QueryOver<GridSubstationLocation>().Where( m=>m.Reference == reference).Take(1).SingleOrDefault();
+        }
+
+        public IList<GridSubstationLocation> GetGridSubstationLocations() {
+            return Session.QueryOver<GridSubstationLocation>().Fetch(SelectMode.Fetch, m=>m.GISData).List();
+        }
+
+        public IList<GridSubstationLocation> GetGridSubstationLocationsForLoadflow() {
+            GridSubstationLocation loc=null;
+            var sq = QueryOver.Of<Node>().Where(m => (m.Location.Id == loc.Id) ).Select(m => m.Id);
+            var locations = Session.QueryOver<GridSubstationLocation>(()=>loc).WithSubquery.WhereExists(sq).List();
+            return locations;
+        }
+
+        public IList<int> GetGridSubstationLocationsForLoadflowQB() {
+            //
+            GridSubstationLocation loc=null;
+            Node node1=null;
+            var sq = QueryOver.Of<Ctrl>().
+                JoinAlias(m=>m.Node1,()=>node1).
+                Where(m => m.Type == LoadflowCtrlType.QB).
+                Where(m=>node1.Location.Id==loc.Id).
+                Select(m => m.Id);
+            var locationIds = Session.QueryOver<GridSubstationLocation>(()=>loc).WithSubquery.WhereExists(sq).Select(m=>m.Id).List<int>();
+            return locationIds;
         }
     }
 }

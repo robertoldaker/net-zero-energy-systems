@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { Boundary, GridSubstation, LoadflowResults, NetworkData, Node, NodeWrapper } from '../data/app.data';
+import { Boundary, GridSubstation, LoadflowResults, LocationData, NetworkData, Node, NodeWrapper } from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 
@@ -16,18 +16,18 @@ export class LoadflowDataService {
         this.gridSubstations = [];
         this.boundaries = [];
         this.networkData = { nodes: [], branches: [], ctrls: [] }
+        this.locationData = { locations: [], branches: []}
         dataClientService.GetBoundaries((results)=>{
             this.boundaries = results;
             this.BoundariesLoaded.emit(results);
         });
         dataClientService.GetNetworkData( (results)=>{
             this.networkData = results;
-            this.addBranchAndCtrlNodes();
             this.NetworkDataLoaded.emit(results);
         })
-        dataClientService.GetLoadflowGridSubstations( (results)=>{
-            this.gridSubstations = results;
-            this.GridSubstationsLoaded.emit(results);
+        dataClientService.GetLocationData( (results)=>{
+            this.locationData = results;
+            this.LocationDataLoaded.emit(results);
         })
         this.signalRService.hubConnection.on('Loadflow_AllTripsProgress', (data) => {
             this.AllTripsProgress.emit(data);
@@ -37,6 +37,7 @@ export class LoadflowDataService {
     boundaries: Boundary[]
     gridSubstations: GridSubstation[]
     networkData: NetworkData
+    locationData: LocationData
     loadFlowResults: LoadflowResults | undefined
 
     private addBranchAndCtrlNodes() {
@@ -125,7 +126,7 @@ export class LoadflowDataService {
     BoundariesLoaded:EventEmitter<Boundary[]> = new EventEmitter<Boundary[]>()
     ResultsLoaded:EventEmitter<LoadflowResults> = new EventEmitter<LoadflowResults>()
     NetworkDataLoaded:EventEmitter<NetworkData> = new EventEmitter<NetworkData>()
+    LocationDataLoaded:EventEmitter<LocationData> = new EventEmitter<LocationData>()
     AllTripsProgress:EventEmitter<any> = new EventEmitter<any>()
-    GridSubstationsLoaded:EventEmitter<GridSubstation[]> = new EventEmitter<GridSubstation[]>()
 
 }

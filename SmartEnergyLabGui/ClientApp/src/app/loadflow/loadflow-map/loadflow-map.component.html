@@ -2,10 +2,8 @@
     <google-map width="100%" height="100%" [center]="center" [zoom]="zoom" [options]="options" (zoomChanged)="zoomChanged()" (centerChanged)="centerChanged()" (mapClick)="mapClick($event)">
         <!-- power -->
         <!-- info window for geographical areas -->
-    <map-marker #nodeMarkers *ngFor="let markerOption of nodeMarkerOptions" [options]="markerOption.options" (mapClick)="nodeMarkerClicked(markerOption.id)"></map-marker>        
-    <map-marker #nodeMarkers *ngFor="let markerOption of qbMarkerOptions" [options]="markerOption.options" (mapClick)="hvdcMarkerClicked(markerOption.id)"></map-marker>        
+    <map-marker #nodeMarkers *ngFor="let markerOption of locMarkerOptions" [options]="markerOption.options" (mapClick)="nodeMarkerClicked(markerOption.id)"></map-marker>
     <map-polyline #branchLines *ngFor="let branchOption of branchOptions" [options]="branchOption.options" (mapClick)="branchLineClicked(branchOption.id)"></map-polyline>
-    <map-polyline #ctrlLines *ngFor="let lineOption of hvdcLineOptions" [options]="lineOption.options" (mapClick)="ctrlLineClicked(lineOption.id)"></map-polyline>
     </google-map>
     
 </div>

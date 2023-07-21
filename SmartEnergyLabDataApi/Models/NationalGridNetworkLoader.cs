@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
 
@@ -12,6 +13,32 @@ namespace SmartEnergyLabDataApi.Models
 
         private HttpClient _httpClient;
         private object _httpClientLock = new object();
+
+        private static Regex _nameRegex = new Regex(@"^([A-Z\s]+)(\s\d{1,3}KV|\s)",RegexOptions.IgnoreCase);
+
+        private class InterConnector {
+            public LatLng LatLng {get; private set;}
+            public string Name {get; private set;}
+            public InterConnector(string name, LatLng latLng) {
+                Name = name;
+                LatLng = latLng;
+            }
+        }
+
+        private class LatLng {
+            public double Lat {get; set;}
+            public double Lng {get; set;}
+        }
+
+        // These are on the end of the inter-connectors so show them in their respective countries
+        private static Dictionary<string,InterConnector> _nodeInterConnectors = new Dictionary<string, InterConnector>() {
+            { "SELLX", new InterConnector("IFA1", new LatLng() {Lat=50.755175, Lng= 1.63329}) },
+            { "CHILX", new InterConnector("IFA2", new LatLng() {Lat=49.84289, Lng= 0.84227}) },
+            { "RICHX", new InterConnector("NEMO", new LatLng() {Lat=51.142778, Lng= 2.86376}) },
+            { "GRAIX", new InterConnector("BritNed", new LatLng() {Lat=51.527152, Lng= 3.56688}) }, 
+            { "CONQX", new InterConnector("EWLink", new LatLng() {Lat=53.714219, Lng=-6.21094}) },  
+        };
+
 
         public void Load() {
 
@@ -149,21 +176,43 @@ namespace SmartEnergyLabDataApi.Models
                     gs.Name = feature.properties.Substation;
                     gs.Voltage = feature.properties.OPERATING_;
                     //
-                    if ( feature.geometry.type == "Polygon") {
-                        var elements = feature.geometry.coordinates.Deserialize<double[][][]>();
-                        var lng = elements[0].Select(m=>m[0]).Average();
-                        gs.GISData.Longitude = lng;
-                        //
-                        var lat = elements[0].Select(m=>m[1]).Average();
-                        gs.GISData.Latitude = lat;
-                    } else if ( feature.geometry.type == "MultiPolygon") {
-                        var elements = feature.geometry.coordinates.Deserialize<double[][][][]>();
-                        var lng = elements[0][0].Select(m=>m[0]).Average();
-                        gs.GISData.Longitude = lng;
-                        //
-                        var lat = elements[0][0].Select(m=>m[1]).Average();
-                        gs.GISData.Latitude = lat;
+                    var locCode = feature.properties.SUBSTATION.Substring(0,4);
+                    var loc = da.NationalGrid.GetGridSubstationLocation(locCode);
+                    if ( loc==null ) {
+                        loc = GridSubstationLocation.Create(locCode); 
+                        da.NationalGrid.Add(loc);                       
                     }
+                    //
+                    var m = _nameRegex.Match(feature.properties.Substation);
+                    if ( m.Success) {
+                        var locName = m.Groups[1].Value;
+                        loc.Name = locName;
+                    } else {
+                        Logger.Instance.LogWarningEvent($"Could not find match for name [{feature.properties.Substation}]");
+                    }
+                    //
+                    try {
+                        getLocation(feature.geometry,out double lat, out double lng);
+                        loc.GISData.Latitude = lat;
+                        loc.GISData.Longitude = lng;
+                        gs.GISData.Latitude = lat;
+                        gs.GISData.Longitude = lng;
+                    } catch( Exception e) {
+                        Logger.Instance.LogWarningEvent($"Exception raised for feature [{feature.properties.Substation}] [{e.Message}]");
+                    }
+                }
+
+                // these are locations for the interconnectors
+                foreach( var code in _nodeInterConnectors.Keys) {
+                    var ic = _nodeInterConnectors[code];
+                    var loc = da.NationalGrid.GetGridSubstationLocation(code);
+                    if ( loc==null ) {
+                        loc = GridSubstationLocation.Create(code); 
+                        da.NationalGrid.Add(loc);                       
+                    }
+                    loc.Name = ic.Name;
+                    loc.GISData.Latitude = ic.LatLng.Lat;
+                    loc.GISData.Longitude = ic.LatLng.Lng;
                 }
                 
                 // add new ones found
@@ -171,6 +220,20 @@ namespace SmartEnergyLabDataApi.Models
             }
 
             //
+        }
+
+        private void getLocation(Geometry geometry, out double lat, out double lng) {
+            if ( geometry.type == "Polygon") {
+                var elements = geometry.coordinates.Deserialize<double[][][]>();
+                lng = elements[0].Select(m=>m[0]).Average();
+                lat = elements[0].Select(m=>m[1]).Average();
+            } else if ( geometry.type == "MultiPolygon") {
+                var elements = geometry.coordinates.Deserialize<double[][][][]>();
+                lng = elements[0][0].Select(m=>m[0]).Average();
+                lat = elements[0][0].Select(m=>m[1]).Average();
+            } else {
+                throw new Exception($"Unexpected geometry type found [{geometry.type}]");
+            }
         }
 
         private void processOhlGeoJson(string geoJsonFile) {

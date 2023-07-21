@@ -39,15 +39,5 @@ namespace SmartEnergyLabDataApi.Controllers
             }
         }
 
-        /// <summary>
-        /// Gets loadflow substations
-        /// </summary>
-        [HttpGet]        
-        [Route("Loadflow/GridSubstations")]
-        public IList<GridSubstation> GetLoadflowGridSubstations() {
-            using( var da = new DataAccess()) {
-                return da.NationalGrid.GetLoadflowGridSubstations();
-            }
-        }
     }
 }

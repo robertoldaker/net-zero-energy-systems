@@ -158,6 +158,17 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
+        /// Gets loadflow location data
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("LocationData")]
+        public LoadflowLocationData LocationData() {
+            var m = new LoadflowLocationData();
+            return m;
+        }
+
+        /// <summary>
         /// Setup boundary data prior to trip analysis
         /// </summary>
         /// <param name="boundaryName">Name of boundary</param>

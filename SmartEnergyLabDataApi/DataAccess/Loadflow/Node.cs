@@ -22,9 +22,6 @@ namespace SmartEnergyLabDataApi.Data
         [Property()]
         public virtual string Code {get; set;}
 
-        [Property()]        
-        public virtual string Name {get; set;}
-
         [Property()]
         public virtual double Demand {get; set;}
 
@@ -48,23 +45,36 @@ namespace SmartEnergyLabDataApi.Data
 
         [Property()]
         public virtual bool Ext {get; set;}
+
+        [Property()]
+        public virtual int Voltage {get; set;}
         
+        public virtual string Name { 
+            get {
+                if ( this.Location!=null ) {
+                    var append = Code.Length>5 ? $" ({Code.Substring(5,Code.Length-5)})" : "";
+                    return $"{Location.Name} {Voltage}{append}";
+                } else {
+                    return null;
+                }
+            }
+        }
+
         [ManyToOne(Column = "ZoneId", Cascade = "none")]
         public virtual Zone Zone {get; set;}
+        
 
         /// <summary>
-        /// GIS data
+        /// location of node
         /// </summary>
-        [ManyToOne(Column = "GISDataId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
-        public virtual GISData GISData { get; set; }
+        [ManyToOne(Column = "locationId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
+        public virtual GridSubstationLocation Location { get; set; }
 
-        /// <summary>
-        /// Grid substation its linked to
-        /// </summary>
-        //[JsonIgnore()]
-        //[ManyToOne(Column = "GridSubstation", Cascade = "none")]
-        //public virtual GridSubstation GridSubstation { get; set; }
-
+        // <summary>
+        // GIS data
+        // </summary>
+        //[ManyToOne(Column = "GISDataId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
+        //public virtual GISData GISData { get; set; }
 
     }
 }

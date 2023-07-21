@@ -14,7 +14,7 @@ using SmartEnergyLabDataApi.Models;
 public static class Program
 {
     // Start the data access - this will check schema and run any startup scripts as needed
-    private const int SCHEMA_VERSION = 38;
+    private const int SCHEMA_VERSION = 39;
     private const int SCRIPT_VERSION = 7;
 
     public static void Main(string[] args)
