@@ -70,13 +70,12 @@ namespace SmartEnergyLabDataApi.Data
             return locations;
         }
 
-        public IList<int> GetGridSubstationLocationsForLoadflowQB() {
+        public IList<int> GetGridSubstationLocationsForLoadflowCtrls() {
             //
             GridSubstationLocation loc=null;
             Node node1=null;
             var sq = QueryOver.Of<Ctrl>().
                 JoinAlias(m=>m.Node1,()=>node1).
-                Where(m => m.Type == LoadflowCtrlType.QB).
                 Where(m=>node1.Location.Id==loc.Id).
                 Select(m => m.Id);
             var locationIds = Session.QueryOver<GridSubstationLocation>(()=>loc).WithSubquery.WhereExists(sq).Select(m=>m.Id).List<int>();

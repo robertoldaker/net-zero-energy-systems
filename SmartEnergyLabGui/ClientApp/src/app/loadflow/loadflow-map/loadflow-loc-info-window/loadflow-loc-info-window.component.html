@@ -1,0 +1,22 @@
+<div class="mapInfoWindow">
+    <div class="inlineFlexRow">
+        <svg *ngIf="!isQB" width="30" height="15">            
+            <circle  cx="10" cy="7" r="5" fill="grey"/>
+        </svg>
+        <svg *ngIf="isQB" width="30" height="15">            
+            <circle  cx="10" cy="7" r="5" fill="#7E4444"/>
+        </svg>
+        <span>SUBSTATION</span>
+    </div>
+    <table id="table">
+        <tr>
+            <td>Name:</td>
+            <td>{{name}}</td>
+        </tr>
+        <tr>
+            <td>QB:</td>
+            <td>{{isQB}}</td>
+        </tr>
+    </table>
+</div>
+

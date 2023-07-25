@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { Boundary, GridSubstation, LoadflowResults, LocationData, NetworkData, Node, NodeWrapper } from '../data/app.data';
+import { Boundary, GridSubstation, LoadflowBranch, LoadflowLocation, LoadflowResults, LocationData, NetworkData, Node, NodeWrapper } from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 
@@ -7,9 +7,12 @@ type NodeDict = {
     [code: string]:Node
 }
 
+export type SelectedMapItem = {location: LoadflowLocation | null, branch: LoadflowBranch | null}
+
 @Injectable({
     providedIn: 'root'
 })
+
 export class LoadflowDataService {
 
     constructor(private dataClientService: DataClientService, private signalRService: SignalRService) { 
@@ -32,6 +35,8 @@ export class LoadflowDataService {
         this.signalRService.hubConnection.on('Loadflow_AllTripsProgress', (data) => {
             this.AllTripsProgress.emit(data);
         })
+        //
+        this.selectedMapItem = null
     }
 
     boundaries: Boundary[]
@@ -40,60 +45,7 @@ export class LoadflowDataService {
     locationData: LocationData
     loadFlowResults: LoadflowResults | undefined
 
-    private addBranchAndCtrlNodes() {
-        let nodeDict:NodeDict = {}
-        let nodes = this.networkData.nodes;
-        let branches = this.networkData.branches;
-        let ctrls = this.networkData.ctrls;
-        //
-        branches.forEach(bw=>{
-            let b = bw.obj
-            if ( nodeDict[b.node1Code] ) {
-                b.node1 = nodeDict[b.node1Code]
-            } else {
-                let nw = this.getNode(b.node1Code);
-                if ( nw) {
-                    b.node1 = nw.obj;
-                    nodeDict[b.node1Code] = b.node1    
-                }
-            }
-            if ( nodeDict[b.node2Code] ) {
-                b.node2 = nodeDict[b.node2Code]
-            } else {
-                let nw = this.getNode(b.node2Code);
-                if ( nw) {
-                    b.node2 = nw.obj
-                    nodeDict[b.node2Code] = b.node2    
-                }
-            }
-        })
-
-        ctrls.forEach(cw=>{
-            let c = cw.obj
-            if ( nodeDict[c.node1Code] ) {
-                c.node1 = nodeDict[c.node1Code]
-            } else {
-                let nw = this.getNode(c.node1Code);
-                if ( nw) {
-                    c.node1 = nw.obj;
-                    nodeDict[c.node1Code] = c.node1    
-                }
-            }
-            if ( nodeDict[c.node2Code] ) {
-                c.node2 = nodeDict[c.node2Code]
-            } else {
-                let nw = this.getNode(c.node2Code);
-                if ( nw) {
-                    c.node2 = nw.obj
-                    nodeDict[c.node2Code] = c.node2    
-                }
-            }
-        })
-    }
-
-    private getNode(code: string):NodeWrapper | undefined {
-        return this.networkData.nodes.find(m=>m.obj.code==code)
-    }
+    selectedMapItem: SelectedMapItem | null
 
     setBound(boundaryName: string) {
         this.dataClientService.SetBound(boundaryName, (results) =>{
@@ -123,10 +75,32 @@ export class LoadflowDataService {
         });
     }
 
+    selectLocation(locId: number) {
+        let loc = this.locationData.locations.find(m=>m.id==locId)
+        if ( loc ) {
+            this.selectedMapItem = { location: loc, branch: null }
+            this.ObjectSelected.emit(this.selectedMapItem)    
+        }
+    }
+
+    selectBranch(branchId: number) {
+        let branch = this.locationData.branches.find(m=>m.id==branchId)
+        if ( branch) {
+            this.selectedMapItem = { location: null, branch: branch }
+            this.ObjectSelected.emit(this.selectedMapItem)    
+        }
+    }
+
+    clearMapSelection() {
+        this.selectedMapItem = { location: null, branch: null} 
+        this.ObjectSelected.emit(this.selectedMapItem)
+    }
+
     BoundariesLoaded:EventEmitter<Boundary[]> = new EventEmitter<Boundary[]>()
     ResultsLoaded:EventEmitter<LoadflowResults> = new EventEmitter<LoadflowResults>()
     NetworkDataLoaded:EventEmitter<NetworkData> = new EventEmitter<NetworkData>()
     LocationDataLoaded:EventEmitter<LocationData> = new EventEmitter<LocationData>()
     AllTripsProgress:EventEmitter<any> = new EventEmitter<any>()
+    ObjectSelected:EventEmitter<SelectedMapItem> = new EventEmitter<SelectedMapItem>()
 
 }

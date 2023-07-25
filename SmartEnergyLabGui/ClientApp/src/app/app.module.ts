@@ -125,6 +125,9 @@ import { AdminHeaderComponent } from './admin/admin-home/admin-header/admin-head
 import { AdminDataComponent } from './admin/admin-data/admin-data.component';
 import { AdminTestComponent } from './admin/admin-test/admin-test.component';
 import { LoadflowMapComponent } from './loadflow/loadflow-map/loadflow-map.component';
+import { LoadflowMapKeyComponent } from './loadflow/loadflow-map/loadflow-map-key/loadflow-map-key.component';
+import { LoadflowLocInfoWindowComponent } from './loadflow/loadflow-map/loadflow-loc-info-window/loadflow-loc-info-window.component';
+import { LoadflowBranchInfoWindowComponent } from './loadflow/loadflow-map/loadflow-branch-info-window/loadflow-branch-info-window.component';
 
 
 @NgModule({
@@ -207,7 +210,10 @@ import { LoadflowMapComponent } from './loadflow/loadflow-map/loadflow-map.compo
         AdminHeaderComponent,
         AdminDataComponent,
         AdminTestComponent,
-        LoadflowMapComponent
+        LoadflowMapComponent,
+        LoadflowMapKeyComponent,
+        LoadflowLocInfoWindowComponent,
+        LoadflowBranchInfoWindowComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

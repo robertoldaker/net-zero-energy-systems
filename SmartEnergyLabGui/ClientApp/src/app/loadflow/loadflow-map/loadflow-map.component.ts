@@ -1,8 +1,9 @@
-import { AfterViewInit, Component, OnInit, ViewChild, ViewChildren } from '@angular/core';
-import { GoogleMap, MapMarker } from '@angular/google-maps';
+import { AfterViewInit, Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { GoogleMap, MapInfoWindow, MapMarker, MapPolyline } from '@angular/google-maps';
 import { ComponentBase } from 'src/app/utils/component-base';
-import { LoadflowDataService } from '../loadflow-data-service.service';
-import { Node, GridSubstation, NodeWrapper, Branch, CtrlWrapper, LoadflowCtrlType, LoadflowLocation, LoadflowBranch } from 'src/app/data/app.data';
+import { LoadflowDataService, SelectedMapItem } from '../loadflow-data-service.service';
+import { Node, GridSubstation, NodeWrapper, Branch, CtrlWrapper, LoadflowCtrlType, LoadflowLocation, LoadflowBranch, GISData } from 'src/app/data/app.data';
+import { MapOptions } from 'src/app/utils/map-options';
 
 @Component({
   selector: 'app-loadflow-map',
@@ -13,12 +14,27 @@ import { Node, GridSubstation, NodeWrapper, Branch, CtrlWrapper, LoadflowCtrlTyp
 export class LoadflowMapComponent extends ComponentBase implements OnInit, AfterViewInit {
 
     @ViewChild(GoogleMap, { static: false }) map: GoogleMap | undefined
-    @ViewChildren('nodeMarkers', { read: MapMarker }) nodeMapMarkers: MapMarker[] | undefined
-
+    @ViewChildren('locMarkers', { read: MapMarker }) locMapMarkers: QueryList<MapMarker> | undefined
+    @ViewChildren('branchLines', { read: MapPolyline }) branchMapPolylines: QueryList<MapPolyline> | undefined
+    @ViewChild('key') key: ElementRef | undefined
+    @ViewChild('locInfoWindow', { read: MapInfoWindow }) locInfoWindow: MapInfoWindow | undefined;
+    @ViewChild('branchInfoWindow', { read: MapInfoWindow }) branchInfoWindow: MapInfoWindow | undefined;
 
     constructor( private loadflowDataService: LoadflowDataService ) {
         super();
-
+        if (this.loadflowDataService.locationData.locations.length > 0) {
+            setTimeout( ()=>{
+                this.addMapData();
+            },200)
+        } else {
+            this.addSub(this.loadflowDataService.LocationDataLoaded.subscribe(()=>{
+                // add markers and lines to represent loadflow nodes, branches and ctrls           
+                this.addMapData()
+            }))     
+        }
+        this.addSub(this.loadflowDataService.ObjectSelected.subscribe((selectedItem)=>{
+            this.selectObject(selectedItem)
+        })) 
     }
 
     ngOnInit(): void {
@@ -26,20 +42,14 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     }
 
     ngAfterViewInit(): void {
-        if ( this.map ) {
-            console.log('after view init');
-            this.curZoom = this.map.googleMap?.getZoom()
-            this.addSub(this.loadflowDataService.LocationDataLoaded.subscribe(()=>{
-                // add markers and lines to represent loadflow nodes, branches and ctrls           
-                this.addMapData()
-            }))  
+        if ( this.key ) {
+            this.map?.controls[google.maps.ControlPosition.TOP_LEFT].push(this.key.nativeElement);
         }
     }
 
-    zoom = 6
+    zoom = 7
     center: google.maps.LatLngLiteral = {
-        //lat: 52.561928, lng: -1.464854
-        lat: 54.5255, lng: -1.464854
+        lat: 52.90829, lng: -0.97960
     }
     options: google.maps.MapOptions = {            
         disableDoubleClickZoom: true,
@@ -57,67 +67,133 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     curZoom: number | undefined = 0
     zoomTextThreshold : number = 8
     canShowMarkers: boolean = false
-    zoomChanged() {
-    }
 
 
     centerChanged() {
-
     }
 
-    selectedMarker: MapMarker | null = null
-
-    locMarkerOptions: { options: google.maps.MarkerOptions, id:number }[]=[]
-    branchOptions: { options: google.maps.PolylineOptions,  id: number}[]=[]
+    private readonly QB_COLOUR = '#7E4444'
+    private readonly LOC_COLOUR = 'grey'
+    private readonly QB_SEL_COLOUR = 'red'
+    private readonly LOC_SEL_COLOUR = 'white'
+    
+    locMarkerOptions: MapOptions<google.maps.MarkerOptions> = new MapOptions()
+    branchOptions: MapOptions<google.maps.PolylineOptions> = new MapOptions()
+    selectedLocMarker: MapMarker | null = null
+    selectedItem: SelectedMapItem  = { location: null, branch: null }
+    selectedBranchLine: MapPolyline | null =null
+    private selectObject(selectedItem: SelectedMapItem) {
+        // de-select existing location marker 
+        if ( this.selectedLocMarker && this.selectedItem.location ) {
+            this.selectMarker(this.selectedItem.location, this.selectedLocMarker, false);
+            this.selectedLocMarker = null;
+        }
+        // and branch
+        if ( this.selectedBranchLine && this.selectedItem.branch ) {
+            this.selectBranch(this.selectedItem.branch, this.selectedBranchLine, false);
+            this.selectedBranchLine = null;
+        }
+        if ( selectedItem.location && this.locMapMarkers) {
+            let index = this.locMarkerOptions.getIndex(selectedItem.location.id)
+            let mm = this.locMapMarkers.get(index)
+            if ( mm ) {
+                this.selectMarker(selectedItem.location, mm,true)
+                this.selectedLocMarker = mm
+                this.selectedItem = selectedItem
+            }
+        } else if ( selectedItem.branch && this.branchMapPolylines) {
+            let index = this.branchOptions.getIndex(selectedItem.branch.id)
+            let mpl = this.branchMapPolylines.get(index);
+            if ( mpl ) {
+                this.selectBranch(selectedItem.branch, mpl,true)
+                this.selectedBranchLine = mpl
+                this.selectedItem = selectedItem
+            }
+        } 
+    }
+    
     addMapData() {
-        this.locMarkerOptions = []
+        this.locMarkerOptions.clear()
         this.loadflowDataService.locationData.locations.forEach(loc => {
             this.addLocMarker(loc)
         })
-        this.branchOptions=[];
+        this.branchOptions.clear();
         this.loadflowDataService.locationData.branches.forEach(branch => {
             this.addBranch(branch)
         })
-
     }
 
     addBranch(b: LoadflowBranch) {
-        let colour = this.getColour(b);
-        this.branchOptions.push( {
-            options: {
-                path: [
-                    {lat: b.gisData1.latitude, lng: b.gisData1.longitude },
-                    {lat: b.gisData2.latitude, lng: b.gisData2.longitude },        
-                ],
-                strokeColor: colour,
-                strokeWeight: 1
-            },
-            id: b.id
-        })    
+        let options = this.getPolylineOptions(b,false);
+        options.path =[
+            {lat: b.gisData1.latitude, lng: b.gisData1.longitude },
+            {lat: b.gisData2.latitude, lng: b.gisData2.longitude },        
+        ]; 
+        this.branchOptions.add(b.id, options)
     }
 
-    private getColour(b: LoadflowBranch): string {
-        if ( b.voltage==400) {
-            return 'blue'
-        } else if ( b.voltage==275) {
-            return 'red'
-        } else {
-            return 'black'
+    private getPolylineOptions(b: LoadflowBranch, selected: boolean): google.maps.PolylineOptions {
+        let options: google.maps.PolylineOptions = {
+            strokeWeight: 1
         }
+        let lineSymbol = this.getLineSymbol(selected)
+        if ( b.branch.linkType == 'HVDC') {
+            options.strokeColor = 'black'
+            options.strokeOpacity = 0 // makes it invisible
+            options.strokeWeight = 20 // allows it to be selected when mouse close to line not directly over it
+            options.icons = [
+                {
+                  icon: lineSymbol,
+                  offset: "0",
+                  repeat: selected ? "8px" : "4px",
+                },
+              ]
+        } else {
+            if ( b.voltage == 400) {
+                options.strokeColor = 'blue'
+            } else if ( b.voltage == 275) {
+                options.strokeColor = 'red'
+            } else {
+                options.strokeColor = 'black';
+            }
+            options.strokeOpacity = 0 // makes it invisible
+            options.strokeWeight = 20 // allows it to be selected when mouse close to line not directly over it
+            options.icons = [
+                {
+                  icon: lineSymbol,
+                  offset: "0",
+                  repeat: selected ? "4px" : "2px",
+                },
+              ]
+        }
+        return options;
     }
 
+    private getLineSymbol(select: boolean): google.maps.Symbol {
+        let s = {
+            path: "M 0,-1,0,1", 
+            strokeOpacity: select ? 1 : 0.5, 
+            scale: select ? 2 : 1
+        }
+        return s;
+    }
+    
     addLocMarker(loc: LoadflowLocation) {
-        let image= ( loc.isQB) ? 'loadflowQB.png' : 'loadflowNode.png'
-        let icon = {
-            url: `/assets/images/${image}`, // url
-            scaledSize: new google.maps.Size(40, 40), // scaled size
-            origin: new google.maps.Point(0, 0), // origin
-            anchor: new google.maps.Point(20, 20), // anchor
+
+        let fillColor = loc.isQB ? this.QB_COLOUR : this.LOC_COLOUR
+        let sqIcon:google.maps.Symbol = {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 4,
+            strokeOpacity: 0,
+            strokeColor: 'black',
+            strokeWeight: 1,
+            fillOpacity: 1,
+            fillColor: fillColor
         };
 
-        this.locMarkerOptions.push({ 
-            options: { 
-                icon: icon,
+        this.locMarkerOptions.add(loc.id,
+            { 
+                icon: sqIcon,
                 position: {
                     lat: loc.gisData.latitude,
                     lng: loc.gisData.longitude,
@@ -125,28 +201,117 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
                 title: loc.name,
                 opacity: 1,
                 zIndex: 15
-            }, 
-            id: loc.id
-        } )    
+            }
+        )    
     }
 
-    nodeMarkerClicked(id: number) {
-
+    locMarkerClicked(locId: number) {
+        this.loadflowDataService.selectLocation(locId)
     }
 
-    hvdcMarkerClicked(id: number) {
-
+    branchLineClicked(branchId: number) {
+        this.loadflowDataService.selectBranch(branchId)
     }
 
-    branchLineClicked(id: number) {
-        console.log(`branchline clicked ${id}`)
+    selectMarker(loc: LoadflowLocation, mm: MapMarker, select: boolean) {
+        //
+        let s:any = mm.marker?.getIcon()
+        if ( loc.isQB ) {
+            s.fillColor = select ? this.QB_SEL_COLOUR : this.QB_COLOUR
+        } else {
+            s.fillColor = select ? this.LOC_SEL_COLOUR : this.LOC_COLOUR
+        }
+        s.strokeOpacity = select ? 1 : 0
+        mm.marker?.setIcon(s)
+        //
+        this.showLocInfoWindow( loc, mm, select)
     }
 
-    ctrlLineClicked(id: number) {
-        console.log(`ctrlline clicked ${id}`)
+    showLocInfoWindow(loc: LoadflowLocation, mm: MapMarker, select: boolean) {
+        // pan/zoom to new position
+        if ( select ) {
+            let center = { lat: loc.gisData.latitude, lng: loc.gisData.longitude}
+            this.panTo(center,7)    
+        }
+        // open info window
+        if ( this.locInfoWindow) {
+            if ( select ) {
+                this.locInfoWindow.open(mm)
+            } else {
+                this.locInfoWindow.close()
+            }
+        }
+    }
+
+    selectBranch(branch: LoadflowBranch, mpl: MapPolyline, select: boolean) {
+        //
+        let options = this.getPolylineOptions(branch, select)
+        mpl.polyline?.setOptions(options);
+        //
+        this.showBranchInfoWindow(branch, mpl, select)
+    }
+
+    showBranchInfoWindow(branch: LoadflowBranch, mpl: MapPolyline, select: boolean) {
+        // pan/zoom to new position
+        let center = { lat: (branch.gisData1.latitude + branch.gisData2.latitude)/2, 
+                       lng: (branch.gisData1.longitude + branch.gisData2.longitude)/2}
+        if ( select ) {
+            this.panTo(center,7)
+        }
+        // open info window
+        if ( this.branchInfoWindow) {
+            if ( select ) {
+                this.branchInfoWindow.position = center
+                this.branchInfoWindow.open()    
+            } else {
+                this.branchInfoWindow.close()
+            }
+        }
     }
 
     mapClick(e: google.maps.MapMouseEvent) {
         console.log(`mapClick lat=${e.latLng?.lat()}, lng=${e.latLng?.lng()}`)
+        this.loadflowDataService.clearMapSelection();
     }
+
+    zoomChanged() {
+        let curZoom = this.map?.googleMap?.getZoom()
+        console.log(`zoom changed ${curZoom}`)
+    }
+
+    panToBounds(bounds: google.maps.LatLngBounds) {
+        this.map?.panToBounds(bounds);
+    }
+
+    panTo(center: google.maps.LatLngLiteral, minZoom: number) {
+
+        let curZoom = this.map?.googleMap?.getZoom()
+        if ( curZoom && curZoom < minZoom ) {
+            this.map?.googleMap?.setZoom(minZoom)
+        }
+
+        this.map?.googleMap?.setCenter(center)
+        this.map?.googleMap?.panTo(center)
+    }
+
+    zoomTo(minZoom: number) {
+        let curZoom = this.map?.googleMap?.getZoom()
+        if ( curZoom && curZoom < minZoom ) {
+            this.map?.googleMap?.setZoom(minZoom)
+        }
+    }
+
+    get currentZoom():number {
+        let zoom = this.map?.googleMap?.getZoom();
+        if ( zoom ) {
+            return zoom;
+        } else {
+            return 0;
+        }
+    }
+
+    clearSelection() {
+        this.loadflowDataService.clearMapSelection()
+    }
+
 }

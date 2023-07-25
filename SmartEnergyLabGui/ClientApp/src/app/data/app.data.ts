@@ -354,17 +354,18 @@ export interface LoadflowLocation {
 
 export interface LoadflowBranch {
     id: number
+    branch: Branch
     voltage: number
-    gisData1: GISData,
+    gisData1: GISData
     gisData2: GISData
 }
 
 
 export interface AllTripResult {
-    surplus: number,
-    capacity: number,
-    trip: BoundaryTrip,
-    limCCt: string[],
+    surplus: number
+    capacity: number
+    trip: BoundaryTrip
+    limCCt: string[]
     ctrls: CtrlResult[]
 }
 

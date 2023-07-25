@@ -9,7 +9,7 @@ namespace SmartEnergyLabDataApi.Loadflow
             using( var da = new DataAccess()) {
                 // Locations
                 var locations = da.NationalGrid.GetGridSubstationLocationsForLoadflow();
-                var qbIds = da.NationalGrid.GetGridSubstationLocationsForLoadflowQB();
+                var qbIds = da.NationalGrid.GetGridSubstationLocationsForLoadflowCtrls();
                 Locations = locations.Select(m=>new LoadflowLocation(m,qbIds.Contains(m.Id))).ToList();
 
                 // Branches
@@ -63,6 +63,12 @@ namespace SmartEnergyLabDataApi.Loadflow
         public int Id {
             get {
                 return _b.Id;
+            }
+        }
+
+        public Branch Branch {
+            get {
+                return _b;
             }
         }
 
