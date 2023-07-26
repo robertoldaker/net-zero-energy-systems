@@ -3,7 +3,7 @@ Description=SmartEnergyLabDatApi .NET Web App running on Ubuntu
 
 [Service]
 WorkingDirectory=/home/roberto/websites/SmartEnergyLabDataApi
-ExecStart=/usr/bin/dotnet /home/roberto/websites/SmartEnergyLabDataApi/SmartEnergyLabDataApi.dll --urls="http://localhost:5020"
+ExecStart=/usr/bin/dotnet /home/roberto/websites/SmartEnergyLabDataApi/SmartEnergyLabDataApi.dll --urls="http://*:5020"
 Restart=always
 # Restart service after 10 seconds if the dotnet service crashes:
 RestartSec=10
@@ -11,6 +11,10 @@ SyslogIdentifier=SmartEnergyLabDataApi
 User=roberto
 Environment=ASPNETCORE_ENVIRONMENT=Production
 Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+Environment=PROJ_LIB=/home/roberto/anaconda3/share/proj
+Environment=GDAL_DRIVER_PATH=/home/roberto/anaconda3/lib/gdalplugins
+Environment=CONDA_DEFAULT_ENV=base
+Environment=GDAL_DATA=/home/roberto/anaconda3/share/gdal
 
 [Install]
 WantedBy=multi-user.target

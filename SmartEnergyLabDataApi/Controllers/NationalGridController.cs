@@ -24,8 +24,13 @@ namespace SmartEnergyLabDataApi.Controllers
         [HttpPost]        
         [Route("LoadNetwork")]
         public void LoadNetwork() {
-            var m = new NationalGridNetworkLoader();
-            m.Load();
+            try {
+                var m = new NationalGridNetworkLoader();
+                m.Load();
+            } catch ( Exception e) {                
+                Logger.Instance.LogErrorEvent($"Error: loading national grid network [{e.Message}]");
+                throw;
+            }
         }
 
         /// <summary>
