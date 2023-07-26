@@ -70,11 +70,5 @@ namespace SmartEnergyLabDataApi.Data
         [ManyToOne(Column = "locationId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
         public virtual GridSubstationLocation Location { get; set; }
 
-        // <summary>
-        // GIS data
-        // </summary>
-        //[ManyToOne(Column = "GISDataId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
-        //public virtual GISData GISData { get; set; }
-
     }
 }
