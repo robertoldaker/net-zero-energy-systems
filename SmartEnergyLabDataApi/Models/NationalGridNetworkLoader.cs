@@ -64,7 +64,7 @@ namespace SmartEnergyLabDataApi.Models
                         substationsGeoJsonFile = shapeFile.Replace(".shp",".geojson");
                         convertToGeoJson(shapeFile,substationsGeoJsonFile);
                         //
-                        shapeFile = Path.Combine(AppFolders.Instance.Temp,outFolder,"ohl.shp");                        
+                        shapeFile = Path.Combine(AppFolders.Instance.Temp,outFolder,"OHL.shp");                        
                         ohlGeoJsonFile = shapeFile.Replace(".shp",".geojson");
                         convertToGeoJson(shapeFile,ohlGeoJsonFile);
                     }
@@ -106,13 +106,22 @@ namespace SmartEnergyLabDataApi.Models
             }
 
             // enable raising events because Process does not raise events by default
+            Logger.Instance.LogInfoEvent($"Running ogr2ogr");
+            Logger.Instance.LogInfoEvent($"Filename=[{processStartInfo.FileName}]");
+            Logger.Instance.LogInfoEvent($"Arguments=[{processStartInfo.Arguments}]");
             processStartInfo.UseShellExecute = false;
+            processStartInfo.RedirectStandardError = true;
             var process = new Process();
             process.StartInfo = processStartInfo;
 
             process.Start();
 
             process.WaitForExit();
+
+            if ( process.ExitCode!=0) {
+                var error = process.StandardError.ReadToEnd();
+                throw new Exception($"Could not run ogr2gr error [{error}]");
+            }
         }
 
         private HttpClient getHttpClient()
