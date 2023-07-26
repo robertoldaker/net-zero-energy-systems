@@ -27,8 +27,18 @@ export class LoadflowDataComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
 
     }
+    
+    get mapButtonImage(): string {
+        return this.showMap ? '/assets/images/table.png' : '/assets/images/world.png'
+    }
 
     showAllTripResults: boolean
     selected: FormControl
+    showMap:boolean = true;
+
+    toggleMap() {
+        console.log('toggleMap')
+        this.showMap = !this.showMap;
+    }
 
 }

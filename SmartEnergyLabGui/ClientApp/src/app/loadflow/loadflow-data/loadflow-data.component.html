@@ -1,8 +1,9 @@
-<mat-tab-group animationDuration="0ms" [preserveContent]="true" [selectedIndex]="selected.value"
-(selectedIndexChange)="selected.setValue($event)">
-    <mat-tab label="Map">
-        <app-loadflow-map></app-loadflow-map>
-    </mat-tab>
+<div class="mapButton" (click)="toggleMap()" title="show map">
+    <div>
+        <img [src]="mapButtonImage"/>
+    </div>
+</div>
+<mat-tab-group *ngIf="!showMap" animationDuration="0ms" [preserveContent]="true" [selectedIndex]="selected.value" (selectedIndexChange)="selected.setValue($event)">
     <mat-tab label="Nodes">
         <app-loadflow-data-nodes></app-loadflow-data-nodes>
     </mat-tab>
@@ -16,4 +17,6 @@
         <app-loadflow-trip-results></app-loadflow-trip-results>
     </mat-tab>
 </mat-tab-group>    
+<app-loadflow-map *ngIf="showMap"></app-loadflow-map>
+
   

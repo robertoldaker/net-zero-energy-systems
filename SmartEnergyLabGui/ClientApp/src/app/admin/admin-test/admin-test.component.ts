@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { GoogleMap } from '@angular/google-maps';
 import { ComponentBase } from 'src/app/utils/component-base';
 
@@ -11,6 +11,8 @@ import { ComponentBase } from 'src/app/utils/component-base';
 export class AdminTestComponent extends ComponentBase implements OnInit, AfterViewInit {
 
     @ViewChild(GoogleMap, { static: false }) map: GoogleMap | undefined
+    @ViewChild('key') key: ElementRef | undefined
+
 
     ngOnInit(): void {
 
@@ -19,6 +21,9 @@ export class AdminTestComponent extends ComponentBase implements OnInit, AfterVi
     ngAfterViewInit(): void {
         if ( this.map ) {
             console.log('reading data');
+            if ( this.key ) {
+                this.map?.controls[google.maps.ControlPosition.TOP_LEFT].push(this.key.nativeElement);
+            }
             let map = this.map;
             this.map.data.loadGeoJson('/assets/geojson/Substations.geojson', {}, (df)=>{
                 console.log('read data substations')
@@ -52,17 +57,36 @@ export class AdminTestComponent extends ComponentBase implements OnInit, AfterVi
     options: google.maps.MapOptions = {            
         disableDoubleClickZoom: true,
         mapTypeId: 'roadmap',
-        minZoom: 7,
-        styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }, { stylers: [{ gamma: 5 }] }],
+        minZoom: 3,
+        //styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }, { stylers: [{ gamma: 1 }] }],
+        styles: [
+            { featureType: "poi", stylers: [{ visibility: "off" }] }, 
+            { featureType: "road", stylers: [{ visibility: "off" }] }, 
+            { featureType: "landscape", stylers: [{ visibility: "off" }] },
+            { featureType: "administrative", stylers: [{ visibility: "off" }]}],
         mapTypeControl: false,
         scaleControl: true
     }
 
     zoomChanged() {
-
+        console.log(`${this.map?.googleMap?.getZoom()}`)
     }
 
     centerChanged() {
 
+    }
+
+    zoomIn() {
+        let zoom = this.map?.googleMap?.getZoom();
+        if ( zoom ) {
+            this.map?.googleMap?.setZoom(zoom+1);
+        }
+    }
+
+    zoomOut() {
+        let zoom = this.map?.googleMap?.getZoom();
+        if ( zoom ) {
+            this.map?.googleMap?.setZoom(zoom-1);
+        }
     }
 }

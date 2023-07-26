@@ -34,7 +34,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
         this.addSub(this.loadflowDataService.ObjectSelected.subscribe((selectedItem)=>{
             this.selectObject(selectedItem)
-        })) 
+        }))         
     }
 
     ngOnInit(): void {
@@ -61,6 +61,8 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
                 { featureType: "landscape", stylers: [{ visibility: "off" }] },
                 { featureType: "administrative", stylers: [{ visibility: "off" }]}],
         mapTypeControl: false,
+        fullscreenControl: false,
+        streetViewControl: false,
         scaleControl: true
     }
 
@@ -312,6 +314,20 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     clearSelection() {
         this.loadflowDataService.clearMapSelection()
+    }
+
+    zoomIn() {
+        let zoom = this.map?.googleMap?.getZoom();
+        if ( zoom ) {
+            this.map?.googleMap?.setZoom(zoom+1);
+        }
+    }
+
+    zoomOut() {
+        let zoom = this.map?.googleMap?.getZoom();
+        if ( zoom ) {
+            this.map?.googleMap?.setZoom(zoom-1);
+        }
     }
 
 }
