@@ -301,6 +301,8 @@ export interface Branch {
     linkType: string
     node1Code: string
     node2Code: string
+    node1Name: string
+    node2Name: string
     node1: Node
     node2: Node
 }
@@ -325,6 +327,8 @@ export interface Ctrl {
     type: LoadflowCtrlType
     node1Code: string
     node2Code: string
+    node1Name: string
+    node2Name: string
     node1: Node
     node2: Node
 }
@@ -348,6 +352,7 @@ export interface LocationData {
 export interface LoadflowLocation {
     id: number
     name: string
+    reference: string
     gisData: GISData
     isQB: boolean
 }

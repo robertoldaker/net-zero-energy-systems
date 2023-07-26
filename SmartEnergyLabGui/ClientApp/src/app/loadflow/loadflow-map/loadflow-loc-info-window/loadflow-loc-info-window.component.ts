@@ -22,6 +22,10 @@ export class LoadflowLocInfoWindowComponent extends ComponentBase {
         return this.loc ? this.loc?.name : ''
     }
 
+    get reference():string {
+        return this.loc ? this.loc?.reference : ''
+    }
+
     get isQB():boolean {
         return this.loc ? this.loc?.isQB : false
     }

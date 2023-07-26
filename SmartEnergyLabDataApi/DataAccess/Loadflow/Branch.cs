@@ -65,5 +65,16 @@ namespace SmartEnergyLabDataApi.Data
                 return Node2.Code;
             }
         }
+        public virtual string Node1Name {
+            get {
+                return Node1.Name;
+            }
+        }
+        
+        public virtual string Node2Name {
+            get {
+                return Node2.Name;
+            }
+        }
     }
 }

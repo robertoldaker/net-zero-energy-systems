@@ -11,13 +11,19 @@
         <!-- node1 -->
         <ng-container matColumnDef="node1">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Node 1</th>
-          <td mat-cell *matCellDef="let element">{{element.branch.obj.node1Code}}</td>
+          <td mat-cell *matCellDef="let element">
+            <div>{{element.obj.node1Code}}</div>
+            <div *ngIf="element.obj.node1Name" class="nodeName">({{element.obj.node1Name}})</div>
+          </td>
         </ng-container>
     
         <!-- node2 -->
         <ng-container matColumnDef="node2">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Node 2</th>
-          <td mat-cell *matCellDef="let element">{{element.branch.obj.node2Code}}</td>
+          <td mat-cell *matCellDef="let element">
+            <div>{{element.obj.node2Code}}</div>
+            <div *ngIf="element.obj.node2Name" class="nodeName">({{element.obj.node2Name}})</div>
+          </td>
         </ng-container>
     
         <!-- type -->

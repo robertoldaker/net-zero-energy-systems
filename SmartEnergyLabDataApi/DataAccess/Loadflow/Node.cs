@@ -52,8 +52,9 @@ namespace SmartEnergyLabDataApi.Data
         public virtual string Name { 
             get {
                 if ( this.Location!=null ) {
-                    var append = Code.Length>5 ? $" ({Code.Substring(5,Code.Length-5)})" : "";
-                    return $"{Location.Name} {Voltage}{append}";
+                    //??var append = Code.Length>5 ? $" ({Code.Substring(5,Code.Length-5)})" : "";
+                    //??return $"{Location.Name} {Voltage}{append}";
+                    return Location.Name;
                 } else {
                     return null;
                 }

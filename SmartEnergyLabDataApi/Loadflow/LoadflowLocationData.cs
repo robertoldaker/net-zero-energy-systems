@@ -41,6 +41,12 @@ namespace SmartEnergyLabDataApi.Loadflow
             }            
         }
 
+        public string Reference {
+            get {
+                return _gsl.Reference;
+            }            
+        }
+
         public GISData GISData {
             get {
                 return _gsl.GISData;
