@@ -50,9 +50,10 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         } 
     }
 
-    zoom = 7
+    zoom = 6
     center: google.maps.LatLngLiteral = {
-        lat: 52.90829, lng: -0.97960
+        //lat: 52.90829, lng: -0.97960 // zoom=7
+        lat: 54.50355, lng: -3.76489 // zoom=6
     }
     options: google.maps.MapOptions = {            
         disableDoubleClickZoom: true,
@@ -253,7 +254,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     selectBranch(branch: LoadflowBranch, mpl: MapPolyline, select: boolean) {
         //
-        let options = this.getPolylineOptions(branch, false, select)
+        let options = this.getPolylineOptions(branch, select, false)
         mpl.polyline?.setOptions(options);
         //
         this.showBranchInfoWindow(branch, mpl, select)
