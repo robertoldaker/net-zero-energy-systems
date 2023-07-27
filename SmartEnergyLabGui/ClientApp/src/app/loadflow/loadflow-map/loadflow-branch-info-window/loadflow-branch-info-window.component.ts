@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { LoadflowDataService } from '../../loadflow-data-service.service';
-import { LoadflowBranch } from 'src/app/data/app.data';
+import { LoadflowLink } from 'src/app/data/app.data';
 
 @Component({
   selector: 'app-loadflow-branch-info-window',
@@ -12,16 +12,25 @@ export class LoadflowBranchInfoWindowComponent extends ComponentBase {
     constructor(private loadflowDataService: LoadflowDataService) {        
         super()
         this.addSub( this.loadflowDataService.ObjectSelected.subscribe( (selectedMapItem)=>{
-            this.branch = selectedMapItem.branch
+            this.link = selectedMapItem.link
         }))
     }
 
-    private branch: LoadflowBranch | null = null
+    private link: LoadflowLink | null = null
 
     get name():string {
-        return this.branch?.branch ? this.branch?.branch.code : ''
+        return this.link?.branches[0] ? this.link?.branches[0].code : ''
     }
+
+    get names():string[] {
+        return this.link?.branches[0] ? this.link?.branches.map(m=>m.code) : []
+    }
+
+    get branchCount():number {
+        return this.link?.branches[0] ? this.link?.branches.length : 0
+    }
+
     get linkType():string {
-        return this.branch?.branch ? this.branch?.branch.linkType : ''
+        return this.link?.branches[0] ? this.link?.branches[0].linkType : ''
     }
 }

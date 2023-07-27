@@ -347,20 +347,21 @@ export interface NetworkData {
 
 export interface LocationData {
     locations: LoadflowLocation[]
-    branches: LoadflowBranch[]
+    links: LoadflowLink[]
 }
 
 export interface LoadflowLocation {
     id: number
     name: string
     reference: string
+    nodes: Node[]
     gisData: GISData
     isQB: boolean
 }
 
-export interface LoadflowBranch {
+export interface LoadflowLink {
     id: number
-    branch: Branch
+    branches: Branch[]
     voltage: number
     gisData1: GISData
     gisData2: GISData

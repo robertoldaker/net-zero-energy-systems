@@ -8,26 +8,58 @@ namespace SmartEnergyLabDataApi.Loadflow
         public LoadflowLocationData() {
             using( var da = new DataAccess()) {
                 // Locations
-                var locations = da.NationalGrid.GetGridSubstationLocationsForLoadflow();
+                var locDict = new Dictionary<GridSubstationLocation,LoadflowLocation>();
+                var nodes = da.Loadflow.GetNodesWithLocations();
+                // ids of locations that have ctrls
                 var qbIds = da.NationalGrid.GetGridSubstationLocationsForLoadflowCtrls();
-                Locations = locations.Select(m=>new LoadflowLocation(m,qbIds.Contains(m.Id))).ToList();
+                foreach(var node in nodes) {
+                    LoadflowLocation loc;
+                    if ( locDict.ContainsKey(node.Location)) {
+                        loc = locDict[node.Location];
+                        loc.Nodes.Add(node);
+                    } else {
+                        var isQB = qbIds.Contains(node.Location.Id);
+                        loc = new LoadflowLocation(node,isQB);
+                        locDict.Add(node.Location,loc);
+                    }
+                }
+                Locations = locDict.Values.ToList();
 
-                // Branches
+                // Links
                 var visibleBranches = da.Loadflow.GetVisibleBranches();
-                Branches = visibleBranches.Select(m=>new LoadflowBranch(m)).ToList();
+                var linkDict = new Dictionary<string,LoadflowLink>();
+                foreach( var b in visibleBranches) {
+                    var key1 = $"{b.Node1.Location.Id}:{b.Node2.Location.Id}";
+                    var key2 = $"{b.Node2.Location.Id}:{b.Node1.Location.Id}";
+                    LoadflowLink link;
+                    if ( linkDict.ContainsKey(key1) ) {
+                        link = linkDict[key1];
+                        link.Branches.Add(b);
+                    } else if ( linkDict.ContainsKey(key2)) {
+                        link = linkDict[key2];
+                        link.Branches.Add(b);
+                    } else {
+                        link = new LoadflowLink(b);
+                        linkDict.Add(key1,link);
+                    }
+                }
+                Links = linkDict.Values.ToList();
             }
         }
 
         public IList<LoadflowLocation> Locations {get; private set;}
-        public IList<LoadflowBranch> Branches {get; private set;}
+        public IList<LoadflowLink> Links {get; private set;}
 
     }
 
     public class LoadflowLocation {
         private GridSubstationLocation _gsl;
+        private List<Node> _nodes;
         private bool _isQB;
-        public LoadflowLocation(GridSubstationLocation gridLocation, bool isQB) {
-            _gsl = gridLocation;
+        public LoadflowLocation(Node node, bool isQB) {
+            _nodes = new List<Node>();
+            _nodes.Add(node);
+            _gsl = node.Location;
             _isQB = isQB;
         }
         public int Id {
@@ -39,6 +71,12 @@ namespace SmartEnergyLabDataApi.Loadflow
             get {
                 return _gsl.Name;
             }            
+        }
+
+        public List<Node> Nodes {
+            get {
+                return _nodes;
+            }
         }
 
         public string Reference {
@@ -60,38 +98,40 @@ namespace SmartEnergyLabDataApi.Loadflow
         }
     }
 
-    public class LoadflowBranch {
-        private Branch _b;
-        public LoadflowBranch(Branch branch) {
-            _b = branch;
+    public class LoadflowLink {
+        private List<Branch> _branches;
+        public LoadflowLink(Branch branch) {
+            _branches = new List<Branch>();
+            _branches.Add(branch);
         }
 
         public int Id {
             get {
-                return _b.Id;
+                return _branches[0].Id;
             }
         }
 
-        public Branch Branch {
+        public List<Branch> Branches {
             get {
-                return _b;
+                return _branches;
             }
         }
 
         public int Voltage {
             get {
-                return _b.Node1.Voltage;
+                return _branches[0].Node1.Voltage;
             }
         }
 
         public GISData GISData1 {
             get {
-                return _b.Node1.Location.GISData;
+                return _branches[0].Node1.Location.GISData;
             }
         }
+
         public GISData GISData2 {
             get {
-                return _b.Node2.Location.GISData;
+                return _branches[0].Node2.Location.GISData;
             }
         }
     }

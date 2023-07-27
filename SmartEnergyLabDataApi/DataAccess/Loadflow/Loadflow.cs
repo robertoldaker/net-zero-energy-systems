@@ -48,6 +48,11 @@ namespace SmartEnergyLabDataApi.Data
             List();
         }
 
+        public IList<Node> GetNodesWithLocations() {
+            var nodes = Session.QueryOver<Node>().Fetch(SelectMode.Fetch, m=>m.Zone).Where(m=>m.Location!=null).List();
+            return nodes;
+        }    
+
         #endregion
 
         #region Zone

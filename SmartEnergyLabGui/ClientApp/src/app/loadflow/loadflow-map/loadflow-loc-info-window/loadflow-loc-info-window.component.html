@@ -18,6 +18,12 @@
             <td>{{reference}}</td>
         </tr>
         <tr>
+            <td>Nodes:</td>
+            <td>
+                <div *ngFor="let node of nodes">{{node.code}}</div>
+            </td>
+        </tr>
+        <tr>
             <td>QB:</td>
             <td>{{isQB}}</td>
         </tr>

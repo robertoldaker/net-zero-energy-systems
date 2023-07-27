@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { Boundary, GridSubstation, LoadflowBranch, LoadflowLocation, LoadflowResults, LocationData, NetworkData, Node, NodeWrapper } from '../data/app.data';
+import { Boundary, GridSubstation, LoadflowLink, LoadflowLocation, LoadflowResults, LocationData, NetworkData, Node, NodeWrapper } from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 
@@ -7,7 +7,7 @@ type NodeDict = {
     [code: string]:Node
 }
 
-export type SelectedMapItem = {location: LoadflowLocation | null, branch: LoadflowBranch | null}
+export type SelectedMapItem = {location: LoadflowLocation | null, link: LoadflowLink | null}
 
 @Injectable({
     providedIn: 'root'
@@ -19,7 +19,7 @@ export class LoadflowDataService {
         this.gridSubstations = [];
         this.boundaries = [];
         this.networkData = { nodes: [], branches: [], ctrls: [] }
-        this.locationData = { locations: [], branches: []}
+        this.locationData = { locations: [], links: []}
         dataClientService.GetBoundaries((results)=>{
             this.boundaries = results;
             this.BoundariesLoaded.emit(results);
@@ -80,21 +80,21 @@ export class LoadflowDataService {
     selectLocation(locId: number) {
         let loc = this.locationData.locations.find(m=>m.id==locId)
         if ( loc ) {
-            this.selectedMapItem = { location: loc, branch: null }
+            this.selectedMapItem = { location: loc, link: null }
             this.ObjectSelected.emit(this.selectedMapItem)    
         }
     }
 
-    selectBranch(branchId: number) {
-        let branch = this.locationData.branches.find(m=>m.id==branchId)
+    selectLink(branchId: number) {
+        let branch = this.locationData.links.find(m=>m.id==branchId)
         if ( branch) {
-            this.selectedMapItem = { location: null, branch: branch }
+            this.selectedMapItem = { location: null, link: branch }
             this.ObjectSelected.emit(this.selectedMapItem)    
         }
     }
 
     clearMapSelection() {
-        this.selectedMapItem = { location: null, branch: null} 
+        this.selectedMapItem = { location: null, link: null} 
         this.ObjectSelected.emit(this.selectedMapItem)
     }
 
