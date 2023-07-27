@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, OnInit, QueryList, ViewChild, Vie
 import { GoogleMap, MapInfoWindow, MapMarker, MapPolyline } from '@angular/google-maps';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { LoadflowDataService, SelectedMapItem } from '../loadflow-data-service.service';
-import { Node, GridSubstation, NodeWrapper, Branch, CtrlWrapper, LoadflowCtrlType, LoadflowLocation, LoadflowBranch, GISData } from 'src/app/data/app.data';
+import { Node, GridSubstation, NodeWrapper, Branch, CtrlWrapper, LoadflowCtrlType, LoadflowLocation, LoadflowBranch, GISData, BoundaryTrips, BoundaryTrip, BoundaryTripType } from 'src/app/data/app.data';
 import { MapOptions } from 'src/app/utils/map-options';
 
 @Component({
@@ -23,15 +23,15 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     constructor( private loadflowDataService: LoadflowDataService ) {
         super();
         if (this.loadflowDataService.locationData.locations.length > 0) {
-            setTimeout( ()=>{
-                this.addMapData();
-            },200)
-        } else {
-            this.addSub(this.loadflowDataService.LocationDataLoaded.subscribe(()=>{
-                // add markers and lines to represent loadflow nodes, branches and ctrls           
-                this.addMapData()
-            }))     
-        }
+            this.addMapData();
+        } 
+        this.addSub(this.loadflowDataService.LocationDataLoaded.subscribe(()=>{
+            // add markers and lines to represent loadflow nodes, branches and ctrls           
+            this.addMapData()
+        }))     
+        this.addSub(this.loadflowDataService.ResultsLoaded.subscribe((loadflowResults)=>{
+            this.selectBoundaryBranches(loadflowResults.boundaryTrips.trips)
+        }))         
         this.addSub(this.loadflowDataService.ObjectSelected.subscribe((selectedItem)=>{
             this.selectObject(selectedItem)
         }))         
@@ -45,6 +45,9 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         if ( this.key ) {
             this.map?.controls[google.maps.ControlPosition.TOP_LEFT].push(this.key.nativeElement);
         }
+        if (this.loadflowDataService.loadFlowResults) {
+            this.selectBoundaryBranches(this.loadflowDataService.loadFlowResults.boundaryTrips.trips);
+        } 
     }
 
     zoom = 7
@@ -78,6 +81,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     private readonly LOC_COLOUR = 'grey'
     private readonly QB_SEL_COLOUR = 'red'
     private readonly LOC_SEL_COLOUR = 'white'
+    private readonly BOUNDARY_COLOUR = '#00FF2F'
     
     locMarkerOptions: MapOptions<google.maps.MarkerOptions> = new MapOptions()
     branchOptions: MapOptions<google.maps.PolylineOptions> = new MapOptions()
@@ -126,7 +130,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     }
 
     addBranch(b: LoadflowBranch) {
-        let options = this.getPolylineOptions(b,false);
+        let options = this.getPolylineOptions(b,false,false);
         options.path =[
             {lat: b.gisData1.latitude, lng: b.gisData1.longitude },
             {lat: b.gisData2.latitude, lng: b.gisData2.longitude },        
@@ -134,24 +138,26 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.branchOptions.add(b.id, options)
     }
 
-    private getPolylineOptions(b: LoadflowBranch, selected: boolean): google.maps.PolylineOptions {
+    private getPolylineOptions(b: LoadflowBranch, selected: boolean, isBoundary: boolean): google.maps.PolylineOptions {
         let options: google.maps.PolylineOptions = {
             strokeWeight: 1
         }
-        let lineSymbol = this.getLineSymbol(selected)
+        let lineSymbol = this.getLineSymbol(selected, isBoundary)
         if ( b.branch.linkType == 'HVDC') {
-            options.strokeColor = 'black'
+            options.strokeColor = isBoundary ? this.BOUNDARY_COLOUR : 'black'
             options.strokeOpacity = 0 // makes it invisible
             options.strokeWeight = 20 // allows it to be selected when mouse close to line not directly over it
             options.icons = [
                 {
                   icon: lineSymbol,
                   offset: "0",
-                  repeat: selected ? "8px" : "4px",
+                  repeat: selected || isBoundary ? "8px" : "4px",
                 },
               ]
         } else {
-            if ( b.voltage == 400) {
+            if ( isBoundary ) {
+                options.strokeColor = this.BOUNDARY_COLOUR;
+            } else  if ( b.voltage == 400) {
                 options.strokeColor = 'blue'
             } else if ( b.voltage == 275) {
                 options.strokeColor = 'red'
@@ -164,18 +170,18 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
                 {
                   icon: lineSymbol,
                   offset: "0",
-                  repeat: selected ? "4px" : "2px",
+                  repeat: selected || isBoundary ? "4px" : "2px",
                 },
               ]
         }
         return options;
     }
 
-    private getLineSymbol(select: boolean): google.maps.Symbol {
+    private getLineSymbol(select: boolean, isBoundary: boolean): google.maps.Symbol {
         let s = {
             path: "M 0,-1,0,1", 
-            strokeOpacity: select ? 1 : 0.5, 
-            scale: select ? 2 : 1
+            strokeOpacity: select || isBoundary ? 1 : 0.5, 
+            scale: isBoundary ? 3 : (select ? 2 : 1)
         }
         return s;
     }
@@ -247,7 +253,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     selectBranch(branch: LoadflowBranch, mpl: MapPolyline, select: boolean) {
         //
-        let options = this.getPolylineOptions(branch, select)
+        let options = this.getPolylineOptions(branch, false, select)
         mpl.polyline?.setOptions(options);
         //
         this.showBranchInfoWindow(branch, mpl, select)
@@ -328,6 +334,36 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         if ( zoom ) {
             this.map?.googleMap?.setZoom(zoom-1);
         }
+    }
+
+    boundaryBranches: LoadflowBranch[] = []
+    boundaryMapPolylines: Map<number,MapPolyline> = new Map()
+    selectBoundaryBranches(boundaryTrips: BoundaryTrip[]) {
+        // unselect current ones
+        this.boundaryBranches.forEach((branch)=>{
+            let mapPolyline = this.boundaryMapPolylines.get(branch.id)
+            if ( mapPolyline ) {
+                let options = this.getPolylineOptions(branch, false, false)
+                mapPolyline.polyline?.setOptions(options);
+            }
+        })
+        // select new ones
+        this.boundaryBranches = []
+        this.boundaryMapPolylines.clear()
+        this.boundaryBranches = this.loadflowDataService.locationData.branches.
+                filter(m=>boundaryTrips.find(n=>n.type==BoundaryTripType.Single && n.branchIds[0]==m.id));
+        this.boundaryBranches.forEach( (branch)=>{
+            var index = this.branchOptions.getIndex(branch.id);
+            if ( index>=0 && this.branchMapPolylines) {
+                let mapPolyline = this.branchMapPolylines.get(index);
+                if ( mapPolyline ) {
+                    let options = this.getPolylineOptions(branch, false, true)
+                    mapPolyline.polyline?.setOptions(options);
+                    this.boundaryMapPolylines.set(branch.id,mapPolyline)
+                }
+            }
+        })
+
     }
 
 }

@@ -214,6 +214,7 @@ export interface BoundaryTrip {
     index: number,
     type: BoundaryTripType,
     lineNames: string[],
+    branchIds: number[],
     text: string
 }
 

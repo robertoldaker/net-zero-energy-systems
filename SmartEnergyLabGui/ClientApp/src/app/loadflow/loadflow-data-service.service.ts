@@ -44,11 +44,13 @@ export class LoadflowDataService {
     networkData: NetworkData
     locationData: LocationData
     loadFlowResults: LoadflowResults | undefined
+    boundaryName: string | undefined
 
     selectedMapItem: SelectedMapItem | null
 
     setBound(boundaryName: string) {
         this.dataClientService.SetBound(boundaryName, (results) =>{
+            this.boundaryName = boundaryName
             this.loadFlowResults = results
             this.ResultsLoaded.emit(results)
         })

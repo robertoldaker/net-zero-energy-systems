@@ -61,23 +61,25 @@ namespace SmartEnergyLabDataApi.Loadflow
         public double TotalCapacity {get; private set;}
 
         public class BoundaryTrip {
+            private BranchWrapper _branch1;
+            private BranchWrapper _branch2;
             public BoundaryTrip(int index,BranchWrapper bw1) {
                 Index = index;
                 Type=BoundaryTripType.Single;
-                Branch1 = bw1;
-                LineNames = new List<string>() {Branch1.LineName};
+                _branch1 = bw1;
+                LineNames = new List<string>() {_branch1.LineName};
+                BranchIds = new List<int> {_branch1.Obj.Id};
             }
             public BoundaryTrip(int index,BranchWrapper bw1, BranchWrapper bw2) {
                 Index = index;
                 Type=BoundaryTripType.Double;
-                Branch1 = bw1;
-                Branch2 = bw2;
-                LineNames = new List<string>() {Branch1.LineName,Branch2.LineName};
+                _branch1 = bw1;
+                _branch2 = bw2;
+                LineNames = new List<string>() {_branch1.LineName,_branch2.LineName};
+                BranchIds = new List<int> {_branch1.Obj.Id,_branch2.Obj.Id};
             }
             public int Index {get; private set;}
             public BoundaryTripType Type {get; set;}
-            public BranchWrapper Branch1;
-            public BranchWrapper Branch2;
             public string Text {
                 get {
                     string tStr = Type==BoundaryTripType.Single ? "S" : "D";
@@ -86,6 +88,7 @@ namespace SmartEnergyLabDataApi.Loadflow
             }
 
             public List<string> LineNames {get; private set;}
+            public List<int> BranchIds {get; private set;}
         }
     }
 }
