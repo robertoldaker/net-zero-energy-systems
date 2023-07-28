@@ -133,7 +133,15 @@ export class DataClientService {
     }
 
     GetGeographicalAreaLoadProfiles(id: number, source: LoadProfileSource, year: number, onLoad: (loadProfiles: SubstationLoadProfile[]) => void | undefined) {
-        this.http.get<SubstationLoadProfile[]>(this.baseUrl + `/Loadprofiles/GeographicalAreaLoadProfiles?id=${id}&source=${source}&year=${year}`).subscribe(result => {
+        this.http.get<SubstationLoadProfile[]>(this.baseUrl + `/LoadProfiles/GeographicalAreaLoadProfiles?id=${id}&source=${source}&year=${year}`).subscribe(result => {
+            if (onLoad !== undefined) {
+                onLoad(result);
+            }
+        }, error =>  this.logErrorMessage(error));
+    }
+
+    GetGridSupplyPointLoadProfiles(id: number, source: LoadProfileSource, year: number, onLoad: (loadProfiles: SubstationLoadProfile[]) => void | undefined) {
+        this.http.get<SubstationLoadProfile[]>(this.baseUrl + `/LoadProfiles/GridSupplyPointLoadProfiles?id=${id}&source=${source}&year=${year}`).subscribe(result => {
             if (onLoad !== undefined) {
                 onLoad(result);
             }

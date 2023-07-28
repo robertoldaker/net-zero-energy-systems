@@ -185,6 +185,36 @@ namespace SmartEnergyLabDataApi.Data
             }
             return list;
         }
+        public IList<SubstationLoadProfile> GetGridSupplyPointLoadProfiles(int gspId, 
+                        LoadProfileSource source, 
+                        int year,
+                        ICarbonIntensityFetcher? carbonFetcher=null,
+                        IElectricityCostFetcher? costFetcher=null
+                        )
+        {
+            //
+            // Always return 2016 when source is spreadsheet
+            if ( source==LoadProfileSource.LV_Spreadsheet || source==LoadProfileSource.Tool) {
+                year = 2016;
+            }
+            var q = getGridSupplyPointQuery(gspId, source, year);
+            
+            // This is the default load profile
+            var dlp = q.Take(1).SingleOrDefault();
+            //
+            IList<SubstationLoadProfile> list;
+            if ( dlp!=null ) {
+                var sql = getGridSupplyPointSQLQuery(gspId, source, year, dlp);
+                //
+                var objs=Session.CreateSQLQuery(sql).List<object>();
+                // Get aggregated load profiles by day and month
+                list = getLoadProfiles(objs,dlp, carbonFetcher, costFetcher);
+            } else {
+                list= new List<SubstationLoadProfile>();
+            }
+            return list;
+        }
+
         private string getPrimarySubstationSQLQuery(int gaId, LoadProfileSource source, int year, SubstationLoadProfile slp) {
             int nData = slp.Data.Length;
             string sql="select slp.day,slp.monthnumber,sum(devicecount) as devicecount,\n";
@@ -213,12 +243,36 @@ namespace SmartEnergyLabDataApi.Data
             return sql;
         }
 
+        private string getGridSupplyPointSQLQuery(int gspId, LoadProfileSource source, int year, SubstationLoadProfile slp) {
+            int nData = slp.Data.Length;
+            string sql="select slp.day,slp.monthnumber,sum(devicecount) as devicecount,\n";
+            int i;
+            for(i=1;i<nData;i++) {
+                sql+=$"sum(data[{i}]) as data{i},\n";
+            }
+            sql+=$"sum(data[{i}]) as data{i}\n";
+            sql+="from substation_load_profiles slp\n";
+            //?? needs updating to use gspId when field is added
+            sql+=$"where slp.\"year\"={year} and slp.\"source\"={(int)source} group by slp.day,slp.monthnumber";
+            //
+            return sql;
+        }
+
         IQueryOver<SubstationLoadProfile,SubstationLoadProfile> getGeographicalAreaQuery(
             int gaId, LoadProfileSource source, int year) {
                 var q = Session.QueryOver<SubstationLoadProfile>().
                 Where(m=>m.Source == source).
                 Where(m=>m.Year == year).            
                 Where(m => m.GeographicalArea.Id == gaId);
+            return q;
+        }
+
+        IQueryOver<SubstationLoadProfile,SubstationLoadProfile> getGridSupplyPointQuery(
+            int gspId, LoadProfileSource source, int year) {
+                //?? this needs updating to use a reference to the gspId - currently not implemented
+                var q = Session.QueryOver<SubstationLoadProfile>().
+                Where(m=>m.Source == source).
+                Where(m=>m.Year == year);
             return q;
         }
 

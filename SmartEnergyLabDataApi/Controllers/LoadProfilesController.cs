@@ -72,6 +72,27 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
+        /// Gets grid supply point load profiles
+        /// </summary>
+        /// <param name="id">Grid supply point id</param>
+        /// <param name="source">Source of load profile</param>
+        /// <param name="year">Year for data</param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("GridSupplyPointLoadProfiles")]
+        public IList<SubstationLoadProfile> GetGridSupplyPointLoadProfiles(int id, LoadProfileSource source, int year)
+        {
+            using( var da = new DataAccess()) {
+                //?? hardwired to Melksham for time being
+                if ( id==3) {
+                    return da.SubstationLoadProfiles.GetGridSupplyPointLoadProfiles(id, source, year, _carbonFetcher, _electricityCostFetcher);
+                } else {
+                    return new List<SubstationLoadProfile>();
+                }
+            }
+        }
+
+        /// <summary>
         /// Get the current Carbon Intensity data
         /// </summary>
         /// <returns></returns>

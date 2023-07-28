@@ -152,12 +152,18 @@ export class MapPowerService {
                 this.NumberOfPrimarySubstations = pss.length
                 this.PrimarySubstationsLoaded.emit(pss)
             });
+            this.clearlPsLoaded();
+            this.clsLoaded = false;
+            this.loadProfileSources.forEach(source=>{
+                this.DataClientService.GetGridSupplyPointLoadProfiles(gsp.id,  source, this.year, (loadProfiles) => {
+                    this.loadProfilesLoaded(loadProfiles,source)
+                })    
+            })
         } else {
             this.PrimarySubstations = []
             this.PrimarySubstationsLoaded.emit([])
         }
         this.fireObjectSelectedEvent()
-
     }
 
     setSelectedPrimarySubstation(pss: PrimarySubstation | undefined) {
@@ -250,8 +256,8 @@ export class MapPowerService {
             this.setSelectedDistributionSubstation(this.SelectedDistributionSubstation);
         } else if ( this.SelectedPrimarySubstation!=undefined) {
             this.setSelectedPrimarySubstation(this.SelectedPrimarySubstation);
-        } else if ( this.SelectedGeographicalArea!=undefined) {
-            this.setSelectedGeographicalArea();
+        } else if ( this.SelectedGridSupplyPoint!=undefined) {
+            this.setSelectedGridSupplyPoint(this.SelectedGridSupplyPoint);
         }
     }
 
