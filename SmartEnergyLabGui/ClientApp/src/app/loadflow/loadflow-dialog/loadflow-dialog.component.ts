@@ -70,7 +70,13 @@ export class LoadflowDialogComponent implements OnInit, OnDestroy {
             str+=' ' + trip.lineNames[1];
         }
         return str;
-    }    
+    }
+    
+    tripSelected(e: any) {
+        let trip = this.trips.find( m=>m.text==e.value);
+        console.log(`trip selected`)
+        console.log(trip)
+    }
 
     currentTrip: string
     percent: number

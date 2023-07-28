@@ -17,8 +17,8 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     @ViewChildren('locMarkers', { read: MapMarker }) locMapMarkers: QueryList<MapMarker> | undefined
     @ViewChildren('branchLines', { read: MapPolyline }) branchMapPolylines: QueryList<MapPolyline> | undefined
     @ViewChild('key') key: ElementRef | undefined
-    @ViewChild('locInfoWindow', { read: MapInfoWindow }) locInfoWindow: MapInfoWindow | undefined;
-    @ViewChild('branchInfoWindow', { read: MapInfoWindow }) branchInfoWindow: MapInfoWindow | undefined;
+    @ViewChild('locInfoWindow', { read: MapInfoWindow }) locInfoWindow: MapInfoWindow | undefined
+    @ViewChild('branchInfoWindow', { read: MapInfoWindow }) branchInfoWindow: MapInfoWindow | undefined
 
     constructor( private loadflowDataService: LoadflowDataService ) {
         super();
@@ -45,8 +45,9 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         if ( this.key ) {
             this.map?.controls[google.maps.ControlPosition.TOP_LEFT].push(this.key.nativeElement);
         }
-        if (this.loadflowDataService.loadFlowResults) {
-            this.selectBoundaryBranches(this.loadflowDataService.loadFlowResults.boundaryTrips.trips);
+        let trips = this.loadflowDataService.loadFlowResults?.boundaryTrips?.trips
+        if (trips) {
+            this.selectBoundaryBranches(trips);
         } 
     }
 
@@ -193,15 +194,6 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
         return options;
     }
-
-    private getLineSymbol(select: boolean, isBoundary: boolean): google.maps.Symbol {
-        let s = {
-            path: "M 0,-1,0,1", 
-            strokeOpacity: select || isBoundary ? 1 : 0.5, 
-            scale: isBoundary ? 3 : (select ? 2 : 1)
-        }
-        return s;
-    }
     
     addLocMarker(loc: LoadflowLocation) {
 
@@ -209,9 +201,9 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         let sqIcon:google.maps.Symbol = {
             path: google.maps.SymbolPath.CIRCLE,
             scale: 4,
-            strokeOpacity: 0,
+            strokeOpacity: 1,
             strokeColor: 'black',
-            strokeWeight: 1,
+            strokeWeight: 0.5,
             fillOpacity: 1,
             fillColor: fillColor
         };
@@ -246,7 +238,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         } else {
             s.fillColor = select ? this.LOC_SEL_COLOUR : this.LOC_COLOUR
         }
-        s.strokeOpacity = select ? 1 : 0
+        s.strokeOpacity = select ? 1 : 0.5
         mm.marker?.setIcon(s)
         //
         this.showLocInfoWindow( loc, mm, select)

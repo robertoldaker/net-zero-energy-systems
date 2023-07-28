@@ -17,7 +17,7 @@ namespace SmartEnergyLabDataApi.Models
             {"6",66}
         };
 
-        public void LinkToGridSubstations() {
+        public void Run() {
 
             // Download json file unless we are developing
             using( var da = new DataAccess()) {
@@ -29,7 +29,7 @@ namespace SmartEnergyLabDataApi.Models
                 //
                 int nFound=0;
                 foreach( var node in nodes) {
-                    // Lookup grid locations based on fir 4 chars of code
+                    // Lookup grid locations based on first 4 chars of code
                     var locCode = node.Code.Substring(0,4);
                     // use 5th char as reference to voltage
                     var volDig = node.Code.Substring(4,1);

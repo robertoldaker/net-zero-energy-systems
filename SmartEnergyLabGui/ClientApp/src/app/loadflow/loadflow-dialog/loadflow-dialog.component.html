@@ -12,7 +12,7 @@
             <td style="vertical-align: top;" rowspan="2">
                 <mat-form-field appearance="fill" [color]="'primary'">
                     <mat-label>Trip</mat-label>
-                    <mat-select [(ngModel)]="selectedTrip">
+                    <mat-select [(ngModel)]="selectedTrip" (selectionChange)="tripSelected($event)">
                         <mat-option *ngFor="let t of trips" [value]="t.text">
                             <span>{{t.text}}</span>
                             <div style="display: inline-block; font-size: 0.7em; margin-left: 5px">                                

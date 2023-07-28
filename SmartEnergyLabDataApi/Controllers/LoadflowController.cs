@@ -25,7 +25,7 @@ namespace SmartEnergyLabDataApi.Controllers
         [Route("LoadNodeGeometry")]
         public void LoadNodeGeometry() {
             var m = new LoadflowNodeGeometry();
-            m.LinkToGridSubstations();
+            m.Run();
         }
 
 

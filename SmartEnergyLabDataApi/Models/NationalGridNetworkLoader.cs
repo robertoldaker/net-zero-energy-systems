@@ -37,6 +37,7 @@ namespace SmartEnergyLabDataApi.Models
             { "RICHX", new InterConnector("NEMO", new LatLng() {Lat=51.142778, Lng= 2.86376}) },
             { "GRAIX", new InterConnector("BritNed", new LatLng() {Lat=51.527152, Lng= 3.56688}) }, 
             { "CONQX", new InterConnector("EWLink", new LatLng() {Lat=53.714219, Lng=-6.21094}) },  
+            { "BLYTX", new InterConnector("NorNed", new LatLng() {Lat=58.35708, Lng=6.92481}) },  
         };
 
 

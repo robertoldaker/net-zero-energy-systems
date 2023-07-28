@@ -19,18 +19,16 @@ export class LoadflowBranchInfoWindowComponent extends ComponentBase {
     private link: LoadflowLink | null = null
 
     get name():string {
-        return this.link?.branches[0] ? this.link?.branches[0].code : ''
+        let name = `${this.link?.branches[0].node1Name} - ${this.link?.branches[0].node2Name}`
+        return name
     }
 
-    get names():string[] {
-        return this.link?.branches[0] ? this.link?.branches.map(m=>m.code) : []
+    get branchNames():string[] {
+        return this.link?.branches[0] ? this.link?.branches.map(m=>`${m.code} (${m.linkType})`) : []
     }
 
     get branchCount():number {
         return this.link?.branches[0] ? this.link?.branches.length : 0
     }
 
-    get linkType():string {
-        return this.link?.branches[0] ? this.link?.branches[0].linkType : ''
-    }
 }

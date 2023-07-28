@@ -1,22 +1,14 @@
 <div class="mapInfoWindow">
     <div class="inlineFlexRow">
         <span style="width: 30px"></span>
-        <span>LINK {{branchCount}}</span>
+        <span>{{name}}</span>
     </div>
     <table id="table">
-        <tr *ngIf="branchCount==1">
-            <td>Name:</td>
-            <td>{{name}}</td>
-        </tr>
-        <tr *ngIf="branchCount>1">
+        <tr>
             <td>Branches:</td>
             <td>
-                <div *ngFor="let name of names">{{name}}</div>
+                <div *ngFor="let name of branchNames">{{name}}</div>
             </td>
-        </tr>
-        <tr>
-            <td>Link type:</td>
-            <td>{{linkType}}</td>
         </tr>
     </table>
 </div>
