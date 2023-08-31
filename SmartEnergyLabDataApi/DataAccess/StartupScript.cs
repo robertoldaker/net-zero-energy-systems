@@ -10,8 +10,11 @@ namespace SmartEnergyLabDataApi.Data
         public static void Run(int oldVersion, int newVersion)
         {
             var script = new StartupScript();
+            // this gets running with a fresh db
             if (oldVersion<1) {
                 script.createInitialIndexes();
+                script.createIndexes2();
+                script.createIndexes3();
                 script.createDefaultDNOs();
                 script.createDefaultGeographicalAreas();
             } else if (oldVersion<2 ) {
