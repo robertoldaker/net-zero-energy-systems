@@ -271,6 +271,8 @@ namespace SmartEnergyLabDataApi.Loadflow
                 if ( string.IsNullOrEmpty(boundaryCode)) {
                     break;
                 }
+                // B8 has a trailing space - so trim all 
+                boundaryCode = boundaryCode.TrimEnd();
                 var boundary = boundaryCache.GetOrCreate(boundaryCode, out bool created);
                 if ( created ) {
                     numBoundariesAdded++;
