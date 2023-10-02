@@ -130,6 +130,12 @@ namespace EnergySystemLabDataApi.SubStations
         public void PerformCleanup() {
             DataAccessBase.PerformCleanup();
         }
+
+        [HttpGet]
+        [Route("GenerateError")]
+        public void GenerateError() {
+            throw new Exception("This is an error generated for test purposes using \"Admin/GenerateError\"");
+        }
     }
 
 }

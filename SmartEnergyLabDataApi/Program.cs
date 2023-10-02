@@ -3,6 +3,7 @@ using HaloSoft.EventLogger;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.StaticFiles;
@@ -78,6 +79,11 @@ public static class Program
         builder.Services.AddSingleton<ICarbonIntensityFetcher,CarbonIntensityFetcher>();
         builder.Services.AddSingleton<IElectricityCostFetcher,ElectricityCostFetcher>();
 
+        builder.Services.AddControllers(options =>
+        {
+            options.Filters.Add<ExceptionLoggerFilter>();
+        });
+
         var app = builder.Build();
 
         // server files from wwwroot
@@ -133,6 +139,21 @@ public static class Program
         Logger.Instance.LogInfoEvent($"Starting AngelBooks...");
         app.Run();
 
+    }
+}
+
+public class ExceptionLoggerFilter : IActionFilter, IOrderedFilter
+{
+    public int Order => int.MaxValue - 10;
+
+    public void OnActionExecuting(ActionExecutingContext context) { }
+
+    public void OnActionExecuted(ActionExecutedContext context)
+    {
+        if (context.Exception !=null )
+        {
+            Logger.Instance.LogException(context.Exception,$"Exception handling [{context.HttpContext.Request.Path}]");
+        }
     }
 }
 
