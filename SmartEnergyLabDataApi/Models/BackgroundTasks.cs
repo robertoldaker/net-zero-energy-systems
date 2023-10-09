@@ -182,9 +182,12 @@ namespace SmartEnergyLabDataApi.Models
         public static int Id;
     }
 
+    public enum LoadNetworkDataSource {All,NGED,UKPower}
+
     public class LoadNetworkDataBackgroundTask : BackgroundTaskBase
     {
         private TaskRunner _ctTask;
+        private LoadNetworkDataSource _source;
         private const string NAME="Network data load";
 
         protected LoadNetworkDataBackgroundTask(IBackgroundTasks tasks) : base(tasks) {
@@ -192,12 +195,16 @@ namespace SmartEnergyLabDataApi.Models
             {
                 stateUpdate(TaskState.RunningState.Running, $"{NAME} started", 0);
                 try {
-                    stateUpdate(TaskState.RunningState.Running,"Started loading National Grid Distribution data");
-                    var spatialLoader = new NationalGridDistributionLoader((TaskRunner?)taskRunner);
-                    spatialLoader.Load();
-                    stateUpdate(TaskState.RunningState.Running,"Started loading UK Power Network data");
-                    var ukPowerNetworksLoader = new UKPowerNetworkLoader((TaskRunner?)taskRunner);
-                    ukPowerNetworksLoader.Load();
+                    if ( _source == LoadNetworkDataSource.All || _source==LoadNetworkDataSource.NGED) {
+                        stateUpdate(TaskState.RunningState.Running,"Started loading National Grid Distribution data");
+                        var spatialLoader = new NationalGridDistributionLoader((TaskRunner?)taskRunner);
+                        spatialLoader.Load();
+                    }
+                    if ( _source == LoadNetworkDataSource.All || _source==LoadNetworkDataSource.UKPower) {
+                        stateUpdate(TaskState.RunningState.Running,"Started loading UK Power Network data");
+                        var ukPowerNetworksLoader = new UKPowerNetworkLoader((TaskRunner?)taskRunner);
+                        ukPowerNetworksLoader.Load();
+                    }
                     stateUpdate(TaskState.RunningState.Finished, $"{NAME} finished", 100);
                 } catch( Exception e) {
                     stateUpdate(TaskState.RunningState.Finished, $"{NAME} aborted [{e.Message}]", 0);
@@ -215,12 +222,13 @@ namespace SmartEnergyLabDataApi.Models
             _ctTask.Cancel();
         }
 
-        public void Run()
-        {
+        public void Run(LoadNetworkDataSource source)
+        {            
             if (_ctTask.IsRunning)
             {
                 throw new Exception($"{NAME} is currently in progress, please try again later");
             }
+            _source = source;
             _ctTask.Run();
         }
 

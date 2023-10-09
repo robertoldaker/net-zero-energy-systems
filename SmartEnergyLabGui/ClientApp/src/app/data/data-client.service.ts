@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 
@@ -409,8 +409,8 @@ export class DataClientService {
         this.getBasicRequest('/Admin/BackupDb', onComplete);
     }
 
-    LoadNetworkData(onComplete: (resp: any)=> void | undefined) {
-        this.getBasicRequest('/Admin/LoadNetworkData', onComplete);
+    LoadNetworkData(source: LoadNetworkDataSource, onComplete: (resp: any)=> void | undefined) {
+        this.getBasicRequest(`/Admin/LoadNetworkData?source=${source}`, onComplete);
     }
 
     Logs(onComplete: (resp: any)=> void | undefined) {

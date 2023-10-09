@@ -110,6 +110,12 @@ export interface NameValuePair {
     disabled?: boolean
 }
 
+export enum LoadNetworkDataSource {
+    All,
+    NGED,
+    UKPower
+}
+
 /**
  * Vehicle charging
  */

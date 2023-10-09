@@ -1,7 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { DataModel, DataRow } from 'src/app/data/app.data';
+import { DataModel, DataRow, LoadNetworkDataSource } from 'src/app/data/app.data';
 import { DataClientService } from 'src/app/data/data-client.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 
@@ -32,8 +32,8 @@ export class AdminDataComponent extends ComponentBase {
         return data[headerId];
     }
 
-    loadNetworkData() {
-        this.dataService.LoadNetworkData((result)=>{
+    loadNetworkData(source: LoadNetworkDataSource) {
+        this.dataService.LoadNetworkData(source, (result)=>{
         })
     }
 
@@ -62,6 +62,6 @@ export class AdminDataComponent extends ComponentBase {
     }
 
     inCleanup: boolean
-
+    LoadNetworkDataSource = LoadNetworkDataSource
 
 }

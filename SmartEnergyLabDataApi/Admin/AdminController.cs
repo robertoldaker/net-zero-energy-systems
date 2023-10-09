@@ -79,13 +79,14 @@ namespace EnergySystemLabDataApi.SubStations
         /// <summary>
         /// Loads substations and supply points from external websites
         /// </summary>
+        /// <param name="source">Either 0 for all network providers, 1 for NGED or 2 for UKPower for UK Power networks</param>
         /// <returns></returns>
         [HttpGet]
         [Route("LoadNetworkData")]
-        public IActionResult LoadNetworkData() {
+        public IActionResult LoadNetworkData(LoadNetworkDataSource source=LoadNetworkDataSource.All) {
             try {
                 //
-                _loadNetworkDataTask.Run();
+                _loadNetworkDataTask.Run(source);
                 return this.Ok();
             } catch( Exception e) {
                 return this.StatusCode(500,e.Message);

@@ -28,10 +28,13 @@ namespace SmartEnergyLabDataApi.Models
             "South Wales Primary",
             "South West Primary", 
                 
+            
             "East Midlands Distribution", 
             "West Midlands Distribution",
             "South Wales Distribution",
-            "South West Distribution",         
+            "South West Distribution",   
+            
+
             
             
             };
@@ -213,10 +216,10 @@ namespace SmartEnergyLabDataApi.Models
                                 Logger.Instance.LogInfoEvent($"{gsp.Name}, moving from [{gsp.GeographicalArea.Name}] to [{ga.Name}], lengths=[{maxLength}/{boundaryLength}] ");
                                 gsp.GeographicalArea = ga;
                                 gsp.DistributionNetworkOperator = ga.DistributionNetworkOperator;
-                                boundaryLoader.AddGISData(gsp.GISData,feature);
+                                boundaryLoader.AddGISData(da,gsp.GISData,feature);
                             }
                         } else {
-                            boundaryLoader.AddGISData(gsp.GISData,feature);
+                            boundaryLoader.AddGISData(da,gsp.GISData,feature);
                         }
 
                     }                
@@ -297,7 +300,7 @@ namespace SmartEnergyLabDataApi.Models
                             pss.GISData = new GISData(pss);
                         }
                         //
-                        boundaryLoader.AddGISData(pss.GISData,feature);
+                        boundaryLoader.AddGISData(da,pss.GISData,feature);
                         //
                         checkCancelled();
                     }
@@ -325,11 +328,28 @@ namespace SmartEnergyLabDataApi.Models
             public GISBoundaryLoader(NationalGridDistributionLoader parentLoader) {
                 _parentLoader = parentLoader;
             }
-            public void AddGISData( GISData data, Feature feature) {
-                if ( _featureDict.ContainsKey(data.Id)) {
+            public void AddGISData( DataAccess da, GISData data, Feature feature) {
+                if ( data.Id==0) {
+                    addNewBoundaries(da, data,feature);
+                } else if ( _featureDict.ContainsKey(data.Id)) {
                     Logger.Instance.LogWarningEvent($"Duplicate key found in feature dict for gidDataId=[{data.Id}]");
                 } else {
                     _featureDict.Add(data.Id,feature);
+                }
+            }
+
+            private void addNewBoundaries(DataAccess da, GISData gisData, Feature feature) {
+                var boundaries = new List<GISBoundary>();
+                var boundariesToAdd = new List<GISBoundary>();
+                var boundariesToDelete = new List<GISBoundary>();
+                var elements = feature.geometry.coordinates.Deserialize<double[][][][]>();
+                if ( elements!=null && boundaries!=null) {
+                    gisData.UpdateBoundaryPoints(elements,boundaries, boundariesToAdd, boundariesToDelete);
+                }
+                // add boundaries
+                foreach( var boundary in boundariesToAdd) {
+                    da.GIS.Add(boundary);
+                    _parentLoader.checkCancelled();
                 }
             }
 
@@ -497,7 +517,7 @@ namespace SmartEnergyLabDataApi.Models
                             }
                             dss.Name = feature.properties.NAME;
                             // boundary
-                            boundaryLoader.AddGISData(dss.GISData,feature);
+                            boundaryLoader.AddGISData(da,dss.GISData,feature);
                             _loader.checkCancelled();
 
                         }

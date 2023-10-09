@@ -19,6 +19,10 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
+        public void Add(GISData obj) {
+            Session.Save(obj);
+        }
+
         public IList<GISBoundary> GetBoundariesAndUpdate(int gisDataId, int numBoundaries, List<GISBoundary> boundariesToAdd) {
             var boundaries = Session.QueryOver<GISBoundary>().Where( m=>m.GISData.Id==gisDataId).List();
             if ( boundaries.Count<numBoundaries) {

@@ -9,7 +9,21 @@
             <mat-icon *ngIf="!inCleanup">build</mat-icon>
             Perform cleanup
         </button>
-        <button mat-raised-button color="primary" (click)="loadNetworkData()">Load network data</button>        
+        <button mat-raised-button color="primary" [matMenuTriggerFor]="loadNetworkDataMenu">
+            Load network data
+            <mat-icon>keyboard_arrow_down</mat-icon>
+        </button>
+        <mat-menu #loadNetworkDataMenu="matMenu" >
+            <button mat-menu-item (click)="loadNetworkData(LoadNetworkDataSource.All)">
+              <span>All</span>
+            </button>
+            <button mat-menu-item (click)="loadNetworkData(LoadNetworkDataSource.NGED)">
+              <span>National Grid Electricity Distribution</span>
+            </button>
+            <button mat-menu-item (click)="loadNetworkData(LoadNetworkDataSource.UKPower)">
+              <span>UK Power Networks</span>
+            </button>
+        </mat-menu>                          
         <button mat-raised-button color="primary" (click)="refresh()">
             <mat-icon>refresh</mat-icon>
             Refresh
