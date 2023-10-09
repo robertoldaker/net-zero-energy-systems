@@ -1,0 +1,16 @@
+Demographic data:
+- Number of households (LSOA): https://www.ons.gov.uk/datasets/TS041/editions/2021/versions/3
+- Accommodation types (LSOA): https://www.ons.gov.uk/datasets/TS044/editions/2021/versions/4
+- Parking availability by accommodation type: https://www.gov.uk/government/statistics/english-housing-survey-2020-to-2021-energy
+
+Distribution network data:
+- Distribution substations: https://connecteddata.nationalgrid.co.uk/dataset/distribution-substations
+
+Vehicle data:
+- Vehicle registration data (LSOA): https://www.gov.uk/government/statistical-data-sets/vehicle-licensing-statistics-data-files
+- Car and van ownership (LSOA): https://www.ons.gov.uk/datasets/TS045/editions/2021/versions/4
+
+Spatial data:
+- LSOA boundaries: https://geoportal.statistics.gov.uk/datasets/ons::lower-layer-super-output-areas-dec-2011-boundaries-full-extent-bfe-ew-v3/explore
+- LSOA (2011) to LSOA (2021) lookup table: https://geoportal.statistics.gov.uk/datasets/b14d449ba10a48508bd05cd4a9775e2b/explore
+- Distribution substation boundaries: https://connecteddata.nationalgrid.co.uk/dataset/spatial-datasets
