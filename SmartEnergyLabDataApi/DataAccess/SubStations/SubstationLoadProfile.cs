@@ -78,6 +78,7 @@ namespace SmartEnergyLabDataApi.Data
             DistributionSubstation = dss;
             PrimarySubstation = dss.PrimarySubstation;
             GeographicalArea = dss.PrimarySubstation.GeographicalArea;
+            GridSupplyPoint = dss.PrimarySubstation.GridSupplyPoint;
         }
 
         [JsonIgnore]
@@ -87,5 +88,9 @@ namespace SmartEnergyLabDataApi.Data
         [JsonIgnore]
         [ManyToOne(Column = "GeographicalAreaId", Cascade = "none")]
         public virtual GeographicalArea GeographicalArea { get; set; }
+
+        [JsonIgnore]
+        [ManyToOne(Column = "GridSupplyPointId", Cascade = "none")]
+        public virtual GridSupplyPoint GridSupplyPoint { get; set; }
     }
 }

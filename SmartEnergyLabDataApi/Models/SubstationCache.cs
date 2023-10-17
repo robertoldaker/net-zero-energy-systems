@@ -5,8 +5,10 @@ namespace SmartEnergyLabDataApi.Models
 {
     public class SubstationCache
     {
-        private Dictionary<string, PrimarySubstation> _primSubstationsDict;
-        private Dictionary<string, DistributionSubstation> _distSubstationsDict;
+        private Dictionary<string, PrimarySubstation> _primSubsByExternalIdDict;
+        private Dictionary<string, PrimarySubstation> _primSubsByNameDict;
+        private Dictionary<string, DistributionSubstation> _distSubsByExternalIdDict;
+        private Dictionary<string, DistributionSubstation> _distSubsByNameDict;
         private Dictionary<string, SubstationLoadProfile> _ssLoadProfilesDict;
         private Dictionary<string, SubstationClassification> _ssClassificationsDict;
 
@@ -14,16 +16,46 @@ namespace SmartEnergyLabDataApi.Models
         {
             Logger.Instance.LogInfoEvent("Loading cache");
             //
-            _primSubstationsDict = new Dictionary<string, PrimarySubstation>();
+            /*_primSubsByExternalIdDict = new Dictionary<string, PrimarySubstation>();
+            _primSubsByNameDict = new Dictionary<string, PrimarySubstation>();
             var psss = da.Substations.GetPrimarySubstations(dno);
             foreach( var pss in psss) {
-                _primSubstationsDict.Add(pss.ExternalId,pss);
+                if ( !string.IsNullOrEmpty(pss.ExternalId) ) {
+                    if ( _primSubsByExternalIdDict.ContainsKey(pss.ExternalId)) {
+                        Logger.Instance.LogInfoEvent($"Primary substation with externalId=[{pss.ExternalId}] already exists");
+                    } else {
+                        _primSubsByExternalIdDict.Add(pss.ExternalId,pss);
+                    }
+                }
+                if ( !string.IsNullOrEmpty(pss.Name)) {
+                    if ( _primSubsByNameDict.ContainsKey(pss.Name)) {
+                        Logger.Instance.LogInfoEvent($"Primary substation with name=[{pss.Name}] already exists");
+                    } else {
+                        _primSubsByNameDict.Add(pss.Name,pss);
+                    }
+                }
             }
+            */
             // Distribution substations by external id
-            _distSubstationsDict = new Dictionary<string, DistributionSubstation>();
+            _distSubsByExternalIdDict = new Dictionary<string, DistributionSubstation>();
+            _distSubsByNameDict = new Dictionary<string, DistributionSubstation>();
             var dsss = da.Substations.GetDistributionSubstations(dno);
             foreach( var dss in dsss) {
-                _distSubstationsDict.Add(dss.ExternalId, dss);
+                if ( !string.IsNullOrEmpty(dss.ExternalId) ) {
+                    if ( _distSubsByExternalIdDict.ContainsKey(dss.ExternalId) ) {
+                        Logger.Instance.LogInfoEvent($"Distribution substation with externalId=[{dss.ExternalId}] already exists");
+                    } else {
+                        _distSubsByExternalIdDict.Add(dss.ExternalId, dss);
+                    }
+                }
+                if ( !string.IsNullOrEmpty(dss.Name)) {
+                    string key=$"{dss.Name}:{dss.PrimarySubstation.Name}";
+                    if ( _distSubsByNameDict.ContainsKey(key) ) {
+                        Logger.Instance.LogInfoEvent($"Distribution substation with key=[{key}] already exists");
+                    } else {
+                        _distSubsByNameDict.Add(key, dss);
+                    }
+                }
             }
             // Substation load profiles by distributionSubstation, monthNumber and day
             _ssLoadProfilesDict = new Dictionary<string, SubstationLoadProfile>();
@@ -55,14 +87,15 @@ namespace SmartEnergyLabDataApi.Models
         {
             return $"{dc.Id}_{num}";
         }
-        public void Add(PrimarySubstation pss)
-        {
-            _primSubstationsDict.Add(pss.ExternalId, pss);
-        }
+
+        //??public void Add(PrimarySubstation pss)
+        //??{
+        //??    _primSubstationsDict.Add(pss.ExternalId, pss);
+        //??}
 
         public void Add(DistributionSubstation pss)
         {
-            _distSubstationsDict.Add(pss.ExternalId, pss);
+            _distSubsByExternalIdDict.Add(pss.ExternalId, pss);
         }
 
         public void Add(SubstationLoadProfile ssC)
@@ -77,24 +110,28 @@ namespace SmartEnergyLabDataApi.Models
         {
             _ssClassificationsDict.Add(getKey(ssCl.DistributionSubstation, ssCl.Num), ssCl);
         }
-        public PrimarySubstation GetPrimarySubstation(string externalId)
-        {
-            PrimarySubstation pss = null;
-            if (string.IsNullOrEmpty(externalId)) {
-                return null;
-            }
-            _primSubstationsDict.TryGetValue(externalId, out pss);
-            return pss;
-        }
+        //??public PrimarySubstation GetPrimarySubstation(string externalId)
+        //??{
+        //??    PrimarySubstation pss = null;
+        //??    if (string.IsNullOrEmpty(externalId)) {
+        //??        return null;
+        //??    }
+        //??    _primSubstationsDict.TryGetValue(externalId, out pss);
+        //??    return pss;
+        //??}
 
-        public DistributionSubstation GetDistributionSubstation(string externalId)
+        public DistributionSubstation GetDistributionSubstation(string externalId, string dssName, string primName)
         {
             DistributionSubstation dss = null;
             if ( string.IsNullOrEmpty(externalId) ) {
                 return null;
             }
-            _distSubstationsDict.TryGetValue(externalId, out dss);
-            return dss;
+            if( _distSubsByExternalIdDict.TryGetValue(externalId, out dss)) {
+                return dss;
+            } else {
+                _distSubsByNameDict.TryGetValue($"{dssName}:{primName}", out dss);
+                return dss;
+            }
         }
 
         public SubstationLoadProfile GetSubstationLoadProfile(DistributionSubstation dss, int monthNumber, Day day)

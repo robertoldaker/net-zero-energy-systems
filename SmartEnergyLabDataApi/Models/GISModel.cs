@@ -12,5 +12,9 @@ namespace SmartEnergyLabDataApi.Models
         public IList<GISBoundary> GetBoundaries(int gisDataId) {
             return _da.GIS.GetBoundaries(gisDataId);
         }
+
+        public IList<GISBoundary> GetBoundaries(int[] gisDataIds) {
+            return _da.GIS.GetBoundaries(gisDataIds);
+        }
     }
 }

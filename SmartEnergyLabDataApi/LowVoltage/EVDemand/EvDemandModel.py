@@ -1,6 +1,6 @@
 from enum import Enum
 
-class DistSubstation:
+class Substation:
     def __init__(self) -> None:
         self.name:str
         self.id:int

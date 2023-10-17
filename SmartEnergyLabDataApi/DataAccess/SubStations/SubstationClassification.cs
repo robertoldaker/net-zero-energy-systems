@@ -15,6 +15,7 @@ namespace SmartEnergyLabDataApi.Data
         {
             Num = num;
             DistributionSubstation = dss;
+            PrimarySubstation = dss.PrimarySubstation;
             GridSupplyPoint = dss.PrimarySubstation.GridSupplyPoint;
             GeographicalArea = dss.PrimarySubstation.GridSupplyPoint.GeographicalArea;
         }

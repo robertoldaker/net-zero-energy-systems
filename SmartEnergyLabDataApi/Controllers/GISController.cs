@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using NHibernate.Util;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Models;
 
@@ -15,6 +16,11 @@ namespace SmartEnergyLabDataApi.Controllers
             _hubContext = hubContext;
         }
 
+        /// <summary>
+        /// Returns boundaries for the given GISData id
+        /// </summary>
+        /// <param name="gisDataId">GISData id</param>
+        /// <returns></returns>
         [HttpGet]
         [Route("Boundaries")]
         public IList<GISBoundary> GetBoundaries(int gisDataId) {
@@ -23,6 +29,18 @@ namespace SmartEnergyLabDataApi.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Returns boundaries given a list of GISData ids
+        /// </summary>
+        /// <param name="gisDataIds">List of GISData ids separated by commas</param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("Boundaries/List")]
+        public IList<GISBoundary> GetBoundaries(string gisDataIds) {
+            var ids = gisDataIds.Split(',').Select(m=>int.Parse(m)).ToArray();
+            using( var m = new GISModel(this)) {
+                return m.GetBoundaries(ids);
+            }
+        }
     }
 }

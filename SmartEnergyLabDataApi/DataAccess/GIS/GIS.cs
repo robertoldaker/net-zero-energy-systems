@@ -66,6 +66,10 @@ namespace SmartEnergyLabDataApi.Data
             }
             return boundaries;
         }
+        public IList<GISBoundary> GetBoundaries(int[] gisDataIds) {
+            var boundaries = Session.QueryOver<GISBoundary>().Where( m=>m.GISData.IsIn(gisDataIds)).List();
+            return boundaries;
+        }
 
         public Dictionary<int,IList<GISBoundary>> GetBoundaryDict(int[] gisDataIds) {
             var boundaries = Session.QueryOver<GISBoundary>().Where( m=>m.GISData.Id.IsIn(gisDataIds)).List();

@@ -9,19 +9,19 @@ namespace SmartEnergyLabDataApi.Models
     {
         private DataAccess _da;
         private DistributionNetworkOperator _dno;
-        private GeographicalArea _ga;
         private SubstationCache _cache;
 
         public SubstationXlsLoader(DataAccess da,GeographicalArea ga)
         {
             _da = da;
-            _ga = ga;
             _dno = ga.DistributionNetworkOperator;
             _cache = new SubstationCache(_da, _dno);
         }
 
         public void Load(IFormFile file)
         {            
+            Logger.Instance.LogInfoEvent($"Started loading spreadheet sfrom file [{file.FileName}]");
+
             using (var stream = file.OpenReadStream()) {
                 using (var reader = ExcelReaderFactory.CreateReader(stream)) {
                     // Choose one of either 1 or 2:
@@ -48,6 +48,7 @@ namespace SmartEnergyLabDataApi.Models
 
                 }
             }
+            Logger.Instance.LogInfoEvent($"Finished loading spreadsheet data");
         }
 
         private void readCountOfCustomers(IExcelDataReader reader)
@@ -67,7 +68,7 @@ namespace SmartEnergyLabDataApi.Models
                     continue;
                 }
                 // Add primary substation if not already exists
-                PrimarySubstation primarySubstation = _cache.GetPrimarySubstation(primaryId);
+                //??PrimarySubstation primarySubstation = _cache.GetPrimarySubstation(primaryId);
                 // Create if we haven't got one
                 //??if (primarySubstation == null) {
                 //??    primarySubstation = new PrimarySubstation(primaryId, _ga, _dno);
@@ -77,15 +78,20 @@ namespace SmartEnergyLabDataApi.Models
                 //??primarySubstation.Name = primaryName;
 
                 // Add distribution substation
-                DistributionSubstation distributionSubstation = _cache.GetDistributionSubstation(externalId);
+                DistributionSubstation distributionSubstation = _cache.GetDistributionSubstation(externalId,distName,primaryName);
                 // Create and save distribution substation if we haven't got one
-                if (distributionSubstation == null) {
-                    distributionSubstation = new DistributionSubstation(ImportSource.File,externalId,null,primarySubstation);
-                    _da.Substations.Add(distributionSubstation);
-                    _cache.Add(distributionSubstation);
+                //??if (distributionSubstation == null) {
+                //??    distributionSubstation = new DistributionSubstation(ImportSource.File,externalId,null,primarySubstation);
+                //??    _da.Substations.Add(distributionSubstation);
+                //??    _cache.Add(distributionSubstation);
+                //??}
+                if ( distributionSubstation!=null) {
+                    //??distributionSubstation.Name = distName;
+                    //??distributionSubstation.PrimarySubstation = primarySubstation;
+                } else {
+                    Logger.Instance.LogInfoEvent($"Could not find dist. substation with externalId=[{externalId}], name=[{distName}]");
+                    continue;
                 }
-                distributionSubstation.Name = distName;
-                distributionSubstation.PrimarySubstation = primarySubstation;
 
                 // Process customer classifications
                 col++; // not sure about this column "<>"
@@ -114,21 +120,23 @@ namespace SmartEnergyLabDataApi.Models
                 var externalId = reader.GetString(col++);
                 var distName = reader.GetString(col++);
                 var primaryId = reader.GetString(col++);
-                col++;
+                var primaryName = reader.GetString(col++);
                 // Ignore anythiing without these key fields filled in
-                if (externalId == null || primaryId == null || string.IsNullOrEmpty(distName)) {
+                if (externalId == null || string.IsNullOrEmpty(distName)) {
                     continue;
                 }
-                DistributionSubstation distributionSubstation = _cache.GetDistributionSubstation(externalId);
+                DistributionSubstation distributionSubstation = _cache.GetDistributionSubstation(externalId,distName,primaryName);
 
                 // Process customer classifications
-                col++; // not sure about this column "<>"
-                for (int classNum = 1; classNum <= 8; classNum++) {
-                    var eacNum = reader.GetValue(col++);
-                    if (eacNum != null) {
-                        var ssClass = _cache.GetSubstationClassification(distributionSubstation, classNum);
-                        if (ssClass != null) {
-                            ssClass.NumberOfEACs = (int)((double)eacNum);
+                if ( distributionSubstation!=null) {
+                    col++; // not sure about this column "<>"
+                    for (int classNum = 1; classNum <= 8; classNum++) {
+                        var eacNum = reader.GetValue(col++);
+                        if (eacNum != null) {
+                            var ssClass = _cache.GetSubstationClassification(distributionSubstation, classNum);
+                            if (ssClass != null) {
+                                ssClass.NumberOfEACs = (int)((double)eacNum);
+                            }
                         }
                     }
                 }
@@ -144,9 +152,11 @@ namespace SmartEnergyLabDataApi.Models
             while (reader.Read()) {
                 int col = 0;
                 var externalId = reader.GetString(col++);
-                col += 3;
+                var distName = reader.GetString(col++);
+                var primaryId = reader.GetString(col++);
+                var primaryName = reader.GetString(col++);
                 // Get distribution substation from externalId
-                DistributionSubstation distributionSubstation = _cache.GetDistributionSubstation(externalId);
+                DistributionSubstation distributionSubstation = _cache.GetDistributionSubstation(externalId,distName,primaryName);
 
                 if (distributionSubstation != null) {
                     // Process customer classifications
@@ -177,12 +187,17 @@ namespace SmartEnergyLabDataApi.Models
             int numData = (24 * 60) / intervalMins;
             var loads = new double[numData];
             while (reader.Read()) {
-                int col = 3;
+                int col = 0;
+                var primaryId = reader.GetString(col++);
+                var primaryName = reader.GetString(col++);
+                var dummyId = reader.GetString(col++);
                 var externalId = reader.GetString(col++);
+                var distName = reader.GetString(col++);
+                if ( string.IsNullOrEmpty(primaryId) ) {
+                    continue;
+                }
                 // Get distribution substation from externalId
-                // ignore name
-                col++;
-                DistributionSubstation distributionSubstation = _cache.GetDistributionSubstation(externalId);
+                DistributionSubstation distributionSubstation = _cache.GetDistributionSubstation(externalId,distName,primaryName);
                 if (distributionSubstation!=null) {
                     nRows++;
                     var month = reader.GetValue(col++);
@@ -203,7 +218,11 @@ namespace SmartEnergyLabDataApi.Models
                         var sLoadProfile = _cache.GetSubstationLoadProfile(distributionSubstation, monthNumber, dow);
                         // Create if not
                         if (sLoadProfile == null) {
-                            sLoadProfile = new SubstationLoadProfile(distributionSubstation);
+                            sLoadProfile = new SubstationLoadProfile(distributionSubstation)
+                            {
+                                Year = 2016,
+                                Source = LoadProfileSource.LV_Spreadsheet
+                            };
                             _da.SubstationLoadProfiles.Add(sLoadProfile);
                             _cache.Add(sLoadProfile);
                         }
