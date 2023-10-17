@@ -23,7 +23,7 @@ namespace SmartEnergyLabDataApi.Controllers
         /// Gets primary substations for a geographical area
         /// </summary>
         /// <param name="gaId">Geographical area id</param>
-        /// <returns></returns>
+        /// <returns>Array of primary substations</returns>
         [HttpGet]
         [Route("PrimarySubstationsByGeographicalAreaId")]
         public IEnumerable<PrimarySubstation> GetPrimarySubstationsByGeographicalAreaId(int gaId)
@@ -37,7 +37,7 @@ namespace SmartEnergyLabDataApi.Controllers
         /// Gets primary substations for a Grid Supply Point
         /// </summary>
         /// <param name="gspId">Grid Supply Point id</param>
-        /// <returns></returns>
+        /// <returns>Array of primary substations</returns>
         [HttpGet]
         [Route("PrimarySubstationsByGridSupplyPointId")]
         public IEnumerable<PrimarySubstation> GetPrimarySubstationsByGridSupplyPointId(int gspId)
@@ -50,7 +50,7 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Gets all distribution substations associated with a primary substation
         /// </summary>
-        /// <returns>DistributionSubstation</returns>
+        /// <returns>Array of distribution substations</returns>
         [HttpGet]
         [Route("DistributionSubstations")]
         public IEnumerable<DistributionSubstation> GetDistributionSubstations(int primaryId)
@@ -61,6 +61,19 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
 
+        /// <summary>
+        /// Gets all distribution substations associated with a grid supply point
+        /// </summary>
+        /// <returns>DistributionSubstation</returns>
+        [HttpGet]
+        [Route("DistributionSubstationsByGridSupplyPointId")]
+        public IEnumerable<DistributionSubstation> GetDistributionSubstationsByGridSupplyPointId(int gspId)
+        {
+            using (var da = new DataAccess()) {
+                return da.Substations.GetDistributionSubstationsByGridSupplyPointId(gspId);
+            }
+        }
+        
         /// <summary>
         /// Gets a distribution substation by name
         /// </summary>
@@ -120,11 +133,9 @@ namespace SmartEnergyLabDataApi.Controllers
         [Route("LoadFromSpreadsheet")]
         public IActionResult LoadFromSpreadeheet(string geographicalAreaName, IFormFile file)
         {
-            Logger.Instance.LogInfoEvent($"Started loading spreadheet for area [{geographicalAreaName}] from file [{file.FileName}]");
             using (var da = new DataAccess()) {
                 da.Substations.LoadFromSpreadsheet(geographicalAreaName, file);
                 da.CommitChanges();
-                Logger.Instance.LogInfoEvent($"Ended loading spreadsheet data");
             }
             return Content("OK");
         }

@@ -84,11 +84,11 @@ namespace SmartEnergyLabDataApi.Controllers
         {
             using( var da = new DataAccess()) {
                 //?? hardwired to Melksham for time being
-                if ( id==3) {
+                //??if ( id==3) {
                     return da.SubstationLoadProfiles.GetGridSupplyPointLoadProfiles(id, source, year, _carbonFetcher, _electricityCostFetcher);
-                } else {
-                    return new List<SubstationLoadProfile>();
-                }
+                //??} else {
+                //??    return new List<SubstationLoadProfile>();
+                //??}
             }
         }
 

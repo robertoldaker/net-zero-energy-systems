@@ -269,8 +269,8 @@ namespace SmartEnergyLabDataApi.Data
 
         IQueryOver<SubstationLoadProfile,SubstationLoadProfile> getGridSupplyPointQuery(
             int gspId, LoadProfileSource source, int year) {
-                //?? this needs updating to use a reference to the gspId - currently not implemented
                 var q = Session.QueryOver<SubstationLoadProfile>().
+                Where(m=>m.GridSupplyPoint.Id==gspId).
                 Where(m=>m.Source == source).
                 Where(m=>m.Year == year);
             return q;
@@ -306,6 +306,10 @@ namespace SmartEnergyLabDataApi.Data
             }
             //
             return list;
+        }
+
+        public IList<SubstationLoadProfile> GetAllLoadProfilesByGridSupplyPoint(GridSupplyPoint gsp) {
+            return Session.QueryOver<SubstationLoadProfile>().Where(m=>m.GridSupplyPoint==gsp).List();
         }
     }
 }

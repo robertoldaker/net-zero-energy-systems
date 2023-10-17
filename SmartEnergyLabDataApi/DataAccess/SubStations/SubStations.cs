@@ -45,7 +45,7 @@ namespace SmartEnergyLabDataApi.Data
         {
             var gan = DataAccess.Organisations.GetGeographicalArea(geographicalAreaName);
             if (gan == null) {
-                throw new Exception($"Unknow geographical area [{geographicalAreaName}]");
+                throw new Exception($"Unknown geographical area [{geographicalAreaName}]");
             }
             var loader = new PrimarySubstationXlsLoader(DataAccess, gan);
             loader.Load(file);
@@ -154,10 +154,12 @@ namespace SmartEnergyLabDataApi.Data
         
         public IList<DistributionSubstation> GetDistributionSubstations(DistributionNetworkOperator dno)
         {
-            PrimarySubstation pss = null;
-            var q = Session.QueryOver<DistributionSubstation>().Left.JoinAlias(m=>m.PrimarySubstation,()=>pss).
-                Where(m => pss.DistributionNetworkOperator == dno);
-            return q.List();
+            // Seems to be much quicker than using joined tables
+            var primaryIds= Session.QueryOver<PrimarySubstation>().Where(m=>m.DistributionNetworkOperator==dno).Select(m=>m.Id).List<int>().ToArray();
+            var q = Session.QueryOver<DistributionSubstation>().
+                Where(m => m.PrimarySubstation.Id.IsIn(primaryIds));
+            var list = q.List();
+            return list;
         }
 
         public IList<DistributionSubstation> GetDistributionSubstations()
@@ -186,6 +188,17 @@ namespace SmartEnergyLabDataApi.Data
             var q = Session.QueryOver<DistributionSubstation>().
                 Where(m => m.PrimarySubstation.Id == primaryId);
             return q.List();
+        }
+
+        public IList<DistributionSubstation> GetDistributionSubstationsByGridSupplyPointId(int gspId)
+        {
+            // This method of fetching data is  much quicker than using table joins via aliases
+            var psIds = Session.QueryOver<PrimarySubstation>().
+                Where(m => m.GridSupplyPoint.Id == gspId).Select(m=>m.Id).List<int>().ToArray();
+            var q = Session.QueryOver<DistributionSubstation>().
+                Where(m => m.PrimarySubstation.Id.IsIn(psIds));
+            var ls =  q.List();
+            return ls;
         }
 
         public IList<DistributionSubstation> GetDistributionSubstationsWithNoGIS(GeographicalArea ga)
@@ -242,6 +255,15 @@ namespace SmartEnergyLabDataApi.Data
         {
             var q = Session.QueryOver<SubstationClassification>().
                 Where(m=>m.DistributionSubstation.Id == id);
+
+            var list = q.List();
+            return list;
+        }
+
+        public IList<SubstationClassification> GetDistributionSubstationClassifications(int[] ids)
+        {
+            var q = Session.QueryOver<SubstationClassification>().
+                Where(m=>m.DistributionSubstation.Id.IsIn(ids));
 
             var list = q.List();
             return list;

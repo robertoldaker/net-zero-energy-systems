@@ -34,6 +34,20 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
+        /// Returns classifications given a list of distribution ids
+        /// </summary>
+        /// <param name="dssIds">List of distribution substation ids separated by commas</param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("DistributionSubstationClassifications/List")]
+        public IList<SubstationClassification> GetDistributionSubstationClassifications(string dssIds) {
+            var ids = dssIds.Split(',').Select(m=>int.Parse(m)).ToArray();
+            using( var m = new DataAccess()) {
+                return m.Substations.GetDistributionSubstationClassifications(ids);
+            }
+        }
+
+        /// <summary>
         /// Gets primary substation classifications
         /// </summary>
         /// <param name="id">Primary substation id</param>

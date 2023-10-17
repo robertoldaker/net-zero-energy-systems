@@ -35,6 +35,8 @@ namespace SmartEnergyLabDataApi.Data
                 script.createIndexes2();
             } else if ( oldVersion<7) {
                 script.createIndexes3();
+            } else if ( oldVersion<8) {
+                script.updateLoadProfiles();
             }
         }
 
@@ -126,6 +128,29 @@ namespace SmartEnergyLabDataApi.Data
             }
             catch (Exception e) {
                 Logger.Instance.LogErrorEvent($"Error creating initial indexes [{e.Message}]");
+            }
+        }
+
+        private void updateLoadProfiles()
+        {
+            try {
+                Logger.Instance.LogInfoEvent("Started updating load profiles");
+                using( var da = new DataAccess() ) {
+                    var name = "Melksham  S.G.P.";
+                    var gsp = da.SupplyPoints.GetGridSupplyPointByName(name);
+                    if ( gsp==null) {
+                        throw new Exception($"Could not find GSP with name =[{name}]");
+                    }
+                    var lps=da.SubstationLoadProfiles.GetAllLoadProfilesByGridSupplyPoint(null);
+                    foreach( var lp in lps) {
+                        lp.GridSupplyPoint = gsp;
+                    }
+                    da.CommitChanges();
+                }
+                Logger.Instance.LogInfoEvent("Finished updating load profiles");
+            }
+            catch (Exception e) {
+                Logger.Instance.LogErrorEvent($"Error updating load profiles [{e.Message}]");
             }
         }
 
