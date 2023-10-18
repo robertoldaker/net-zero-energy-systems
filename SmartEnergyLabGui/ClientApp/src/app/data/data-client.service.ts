@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 
@@ -19,6 +19,14 @@ export class DataClientService {
     /**
      * Substations
      */
+    GetPrimarySubstation(id: number, onLoad: (pss: PrimarySubstation) => void | undefined) {
+        this.http.get<PrimarySubstation>(this.baseUrl + `/Substations/PrimarySubstation?id=${id}`).subscribe(result => {
+            if (onLoad !== undefined) {
+                onLoad(result);
+            }
+        }, error =>  this.logErrorMessage(error));
+    }
+
     GetPrimarySubstationsByGeographicalAreaId(gaId: number, onLoad: ((pss: PrimarySubstation[]) => void) | undefined) {
         this.http.get<PrimarySubstation[]>(this.baseUrl + `/Substations/PrimarySubstationsByGeographicalAreaId?gaId=${gaId}`).subscribe(result => {
             if (onLoad !== undefined) {
@@ -51,8 +59,8 @@ export class DataClientService {
         }, error =>  this.logErrorMessage(error));
     }
 
-    Search(str: string, maxResults: number, onLoad: (dsss: DistributionSubstation[]) => void | undefined) {
-        this.http.get<DistributionSubstation[]>(this.baseUrl + '/Substations/Search',{ params: { str: str, maxResults: maxResults }}).subscribe(result => {
+    Search(str: string, maxResults: number, onLoad: (dsss: SubstationSearchResult[]) => void | undefined) {
+        this.http.get<SubstationSearchResult[]>(this.baseUrl + '/Substations/Search',{ params: { str: str, maxResults: maxResults }}).subscribe(result => {
             if (onLoad !== undefined) {
                 onLoad(result);
             }

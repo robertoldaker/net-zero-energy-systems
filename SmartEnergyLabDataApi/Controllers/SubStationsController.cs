@@ -48,6 +48,19 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
+        /// Gets a primary substation by id
+        /// </summary>
+        /// <returns>A primary substation</returns>
+        [HttpGet]
+        [Route("PrimarySubstation")]
+        public PrimarySubstation GetPrimarySubstation(int id)
+        {
+            using (var da = new DataAccess()) {
+                return da.Substations.GetPrimarySubstation(id);
+            }
+        }
+
+        /// <summary>
         /// Gets all distribution substations associated with a primary substation
         /// </summary>
         /// <returns>Array of distribution substations</returns>
@@ -59,7 +72,6 @@ namespace SmartEnergyLabDataApi.Controllers
                 return da.Substations.GetDistributionSubstations(primaryId);
             }
         }
-
 
         /// <summary>
         /// Gets all distribution substations associated with a grid supply point
@@ -213,7 +225,7 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("Search")]        
-        public IList<DistributionSubstation> Search(string str, int maxResults)
+        public IList<Substations.SubstationSearchResult> Search(string str, int maxResults)
         {
             using (var da = new DataAccess()) {
                 var results = da.Substations.Search(str, maxResults);

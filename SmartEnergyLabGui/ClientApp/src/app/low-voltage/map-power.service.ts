@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { EventEmitter } from '@angular/core';
-import { DistributionSubstation, GeographicalArea, GridSupplyPoint, LoadProfileSource, PrimarySubstation, SubstationClassification, SubstationLoadProfile, VehicleChargingStation } from '../data/app.data';
+import { DistributionSubstation, GeographicalArea, GridSupplyPoint, LoadProfileSource, PrimarySubstation, SubstationClassification, SubstationLoadProfile, SubstationSearchResult, VehicleChargingStation } from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { MapDataService } from './map-data.service';
 
@@ -142,7 +142,7 @@ export class MapPowerService {
         }
     }
 
-    setSelectedGridSupplyPoint(gsp: GridSupplyPoint | undefined) {
+    setSelectedGridSupplyPoint(gsp: GridSupplyPoint | undefined, onPrimariesLoaded: (()=>void ) | null = null ) {
         this.clearSelectedObjects()
         this.SelectedGridSupplyPoint = gsp
         if ( gsp!=undefined ) {
@@ -151,6 +151,9 @@ export class MapPowerService {
                 this.NumberOfDistributionSubstations = this.getNumberOfDistributionSubstations(pss)
                 this.NumberOfPrimarySubstations = pss.length
                 this.PrimarySubstationsLoaded.emit(pss)
+                if ( onPrimariesLoaded!==null ) {
+                    onPrimariesLoaded();
+                }
             });
             this.clearlPsLoaded();
             this.clsLoaded = false;
@@ -166,7 +169,7 @@ export class MapPowerService {
         this.fireObjectSelectedEvent()
     }
 
-    setSelectedPrimarySubstation(pss: PrimarySubstation | undefined) {
+    setSelectedPrimarySubstation(pss: PrimarySubstation | undefined, onDistLoaded: (()=>void) | null = null) {
         this.clearSelectedObjects()
         this.SelectedPrimarySubstation = pss
         if ( pss!=undefined ) {
@@ -174,6 +177,9 @@ export class MapPowerService {
                 this.DistributionSubstations = dss;
                 this.NumberOfDistributionSubstations = dss.length
                 this.DistributionSubstationsLoaded.emit(dss)
+                if ( onDistLoaded ) {
+                    onDistLoaded()
+                }
             });
             this.clearlPsLoaded();
             this.clsLoaded = false;
@@ -191,6 +197,84 @@ export class MapPowerService {
         }
         this.fireObjectSelectedEvent()
 
+    }
+
+    public setSelectedGridSupplyPointById(id: number) {
+        let gsp = this.GridSupplyPoints.find(m=>m.id==id)
+        if ( gsp) {
+            this.setSelectedGridSupplyPoint(gsp);
+        }            
+    }
+
+    public setSelectedPrimarySubstationById(id: number, parentId: number) {
+        let gsp = this.GridSupplyPoints.find(m=>m.id==parentId)
+        if ( gsp ) {
+            if ( gsp.id!=this.SelectedGridSupplyPoint?.id) {
+                this.setSelectedGridSupplyPoint(gsp, ()=>{
+                    let pss = this.PrimarySubstations.find(m=>m.id==id)
+                    if ( pss ) {
+                        // Not ideal but we need to wait for the markers to get created
+                        window.setTimeout(()=>{
+                            this.setSelectedPrimarySubstation(pss);
+                        },250)
+                    }
+                });    
+            } else {
+                let pss = this.PrimarySubstations.find(m=>m.id==id)
+                if ( pss ) {
+                    this.setSelectedPrimarySubstation(pss);
+                }
+            }
+        }            
+    }
+
+    private _setSelectedDistributionSubstationById(id: number, parentId: number):boolean {
+        let pss = this.PrimarySubstations.find(m=>m.id==parentId)
+        if ( pss ) {
+            // Not ideal but we need to wait for the markers to get created
+            this.setSelectedPrimarySubstation(pss, ()=>{
+                let dss = this.DistributionSubstations.find(m=>m.id==id)
+                window.setTimeout(()=>{
+                     this.setSelectedDistributionSubstation(dss);
+                },250)
+            });
+            //
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public setSelectedDistributionSubstationById(id: number, parentId: number) {
+        let dss = this.DistributionSubstations.find(m=>m.id==id)
+        if ( dss ) {
+            this.setSelectedDistributionSubstation(dss)
+        } else {
+            if ( !this._setSelectedDistributionSubstationById(id,parentId) ) {
+                this.DataClientService.GetPrimarySubstation(parentId,(data)=>{
+                    let pss=data
+                    let gsp = this.GridSupplyPoints.find(m=>m.id==pss.gspId)
+                    if ( gsp) {
+                        this.setSelectedGridSupplyPoint(gsp, ()=>{
+                            this._setSelectedDistributionSubstationById(id,parentId)
+                        });    
+                    } else {
+                        console.log(`Grid supply point with id=[${pss.gspId}], not found!`)
+                    }
+                })
+            }
+        }
+    }
+
+    public setSelectedObj(selectedObj: SubstationSearchResult) {
+
+        if ( selectedObj.type=="GridSupplyPoint") {
+            this.setSelectedGridSupplyPointById(selectedObj.id);
+        } else if ( selectedObj.type=="PrimarySubstation") {
+            this.setSelectedPrimarySubstationById(selectedObj.id, selectedObj.parentId)
+        } else if ( selectedObj.type=="DistributionSubstation") {
+            this.setSelectedDistributionSubstationById(selectedObj.id, selectedObj.parentId)
+        }
     }
 
     private getNumberOfCustomers(classifications: SubstationClassification[]):number {
