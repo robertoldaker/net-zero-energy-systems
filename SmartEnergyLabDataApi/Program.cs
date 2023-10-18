@@ -136,7 +136,7 @@ public static class Program
         // Needed to read spreadsheets
         System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
-        Logger.Instance.LogInfoEvent($"Starting AngelBooks...");
+        Logger.Instance.LogInfoEvent($"Starting Smart Energy Lab...");
         app.Run();
 
     }

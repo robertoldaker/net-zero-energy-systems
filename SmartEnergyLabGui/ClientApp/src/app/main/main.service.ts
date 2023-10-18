@@ -7,7 +7,7 @@ import { Injectable } from '@angular/core';
 export class MainService {
 
     constructor() { 
-        this.version = "1.0.11";
+        this.version = "1.0.12";
     }
 
     version: string 
