@@ -1,6 +1,6 @@
 <table class="layout">
     <tr>
-        <td colspan="3">
+        <td colspan="2">
             <mat-form-field appearance="fill" [color]="'primary'">
                 <mat-label>Dataset</mat-label>
                 <mat-select [value]="service.dataset?.id" (valueChange)="service.setDataset($event)">
@@ -23,7 +23,7 @@
             </ng-container>
         </td>
     <tr>
-        <td colspan="3">
+        <td colspan="2">
             <mat-form-field appearance="fill" [color]="'primary'">
                 <mat-label>Scenario</mat-label>
                 <mat-select [value]="service.scenario" (valueChange)="scenarioChanged($event)">
@@ -37,12 +37,15 @@
             <button mat-raised-button color="primary" (click)="runSingleDay()" [disabled]="!canRun">Run Day</button>
         </td>
         <td>
-            <mat-form-field class="numberInput">
-                <mat-label>Day</mat-label>
-                <input matInput [(ngModel)]="day" type="number">
-            </mat-form-field>        
-        </td>
-        <td>
+            <mat-form-field appearance="fill">
+                <mat-label>Choose a date</mat-label>
+                <!-- this div required to fix bug where icon is shown on another line -->
+                <div class="dateContainer">
+                    <input matInput [matDatepicker]="picker" [(ngModel)]="date">
+                    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>    
+                </div>
+                <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
         </td>
     </tr>
     <tr>
@@ -50,16 +53,23 @@
             <button mat-raised-button color="primary" (click)="runDays()" [disabled]="!canRun">Run Days</button>
         </td>
         <td>
-            <mat-form-field class="numberInput">
-                <mat-label>Start day</mat-label>
-                <input matInput [(ngModel)]="startDay" type="number">
+            <mat-form-field appearance="fill">
+                <mat-label>Enter a date range</mat-label>
+                <!-- this div required to fix bug where icon is shown on another line -->
+                <div class="dateContainer">
+                    <mat-date-range-input [rangePicker]="picker2">
+                      <input matStartDate placeholder="Start date" [(ngModel)]="startDate">
+                      <input matEndDate placeholder="End date" [(ngModel)]="endDate"> 
+                    </mat-date-range-input>
+                    <mat-datepicker-toggle matIconSuffix [for]="picker2"></mat-datepicker-toggle>
+                </div>
+                <mat-date-range-picker #picker2></mat-date-range-picker>
             </mat-form-field>        
         </td>
+    </tr>
+    <tr>
         <td>
-            <mat-form-field class="numberInput">
-                <mat-label>End day</mat-label>
-                <input matInput [(ngModel)]="endDay" type="number">
-            </mat-form-field>        
+            <button mat-raised-button color="primary" (click)="runYear()" [disabled]="!canRun">Run complete year</button>
         </td>
     </tr>
 </table>

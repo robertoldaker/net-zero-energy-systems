@@ -16,9 +16,9 @@ export class ElsiDialogComponent extends ComponentBase implements OnInit {
 
     constructor(public service: ElsiDataService, private dialogService: DialogService, private messageService: ShowMessageService) { 
         super()
-        this.day = 1
-        this.startDay = 2
-        this.endDay = 6
+        this.date = new Date(2023,0,1)
+        this.startDate = new Date(2023,0,2)
+        this.endDate = new Date(2023,0,6)
         this.percentComplete = 0
         this.progressText = "";
         this.numDaysDone = 0;
@@ -44,9 +44,9 @@ export class ElsiDialogComponent extends ComponentBase implements OnInit {
     percentComplete: number
     progressText: string
 
-    day: number
-    startDay: number
-    endDay: number
+    date: Date
+    startDate: Date
+    endDate: Date
 
     ngOnInit(): void {
     }
@@ -59,20 +59,37 @@ export class ElsiDialogComponent extends ComponentBase implements OnInit {
         return `${this.numDaysDone} of ${this.numDaysToDo} complete`;
     }
 
+    private daysIntoYear(date:Date){
+        return (Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) - Date.UTC(date.getFullYear(), 0, 0)) / 24 / 60 / 60 / 1000;
+    }
+
     runSingleDay() {
         this.percentComplete = 0;
         this.numDaysToDo = 1;
         this.numDaysDone = 0;
         this.progressText=this.getProgressText();
-        this.service.runDays(this.day,this.day);
+        let day = this.daysIntoYear(this.date)
+        this.service.runDays(day,day);
     }
 
     runDays() {
         this.percentComplete = 0;
-        this.numDaysToDo = this.endDay - this.startDay + 1;
+        let startDay = this.daysIntoYear(this.startDate);
+        let endDay = this.daysIntoYear(this.endDate);
+        this.numDaysToDo = endDay - startDay + 1;
         this.numDaysDone = 0;
         this.progressText=this.getProgressText();
-        this.service.runDays(this.startDay,this.endDay);
+        this.service.runDays(startDay,endDay);
+    }
+
+    runYear() {
+        this.percentComplete = 0;
+        let startDay = 1
+        let endDay = 365
+        this.numDaysToDo = endDay - startDay + 1;
+        this.numDaysDone = 0;
+        this.progressText=this.getProgressText();
+        this.service.runDays(startDay,endDay);
     }
 
     get canRun() {
