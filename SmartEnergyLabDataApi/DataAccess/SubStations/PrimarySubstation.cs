@@ -32,6 +32,19 @@ namespace SmartEnergyLabDataApi.Data
         [Generator(1, Class = "identity")]
         public virtual int Id { get; set; }
 
+
+        /// <summary>
+        /// Id of its parent grid supply point
+        /// </summary> <summary>
+        /// 
+        /// </summary>
+        /// <value></value>
+        public virtual int? GspId {
+            get {
+                return GridSupplyPoint?.Id;
+            }
+        }
+
         /// <summary>
         /// Source of object import
         /// </summary>
@@ -77,7 +90,7 @@ namespace SmartEnergyLabDataApi.Data
         /// <summary>
         /// GIS data
         /// </summary>
-        [ManyToOne(Column = "GISDataId", Cascade = "all-delete-orphan")]
+        [ManyToOne(Column = "GISDataId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
         public virtual GISData GISData { get; set; }
 
         /// <summary>

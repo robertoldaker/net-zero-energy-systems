@@ -19,3 +19,10 @@
     width: 18px;
     height: 18px;
 }
+
+.dateContainer {        
+    /*float: left;*/
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }

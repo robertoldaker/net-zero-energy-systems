@@ -36,6 +36,16 @@ export class ElsiOutputsComponent implements OnInit, OnDestroy {
         this.currentDay = d;
     }
 
+    getDate(day: number) {
+        let zeroDate = new Date(2023, 0); // initialize a date in `year-01-01`
+        let date = new Date(zeroDate.setDate(day)); // add the number of days
+        const formattedDate = date.toLocaleString("en-GB", {
+            day: "numeric",
+            month: "short"
+          });
+        return formattedDate;
+    }
+
     trackFcn(index: number, d: ElsiDayResult):number {
         return d.day;
     }

@@ -6,7 +6,7 @@
                     <app-elsi-day-control (valueChanged)="dayChanged($event)"></app-elsi-day-control>
                 </th>
                 <ng-container *ngIf="d!==null">
-                    <th colspan="5" class="sticky day right borderRight"><b>Day {{d.day}}</b><span>&nbsp;({{service.elsiScenarioInfo.get(d.scenario)}},&nbsp;{{d.season}})</span></th>
+                    <th colspan="5" class="sticky day right borderRight"><b>{{getDate(d.day)}} </b><span>&nbsp;[Day {{d.day}},{{service.elsiScenarioInfo.get(d.scenario)}},&nbsp;{{d.season}}]</span></th>
                 </ng-container>
                <td></td> 
             </tr>

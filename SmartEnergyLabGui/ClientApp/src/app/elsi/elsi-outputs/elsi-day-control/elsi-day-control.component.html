@@ -1,7 +1,7 @@
 <div class="dayControl">
     <div style="display: flex; justify-content: space-between;">
         <mat-icon (click)="prevDay()" inline="true" class="clickable">keyboard_arrow_left</mat-icon>                    
-        <span>Day {{day}} of {{results.length}}</span>
+        <span>{{dateStr}} ({{index}} of {{results.length}})</span>
         <mat-icon (click)="nextDay()" inline="true" class="clickable">keyboard_arrow_right</mat-icon>    
     </div>
     <div>

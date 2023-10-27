@@ -28,6 +28,8 @@ import { MatListModule } from '@angular/material/list';
 import { MatTableModule } from '@angular/material/table'; 
 import { MatSortModule } from '@angular/material/sort';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; 
+import { MatDatepickerModule } from '@angular/material/datepicker'; 
+import { MAT_DATE_LOCALE, MatNativeDateModule } from '@angular/material/core';
 
 // google maps
 import { GoogleMapsModule } from '@angular/google-maps'
@@ -266,12 +268,15 @@ import { LoadflowBranchInfoWindowComponent } from './loadflow/loadflow-map/loadf
           // or after 30 seconds (whichever comes first).
           registrationStrategy: 'registerWhenStable:30000'
         }),
-        MatProgressSpinnerModule
+        MatProgressSpinnerModule,
+        MatDatepickerModule,
+        MatNativeDateModule
     ],
     providers: [
         // Http Interceptor(s) -  adds with Client Credentials
         [
-            { provide: HTTP_INTERCEPTORS, useClass: HttpRequestInterceptor, multi: true }
+            { provide: HTTP_INTERCEPTORS, useClass: HttpRequestInterceptor, multi: true },
+            { provide: MAT_DATE_LOCALE, useValue: 'en-GB'}
         ],
         [CookieService]
     ],

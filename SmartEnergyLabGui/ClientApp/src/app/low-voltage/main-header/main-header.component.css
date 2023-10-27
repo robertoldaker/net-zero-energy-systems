@@ -14,3 +14,8 @@ span.mode {
     color:red;
 }
 
+img.substationIcon {
+    width: 20px;
+    margin-right: 10px;
+}
+

@@ -3,6 +3,7 @@ using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
 using NHibernate;
 using NHibernate.Criterion;
+using NHibernate.Transform;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Models;
 using System.Diagnostics;
@@ -60,11 +61,46 @@ namespace SmartEnergyLabDataApi.Data
             return loader.Load(file);
         }
 
+        public class SubstationSearchResult {
+            public SubstationSearchResult(int id, int parentId, string name, string type) {
+                Id = id;
+                Name = name;
+                Type = type;
+                ParentId = parentId;
+            }
+            public int Id {get; set;}
+            public int ParentId {get; set;}
+            public string Type {get; set;}
+            public string Name {get; set;}            
+        }
 
-        public IList<DistributionSubstation> Search(string str, int maxResults) {
-            var q = Session.QueryOver<DistributionSubstation>().
+        public IList<SubstationSearchResult> Search(string str, int maxResults) {
+
+            int mResults = maxResults/3;
+            
+            // Grid supply points
+            var q1=Session.QueryOver<GridSupplyPoint>().
                 Where( m=>m.Name.IsInsensitiveLike(str, MatchMode.Anywhere) || m.ExternalId.IsInsensitiveLike(str));
-            return q.Take(maxResults).List();
+            var q1Results = q1.Take(mResults).List();
+            var results=q1Results.Select(m=>new SubstationSearchResult(m.Id,0,m.Name,m.GetType().Name)).ToList();
+
+            // Primary substations
+            mResults = (maxResults - results.Count)/2;
+            var q2=Session.QueryOver<PrimarySubstation>().
+                Where( m=>m.Name.IsInsensitiveLike(str, MatchMode.Anywhere) || m.ExternalId.IsInsensitiveLike(str));
+            var q2Results=q2.Take(mResults).List();
+            var results2=q2Results.Select(m=>new SubstationSearchResult(m.Id,m.GridSupplyPoint.Id,m.Name,m.GetType().Name)).ToList();
+            results.AddRange(results2);
+
+            // Distribution substations
+            mResults = maxResults - results.Count;
+            var q3=Session.QueryOver<DistributionSubstation>().
+                Where( m=>m.Name.IsInsensitiveLike(str, MatchMode.Anywhere) || m.ExternalId.IsInsensitiveLike(str));
+            var q3Results=q3.Take(mResults).List();
+            var results3=q3Results.Select(m=>new SubstationSearchResult(m.Id,m.PrimarySubstation.Id,m.Name,m.GetType().Name)).ToList();
+            results.AddRange(results3);
+
+            return results;
         }
 
         public void SetSubstationParams(int id, SubstationParams sParams) {
@@ -293,6 +329,10 @@ namespace SmartEnergyLabDataApi.Data
         public void Delete(PrimarySubstation ps)
         {
             Session.Delete(ps);
+        }
+
+        public PrimarySubstation GetPrimarySubstation(int id) {
+            return Session.QueryOver<PrimarySubstation>().Where(m=>m.Id == id).Take(1).SingleOrDefault();
         }
 
         public PrimarySubstation GetPrimarySubstation(ImportSource source, string externalId, string externalId2=null, string name=null) {

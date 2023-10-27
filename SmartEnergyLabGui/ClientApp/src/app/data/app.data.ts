@@ -12,6 +12,7 @@ export interface GridSupplyPoint {
 
 export interface PrimarySubstation {
     id: number,
+    gspId: number,
     nrId: string,
     nr: string,
     name: string,
@@ -23,9 +24,6 @@ export interface GISData {
     id: number,
     latitude: number,
     longitude: number,
-    //?? Now done via GISBoundary
-    //??boundaryLatitudes: number[] | null,
-    //??boundaryLongitudes: number[] | null,
 }
 
 export interface GISBoundary {
@@ -44,6 +42,13 @@ export interface DistributionSubstation {
     substationParams: SubstationParams,
     chargingParams: SubstationChargingParams,
     heatingParams: SubstationHeatingParams
+}
+
+export interface SubstationSearchResult {
+    id: number,
+    parentId: number,
+    name: string,
+    type: string
 }
 
 export interface SubstationParams {

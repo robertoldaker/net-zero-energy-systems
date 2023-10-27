@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, Inject, Input, ViewChild } from '@angular/core';
-import { DistributionSubstation, NameValuePair } from '../../data/app.data';
+import { DistributionSubstation, NameValuePair, SubstationSearchResult } from '../../data/app.data';
 import { DataClientService } from '../../data/data-client.service';
 import { DialogService } from '../../dialogs/dialog.service';
 import { MapDataService } from '../map-data.service';
@@ -49,7 +49,7 @@ export class MainHeaderComponent implements AfterViewInit {
     }
 
     searchTimeoutId:any
-    searchOptions:DistributionSubstation[] = []
+    searchOptions:SubstationSearchResult[] = []
     autoCompleteOpen: boolean = false;
 
     set searchStr(value: string) {
@@ -82,9 +82,21 @@ export class MainHeaderComponent implements AfterViewInit {
     searchOptionSelected(e:any) {
         let name:string = e.option.value;
         let selectedObj = this.searchOptions.find(m=>m.name == name)
-        if ( selectedObj!=undefined) {
-            this.mapPowerService.setSelectedDistributionSubstation(selectedObj)
+        if ( selectedObj) {
+            this.mapPowerService.setSelectedObj(selectedObj)
         }
+    }
+
+    getImageSrc(type: string) {
+        let src="/assets/images/"
+        if ( type=="GridSupplyPoint") {
+            src+="grid-supply-point.png"
+        } else if ( type=="PrimarySubstation") {
+            src+="primary-substation.png"
+        } else if ( type=="DistributionSubstation") {
+            src+="distribution-substation.png"
+        }
+        return src
     }
 
 
