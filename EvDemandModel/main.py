@@ -51,61 +51,62 @@ def apply_adjustment_factors(preprocessed_data, adjustment_factors, quarter):
     return adoptions
 #%%
 
-preprocessed_data = Preprocess.preprocess()
+if __name__ == "__main__":
 
-adjustment_factors = CalculateAdjustmentFactors.calculate(
-    preprocessed_data['car_van_2011'],
-    preprocessed_data['car_van_2021'],
-    preprocessed_data['vehicle_registrations']
-)
-#%%
+    preprocessed_data = Preprocess.preprocess()
 
-opp_proportions = calculate_opp_proportions(preprocessed_data, '2023 Q1')
+    adjustment_factors = CalculateAdjustmentFactors.calculate(
+        preprocessed_data['car_van_2011'],
+        preprocessed_data['car_van_2021'],
+        preprocessed_data['vehicle_registrations']
+    )
+    #%%
 
-adoptions = apply_adjustment_factors(preprocessed_data, adjustment_factors, '2023 Q1')
+    opp_proportions = calculate_opp_proportions(preprocessed_data, '2023 Q1')
 
-#%%
-bev_with_opp = adoptions['bev'].mul(opp_proportions['bev']).round(0)
-phev_with_opp = adoptions['phev'].mul(opp_proportions['phev']).round(0)
+    adoptions = apply_adjustment_factors(preprocessed_data, adjustment_factors, '2023 Q1')
 
-# %%
-ds_data = LoadDistributionSubstationData.load_data()
+    #%%
+    bev_with_opp = adoptions['bev'].mul(opp_proportions['bev']).round(0)
+    phev_with_opp = adoptions['phev'].mul(opp_proportions['phev']).round(0)
 
-# %%
+    # %%
+    ds_data = LoadDistributionSubstationData.load_data()
 
-substation_numbers = ds_data['Substation Number'].sample(100).values
-substations = CreateSubstationObjects.create_substation_objects(ds_data, substation_numbers)
+    # %%
 
-substation_data_mapper = SubstationDataMapper(
-    ds_data=ds_data,
-    lsoa_boundaries=preprocessed_data['lsoa_boundaries'],
-    house_data=preprocessed_data['house_2021']
-)
+    substation_numbers = ds_data['Substation Number'].sample(100).values
+    substations = CreateSubstationObjects.create_substation_objects(ds_data, substation_numbers)
 
-data = {
-    'vehicles': adoptions['vehicle'], 
-    'bevs': adoptions['bev'],
-    'phevs': adoptions['phev'],
-    'bevsWithOnPlotParking': bev_with_opp,
-    'phevsWithOnPlotParking': phev_with_opp
-}
+    substation_data_mapper = SubstationDataMapper(
+        ds_data=ds_data,
+        lsoa_boundaries=preprocessed_data['lsoa_boundaries'],
+        house_data=preprocessed_data['house_2021']
+    )
 
-substation_data_mapper.map_to_substation(substations=substations, data=data)
+    data = {
+        'vehicles': adoptions['vehicle'], 
+        'bevs': adoptions['bev'],
+        'phevs': adoptions['phev'],
+        'bevsWithOnPlotParking': bev_with_opp,
+        'phevsWithOnPlotParking': phev_with_opp
+    }
 
-# %%
-index_values = [f"{i}%" for i in range(0, 101, 5)]
+    substation_data_mapper.map_to_substation(substations=substations, data=data)
 
-attributes = {
-    'vehicles': 'vehicles',
-    'bevs': 'bevs',
-    'phevs': 'phevs',
-    'bevsWithOnPlotParking': 'bevsWithOnPlotParking',
-    'phevsWithOnPlotParking': 'phevsWithOnPlotParking'
-}
+    index_values = [f"{i}%" for i in range(0, 101, 5)]
 
-substation_vehicle_data = {key: pd.DataFrame(index=index_values, columns=substation_numbers) for key in attributes}
+    attributes = {
+        'vehicles': 'vehicles',
+        'bevs': 'bevs',
+        'phevs': 'phevs',
+        'bevsWithOnPlotParking': 'bevsWithOnPlotParking',
+        'phevsWithOnPlotParking': 'phevsWithOnPlotParking'
+    }
 
-for df_name, attr in attributes.items():
-    for substation in substations:
-        substation_vehicle_data[df_name][substation.id] = getattr(substation.vehicles, attr)
-# %%
+    substation_vehicle_data = {key: pd.DataFrame(index=index_values, columns=substation_numbers) for key in attributes}
+
+    for df_name, attr in attributes.items():
+        for substation in substations:
+            substation_vehicle_data[df_name][substation.id] = getattr(substation.vehicles, attr)
+    # %%
