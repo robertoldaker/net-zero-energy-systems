@@ -1,7 +1,7 @@
 #%%
 import pandas as pd
 import Preprocessing
-import AdjustmentFactors
+import Calibration
 import Utils
 import OnPlotParking
 import SubstationMapping
@@ -12,12 +12,12 @@ def reload_modules(module_names):
         reload(module_name)
 
 # Reload modules
-modules = [Preprocessing, AdjustmentFactors, Utils, OnPlotParking, SubstationMapping]
+modules = [Preprocessing, Calibration, Utils, OnPlotParking, SubstationMapping]
 reload_modules(modules)
 
 from Preprocessing import Preprocess
-from AdjustmentFactors import CalculateAdjustmentFactors
-from Utils import AdjustmentFactorApplier
+from Calibration import CalculateCalibrationFactors
+from Utils import CalibrationFactorApplier
 from OnPlotParking import CalculateProportionOfVehiclesWithOnPlotParking, CalculateProportionOfEVsWithOnPlotParking
 from SubstationMapping import LoadDistributionSubstationData, CreateSubstationObjects, SubstationDataMapper
 
@@ -40,12 +40,12 @@ def calculate_opp_proportions(preprocessed_data, quarter):
         )
     return opp_props
 
-def apply_adjustment_factors(preprocessed_data, adjustment_factors, quarter):
+def apply_calibration_factors(preprocessed_data, calibration_factors, quarter):
     adoptions = {}
     for vehicle_type in ['vehicle', 'bev', 'phev']:
-        adoptions[f'{vehicle_type}'] = AdjustmentFactorApplier.adjust(
+        adoptions[f'{vehicle_type}'] = CalibrationFactorApplier.calibrate(
             preprocessed_data[f'{vehicle_type}_registrations_i'],
-            adjustment_factors,
+            calibration_factors,
             quarter
         )
     return adoptions
@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     preprocessed_data = Preprocess.preprocess()
 
-    adjustment_factors = CalculateAdjustmentFactors.calculate(
+    calibration_factors = CalculateCalibrationFactors.calculate(
         preprocessed_data['car_van_2011'],
         preprocessed_data['car_van_2021'],
         preprocessed_data['vehicle_registrations']
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     opp_proportions = calculate_opp_proportions(preprocessed_data, '2023 Q1')
 
-    adoptions = apply_adjustment_factors(preprocessed_data, adjustment_factors, '2023 Q1')
+    adoptions = apply_calibration_factors(preprocessed_data, calibration_factors, '2023 Q1')
 
     #%%
     bev_with_opp = adoptions['bev'].mul(opp_proportions['bev']).round(0)
