@@ -8,8 +8,7 @@ def calculate(
         quarter: str
     ):
 
-    evs_with_opp_estimator = EVsWithOnPlotParkingEstimator(proportion_of_vehicles_with_opp,
-                                                           vehicle_registrations_data)
+    evs_with_opp_estimator = EVsWithOnPlotParkingEstimator(proportion_of_vehicles_with_opp, vehicle_registrations_data)
     
     proportion_of_evs_with_opp = evs_with_opp_estimator.estimate(ev_registrations_data, quarter)
     

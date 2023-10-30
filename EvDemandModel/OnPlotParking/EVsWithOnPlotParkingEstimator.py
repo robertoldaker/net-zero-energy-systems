@@ -7,7 +7,7 @@ class EVsWithOnPlotParkingEstimator:
             self, 
             proportion_of_vehicles_with_opp: pd.DataFrame,
             vehicle_registrations_data: pd.DataFrame
-            ) -> None:
+        ) -> None:
         self.proportion_of_vehicles_with_opp = proportion_of_vehicles_with_opp
         self.vehicle_registrations_data = vehicle_registrations_data
 

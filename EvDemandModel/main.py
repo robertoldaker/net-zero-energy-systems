@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     # %%
 
-    substation_numbers = ds_data['Substation Number'].sample(100).values
+    substation_numbers = ds_data['Substation Number'].sample(10).values
     substations = CreateSubstationObjects.create_substation_objects(ds_data, substation_numbers)
 
     substation_data_mapper = SubstationDataMapper(

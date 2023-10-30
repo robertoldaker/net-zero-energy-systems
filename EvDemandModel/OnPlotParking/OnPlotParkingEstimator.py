@@ -7,6 +7,7 @@ class OnPlotParkingEstimator:
     def __init__(self, accommodation_type_counts: pd.DataFrame, n_samples: int) -> None:
         self.accommodation_type_counts = accommodation_type_counts
         self.n_samples = n_samples
+        # dict contains the proportion of houses with OPP in the 2021 English household survey
         self.dict = {
             'end_terraced': 0.505,
             'mid_terraced': 0.338,
