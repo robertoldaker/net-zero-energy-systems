@@ -6,7 +6,7 @@ from .SpecificPreprocessors import (CarVan2011DataPreprocessor, CarVan2021DataPr
                                    LSOABoundaryDataPreprocessor
 )
 from .Utilities import ListUtilities, RegistrationInterpolator
-from config import FILE_PATHS
+from EvDemandModel.config import FILE_PATHS
 
 def preprocess() -> dict:
     # Create Data Containers
