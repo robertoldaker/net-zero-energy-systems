@@ -38,7 +38,7 @@ class SubstationDataMapper:
 
         for lsoa in parent_lsoas:
             # n_values is a series of 1000 elements (samples)
-            n_values = np.maximum(data[lsoa].astype(int), 0)
+            n_values = np.maximum(data[lsoa].fillna(0).astype(int), 0)
             
             # Probability remains the same across all 1000 samples for this LSOA
             p = np.clip(household_intersection.loc[lsoa], 0, 1)
