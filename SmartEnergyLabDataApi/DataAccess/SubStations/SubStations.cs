@@ -155,7 +155,7 @@ namespace SmartEnergyLabDataApi.Data
             Session.Delete(ds);
         }
 
-        public DistributionSubstation GetDistributionSubstation(ImportSource source, string externalId, string externalId2=null, string name=null)
+        public DistributionSubstation GetDistributionSubstation(string externalId, string externalId2=null, string name=null)
         {
             DistributionSubstation dss=null;
             if ( externalId!=null  ) {
@@ -169,6 +169,24 @@ namespace SmartEnergyLabDataApi.Data
             if ( dss==null && name!=null) {
                 //?? Seems to have better pefromance than using QueryOver ??
                 dss = Session.Query<DistributionSubstation>().Where(m => m.Name == name).Take(1).SingleOrDefault();
+            }
+            return dss;
+        }
+
+        public DistributionSubstation GetDistributionSubstation(ImportSource source,string externalId, string externalId2=null, string name=null)
+        {
+            DistributionSubstation dss=null;
+            if ( externalId!=null  ) {
+                //?? Seems to have better pefromance than using QueryOver ??
+                dss = Session.Query<DistributionSubstation>().Where(m => m.Source==source && m.ExternalId == externalId).Take(1).SingleOrDefault();
+            }
+            if ( dss==null && externalId2!=null) {
+                //?? Seems to have better pefromance than using QueryOver ??
+                dss = Session.Query<DistributionSubstation>().Where(m => m.Source==source && m.ExternalId2 == externalId2).Take(1).SingleOrDefault();
+            }
+            if ( dss==null && name!=null) {
+                //?? Seems to have better pefromance than using QueryOver ??
+                dss = Session.Query<DistributionSubstation>().Where(m => m.Source==source && m.Name == name).Take(1).SingleOrDefault();
             }
             return dss;
         }
@@ -203,6 +221,11 @@ namespace SmartEnergyLabDataApi.Data
             return Session.QueryOver<DistributionSubstation>().List();
         }
 
+        public IList<DistributionSubstation> GetDistributionSubstations(int skip, int take)
+        {
+            return Session.QueryOver<DistributionSubstation>().Skip(skip).Take(take).List();
+        }
+
         public IList<DistributionSubstation> GetDistributionSubstationsByExternalIds(string[] externalIds)
         {
             var q = Session.QueryOver<DistributionSubstation>().Where( m=>m.ExternalId.IsIn(externalIds));
@@ -224,6 +247,13 @@ namespace SmartEnergyLabDataApi.Data
             var q = Session.QueryOver<DistributionSubstation>().
                 Where(m => m.PrimarySubstation.Id == primaryId);
             return q.List();
+        }
+
+        public DistributionSubstation GetDistributionSubstation(int primaryId, string externalId)
+        {
+            var q = Session.QueryOver<DistributionSubstation>().
+                Where(m => m.PrimarySubstation.Id == primaryId).And(m=>m.ExternalId==externalId);
+            return q.Take(1).SingleOrDefault();
         }
 
         public IList<DistributionSubstation> GetDistributionSubstationsByGridSupplyPointId(int gspId)
@@ -421,6 +451,9 @@ namespace SmartEnergyLabDataApi.Data
 
         #region SubstationClassification
 
+        #endregion
+
+        #region DistributionSubstationData
         #endregion
     }
       

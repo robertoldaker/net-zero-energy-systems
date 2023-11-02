@@ -317,7 +317,7 @@ namespace SmartEnergyLabDataApi.Models
                         _distProcessResult.NumBlank++;
                         continue;
                     }
-                    var dss = da.Substations.GetDistributionSubstation(ImportSource.UKPowerNetworksOpenData,record.functional_location);
+                    var dss = da.Substations.GetDistributionSubstation(record.functional_location);
                     if ( dss==null) {
                         var pss = getPrimarySubstation(da,record.primary_feeder);
                         if ( pss!=null ) {

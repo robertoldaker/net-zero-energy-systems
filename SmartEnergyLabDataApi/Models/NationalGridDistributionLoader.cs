@@ -1,9 +1,17 @@
 using System.Diagnostics;
+using System.Security.Policy;
 using System.Text;
 using System.Text.Json;
 using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Model;
+using ExcelDataReader;
+using NHibernate.Criterion;
+using LumenWorks.Framework.IO.Csv;
+using NHibernate.Util;
+using Microsoft.Extensions.FileProviders;
+using Org.BouncyCastle.Bcpg.Sig;
+using Org.BouncyCastle.Crypto.Signers;
 
 namespace SmartEnergyLabDataApi.Models
 {
@@ -46,7 +54,270 @@ namespace SmartEnergyLabDataApi.Models
         public NationalGridDistributionLoader(TaskRunner? taskRunner) {
             _taskRunner = taskRunner;
         }
+
         public string Load() {
+            var message = LoadSpatial();
+            message+=LoadDistributionData();
+            return message;
+        }
+
+        public string LoadDistributionData() {
+            var loader = new DistributionDataLoader(BASE_ADDRESS,_taskRunner);
+            return loader.Load();
+        }
+
+        private class DistributionDataLoader {
+            private HttpClient _httpClient;
+            private TaskRunner? _taskRunner;
+            private const string CSV_URL = "/dataset/d5af0572-6b17-456e-b24f-1a729a91cdbc/resource/2d95d878-7eb0-4ed4-9be3-4ac926aaf134/download/distribution_substations_octv2.csv";
+            private enum CsvColumn {
+                PrimaryName,
+                PrimaryNumber,
+                SubstationName,
+                SubstationNumber,
+                HVFeeder,
+                SubstationType,
+                LONGITUDE,
+                LATITUDE,
+                DayMaxDemand,
+                NightMaxDemand,
+                Rating,
+                EnergyStorage,
+                HeatPumps,
+                EVChargers,
+                TotalLCTCapacity,
+                TotalGenerationCapacity,
+                Customers
+            }
+            private Dictionary<CsvColumn,int> _headerDict=new Dictionary<CsvColumn, int>();
+
+            private Dictionary<string,int> _primaryDict = new Dictionary<string,int>();
+
+            private int _numNotFound;
+            public DistributionDataLoader(string baseAddress, TaskRunner? taskRunner=null) {
+                _httpClient = new HttpClient
+                {
+                    BaseAddress = new Uri(baseAddress)                    
+                };
+                _taskRunner= taskRunner;
+            }
+            public string Load() {
+                //
+                var fileName = Path.Combine(AppFolders.Instance.Temp,"NationGridDistributionData.csv");
+                if ( !File.Exists(fileName)) {
+                    _taskRunner.Update($"Downloading CSV file..");
+                    downloadCsv(fileName);
+                }
+                _taskRunner.Update($"Processing CSV file..");
+                processCsvFile(fileName);
+                if ( File.Exists(fileName)) {
+                    File.Delete(fileName);
+                }
+                return "";
+            }
+
+            private int getRowCount(string fileName) {
+                int rowCount = 0;
+                using ( var tr = new StreamReader(fileName)) {
+                    using (CsvReader reader = new CsvReader(tr, true))
+                    {
+                        while (reader.ReadNextRecord())
+                        {
+                            rowCount++;
+                        }
+                    }
+                }
+                return rowCount;
+            }
+
+            private void processCsvFile(string fileName) {
+                Logger.Instance.LogInfoEvent($"Process csv started");
+                int rowCount=0;
+                int totalRows = getRowCount(fileName); 
+                int prevPercent = -1;
+                // Read from downloaded file
+                using ( var tr = new StreamReader(fileName)) {
+                    using (CsvReader reader = new CsvReader(tr, true))
+                    {
+                        setHeaderDict(reader);
+                        while ( processCsvSegment(reader,totalRows,ref rowCount,ref prevPercent) ) {
+                            
+                        }
+                    }
+                }
+                //
+                Logger.Instance.LogInfoEvent($"Process csv finished, numProcessed=[{totalRows-_numNotFound}], not found=[{_numNotFound}]");
+            }
+
+            private bool processCsvSegment(CsvReader reader, int totalRows,ref int rowCount, ref int prevPercent) {
+                int nRows=0;
+                int rowsToProcess=500;
+                bool moreAvailable=false;
+                using ( var da = new DataAccess()) {
+                    while (reader.ReadNextRecord())
+                    {       
+                        processRow(da,reader);
+
+                        int percent = (rowCount*100)/totalRows;
+                        if ( percent!=prevPercent) {
+                            _taskRunner.Update(percent);
+                            prevPercent = percent;
+                        }
+                        if( rowCount % 100==0) {
+                            _taskRunner.CheckCancelled();
+                        }
+                        
+                        rowCount++;
+                        nRows++;
+                        if ( nRows>rowsToProcess) {
+                            moreAvailable = true;
+                            break;
+                        }
+                    }
+                    da.CommitChanges();
+                }
+                return moreAvailable;
+            }
+
+            private void setHeaderDict(CsvReader reader) {
+                var headers = reader.GetFieldHeaders().ToList();
+                _headerDict.Add(CsvColumn.PrimaryName,headers.FindIndex(m=>m=="Primary Name"));
+                _headerDict.Add(CsvColumn.PrimaryNumber,headers.FindIndex(m=>m=="Primary Number"));
+                _headerDict.Add(CsvColumn.SubstationName,headers.FindIndex(m=>m=="Substation Name"));
+                _headerDict.Add(CsvColumn.SubstationNumber,headers.FindIndex(m=>m=="Substation Number"));
+                _headerDict.Add(CsvColumn.HVFeeder,headers.FindIndex(m=>m=="HV Feeder"));
+                _headerDict.Add(CsvColumn.SubstationType,headers.FindIndex(m=>m=="Substation Type"));
+                _headerDict.Add(CsvColumn.LONGITUDE,headers.FindIndex(m=>m=="LONGITUDE"));
+                _headerDict.Add(CsvColumn.LATITUDE,headers.FindIndex(m=>m=="LATITUDE"));
+                _headerDict.Add(CsvColumn.DayMaxDemand,headers.FindIndex(m=>m=="Day Max Demand"));
+                _headerDict.Add(CsvColumn.NightMaxDemand,headers.FindIndex(m=>m=="Night Max Demand"));
+                _headerDict.Add(CsvColumn.Rating,headers.FindIndex(m=>m=="Substation Rating"));
+                _headerDict.Add(CsvColumn.EnergyStorage,headers.FindIndex(m=>m=="Energy Storage"));
+                _headerDict.Add(CsvColumn.HeatPumps,headers.FindIndex(m=>m=="Heat Pumps"));
+                _headerDict.Add(CsvColumn.EVChargers,headers.FindIndex(m=>m=="EV Chargers"));
+                _headerDict.Add(CsvColumn.TotalLCTCapacity,headers.FindIndex(m=>m=="Total LCT Capacity"));
+                _headerDict.Add(CsvColumn.TotalGenerationCapacity,headers.FindIndex(m=>m=="Total Generation Capacity"));
+                _headerDict.Add(CsvColumn.Customers,headers.FindIndex(m=>m=="Customers"));
+            }
+
+            private int getIndex(CsvColumn col) {
+                return _headerDict[col];
+            }
+
+            private void processRow(DataAccess da, CsvReader reader) {
+                var dss = getDistSubstation(da,reader);
+                if ( dss!=null) {
+                    var distData = dss.SubstationData;
+                    if ( distData==null) {
+                        distData=new DistributionSubstationData(dss);
+
+                    }
+                    // HV Feeder
+                    distData.HVFeeder = reader[getIndex(CsvColumn.HVFeeder)];
+                    // Type
+                    var poleMount=reader[getIndex(CsvColumn.SubstationType)];
+                    if ( poleMount=="Pole Mtd") {
+                        distData.Type = DistributionSubstationType.Pole;
+                    } else {
+                        distData.Type = DistributionSubstationType.Ground;
+                    }
+                    // Lat/long
+                    if ( double.TryParse(reader[getIndex(CsvColumn.LONGITUDE)], out double lon) &&
+                         double.TryParse(reader[getIndex(CsvColumn.LATITUDE)], out double lat) && 
+                         dss.GISData!=null ) {                            
+                        dss.GISData.Latitude = lat;
+                        dss.GISData.Longitude = lon;
+                    }
+                    // Day Max Demand
+                    if ( double.TryParse(reader[getIndex(CsvColumn.DayMaxDemand)], out double dayMaxDemand)) {
+                        distData.DayMaxDemand = dayMaxDemand;
+                    }
+                    // Night Max Demand
+                    if ( double.TryParse(reader[getIndex(CsvColumn.NightMaxDemand)], out double nightMaxDemand)) {
+                        distData.NightMaxDemand = nightMaxDemand;
+                    }
+                    // Substation Rating
+                    if ( double.TryParse(reader[getIndex(CsvColumn.Rating)], out double rating)) {
+                        distData.Rating = rating;
+                    }
+                    // Energy storage
+                    if ( int.TryParse(reader[getIndex(CsvColumn.EnergyStorage)], out int energyStorage)) {
+                        distData.NumEnergyStorage = energyStorage;
+                    }
+                    // Heat pumps
+                    if ( int.TryParse(reader[getIndex(CsvColumn.HeatPumps)], out int heatPumps)) {
+                        distData.NumHeatPumps = heatPumps;
+                    }
+                    // EV chargers
+                    if ( int.TryParse(reader[getIndex(CsvColumn.EVChargers)], out int evChargers)) {
+                        distData.NumEVChargers = evChargers;
+                    }
+                    // Total LCT capacity
+                    if ( double.TryParse(reader[getIndex(CsvColumn.TotalLCTCapacity)], out double totalLCTCapacity)) {
+                        distData.TotalLCTCapacity = totalLCTCapacity;
+                    }
+                    // Total generation capacity
+                    if ( double.TryParse(reader[getIndex(CsvColumn.TotalGenerationCapacity)], out double totalGenerationCapacity)) {
+                        distData.TotalGenerationCapacity = totalGenerationCapacity;
+                    }
+                }
+            }
+
+            private DistributionSubstation getDistSubstation(DataAccess da, CsvReader reader) {
+                DistributionSubstation dss = null;
+                var externalId = reader[getIndex(CsvColumn.SubstationNumber)];
+                var name = reader[getIndex(CsvColumn.SubstationName)];
+                dss=da.Substations.GetDistributionSubstation(ImportSource.NationalGridDistributionOpenData,externalId,null,name);
+                if ( dss==null) {
+                    //??Logger.Instance.LogWarningEvent($"Could not find dist substation [{name}] [{externalId}]");
+                    _numNotFound++;
+                }
+                return dss;
+            }
+
+            private DistributionSubstation getDistSubstation1(DataAccess da, CsvReader reader) {
+                DistributionSubstation dss = null;
+                var externalId = reader[getIndex(CsvColumn.SubstationNumber)];
+                var primaryName = reader[getIndex(CsvColumn.PrimaryName)];
+                if ( !_primaryDict.ContainsKey(primaryName)) {
+                    var pss = da.Substations.GetPrimarySubstation(ImportSource.NationalGridDistributionOpenData,null,null,primaryName);
+                    if ( pss!=null ) {
+                        _primaryDict.Add(primaryName,pss.Id);
+                    } else {
+                        Logger.Instance.LogWarningEvent($"Could not find primary substation [{primaryName}]");
+                        _numNotFound++;
+                        return dss;
+                    }            
+                }
+                var primaryId=_primaryDict[primaryName];
+                dss=da.Substations.GetDistributionSubstation(primaryId,externalId);
+                if ( dss==null) {
+                    _numNotFound++;
+                }
+                return dss;
+            }
+
+            private void downloadCsv(string fileName) {
+                using (Stream stream = _httpClient.GetStreamAsync(CSV_URL).Result ) {
+                    //
+                    saveToFile(stream,fileName);
+                }
+            }
+
+            private void saveToFile(Stream stream, string filename) {
+
+                var buffer = new byte[32768];
+                using( var fs = new FileStream(filename,FileMode.Create)) {
+                    int nRead;
+                    while( (nRead = stream.Read(buffer, 0, buffer.Length)) !=0) {
+                        fs.Write(buffer,0,nRead);
+                    };
+                }
+            }
+
+        }
+
+        public string LoadSpatial() {
             var message = "";
             var ckanLoader = new CKANDataLoader(BASE_ADDRESS,PACKAGE_NAME);
             //
@@ -478,7 +749,7 @@ namespace SmartEnergyLabDataApi.Models
                             var name = feature.properties.NAME;
 
                             DistributionSubstation dss=null;
-                            var dssRead = daRead.Substations.GetDistributionSubstation(ImportSource.NationalGridDistributionOpenData,nr,nrId,name);
+                            var dssRead = daRead.Substations.GetDistributionSubstation(nr,nrId,name);
                             if ( dssRead!=null) {
                                 dss = da.Substations.GetDistributionSubstation(dssRead.Id);
                             }
@@ -486,8 +757,8 @@ namespace SmartEnergyLabDataApi.Models
                             PrimarySubstation pss = null;
                             // look in cache first
                             if ( !primCache.TryGetValue(feature.properties.PRIM_NRID, out pss)) {
-                                pss = da.Substations.GetPrimarySubstation(ImportSource.NationalGridDistributionOpenData,
-                                    null,
+                                pss = da.Substations.GetPrimarySubstation(
+                                    ImportSource.NationalGridDistributionOpenData,
                                     feature.properties.PRIM_NRID.ToString(), 
                                     feature.properties.PRIM_NRID_NAME);
                                 if ( pss!=null ) {
