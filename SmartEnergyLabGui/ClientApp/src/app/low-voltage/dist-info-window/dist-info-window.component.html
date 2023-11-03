@@ -9,11 +9,15 @@
             <td>{{mapPowerService.SelectedDistributionSubstation?.name}}</td>
         </tr>
         <tr>
-            <td>NR:</td>
-            <td>{{mapPowerService.SelectedDistributionSubstation?.nr}}</td>
+            <td>Rating (kW):</td>
+            <td>{{mapPowerService.SelectedDistributionSubstation?.substationData?.rating}}</td>
         </tr>
         <tr>
-            <td>Customers (2016):</td>
+            <td>Day/night max demand (kW):</td>
+            <td>{{mapPowerService.SelectedDistributionSubstation?.substationData?.dayMaxDemand}}/{{mapPowerService.SelectedDistributionSubstation?.substationData?.nightMaxDemand}}</td>
+        </tr>
+        <tr>
+            <td>Customers:</td>
             <td>{{mapPowerService.NumberOfCustomers}}</td>
         </tr>
         <tr>

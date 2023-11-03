@@ -56,8 +56,9 @@ namespace SmartEnergyLabDataApi.Models
         }
 
         public string Load() {
-            var message = LoadSpatial();
-            message+=LoadDistributionData();
+            //??var message = LoadSpatial();
+            //??message+=LoadDistributionData();
+            var message=LoadDistributionData();
             return message;
         }
 
@@ -259,6 +260,10 @@ namespace SmartEnergyLabDataApi.Models
                     // Total generation capacity
                     if ( double.TryParse(reader[getIndex(CsvColumn.TotalGenerationCapacity)], out double totalGenerationCapacity)) {
                         distData.TotalGenerationCapacity = totalGenerationCapacity;
+                    }
+                    // Num customers
+                    if ( int.TryParse(reader[getIndex(CsvColumn.Customers)], out int numCustomers)) {
+                        distData.NumCustomers = numCustomers;
                     }
                 }
             }

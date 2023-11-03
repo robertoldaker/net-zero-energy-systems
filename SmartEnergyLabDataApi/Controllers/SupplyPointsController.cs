@@ -82,6 +82,20 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
+        /// Gets number of customers associated with a grid supply point
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("GridSupplyPoint/Customers")]
+        public int GetCustomerForGridSupplyPoint(int id)
+        {
+            using (var da = new DataAccess()) {
+                var customers = da.SupplyPoints.GetCustomersForGridSupplyPoint(id);
+                return customers;
+            }
+        }
+
+        /// <summary>
         /// Loads a set of grid supply points from a geojson file
         /// </summary>
         /// <returns></returns>

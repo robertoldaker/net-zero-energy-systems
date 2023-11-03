@@ -59,7 +59,11 @@ export class MapPowerService {
     setSelectedDistributionSubstation(distSubstation: DistributionSubstation| undefined) {
         this.clearSelectedObjects()
         this.SelectedDistributionSubstation = distSubstation
-        if ( distSubstation!=undefined ) {
+        this.NumberOfCustomers = undefined
+        if ( distSubstation!=undefined ) { 
+            if (distSubstation.substationData) {
+                this.NumberOfCustomers = distSubstation.substationData.numCustomers
+            }
             this.clearlPsLoaded()
             this.clsLoaded = false
             this.loadProfileSources.forEach(source=>{
@@ -109,7 +113,10 @@ export class MapPowerService {
 
     private classificationLoaded(classifications:SubstationClassification[]) {
         this.Classifications = classifications;
-        this.NumberOfCustomers = this.getNumberOfCustomers(classifications)
+        // Now found via substationData - for NGED substations
+        //if ( this.NumberOfCustomers==undefined) {
+        //    this.NumberOfCustomers = this.getNumberOfCustomers(classifications)
+        //}
         this.clsLoaded = true;
         this.ClassificationsLoaded.emit(classifications);
         if ( this.PerCustomerLoadProfiles) {
@@ -155,6 +162,9 @@ export class MapPowerService {
                     onPrimariesLoaded();
                 }
             });
+            this.DataClientService.GetCustomersForGridSupplyPoint(gsp.id,(numCustomers)=> {
+                this.NumberOfCustomers = numCustomers
+            })
             this.clearlPsLoaded();
             this.clsLoaded = false;
             this.loadProfileSources.forEach(source=>{
@@ -181,6 +191,9 @@ export class MapPowerService {
                     onDistLoaded()
                 }
             });
+            this.DataClientService.GetCustomersForPrimarySubstation(pss.id,(numCustomers)=> {
+                this.NumberOfCustomers = numCustomers
+            })
             this.clearlPsLoaded();
             this.clsLoaded = false;
             this.loadProfileSources.forEach(source=>{

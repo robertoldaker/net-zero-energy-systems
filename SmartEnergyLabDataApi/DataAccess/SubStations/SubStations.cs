@@ -4,6 +4,7 @@ using HaloSoft.EventLogger;
 using NHibernate;
 using NHibernate.Criterion;
 using NHibernate.Transform;
+using Org.BouncyCastle.Asn1.Icao;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Models;
 using System.Diagnostics;
@@ -61,6 +62,18 @@ namespace SmartEnergyLabDataApi.Data
             return loader.Load(file);
         }
 
+        public int GetCustomersForPrimarySubstation(int id) {
+            // Get ids of distribution substations attached to this primary
+            var dssIds = Session.QueryOver<DistributionSubstation>().Where(m=>m.PrimarySubstation.Id==id).Select(m=>m.Id).List<int>().ToArray();
+            // Find sum of number of customers 
+            var sum = Session.QueryOver<DistributionSubstationData>().Where(m=>m.DistributionSubstation.Id.IsIn(dssIds)).SelectList(l=>l.SelectSum(m=>m.NumCustomers)).List<int>();
+            if ( sum.Count>0) {
+                return sum[0];
+            } else {
+                return 0;
+            }
+        }
+
         public class SubstationSearchResult {
             public SubstationSearchResult(int id, int parentId, string name, string type) {
                 Id = id;
@@ -103,6 +116,7 @@ namespace SmartEnergyLabDataApi.Data
             return results;
         }
 
+        #region DistributionSubstations
         public void SetSubstationParams(int id, SubstationParams sParams) {
             var dss = Session.QueryOver<DistributionSubstation>().
                 Where(m=>m.Id == id).Take(1).SingleOrDefault();
@@ -113,6 +127,7 @@ namespace SmartEnergyLabDataApi.Data
                 dss.SubstationParams.CopyFieldsFrom(sParams);
             }
         }
+
         public void SetSubstationChargingParams(int id, SubstationChargingParams sParams) {
             var dss = Session.QueryOver<DistributionSubstation>().
                 Where(m=>m.Id == id).Take(1).SingleOrDefault();
@@ -134,7 +149,6 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
-
         public void AutoFillGISData(string geographicalAreaName)
         {
             var gan = DataAccess.Organisations.GetGeographicalArea(geographicalAreaName);
@@ -145,7 +159,6 @@ namespace SmartEnergyLabDataApi.Data
             finder.Find();
         }
 
-        #region DistributionSubstations
         public void Add(DistributionSubstation ds)
         {
             Session.Save(ds);

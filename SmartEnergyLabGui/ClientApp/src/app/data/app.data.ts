@@ -37,11 +37,29 @@ export interface DistributionSubstation {
     nr: string,
     name: string,
     gisData: GISData,
+    substationData: DistributionSubstationData,
     classifications: SubstationClassification[]
     loadProfiles: SubstationLoadProfile[]
     substationParams: SubstationParams,
     chargingParams: SubstationChargingParams,
     heatingParams: SubstationHeatingParams
+}
+
+export enum DistributionSubstationType {Ground,Pole}
+
+export interface DistributionSubstationData {
+    id: number,
+    type: DistributionSubstationType,
+    hvFeeder: string,
+    dayMaxDemand: number,
+    nightMaxDemand: number,
+    rating: number,
+    numEnergyStorage: number,
+    numHeatPumps: number,
+    numEVChargers: number,
+    totalLCTCapacity: number,
+    totalGenerationCapacity: number,
+    numCustomers: number
 }
 
 export interface SubstationSearchResult {

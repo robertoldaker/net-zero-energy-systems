@@ -74,6 +74,19 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
+        /// Gets number of customers associated with a primary substation
+        /// </summary>
+        /// <returns>Number of customers</returns>
+        [HttpGet]
+        [Route("Primarysubstation/Customers")]
+        public int GetCustomersForPrimarySubstation(int primaryId)
+        {
+            using (var da = new DataAccess()) {
+                return da.Substations.GetCustomersForPrimarySubstation(primaryId);
+            }
+        }
+
+        /// <summary>
         /// Gets all distribution substations associated with a grid supply point
         /// </summary>
         /// <returns>DistributionSubstation</returns>
