@@ -754,7 +754,7 @@ namespace SmartEnergyLabDataApi.Models
                             var name = feature.properties.NAME;
 
                             DistributionSubstation dss=null;
-                            var dssRead = daRead.Substations.GetDistributionSubstation(nr,nrId,name);
+                            var dssRead = daRead.Substations.GetDistributionSubstation(ImportSource.NationalGridDistributionOpenData,nr,nrId,name);
                             if ( dssRead!=null) {
                                 dss = da.Substations.GetDistributionSubstation(dssRead.Id);
                             }

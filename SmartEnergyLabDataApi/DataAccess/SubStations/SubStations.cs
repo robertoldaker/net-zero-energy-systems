@@ -168,29 +168,12 @@ namespace SmartEnergyLabDataApi.Data
             Session.Delete(ds);
         }
 
-        public DistributionSubstation GetDistributionSubstation(string externalId, string externalId2=null, string name=null)
-        {
-            DistributionSubstation dss=null;
-            if ( externalId!=null  ) {
-                //?? Seems to have better pefromance than using QueryOver ??
-                dss = Session.Query<DistributionSubstation>().Where(m => m.ExternalId == externalId).Take(1).SingleOrDefault();
-            }
-            if ( dss==null && externalId2!=null) {
-                //?? Seems to have better pefromance than using QueryOver ??
-                dss = Session.Query<DistributionSubstation>().Where(m => m.ExternalId2 == externalId2).Take(1).SingleOrDefault();
-            }
-            if ( dss==null && name!=null) {
-                //?? Seems to have better pefromance than using QueryOver ??
-                dss = Session.Query<DistributionSubstation>().Where(m => m.Name == name).Take(1).SingleOrDefault();
-            }
-            return dss;
-        }
-
         public DistributionSubstation GetDistributionSubstation(ImportSource source,string externalId, string externalId2=null, string name=null)
         {
             DistributionSubstation dss=null;
             if ( externalId!=null  ) {
-                //?? Seems to have better pefromance than using QueryOver ??
+                //?? Seems to have better peformance than using QueryOver ??
+                //?? maybe because not doing joins as defined in DistributionsSubstation.cs
                 dss = Session.Query<DistributionSubstation>().Where(m => m.Source==source && m.ExternalId == externalId).Take(1).SingleOrDefault();
             }
             if ( dss==null && externalId2!=null) {
