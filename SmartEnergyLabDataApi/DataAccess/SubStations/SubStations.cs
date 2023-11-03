@@ -66,9 +66,9 @@ namespace SmartEnergyLabDataApi.Data
             // Get ids of distribution substations attached to this primary
             var dssIds = Session.QueryOver<DistributionSubstation>().Where(m=>m.PrimarySubstation.Id==id).Select(m=>m.Id).List<int>().ToArray();
             // Find sum of number of customers 
-            var sum = Session.QueryOver<DistributionSubstationData>().Where(m=>m.DistributionSubstation.Id.IsIn(dssIds)).SelectList(l=>l.SelectSum(m=>m.NumCustomers)).List<int>();
-            if ( sum.Count>0) {
-                return sum[0];
+            var sum = Session.QueryOver<DistributionSubstationData>().Where(m=>m.DistributionSubstation.Id.IsIn(dssIds)).SelectList(l=>l.SelectSum(m=>m.NumCustomers)).List<int?>();
+            if ( sum.Count>0 && sum[0]!=null) {
+                return (int) sum[0];
             } else {
                 return 0;
             }
