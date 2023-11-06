@@ -6,7 +6,7 @@ from .CreateSubstationObjects import Vehicles
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
-class SubstationDataMapper:
+class SubstationObjectDataMapper:
     PERCENTILE_INCREMENT = 5
 
     def __init__(self, ds_data: pd.DataFrame, lsoa_boundaries: gpd.GeoDataFrame, house_data: pd.DataFrame) -> None:
@@ -75,3 +75,54 @@ class SubstationDataMapper:
         percentiles = [np.percentile(data, p).astype(int) for p in range(0, 101, self.PERCENTILE_INCREMENT)]
         percentile_series = pd.Series(percentiles, index=[f"{i}%" for i in range(0, 101, self.PERCENTILE_INCREMENT)])
         return percentile_series
+    
+class SubstationDataMapper:
+    STEP = 0.05
+
+    def __init__(self, ds_data: pd.DataFrame, lsoa_boundaries: gpd.GeoDataFrame, house_data: pd.DataFrame) -> None:
+        self.ds_data = ds_data.set_index('Substation Number')
+        self.lsoa_boundaries = lsoa_boundaries
+        self.house_data = house_data
+
+    def map_to_substation(self, data: dict) -> dict:
+        mapped_data = {key: pd.DataFrame(index=np.arange(0, 1.01, self.STEP), columns=self.ds_data.index.values) for key in data}
+        lad_lsoas = self.house_data.index.values
+        for key in data:
+            mapped_key_data = pd.DataFrame(index=range(0, len(data[key])), columns=self.ds_data.index.values, data=0)
+            for lsoa in lad_lsoas:
+                child_ds, intersections = self._find_child_ds(lsoa)
+                self._allocate_data_from_lsoa_to_ds(data[key], mapped_key_data, lsoa, child_ds, intersections)
+            mapped_data[key] = self._calculate_quantiles(df=mapped_key_data)
+        return mapped_data
+
+    def _find_child_ds(self, lsoa: str):
+        intersections = self.ds_data.geometry.intersection(self.lsoa_boundaries.loc[lsoa].geometry)
+        pip_mask = ~intersections.is_empty
+        child_ds = self.ds_data[pip_mask].index.values
+        return child_ds, intersections
+    
+    def _allocate_data_from_lsoa_to_ds(self, data: pd.DataFrame, mapped_key_data: pd.DataFrame, lsoa:str, child_ds: list, intersections):
+        prop_customers = self._calculate_proportion_of_substation_customers_in_lsoa(child_ds, intersections)
+        for ds in child_ds:
+            n_values = np.maximum(data[lsoa].fillna(0).astype(int), 0)
+            p = np.clip(prop_customers.loc[ds], 0, 1)
+            samples = binom.rvs(n=n_values, p=p)
+            mapped_key_data[ds] += samples
+    
+    def _calculate_proportion_of_substation_customers_in_lsoa(self, child_ds: list, intersections):
+        intersection_areas = intersections.loc[child_ds].area
+        substation_areas = self.ds_data.loc[child_ds].geometry.area
+        relative_intersections = intersection_areas / substation_areas
+        ds_customers_in_lsoa = relative_intersections * self.ds_data.loc[child_ds, 'Customers']
+        prop_customers = ds_customers_in_lsoa / ds_customers_in_lsoa.sum() # Proportion of DS customers in LSOA
+        prop_customers[np.isnan(prop_customers)] = 0
+        return prop_customers
+
+    def _calculate_quantiles(self, df):
+        quantiles = np.arange(0, 1.01, self.STEP)
+        quantile_data = {}
+        for column in df.columns:
+            quantile_data[column] = df[column].quantile(quantiles).values
+        quantile_df = pd.DataFrame(quantile_data, index=quantiles).astype(int)
+        quantile_df.index.name = 'Quantile'
+        return quantile_df
