@@ -116,6 +116,8 @@ public static class Program
             ClassificationToolBackgroundTask.Register(backgroundTasks);
             DatabaseBackupBackgroundTask.Register(backgroundTasks);
             LoadNetworkDataBackgroundTask.Register(backgroundTasks);
+            EVDemandBackgroundTask.Register(backgroundTasks);
+            EVDemandRunner.Initialise();
         }
         
 

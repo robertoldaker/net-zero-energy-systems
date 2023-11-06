@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { MainService } from '../main.service';
 import { UserService } from 'src/app/users/user.service';
 
@@ -9,7 +9,7 @@ import { UserService } from 'src/app/users/user.service';
 })
 export class MainMenuComponent implements OnInit {
 
-    constructor(private mainService: MainService, public userService: UserService) { }
+    constructor(private mainService: MainService, public userService: UserService, @Inject('DATA_URL') private baseUrl: string) { }
 
     ngOnInit(): void {
 
@@ -17,6 +17,10 @@ export class MainMenuComponent implements OnInit {
 
     get version() {
         return this.mainService.version;
+    }
+
+    openDocument() {
+        window.open(`${this.baseUrl}/documents/DataDigitalisationStrategy.pdf`,"_blank")
     }
 
 }

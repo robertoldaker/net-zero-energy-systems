@@ -111,8 +111,6 @@ namespace SmartEnergyLabDataApi.Models
             _ctTask.MessageUpdateEvent+=messageUpdate;
         }
 
-
-
         public override bool IsRunning =>  _ctTask.IsRunning;
 
         public override void Cancel()
@@ -239,4 +237,80 @@ namespace SmartEnergyLabDataApi.Models
 
         public static int Id;
     }
+
+    public class EVDemandBackgroundTask : BackgroundTaskBase
+    {
+        private enum RunType { Distribution, Primary, GSP}
+        private TaskRunner _ctTask;
+        private int _dbId;
+        private RunType _runType;
+
+        public EVDemandBackgroundTask(IBackgroundTasks tasks) : base(tasks) {
+            _ctTask = new TaskRunner((taskRunner) =>
+            {
+                stateUpdate(TaskState.RunningState.Running, "EV Demand tool started", 0);
+                try {
+                    var m = EVDemandRunner.Instance;
+                    if ( _runType==RunType.Distribution) {
+                        m.RunDistributionSubstation(_dbId,(TaskRunner?)taskRunner);
+                    } else if ( _runType==RunType.Primary) {
+                        m.RunPrimarySubstation(_dbId,(TaskRunner?)taskRunner);
+                    } else if ( _runType==RunType.GSP) {
+                        m.RunGridSupplyPoint(_dbId,(TaskRunner?)taskRunner);
+                    }
+                    stateUpdate(TaskState.RunningState.Finished, "EV Demand tool finished", 100);
+                } catch( Exception e) {
+                    stateUpdate(TaskState.RunningState.Finished, $"EV Demand tool aborted [{e.Message}]", 0);
+                }
+            });
+            _ctTask.StateUpdateEvent+=stateUpdate;
+            _ctTask.ProgressUpdateEvent+=percentUpdate;
+            _ctTask.MessageUpdateEvent+=messageUpdate;
+        }
+
+        public override bool IsRunning =>  _ctTask.IsRunning;
+
+        public override void Cancel()
+        {
+            _ctTask.Cancel();
+        }
+
+        public void RunDistributionSubstation(int id)
+        {
+            _dbId = id;
+            _runType=RunType.Distribution;            
+            run();
+        }
+
+        public void RunPrimarySubstation(int id)
+        {
+            _dbId = id;
+            _runType=RunType.Primary;
+            run();
+        }
+
+        public void RunGridSupplyPoint(int id)
+        {
+            _dbId = id;
+            _runType=RunType.GSP;
+            run();
+        }
+
+        private void run() {
+            if (_ctTask.IsRunning)
+            {
+                throw new Exception("EV Demand is currently in progress, please try again later");
+            }
+            _ctTask.Run();
+        }
+
+        public static void Register(IBackgroundTasks tasks) {
+            var instance = new EVDemandBackgroundTask(tasks);
+            Id = instance._id;
+        }
+
+        public static int Id;
+
+    }
+
 }
