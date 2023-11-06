@@ -85,6 +85,20 @@ namespace SmartEnergyLabDataApi.Data
             return Session.QueryOver<GridSupplyPoint>().Where( m=>m.DistributionNetworkOperator == dno).List();
         }
 
+        public int GetCustomersForGridSupplyPoint(int id) {
+            // Get ids of primary substations attached to this grid supply point
+            var pssIds = Session.QueryOver<PrimarySubstation>().Where(m=>m.GridSupplyPoint.Id==id).Select(m=>m.Id).List<int>().ToArray();
+            // Get ids of distribution substations attached to this primary
+            var dssIds = Session.QueryOver<DistributionSubstation>().Where(m=>m.PrimarySubstation.Id.IsIn(pssIds)).Select(m=>m.Id).List<int>().ToArray();
+            // Find sum of number of customers 
+            var sum = Session.QueryOver<DistributionSubstationData>().Where(m=>m.DistributionSubstation.Id.IsIn(dssIds)).SelectList(l=>l.SelectSum(m=>m.NumCustomers)).List<int?>();
+            if ( sum.Count>0 && sum[0]!=null) {
+                return (int) sum[0];
+            } else {
+                return 0;
+            }
+        }
+
         public string LoadGridSupplyPointsFromGeoJson(string geographicalAreaName, IFormFile file) {
 
             var gan = DataAccess.Organisations.GetGeographicalArea(geographicalAreaName);

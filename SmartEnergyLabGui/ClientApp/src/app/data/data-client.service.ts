@@ -43,6 +43,14 @@ export class DataClientService {
         }, error =>  this.logErrorMessage(error));
     }
 
+    GetCustomersForPrimarySubstation(primaryId: number, onLoad: ((numCustomers: number) => void) | undefined) {
+        this.http.get<number>(this.baseUrl + `/Substations/PrimarySubstation/Customers?primaryId=${primaryId}`).subscribe(result => {
+            if (onLoad !== undefined) {
+                onLoad(result);
+            }
+        }, error =>  this.logErrorMessage(error));
+    }
+
     GetDistributionSubstations(primaryId: number, onLoad: (dss: DistributionSubstation[]) => void | undefined) {
         this.http.get<DistributionSubstation[]>(this.baseUrl + `/Substations/DistributionSubstations?primaryId=${primaryId}`).subscribe(result => {
             if (onLoad !== undefined) {
@@ -103,6 +111,13 @@ export class DataClientService {
     }
     GetAllGridSupplyPoints(onLoad: ((gsp: GridSupplyPoint[]) => void) | undefined) {
         this.http.get<GridSupplyPoint[]>(this.baseUrl + `/SupplyPoints/GridSupplyPoints/All`).subscribe(result => {
+            if (onLoad !== undefined) {
+                onLoad(result);
+            }
+        }, error =>  this.logErrorMessage(error));
+    }
+    GetCustomersForGridSupplyPoint(id: number, onLoad: ((numCustomers: number) => void) | undefined) {
+        this.http.get<number>(this.baseUrl + `/SupplyPoints/GridSupplyPoint/Customers?id=${id}`).subscribe(result => {
             if (onLoad !== undefined) {
                 onLoad(result);
             }

@@ -100,6 +100,12 @@ namespace SmartEnergyLabDataApi.Data
         [ManyToOne(Column = "SubstationParamsId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
         public virtual SubstationParams SubstationParams { get; set; }
 
+        /// <summary>
+        /// Substation data
+        /// </summary>
+        [ManyToOne(Column = "DistributionSubstationDataId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
+        public virtual DistributionSubstationData SubstationData { get; set; }
+
         public virtual IList<SubstationLoadProfile> LoadProfiles { get; set; }
         public virtual void LoadLoadProfiles(DataAccess da)
         {
