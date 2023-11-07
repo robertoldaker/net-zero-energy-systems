@@ -251,6 +251,17 @@ namespace SmartEnergyLabDataApi.Models
                 stateUpdate(TaskState.RunningState.Running, "EV Demand tool started", 0);
                 try {
                     var m = EVDemandRunner.Instance;
+                    // Check its still running
+                    if ( !m.IsRunning ) {
+                        stateUpdate(TaskState.RunningState.Finished, $"EV Demand tool is not running", 0);
+                        return;
+                    }
+                    // Check its completed its startup code and is ready to accept input
+                    if ( !m.IsReady ) {
+                        stateUpdate(TaskState.RunningState.Finished, $"EV Demand tool is not ready to accept input", 0);
+                        return;
+                    }
+                    // Run the tool
                     if ( _runType==RunType.Distribution) {
                         m.RunDistributionSubstation(_dbId,(TaskRunner?)taskRunner);
                     } else if ( _runType==RunType.Primary) {

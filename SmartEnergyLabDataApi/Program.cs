@@ -26,8 +26,10 @@ public static class Program
         Logger.Initialise(builder.Environment.ContentRootPath);
         AppFolders.Initialise(builder.Environment.ContentRootPath, builder.Environment.WebRootPath);        
 
-        // Add services to the container.
+        // Add initial entry in log file
+        Logger.Instance.LogInfoEvent($"Starting Smart Energy Lab...");
 
+        // Add services to the container.
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
@@ -111,16 +113,19 @@ public static class Program
         app.MapControllers();
         app.MapHub<NotificationHub>("/NotificationHub");
 
+        var  hubContext = (IHubContext<NotificationHub>) app.Services.GetService(typeof(IHubContext<NotificationHub>));
+        if ( hubContext==null ) {
+            throw new Exception("IHubContext<NotificationHub> is null");
+        }
         var backgroundTasks = app.Services.GetService<IBackgroundTasks>();
         if ( backgroundTasks!=null ) {
             ClassificationToolBackgroundTask.Register(backgroundTasks);
             DatabaseBackupBackgroundTask.Register(backgroundTasks);
             LoadNetworkDataBackgroundTask.Register(backgroundTasks);
             EVDemandBackgroundTask.Register(backgroundTasks);
-            EVDemandRunner.Initialise();
+            EVDemandRunner.Initialise(builder.Environment.ContentRootPath,hubContext);
         }
         
-
 #if DEBUG
         string host = "localhost";
 #else
@@ -138,7 +143,6 @@ public static class Program
         // Needed to read spreadsheets
         System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
-        Logger.Instance.LogInfoEvent($"Starting Smart Energy Lab...");
         app.Run();
 
     }

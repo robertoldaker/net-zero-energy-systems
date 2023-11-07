@@ -36,9 +36,9 @@ class EVDemandInput:
                 self.__dict__ = dict
     
     @staticmethod
-    def fromJson(jsonStr: str):
+    def fromJson(jsonStr: str) -> 'EVDemandInput':
         return json.loads(jsonStr, object_hook=EVDemandInput._objectHook)
-    
+        
     @staticmethod
     def _objectHook(dict):
         if ( 'className' in dict):

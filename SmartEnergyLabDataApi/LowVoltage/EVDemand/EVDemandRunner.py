@@ -1,11 +1,14 @@
 import fileinput
 from json import JSONDecodeError
 import sys
+import time
 
 from EvDemandModel import EVDemandInput
 
 def main():
-    print("OK")
+    time.sleep(10)   
+    sys.stdout.write("OK\n")
+    sys.stdout.flush()
     cont = True
     while(cont):
         line = sys.stdin.readline().strip()        
@@ -15,14 +18,14 @@ def main():
             output=runPrediction(line)
             sys.stdout.write(output)
             sys.stdout.write("\n")
+            sys.stdout.flush();
 
 def runPrediction(line)->str:
-    print(line)
     try:
         input = EVDemandInput.fromJson(line)
-    except JSONDecodeError as e:
+        return f"num regionData={len(input.regionData)}"
+    except BaseException as e:
         return f"ERROR: {e.args[0]}"
-    return "OK"
 
 if __name__ == "__main__":
     main()

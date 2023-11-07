@@ -132,6 +132,16 @@ div.mapInfoWindow div#buttonRow {
     color: #333;
 }
 
+.imgButton {
+    width: 16px;
+    opacity: 0.5;
+    vertical-align: top;
+    cursor: pointer;
+}
+
+.imgButton:hover {
+    opacity: 1;
+}
 
 /* header search */
 input[type=text].headerSearch {

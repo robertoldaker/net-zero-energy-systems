@@ -1,7 +1,11 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using HaloSoft.EventLogger;
+using Microsoft.AspNetCore.SignalR;
+using NHibernate.Criterion;
+using NLog.Targets;
 using Npgsql.Replication;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
@@ -10,8 +14,11 @@ namespace SmartEnergyLabDataApi.Models
 {    
     public class EVDemandRunner {
         private static EVDemandRunner? _instance=null;
-        public static void Initialise() {
-            _instance = new EVDemandRunner();
+        private static IHubContext<NotificationHub> _hubContext;
+        public static void Initialise(string contentRootPath,IHubContext<NotificationHub> hubContext) {            
+            _instance = new EVDemandRunner(contentRootPath);
+            _hubContext = hubContext;
+            _instance.start();
         }
 
         public static EVDemandRunner Instance {
@@ -23,24 +30,144 @@ namespace SmartEnergyLabDataApi.Models
             }
         }
 
-        private EVDemandRunner() {
+        private Process? _proc;
+        private Task _startTask;
+        private bool _ready;
+        private object _readyLock = new object();
+        private bool _started;
+        private string _contentRootPath;
+        private const string PYTHON_SCRIPT = "EVDemandRunner.py";
 
+        private EVDemandRunner(string contentRootPath) {
+            _contentRootPath = contentRootPath;
+            _ready=false;
+            _started=false;
+        }
+
+        private void start() {
+            _startTask = new Task(()=>{
+                try {
+                    var ready = startEvDemandPredictor();
+                    if ( ready ) {
+                        setReady(true);
+                        Logger.Instance.LogInfoEvent($"{PYTHON_SCRIPT} is ready");
+                    } else {
+                        Logger.Instance.LogErrorEvent("Unexpected output from EVDemand predictor");
+                    }
+                } catch(Exception e) {
+                    Logger.Instance.LogErrorEvent("Problem starting EVDemand predictor");
+                    Logger.Instance.LogException(e);
+                }
+            });
+            _startTask.Start();
+        }
+
+        public void Restart() {
+            if ( IsRunning ) {
+                _proc.Kill(true);
+            }
+            start();
+        }
+
+        public bool IsReady {
+            get {
+                lock(_readyLock) {
+                    return _ready;
+                }
+            }
+        }
+
+        private void setReady(bool value) {
+            lock(_readyLock) {
+                _ready = value;
+            }
+            sendStatusUpdate();
+        }
+
+        public bool IsRunning {
+            get {
+                return _started && !_proc.HasExited;
+            }
+        }
+
+        private void setStarted(bool value) {
+            _started = value;                
+            sendStatusUpdate();
+        }
+
+        private void sendStatusUpdate() {
+            _hubContext.Clients.All.SendAsync("EVDemandStatus",GetStatus());
+        }
+
+        private bool startEvDemandPredictor() {
+            var workingDir = $"{_contentRootPath}LowVoltage/EVDemand";
+			ProcessStartInfo oInfo = new ProcessStartInfo("python",PYTHON_SCRIPT);
+			oInfo.UseShellExecute = false;
+			oInfo.CreateNoWindow = true;
+            oInfo.WorkingDirectory = workingDir;
+			oInfo.RedirectStandardOutput = true;
+			oInfo.RedirectStandardError = true;
+            oInfo.RedirectStandardInput = true;
+
+			StreamReader srOutput = null;
+
+            setReady(false);
+			_proc = Process.Start(oInfo);
+            _proc.EnableRaisingEvents = true;
+            setStarted(true);
+            _proc.Exited+=processExited;
+            if ( _proc==null) {
+                throw new Exception("Problem starting EVDemand process");
+            }
+			srOutput = _proc.StandardOutput;
+            Logger.Instance.LogInfoEvent($"Started {PYTHON_SCRIPT}, waiting for OK");
+            // wait for the script to output OK
+			var line = srOutput.ReadLine().TrimEnd();
+            return line=="OK";
+        }
+
+        private void processExited(object? sender, EventArgs args) {
+            setReady(false);            
+            Logger.Instance.LogInfoEvent("Premature exit of EVDemand tool:-");
+            var error = _proc.StandardError.ReadToEnd();
+            Logger.Instance.LogInfoEvent(error);
         }
 
         public void RunDistributionSubstation(int id, TaskRunner? taskRunner) {
             var input = EVDemandInput.CreateFromDistributionId(id);
-            var inputStr=JsonSerializer.Serialize(input);
-            Console.WriteLine(inputStr);
+            runEvDemandPreditor(input);
         }
 
         public void RunPrimarySubstation(int id, TaskRunner? taskRunner) {
             var input = EVDemandInput.CreateFromPrimaryId(id);
-            var inputStr=JsonSerializer.Serialize(input);
+            runEvDemandPreditor(input);
         }
 
         public void RunGridSupplyPoint(int id, TaskRunner? taskRunner) {
             var input = EVDemandInput.CreateFromGridSupplyPointId(id);
+            runEvDemandPreditor(input);
+        }
+
+        private void runEvDemandPreditor(EVDemandInput input) {
             var inputStr=JsonSerializer.Serialize(input);
+            Logger.Instance.LogInfoEvent("Writing EVDemandInput json to stdin ..");
+            _proc.StandardInput.WriteLine(inputStr);
+            Logger.Instance.LogInfoEvent("Reading output ...");
+            var output = _proc.StandardOutput.ReadLine();
+            Logger.Instance.LogInfoEvent(output);
+        }
+
+        public class Status {
+            public Status(bool isRunning, bool isReady) {
+                IsRunning = isRunning;
+                IsReady = isReady;
+            }
+            public bool IsRunning {get; set;}
+            public bool IsReady {get; set;}
+        }
+
+        public Status GetStatus() {
+            return new Status(IsRunning, IsReady);
         }
 
 

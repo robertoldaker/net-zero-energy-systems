@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 
@@ -319,6 +319,7 @@ export class DataClientService {
             }
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
     }
+
     /**
      * Elsi
      */    
@@ -461,6 +462,29 @@ export class DataClientService {
         }, error => this.logErrorMessage(error));        
     }
 
+    /* EV Demand tool */
+    RunEvDemandDistributionSubstation(id: number) {
+        const params = new HttpParams().append('id', id)
+        this.postRequestWithParams('/EVDemand/Run/DistributionSubstation',{},params, ()=>{})
+    }
+
+    RunEvDemandPrimarySubstation(id: number) {
+        const params = new HttpParams().append('id', id)
+        this.postRequestWithParams('/EVDemand/Run/PrimarySubstation',{},params,()=>{})
+    }
+
+    RunEvDemandGridSupplyPoint(id: number) {
+        const params = new HttpParams().append('id', id)
+        this.postRequestWithParams('/EVDemand/Run/GridSupplyPoint',{},params,()=>{})
+    }
+
+    GetEVDemandStatus(onLoad: (resp: EVDemandStatus)=>void) {
+        this.getRequest<EVDemandStatus>("/EvDemand/Status", onLoad)
+    }
+
+    RestartEVDemand() {
+        this.getBasicRequest("/EvDemand/Restart", ()=>{})
+    }
     /* shared */
     private getBasicRequest(url: string, onLoad: (resp: any)=>void | undefined) {
         this.http.get(this.baseUrl + url).subscribe(resp => {
@@ -497,6 +521,16 @@ export class DataClientService {
 
     private postRequest<T>(url: string, data: T,onOk: (resp: string)=>void | undefined) {
         this.http.post<string>(this.baseUrl + url, data).subscribe(resp => {
+            if ( onOk) {
+                onOk(resp);
+            }
+        },resp => { 
+            this.logErrorMessage(resp);
+        })
+    }
+
+    private postRequestWithParams<T>(url: string, data: T,params: HttpParams, onOk: (resp: string)=>void | undefined) {
+        this.http.post<string>(this.baseUrl + url, data, {params: params}).subscribe(resp => {
             if ( onOk) {
                 onOk(resp);
             }

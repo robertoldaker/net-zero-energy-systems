@@ -1,7 +1,19 @@
 <div>
     <div class="message">{{message}}</div>
+    <div class="title" style="margin-top: 0">Maintenance</div>
     <div class="toolbar">
         <button mat-raised-button color="primary" (click)="startMaintenance()">Start maintenance</button>
         <button mat-raised-button color="primary" (click)="stopMaintenance()">Stop maintenance</button>    
     </div>
+    <div class="title">EV Demand Tool</div>
+    <div class="toolbar">
+        <button mat-raised-button color="primary" (click)="restartEVDemandTool()">Restart</button>
+        <label>Is running
+            <input type="checkbox" disabled [checked]="evDemandService.status.isRunning"/>
+        </label>
+        <label style="margin-left: 1rem">Is ready
+            <input type="checkbox" disabled [checked]="evDemandService.status.isReady"/>
+        </label>
+    </div>
+
 </div>

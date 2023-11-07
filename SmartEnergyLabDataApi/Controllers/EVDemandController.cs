@@ -53,4 +53,23 @@ public class EVDemandController : ControllerBase
         _backgroundTask.RunGridSupplyPoint(id);
     }    
 
+    /// <summary>
+    /// Gets the current status of the EV demand tool
+    /// </summary>
+    [HttpGet]
+    [Route("Status")]
+    public object GetStatus()
+    {
+        return EVDemandRunner.Instance.GetStatus();
+    }    
+
+    /// <summary>
+    /// Restarts EV demand tool
+    /// </summary>
+    [HttpGet]
+    [Route("Restart")]
+    public void Restart()
+    {
+        EVDemandRunner.Instance.Restart();
+    }    
 }
