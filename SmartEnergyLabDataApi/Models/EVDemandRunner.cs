@@ -101,7 +101,16 @@ namespace SmartEnergyLabDataApi.Models
 
         private bool startEvDemandPredictor() {
             var workingDir = $"{_contentRootPath}LowVoltage/EVDemand";
-			ProcessStartInfo oInfo = new ProcessStartInfo("python",PYTHON_SCRIPT);
+            string fileName;
+            if ( AppEnvironment.Instance.Context == Context.Production) {
+                fileName = "/home/roberto/anaconda3/bin/python";
+            } else if (AppEnvironment.Instance.Context == Context.Staging) {
+                fileName = "/home/rob/anaconda3/bin/python";
+            } else {
+                fileName = "python";
+            }
+
+			ProcessStartInfo oInfo = new ProcessStartInfo(fileName,PYTHON_SCRIPT);
 			oInfo.UseShellExecute = false;
 			oInfo.CreateNoWindow = true;
             oInfo.WorkingDirectory = workingDir;

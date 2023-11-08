@@ -32,7 +32,7 @@
         <ProjectReference Include="..\EventLogger\EventLogger.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <None Include="LowVoltage\EVDemand\EVDemandRunner.py" />
+        <Content Include="LowVoltage\EVDemand\**" CopyToPublishDirectory="PreserveNewest"/>
     </ItemGroup>
 
 </Project>
