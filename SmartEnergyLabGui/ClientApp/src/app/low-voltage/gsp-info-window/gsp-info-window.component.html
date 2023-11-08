@@ -30,7 +30,7 @@
         </tr>
     </table>
     <div id="buttonRow">
-        <img class="imgButton" src="/assets/images/EV.png" (click)="runEVDemandTool()" title="run EV Demand tool" />
+        <img [class]="{imgButton: true, enabled: this.evDemandService.status.isReady}" src="/assets/images/EV.png" (click)="runEVDemandTool()" title="run EV Demand tool" />
     </div>
 </div>
 

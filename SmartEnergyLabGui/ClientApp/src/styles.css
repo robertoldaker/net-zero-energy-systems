@@ -134,12 +134,16 @@ div.mapInfoWindow div#buttonRow {
 
 .imgButton {
     width: 16px;
-    opacity: 0.5;
+    opacity: 0.25;
     vertical-align: top;
+}
+
+.imgButton.enabled {
+    opacity: 0.5;
     cursor: pointer;
 }
 
-.imgButton:hover {
+.imgButton.enabled:hover {
     opacity: 1;
 }
 

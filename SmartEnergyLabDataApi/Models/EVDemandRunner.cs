@@ -50,7 +50,6 @@ namespace SmartEnergyLabDataApi.Models
                 try {
                     var ready = startEvDemandPredictor();
                     if ( ready ) {
-                        setReady(true);
                         Logger.Instance.LogInfoEvent($"{PYTHON_SCRIPT} is ready");
                     } else {
                         Logger.Instance.LogErrorEvent("Unexpected output from EVDemand predictor");
@@ -129,6 +128,7 @@ namespace SmartEnergyLabDataApi.Models
 			    line = srOutput.ReadLine().TrimEnd();
                 cont = processLine(line,null);
             }
+            setReady(true);
             return true;
         }
 
@@ -188,6 +188,7 @@ namespace SmartEnergyLabDataApi.Models
         }
 
         private void runEvDemandPreditor(EVDemandInput input, TaskRunner? taskRunner) {
+            setReady(false);
             var inputStr=JsonSerializer.Serialize(input);
             Logger.Instance.LogInfoEvent("Writing EVDemandInput json to stdin ..");
             _proc.StandardInput.WriteLine(inputStr);
@@ -198,6 +199,7 @@ namespace SmartEnergyLabDataApi.Models
                 line = _proc.StandardOutput.ReadLine().TrimEnd();
                 cont = processLine(line, taskRunner);
             }
+            setReady(true);
         }
 
         public class Status {

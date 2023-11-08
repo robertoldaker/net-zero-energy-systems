@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MapPowerService } from '../map-power.service';
 import { DataClientService } from 'src/app/data/data-client.service';
+import { EvDemandService } from '../ev-demand.service';
 
 @Component({
     selector: 'app-gsp-info-window',
@@ -9,13 +10,16 @@ import { DataClientService } from 'src/app/data/data-client.service';
 })
 export class GspInfoWindowComponent implements OnInit {
 
-    constructor(public mapPowerService: MapPowerService, private dataClientService: DataClientService) { }
+    constructor(public mapPowerService: MapPowerService, 
+                private dataClientService: DataClientService,
+                public evDemandService: EvDemandService
+                ) { }
 
     ngOnInit(): void {
     }
 
     runEVDemandTool() {
-        if ( this.mapPowerService.SelectedGridSupplyPoint) {
+        if ( this.evDemandService.status.isReady && this.mapPowerService.SelectedGridSupplyPoint) {
             let id = this.mapPowerService.SelectedGridSupplyPoint.id
             this.dataClientService.RunEvDemandGridSupplyPoint(id)
         }
