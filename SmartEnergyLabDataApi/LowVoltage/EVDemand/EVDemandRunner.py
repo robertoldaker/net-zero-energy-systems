@@ -6,75 +6,82 @@ import time
 
 from EvDemandModel import EVDemandInput
 
+class EVDemandOutput:
+    def __init__(self) -> None:
+        pass
+
+    def printLogMessage(self,mess:str)->None:
+        sys.stdout.write("LOG:")
+        sys.stdout.write(mess);
+        sys.stdout.write("\n");
+        sys.stdout.flush();
+
+    def printErrorMessage(self,mess:str)->None:
+        sys.stdout.write("ERROR:")
+        sys.stdout.write(mess);
+        sys.stdout.write("\n");
+        sys.stdout.flush();
+
+    def printResultMessage(self,mess:str)->None:
+        sys.stdout.write("RESULT:")
+        sys.stdout.write(mess);
+        sys.stdout.write("\n");
+        sys.stdout.flush();
+
+    def printOkMessage(self)->None:
+        sys.stdout.write("OK:\n")
+        sys.stdout.flush();
+
+    def printProgressMessage(self,progress:int)->None:
+        sys.stdout.write("PROGRESS:")
+        sys.stdout.write(str(progress))
+        sys.stdout.write("\n");
+        sys.stdout.flush();
+
+    def printProgressTextMessage(self,progressText:str)->None:
+        sys.stdout.write("PROGRESS_TEXT:")
+        sys.stdout.write(progressText)
+        sys.stdout.write("\n");
+        sys.stdout.flush();
+
+
 def main():
+    out=EVDemandOutput()
     count=0
     while count<10:
-        printLogMessage(f"count={count}")
+        out.printLogMessage(f"count={count}")
         count+=1
         time.sleep(1)
 
-    printOkMessage()
+    out.printOkMessage()
     cont = True
     while(cont):
         line = sys.stdin.readline().strip()        
         if line == 'EXIT:':
             cont=False
         else:
-            runPrediction(line)
+            runPrediction(out,line)
 
-def runPrediction(line):
+def runPrediction(out: EVDemandOutput,line:str):
     try:
         input = EVDemandInput.fromJson(line)
-        printLogMessage("Start processing input")
-        printProgressTextMessage("Processing input ...")
+        out.printLogMessage("Start processing input")
+        out.printProgressTextMessage("Processing input ...")
         count=1
         while count<=10:
-            printProgressTextMessage(f"Processing input {count}...")
-            printProgressMessage((int) ((count*100.0)/10.0))
+            out.printProgressTextMessage(f"Processing input {count}...")
+            out.printProgressMessage((int) ((count*100.0)/10.0))
             time.sleep(1)
             count+=1
         
         output= {'numRegionData': len(input.regionData)}        
         outputJson = json.dumps(output)
-        printLogMessage("Processed input")
-        printResultMessage(outputJson)
+        out.printLogMessage("Processed input")
+        out.printResultMessage(outputJson)
     except BaseException as e:
-        printErrorMessage(e.args[0])
-        printOkMessage();
+        out.printErrorMessage(e.args[0])
+        out.printOkMessage();
 
-def printLogMessage(mess:str):
-    sys.stdout.write("LOG:")
-    sys.stdout.write(mess);
-    sys.stdout.write("\n");
-    sys.stdout.flush();
-
-def printErrorMessage(mess:str):
-    sys.stdout.write("ERROR:")
-    sys.stdout.write(mess);
-    sys.stdout.write("\n");
-    sys.stdout.flush();
-
-def printResultMessage(mess:str):
-    sys.stdout.write("RESULT:")
-    sys.stdout.write(mess);
-    sys.stdout.write("\n");
-    sys.stdout.flush();
-
-def printOkMessage():
-    sys.stdout.write("OK:\n")
-    sys.stdout.flush();
-
-def printProgressMessage(progress:int):
-    sys.stdout.write("PROGRESS:")
-    sys.stdout.write(str(progress))
-    sys.stdout.write("\n");
-    sys.stdout.flush();
-
-def printProgressTextMessage(progressText:str):
-    sys.stdout.write("PROGRESS_TEXT:")
-    sys.stdout.write(progressText)
-    sys.stdout.write("\n");
-    sys.stdout.flush();
 
 if __name__ == "__main__":
     main()
