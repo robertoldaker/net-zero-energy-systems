@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using HaloSoft.EventLogger;
 using Microsoft.AspNetCore.SignalR;
+using MySqlX.XDevAPI.Common;
 using NHibernate.Criterion;
 using NLog.Targets;
 using Npgsql.Replication;
@@ -56,7 +57,7 @@ namespace SmartEnergyLabDataApi.Models
                     }
                 } catch(Exception e) {
                     Logger.Instance.LogErrorEvent("Problem starting EVDemand predictor");
-                    Logger.Instance.LogException(e);
+                    Logger.Instance.LogException(e);                    
                 }
             });
             _startTask.Start();
@@ -122,8 +123,46 @@ namespace SmartEnergyLabDataApi.Models
 			srOutput = _proc.StandardOutput;
             Logger.Instance.LogInfoEvent($"Started {PYTHON_SCRIPT}, waiting for OK");
             // wait for the script to output OK
-			var line = srOutput.ReadLine().TrimEnd();
-            return line=="OK";
+            bool cont=true;
+            string line;
+            while( cont ) {
+			    line = srOutput.ReadLine().TrimEnd();
+                cont = processLine(line,null);
+            }
+            return true;
+        }
+
+        private bool processLine(string line, TaskRunner? taskRunner) {
+            bool cont = true;
+            if ( line.StartsWith("OK:")) {
+                cont=false;
+            } else if (line.StartsWith("LOG:")) {
+                line=line.Substring(4);
+                Logger.Instance.LogInfoEvent(line);
+            } else if (line.StartsWith("ERROR:")) {
+                line=line.Substring(6);
+                Logger.Instance.LogErrorEvent(line);
+            } else if (line.StartsWith("PROGRESS:")) {
+                var percentStr=line.Substring(9);
+                if ( int.TryParse(percentStr, out int percent)) {
+                    if ( taskRunner!=null) {
+                        taskRunner.Update(percent);
+                    }
+                } else {
+                    Logger.Instance.LogErrorEvent($"Problem parsing PROGRESS: message [{line}]");
+                }
+            } else if (line.StartsWith("PROGRESS_TEXT:")) {
+                var textStr=line.Substring(14);
+                if ( taskRunner!=null) {
+                    taskRunner.Update(textStr,false);
+                }
+            } else if (line.StartsWith("RESULT:")) {
+                line=line.Substring(7);
+                //?? Need to parse output
+                Logger.Instance.LogInfoEvent(line);
+                cont=false;
+            }
+            return cont;
         }
 
         private void processExited(object? sender, EventArgs args) {
@@ -135,26 +174,30 @@ namespace SmartEnergyLabDataApi.Models
 
         public void RunDistributionSubstation(int id, TaskRunner? taskRunner) {
             var input = EVDemandInput.CreateFromDistributionId(id);
-            runEvDemandPreditor(input);
+            runEvDemandPreditor(input, taskRunner);
         }
 
         public void RunPrimarySubstation(int id, TaskRunner? taskRunner) {
             var input = EVDemandInput.CreateFromPrimaryId(id);
-            runEvDemandPreditor(input);
+            runEvDemandPreditor(input, taskRunner);
         }
 
         public void RunGridSupplyPoint(int id, TaskRunner? taskRunner) {
             var input = EVDemandInput.CreateFromGridSupplyPointId(id);
-            runEvDemandPreditor(input);
+            runEvDemandPreditor(input, taskRunner);
         }
 
-        private void runEvDemandPreditor(EVDemandInput input) {
+        private void runEvDemandPreditor(EVDemandInput input, TaskRunner? taskRunner) {
             var inputStr=JsonSerializer.Serialize(input);
             Logger.Instance.LogInfoEvent("Writing EVDemandInput json to stdin ..");
             _proc.StandardInput.WriteLine(inputStr);
-            Logger.Instance.LogInfoEvent("Reading output ...");
-            var output = _proc.StandardOutput.ReadLine();
-            Logger.Instance.LogInfoEvent(output);
+            Logger.Instance.LogInfoEvent("Reading output from EVDemand tool ...");
+            bool cont=true;
+            string line;
+            while( cont ) {
+                line = _proc.StandardOutput.ReadLine().TrimEnd();
+                cont = processLine(line, taskRunner);
+            }
         }
 
         public class Status {
