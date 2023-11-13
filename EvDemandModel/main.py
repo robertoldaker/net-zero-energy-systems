@@ -1,10 +1,10 @@
 #%%
 import pandas as pd
-import Preprocessing
-import Calibration
-import Utils
-import OnPlotParking
-import SubstationMapping
+import EvDemandModel.Preprocessing
+import EvDemandModel.Calibration
+import EvDemandModel.Utils
+import EvDemandModel.OnPlotParking
+import EvDemandModel.SubstationMapping
 from importlib import reload
 
 def reload_modules(module_names):
@@ -12,14 +12,14 @@ def reload_modules(module_names):
         reload(module_name)
 
 # Reload modules
-modules = [Preprocessing, Calibration, Utils, OnPlotParking, SubstationMapping]
+modules = [EvDemandModel.Preprocessing, EvDemandModel.Calibration, EvDemandModel.Utils, EvDemandModel.OnPlotParking, EvDemandModel.SubstationMapping]
 reload_modules(modules)
 
-from Preprocessing import Preprocess
-from Calibration import CalculateCalibrationFactors
-from Utils import CalibrationFactorApplier
-from OnPlotParking import CalculateProportionOfVehiclesWithOnPlotParking, CalculateProportionOfEVsWithOnPlotParking
-from SubstationMapping import LoadDistributionSubstationData, CreateSubstationObjects, SubstationObjectDataMapper
+from EvDemandModel.Preprocessing import Preprocess
+from EvDemandModel.Calibration import CalculateCalibrationFactors
+from EvDemandModel.Utils import CalibrationFactorApplier
+from EvDemandModel.OnPlotParking import CalculateProportionOfVehiclesWithOnPlotParking, CalculateProportionOfEVsWithOnPlotParking
+from EvDemandModel.SubstationMapping import LoadDistributionSubstationData, CreateSubstationObjects, SubstationObjectDataMapper
 
 #%%
 
