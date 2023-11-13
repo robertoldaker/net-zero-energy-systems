@@ -1,27 +1,54 @@
 from enum import Enum
+import json
 
-class Substation:
-    def __init__(self) -> None:
-        self.name:str
-        self.id:int
-        self.gisData:GISData
-        self.evDemands:EVDemands
-        self.params:SubstationParams
+class EVDemandInput:
+    def __init__(self,dict=None)->None:
+        self.predictorParams: EVDemandInput.PredictorParams
+        self.regionData: list[EVDemandInput.RegionData]
+        if dict:
+            self.__dict__ = dict
 
-class SubstationParams:
-    def __init__(self) -> None:
-        self.numCustomers:int
+    class RegionType(Enum):
+        Dist=0
+        Primary=1
+        GSP=2
 
-class GISData:
-    def __init__(self) -> None:
-        self.latitude:float
-        self.longitude:float
-        self.boundaries:list[GISBoundary]
+    class RegionData:
+        def __init__(self,dict=None)->None:
+            self.id: int
+            self.type: EVDemandInput.RegionType
+            self.latitudes: list[float]
+            self.longitudes: list[float]
+            self.numCustomers: int
+            if dict:
+                self.__dict__ = dict
+    
+    class VehicleUsage(Enum):
+        Low=0
+        Medium=1
+        High=2
 
-class GISBoundary:
-    def __init__(self) -> None:
-        self.latitudes:list[float]
-        self.longitudes:list[float]
+    class PredictorParams:
+        def __init__(self, dict: None)->None:
+            self.vehicleUsage: EVDemandInput.VehicleUsage
+            self.years: list[int]
+            if dict:
+                self.__dict__ = dict
+    
+    @staticmethod
+    def fromJson(jsonStr: str) -> 'EVDemandInput':
+        return json.loads(jsonStr, object_hook=EVDemandInput._objectHook)
+        
+    @staticmethod
+    def _objectHook(dict):
+        if ( 'className' in dict):
+            className = dict['className']
+            if (className=='EVDemandInput'):
+                return EVDemandInput(dict)
+            elif (className=='EVDemandInput.RegionData'):            
+                return EVDemandInput.RegionData(dict)
+            elif (className=='EVDemandInput.PredictorParams'):
+                return EVDemandInput.PredictorParams(dict)
 
 class EVDemands:
     def __init__(self) -> None:

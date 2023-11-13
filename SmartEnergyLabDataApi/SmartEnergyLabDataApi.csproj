@@ -1,35 +1,38 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <StartupObject>Program</StartupObject>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <StartupObject>Program</StartupObject>
+    </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn>1701;1702;1591;8600;8602;8603;8618</NoWarn>
-  </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <NoWarn>1701;1702;1591;8600;8602;8603;8618</NoWarn>
+    </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <NoWarn>1701;1702;1591;8600;8602;8603;8618</NoWarn>
-  </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <NoWarn>1701;1702;1591;8600;8602;8603;8618</NoWarn>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="alglib.net" Version="3.18.2" />
-    <PackageReference Include="ExcelDataReader" Version="3.7.0-develop00310" />
-    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.56.0.2608" />
-    <PackageReference Include="NHibernate" Version="5.3.10" />
-    <PackageReference Include="NHibernate.Mapping.Attributes" Version="5.1.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
-    <PackageReference Include="SSH.NET" Version="2020.0.2" />
-    <PackageReference Include="LumenWorksCsvReader" Version="4.0.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="alglib.net" Version="3.18.2" />
+        <PackageReference Include="ExcelDataReader" Version="3.7.0-develop00310" />
+        <PackageReference Include="Google.Apis.Sheets.v4" Version="1.56.0.2608" />
+        <PackageReference Include="NHibernate" Version="5.3.10" />
+        <PackageReference Include="NHibernate.Mapping.Attributes" Version="5.1.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+        <PackageReference Include="SSH.NET" Version="2020.0.2" />
+        <PackageReference Include="LumenWorksCsvReader" Version="4.0.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\DataAccessBase\DataAccessBase.csproj" />
-    <ProjectReference Include="..\EventLogger\EventLogger.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\DataAccessBase\DataAccessBase.csproj" />
+        <ProjectReference Include="..\EventLogger\EventLogger.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="LowVoltage\EVDemand\**" CopyToPublishDirectory="PreserveNewest"/>
+    </ItemGroup>
 
 </Project>

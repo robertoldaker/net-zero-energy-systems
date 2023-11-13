@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DataClientService } from 'src/app/data/data-client.service';
+import { EvDemandService } from 'src/app/low-voltage/ev-demand.service';
 
 @Component({
     selector: 'app-admin-general',
@@ -8,9 +9,9 @@ import { DataClientService } from 'src/app/data/data-client.service';
 })
 export class AdminGeneralComponent implements OnInit {
 
-    constructor(private dataClientService: DataClientService) {
+    constructor(private dataClientService: DataClientService, public evDemandService: EvDemandService) {
         
-     }
+    }
 
     startMaintenance() {
 
@@ -21,6 +22,10 @@ export class AdminGeneralComponent implements OnInit {
     }
 
     ngOnInit(): void {
+    }
+
+    restartEVDemandTool() {
+        this.dataClientService.RestartEVDemand();
     }
 
     message: string = "";

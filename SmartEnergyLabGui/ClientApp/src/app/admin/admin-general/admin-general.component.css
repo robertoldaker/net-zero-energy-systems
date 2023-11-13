@@ -9,3 +9,10 @@ div.toolbar > button {
 div.message {
     color: darkred;
 }
+
+div.title {
+    color: var(--primary-colour);
+    font-size: 0.9rem;    
+    font-weight: bold;
+    margin-top: 2rem;
+}
