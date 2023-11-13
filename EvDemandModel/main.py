@@ -19,7 +19,7 @@ from Preprocessing import Preprocess
 from Calibration import CalculateCalibrationFactors
 from Utils import CalibrationFactorApplier
 from OnPlotParking import CalculateProportionOfVehiclesWithOnPlotParking, CalculateProportionOfEVsWithOnPlotParking
-from SubstationMapping import LoadDistributionSubstationData, CreateSubstationObjects, SubstationDataMapper
+from SubstationMapping import LoadDistributionSubstationData, CreateSubstationObjects, SubstationObjectDataMapper
 
 #%%
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     substation_numbers = ds_data['Substation Number'].sample(10).values
     substations = CreateSubstationObjects.create_substation_objects(ds_data, substation_numbers)
 
-    substation_data_mapper = SubstationDataMapper(
+    substation_data_mapper = SubstationObjectDataMapper(
         ds_data=ds_data,
         lsoa_boundaries=preprocessed_data['lsoa_boundaries'],
         house_data=preprocessed_data['house_2021']

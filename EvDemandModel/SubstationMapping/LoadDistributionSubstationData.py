@@ -7,7 +7,7 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 def load_data():
     ds = (
-        pd.read_csv(os.path.join(SCRIPT_DIR, '../Data/DistributionNetwork/distribution_substations.csv'))
+        pd.read_csv(os.path.join(SCRIPT_DIR, '../Data/DistributionNetwork/distribution_substations_octv2.csv'))
         .drop(
             columns = [
                 'Transformer Headroom', 'LCT Count Total', 'Energy Storage', 'Heat Pumps', 

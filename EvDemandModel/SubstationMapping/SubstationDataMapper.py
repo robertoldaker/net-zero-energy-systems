@@ -77,16 +77,16 @@ class SubstationObjectDataMapper:
         return percentile_series
     
 class SubstationDataMapper:
-    STEP = 0.05
+    PERCENTILE_STEP = 1
+    QUANTILE_STEP = PERCENTILE_STEP/100
 
-    def __init__(self, ds_data: pd.DataFrame, lsoa_boundaries: gpd.GeoDataFrame, house_data: pd.DataFrame) -> None:
+    def __init__(self, ds_data: pd.DataFrame, lsoa_boundaries: gpd.GeoDataFrame) -> None:
         self.ds_data = ds_data.set_index('Substation Number')
         self.lsoa_boundaries = lsoa_boundaries
-        self.house_data = house_data
 
     def map_to_substation(self, data: dict) -> dict:
-        mapped_data = {key: pd.DataFrame(index=np.arange(0, 1.01, self.STEP), columns=self.ds_data.index.values) for key in data}
-        lad_lsoas = self.house_data.index.values
+        mapped_data = {key: pd.DataFrame(index=np.arange(0, 1.01, self.QUANTILE_STEP), columns=self.ds_data.index.values) for key in data}
+        lad_lsoas = self.lsoa_boundaries.index.values
         for key in data:
             mapped_key_data = pd.DataFrame(index=range(0, len(data[key])), columns=self.ds_data.index.values, data=0)
             for lsoa in lad_lsoas:
@@ -113,16 +113,16 @@ class SubstationDataMapper:
         intersection_areas = intersections.loc[child_ds].area
         substation_areas = self.ds_data.loc[child_ds].geometry.area
         relative_intersections = intersection_areas / substation_areas
-        ds_customers_in_lsoa = relative_intersections * self.ds_data.loc[child_ds, 'Customers']
+        ds_customers_in_lsoa = relative_intersections * self.ds_data.loc[child_ds, 'Customers'].fillna(0)
         prop_customers = ds_customers_in_lsoa / ds_customers_in_lsoa.sum() # Proportion of DS customers in LSOA
         prop_customers[np.isnan(prop_customers)] = 0
         return prop_customers
 
     def _calculate_quantiles(self, df):
-        quantiles = np.arange(0, 1.01, self.STEP)
+        quantiles = np.arange(0, 1.01, self.QUANTILE_STEP)
         quantile_data = {}
         for column in df.columns:
             quantile_data[column] = df[column].quantile(quantiles).values
-        quantile_df = pd.DataFrame(quantile_data, index=quantiles).astype(int)
+        quantile_df = pd.DataFrame(quantile_data, index=[f"{i}%" for i in range(0, 101, self.PERCENTILE_STEP)]).astype(int)
         quantile_df.index.name = 'Quantile'
         return quantile_df
