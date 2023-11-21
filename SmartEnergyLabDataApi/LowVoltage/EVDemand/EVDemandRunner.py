@@ -4,7 +4,7 @@ import json
 import sys
 import time
 
-from EvDemandModel import EVDemandInput
+from EvDemandModel.EvDemandModel import EVDemandInput
 
 class EVDemandOutput:
     def __init__(self) -> None:

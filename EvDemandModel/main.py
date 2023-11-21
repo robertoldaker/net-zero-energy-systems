@@ -1,10 +1,10 @@
 #%%
 import pandas as pd
-import Preprocessing
-import Calibration
-import Utils
-import OnPlotParking
-import SubstationMapping
+import EvDemandModel.Preprocessing
+import EvDemandModel.Calibration
+import EvDemandModel.Utils
+import EvDemandModel.OnPlotParking
+import EvDemandModel.SubstationMapping
 from importlib import reload
 
 def reload_modules(module_names):
@@ -12,14 +12,14 @@ def reload_modules(module_names):
         reload(module_name)
 
 # Reload modules
-modules = [Preprocessing, Calibration, Utils, OnPlotParking, SubstationMapping]
+modules = [EvDemandModel.Preprocessing, EvDemandModel.Calibration, EvDemandModel.Utils, EvDemandModel.OnPlotParking, EvDemandModel.SubstationMapping]
 reload_modules(modules)
 
-from Preprocessing import Preprocess
-from Calibration import CalculateCalibrationFactors
-from Utils import CalibrationFactorApplier
-from OnPlotParking import CalculateProportionOfVehiclesWithOnPlotParking, CalculateProportionOfEVsWithOnPlotParking
-from SubstationMapping import LoadDistributionSubstationData, CreateSubstationObjects, SubstationDataMapper
+from EvDemandModel.Preprocessing import Preprocess
+from EvDemandModel.Calibration import CalculateCalibrationFactors
+from EvDemandModel.Utils import CalibrationFactorApplier
+from EvDemandModel.OnPlotParking import CalculateProportionOfVehiclesWithOnPlotParking, CalculateProportionOfEVsWithOnPlotParking
+from EvDemandModel.SubstationMapping import LoadDistributionSubstationData, CreateSubstationObjects, SubstationObjectDataMapper
 
 #%%
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     substation_numbers = ds_data['Substation Number'].sample(10).values
     substations = CreateSubstationObjects.create_substation_objects(ds_data, substation_numbers)
 
-    substation_data_mapper = SubstationDataMapper(
+    substation_data_mapper = SubstationObjectDataMapper(
         ds_data=ds_data,
         lsoa_boundaries=preprocessed_data['lsoa_boundaries'],
         house_data=preprocessed_data['house_2021']
