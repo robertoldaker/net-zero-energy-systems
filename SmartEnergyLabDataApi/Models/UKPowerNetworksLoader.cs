@@ -35,7 +35,8 @@ namespace SmartEnergyLabDataApi.Models
         
         public void Load() {
             updateMessage("Loading LTDS demand records ...");
-            _ltdsRecords = loadData<LTDSDemandRecord>("/api/records/1.0/search/?dataset=ltds-table-3a-load-data-observed&q=&facet=licencearea&facet=gridsupplypoint&facet=substation&facet=season&facet=year&refine.season=Winter&refine.year=22-23");
+            //??_ltdsRecords = loadData<LTDSDemandRecord>("/api/records/1.0/search/?dataset=ltds-table-3a-load-data-observed&q=&facet=licencearea&facet=gridsupplypoint&facet=substation&facet=season&facet=year&refine.season=Winter&refine.year=22-23");
+            _ltdsRecords = loadData<LTDSDemandRecord>("/api/explore/v2.1/catalog/datasets/ltds-table-3a-load-data-observed/records?refine=year%3A%2222-23%22&refine=season%3A%22Winter%22");
             checkCancelled();
             updateProgress();
             loadGSPs();
@@ -61,7 +62,7 @@ namespace SmartEnergyLabDataApi.Models
 
             updateMessage("Loading GSP records ...");
             _gspProcessResult.Reset();
-            var gspRecords = loadData<GSPRecord>($"/api/records/1.0/search/?dataset=ukpn-grid-supply-points&facet=gsp");
+            var gspRecords = loadData<GSPRecord>($"/api/explore/v2.1/catalog/datasets/ukpn-grid-supply-points/records");
             foreach( var gspRecord in gspRecords) {
                 if ( gspRecord.geo_shape.type=="Polygon") {
                     gspRecord.geo_shape.polygonCoords = gspRecord.geo_shape.coordinates.Deserialize<double[][][]>();                    
@@ -207,7 +208,7 @@ namespace SmartEnergyLabDataApi.Models
         private void loadPrimaries() {
             updateMessage("Loading Primary area records ...");
             _primProcessResult.Reset();
-            var primAreaRecords = loadData<PrimaryAreaRecord>("/api/records/1.0/search/?dataset=ukpn_primary_postcode_area&facet=demandrag",
+            var primAreaRecords = loadData<PrimaryAreaRecord>("/api/explore/v2.1/catalog/datasets/ukpn_primary_postcode_area/records",
                         100,(loaded,total,records)=>{
                             updateMessage($"Loaded Primary area records [{loaded}] of [{total}]...",false);
             });
@@ -374,23 +375,23 @@ namespace SmartEnergyLabDataApi.Models
             return pss;
         }
 
-        private List<T> loadData<T>(string methodUrl,int rows=100, Action<int,int,IEnumerable<T>>? progress=null) where T : class {
+        private List<T> loadData<T>(string methodUrl,int rows=20, Action<int,int,IEnumerable<T>>? progress=null) where T : class {
             int start=0;
             Container<T> container;
             List<T> records=new List<T>();
             string methodStr;
             do {
-                methodStr = methodUrl + $"&rows={rows}&start={start}";
+                methodStr = methodUrl + $"&limit={rows}&offset={start}&apikey=d0cd41146c5594f1fb7e6f7c50b31c403a4984ceaa6db4ec00da5ff2";
                 container = get<Container<T>>(methodStr);
                 checkCancelled();
-                if ( container.records.Length>0) {
-                    foreach( var record in container.records) {
-                        records.Add(record.fields);
+                if ( container.results.Length>0) {
+                    foreach( var record in container.results) {
+                        records.Add(record);
                     }
-                    progress?.Invoke(records.Count,container.nhits,container.records.Select(m=>m.fields));
+                    progress?.Invoke(records.Count,container.total_count,container.results.Select(m=>m));
                 }
-                start += container.records.Length;
-            } while( container.records.Length>0 );
+                start += container.results.Length;
+            } while( container.results.Length>0 );
             //
             return records;
         }
@@ -518,8 +519,8 @@ namespace SmartEnergyLabDataApi.Models
         }
 
         private class Container<T> {
-            public int nhits {get; set;}
-            public Fields<T>[] records {get; set;}
+            public int total_count{get; set;}
+            public T[] results {get; set;}
         }
 
         private T get<T>(string method, params string[] queryParams) where T : class
@@ -557,6 +558,7 @@ namespace SmartEnergyLabDataApi.Models
                 lock (_httpClientLock) {
                     _httpClient = new HttpClient();
                     _httpClient.BaseAddress = new Uri(_baseUrl);
+                    _httpClient.DefaultRequestHeaders.Add("Authorization","Apikey d0cd41146c5594f1fb7e6f7c50b31c403a4984ceaa6db4ec00da5ff2");
                 }
             }
             //
