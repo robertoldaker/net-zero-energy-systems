@@ -10,4 +10,4 @@ SmartEnergyLabDataApi/SmartEnergyLabDataApi.zip
 SmartEnergyLabGui/SmartEnergyLabGui.zip
 package-lock.json
 SmartEnergyLabDataApi/App_Data
-**/__pycache__/
+__pycache__
