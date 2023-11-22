@@ -11,4 +11,5 @@ SmartEnergyLabGui/SmartEnergyLabGui.zip
 package-lock.json
 SmartEnergyLabDataApi/App_Data
 __pycache__
-EVDemandModel/EVDemandModel/Data
+EvDemandModel/EvDemandModel/Data
+EvDemandModel/EvDemandModel.zip
