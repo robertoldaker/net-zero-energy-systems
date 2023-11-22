@@ -24,4 +24,4 @@ else
     raiseError "$usage"
 fi
 
-rsync -aP ../EvDemandModel/EvDemandModel/Data -e 'ssh' $dest:~/websites/SmartEnergyLabDataApi/EvDemandModel/EvDemandModel/Data
+rsync -aP ../EvDemandModel/EvDemandModel/Data -e 'ssh' $dest:~/websites/EvDemandModel/EvDemandModel

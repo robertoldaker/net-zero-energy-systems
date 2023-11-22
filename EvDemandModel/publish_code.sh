@@ -34,10 +34,10 @@ popd
 
 echo "Copying to $dest"
 # sftp and ssh use key based authentication that needs setting up - see https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server
-echo -e "cd websites/SmartEnergyLabDataApi\nput $app.zip" | sftp $dest
+echo -e "cd websites\nput $app.zip" | sftp $dest
 echo "Installing on $dest"
 #
-ssh $dest "unzip -o websites/SmartEnergyLabDataApi/$app.zip -d websites/SmartEnergyLabDataApi/$app"
+ssh $dest "unzip -o websites/$app.zip -d websites/$app"
 
 echo "Publish successful. Press any key to continue";
 read
