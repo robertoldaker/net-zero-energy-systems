@@ -1,6 +1,7 @@
 import pandas as pd
 from .ErrorCalculator import ErrorCalculator
 from .CalibrationFactorSampleGenerator import CalibrationFactorSampleGenerator
+from ..Utils.EVDemandOutput import EVDemandOutput
 
 def calculate(car_van_2011_data: pd.DataFrame, 
               car_van_2021_data: pd.DataFrame, 
@@ -13,7 +14,7 @@ def calculate(car_van_2011_data: pd.DataFrame,
         vehicle_registrations_data # Actively choosing not to use interpolated data here
     )
 
-    print('Calculating relative errors...')
+    EVDemandOutput.logMessage('Calculating relative errors...')
     relative_error_data = relative_error_calculator.calculate()
 
     calibration_factor_sample_generator = CalibrationFactorSampleGenerator(
@@ -21,7 +22,7 @@ def calculate(car_van_2011_data: pd.DataFrame,
         n_samples=1000
     )
 
-    print('Generating calibration factor samples...')
+    EVDemandOutput.logMessage('Generating calibration factor samples...')
     calibration_factor_samples = calibration_factor_sample_generator.generate_samples()
 
     return calibration_factor_samples

@@ -21,6 +21,13 @@ from EvDemandModel.Utils import CalibrationFactorApplier
 from EvDemandModel.OnPlotParking import CalculateProportionOfVehiclesWithOnPlotParking, CalculateProportionOfEVsWithOnPlotParking
 from EvDemandModel.SubstationMapping import LoadDistributionSubstationData, CreateSubstationObjects, SubstationObjectDataMapper
 
+from EvDemandModel.Utils.EVDemandOutput import EVDemandOutput
+from EvDemandModel.Utils.EVDemandInput import EVDemandInput
+
+import sys
+import time
+import json
+
 #%%
 
 def calculate_opp_proportions(preprocessed_data, quarter):
@@ -51,7 +58,55 @@ def apply_calibration_factors(preprocessed_data, calibration_factors, quarter):
     return adoptions
 #%%
 
+def runPrediction(line:str):
+    try:
+        # get EVDemandInput object from the input line
+        input = EVDemandInput.fromJson(line)
+
+        EVDemandOutput.logMessage("Start processing input")
+        EVDemandOutput.progressTextMessage("Processing input ...")
+
+        #
+        # Code to write out the input to check the serialization from c# object to puthon object works
+        # (can be removed when we know its working)
+        #
+        for rd in input.regionData:
+            EVDemandOutput.logMessage(f'id=[{rd.id}]')
+            EVDemandOutput.logMessage(f'RegionType=[{rd.type}]')
+            EVDemandOutput.logMessage(f'NumCustomers=[{rd.numCustomers}]')            
+            EVDemandOutput.logMessage(f'NumPolgons=[{len(rd.polygons)}]')            
+            for p in rd.polygons:
+                EVDemandOutput.logMessage(f'NumPoints=[{len(p.points)}]')            
+
+        #
+        # Needs replacing with actual code to perform prediction
+        #
+        count=1
+        while count<=2:
+            EVDemandOutput.progressTextMessage(f"Processing input {count}...")
+            EVDemandOutput.progressMessage((int) ((count*100.0)/10.0))
+            time.sleep(1)
+            count+=1
+
+        #
+        # Dummy object that should be replaced with object holding the results of the prediction (EVDemandResult?)
+        #
+        output= {'numRegionData': len(input.regionData)}        
+        outputJson = json.dumps(output)
+        EVDemandOutput.logMessage("Processed input")
+        EVDemandOutput.resultMessage(outputJson)# 
+    except BaseException as e:
+        #
+        # Catch any exceptions and write them to the server log
+        
+        #
+        EVDemandOutput.errorMessage(e.args[0])
+        EVDemandOutput.okMessage();
+
 if __name__ == "__main__":
+
+    out=EVDemandOutput()
+
 
     preprocessed_data = Preprocess.preprocess()
 
@@ -62,7 +117,7 @@ if __name__ == "__main__":
     )
     #%%
 
-    opp_proportions = calculate_opp_proportions(preprocessed_data, '2023 Q1')
+    opp_proportions = calculate_opp_proportions(preprocessed_data, '2023 Q1')    
 
     adoptions = apply_calibration_factors(preprocessed_data, calibration_factors, '2023 Q1')
 
@@ -109,4 +164,18 @@ if __name__ == "__main__":
     for df_name, attr in attributes.items():
         for substation in substations:
             substation_vehicle_data[df_name][substation.id] = getattr(substation.vehicles, attr)
+    
+    #
+    # Write OK message so server knows this script is ready and wait for input
+    #
+    EVDemandOutput.okMessage()
+    cont = True
+    while(cont):
+        # wait for server to  write something to stdin
+        line = sys.stdin.readline().strip()        
+        if line == 'EXIT:':
+            cont=False
+        else:
+            runPrediction(line)
+
     # %%

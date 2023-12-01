@@ -6,10 +6,13 @@ using HaloSoft.EventLogger;
 using Microsoft.AspNetCore.SignalR;
 using MySqlX.XDevAPI.Common;
 using NHibernate.Criterion;
+using NLog.LayoutRenderers.Wrappers;
 using NLog.Targets;
+using Npgsql.Internal.TypeHandlers.GeometricHandlers;
 using Npgsql.Replication;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Model;
 
 namespace SmartEnergyLabDataApi.Models
 {    
@@ -37,7 +40,7 @@ namespace SmartEnergyLabDataApi.Models
         private object _readyLock = new object();
         private bool _started;
         private string _contentRootPath;
-        private const string PYTHON_SCRIPT = "EVDemandRunner.py";
+        private const string PYTHON_SCRIPT = "main.py";
 
         private EVDemandRunner(string contentRootPath) {
             _contentRootPath = contentRootPath;
@@ -100,7 +103,7 @@ namespace SmartEnergyLabDataApi.Models
         }
 
         private bool startEvDemandPredictor() {
-            var workingDir = $"{_contentRootPath}LowVoltage/EVDemand";
+            var workingDir = $"{_contentRootPath}../EvDemandModel";
             string fileName;
             if ( AppEnvironment.Instance.Context == Context.Production) {
                 fileName = "/home/roberto/anaconda3/bin/python";
@@ -246,10 +249,12 @@ namespace SmartEnergyLabDataApi.Models
                 var boundaries = da.GIS.GetBoundaries(dss.GISData.Id);
                 //
                 if ( boundaries.Count>0 ) {
-                    var boundary=boundaries[0];
                     var rD = new RegionData(id,RegionType.Dist);
-                    rD.latitudes = boundary.Latitudes;
-                    rD.longitudes = boundary.Longitudes;
+                    rD.polygons=new Polygon[boundaries.Count];
+                    int index=0;
+                    foreach( var boundary in boundaries) {
+                        rD.polygons[index++] = new Polygon(boundary.Latitudes,boundary.Longitudes);
+                    }
                     if ( dss.SubstationData!=null ) {
                         rD.numCustomers = dss.SubstationData.NumCustomers;
                     } else {
@@ -273,10 +278,12 @@ namespace SmartEnergyLabDataApi.Models
                 var boundaries = da.GIS.GetBoundaries(pss.GISData.Id);
                 //
                 if ( boundaries.Count>0 ) {
-                    var boundary=boundaries[0];
                     var rD = new RegionData(id,RegionType.Primary);
-                    rD.latitudes = boundary.Latitudes;
-                    rD.longitudes = boundary.Longitudes;
+                    rD.polygons=new Polygon[boundaries.Count];
+                    int index=0;
+                    foreach( var boundary in boundaries) {
+                        rD.polygons[index++] = new Polygon(boundary.Latitudes,boundary.Longitudes);
+                    }
                     var numCustomers = da.Substations.GetCustomersForPrimarySubstation(id);
                     if ( numCustomers>0 ) {
                         rD.numCustomers = numCustomers;
@@ -313,8 +320,8 @@ namespace SmartEnergyLabDataApi.Models
                         }
                         if ( numCustomers>0 ) {
                             var rD = new RegionData(id,RegionType.GSP);
-                            rD.latitudes = boundary.Latitudes;
-                            rD.longitudes = boundary.Longitudes;
+                            rD.polygons = new Polygon[1];
+                            rD.polygons[0]=new Polygon(boundary.Latitudes,boundary.Longitudes);
                             rD.numCustomers = numCustomers;
                             evDi.regionData.Add(rD);
                         } 
@@ -324,6 +331,23 @@ namespace SmartEnergyLabDataApi.Models
                 }
             }
             return evDi;
+        }
+
+
+        public class Polygon {
+            public string className {
+                get {
+                    return "EVDemandInput.Polygon";
+                }
+            }
+            public Polygon(double[] latitudes, double[] longitudes) {
+                var minLength = Math.Min(latitudes.Length,longitudes.Length);
+                points = new double[minLength][];
+                for ( int i=0;i<minLength; i++) {
+                    points[i]=new double[2] { latitudes[i],longitudes[i]};
+                }
+            }
+            public double[][] points {get; set;}
         }
 
         /// <summary>
@@ -344,8 +368,7 @@ namespace SmartEnergyLabDataApi.Models
             }
             public int id {get; set;}
             public RegionType type{ get; set;}
-            public double[] latitudes {get; set;}
-            public double[] longitudes {get; set;}
+            public Polygon[] polygons {get; set;}
             public int numCustomers {get; set;}
         } 
         /// <summary>

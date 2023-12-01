@@ -1,6 +1,7 @@
 import pandas as pd
 from ..BasePreprocessor import BasePreprocessor
 from ..DataContainer import DataContainer
+from ...Utils.EVDemandOutput import EVDemandOutput
 
 class HouseDataPreprocessor(BasePreprocessor):
     def __init__(self, data_container: DataContainer, lsoa_lookup_file_name: str) -> None:
@@ -19,7 +20,7 @@ class HouseDataPreprocessor(BasePreprocessor):
             .set_index('LSOA11CD')
         )
         self._drop_duplicate_rows_by_index()
-        print('HouseDataPreprocessor pre-processing complete')
+        EVDemandOutput.logMessage('HouseDataPreprocessor pre-processing complete')
         return self.data_container.data
     
 class AccommodationTypeDataPreprocessor(BasePreprocessor):
@@ -38,5 +39,5 @@ class AccommodationTypeDataPreprocessor(BasePreprocessor):
             .drop(columns=['LSOA21NM', 'Accommodation type (8 categories) Code'])
             .set_index('LSOA11CD')
         )
-        print('AccommodationTypeDataPreprocessor pre-processing complete')
+        EVDemandOutput.logMessage('AccommodationTypeDataPreprocessor pre-processing complete')
         return self.data_container.data

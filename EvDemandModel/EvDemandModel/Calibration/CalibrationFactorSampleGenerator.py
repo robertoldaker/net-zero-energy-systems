@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 
+from ..Utils.EVDemandOutput import EVDemandOutput
+
 class CalibrationFactorSampleGenerator:
     def __init__(self, relative_error_data: pd.DataFrame, n_samples: int):
         self.relative_error_data = relative_error_data
@@ -44,7 +46,9 @@ class CalibrationFactorSampleGenerator:
         self.relative_error_samples = pd.DataFrame(index=np.arange(0, self.n_samples), columns=lsoa_list)
 
         # Loop over each LSOA to generate samples
+        index=0;
         for lsoa in lsoa_list:
+            index+=1
             sigma = self.relative_error_data.sigma_post.loc[lsoa]  # Assuming sigma_post is indexed by LSOA
             mu = self.relative_error_data.mu_post.loc[lsoa]
             sample_array = np.random.normal(mu, sigma, size=self.n_samples)

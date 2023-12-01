@@ -1,6 +1,7 @@
 import pandas as pd
 from ..BasePreprocessor import BasePreprocessor
 from ..DataContainer import DataContainer
+from ...Utils.EVDemandOutput import EVDemandOutput
 
 class VehicleRegistrationsDataPreprocessor(BasePreprocessor):
     
@@ -10,7 +11,7 @@ class VehicleRegistrationsDataPreprocessor(BasePreprocessor):
         self._drop_duplicate_rows_by_index()
         self.data_container.data = self.data_container.data.drop('Miscellaneous')
         self.data_container.data = self.data_container.data.dropna(how='all')
-        print('VehicleRegistrationsDataPreprocessor pre-processing complete')
+        EVDemandOutput.logMessage('VehicleRegistrationsDataPreprocessor pre-processing complete')
         return self.data_container.data
     
     def _preprocess_by_bodytype(self, bodytype: str) -> pd.DataFrame:
@@ -32,7 +33,7 @@ class EVRegistrationsDataPreprocessor(BasePreprocessor):
         self._set_df_index('LSOA11CD', drop=True)
         self._split_by_fuel_type()
         self._drop_duplicate_rows_by_index()
-        print('EVRegistrationsDataPreprocessor pre-processing complete')
+        EVDemandOutput.logMessage('EVRegistrationsDataPreprocessor pre-processing complete')
         return self.data_container.data
 
     def _filter_data(self):

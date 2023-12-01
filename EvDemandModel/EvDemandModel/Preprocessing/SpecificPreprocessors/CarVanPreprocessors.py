@@ -1,6 +1,7 @@
 import pandas as pd
 from ..BasePreprocessor import BasePreprocessor
 from ..DataContainer import DataContainer
+from ...Utils.EVDemandOutput import EVDemandOutput
 
 class CarVan2011DataPreprocessor(BasePreprocessor):
 
@@ -18,7 +19,7 @@ class CarVan2011DataPreprocessor(BasePreprocessor):
         self._set_df_index('LSOA11CD', drop=True)
         self._select_df_columns(['LSOA11NM', 'cars', 'households', 'households_without_cars'])
         self._drop_duplicate_rows_by_index()
-        print('CarVan2011DataPreprocessor pre-processing complete')
+        EVDemandOutput.logMessage('CarVan2011DataPreprocessor pre-processing complete')
         return self.data_container.data
     
 class CarVan2021DataPreprocessor(BasePreprocessor):  
@@ -33,7 +34,7 @@ class CarVan2021DataPreprocessor(BasePreprocessor):
         self._condense_data()
         self._reindex_data()
         self._drop_duplicate_rows_by_index()
-        print('CarVan2021DataPreprocessor pre-processing complete')
+        EVDemandOutput.logMessage('CarVan2021DataPreprocessor pre-processing complete')
         return self.data_container.data
 
     def _count_number_of_cars(self) -> None:

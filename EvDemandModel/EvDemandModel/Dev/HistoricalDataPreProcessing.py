@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import os
 from dataclasses import dataclass
+from ..Utils.EVDemandOutput import EVDemandOutput
 
 #######################
 # Data Pre-processing #
@@ -222,7 +223,7 @@ class RegistrationInterpolator:
 
     # Interpolates missing registration data
     def interpolate(self, registration_data: pd.DataFrame) -> pd.DataFrame:
-        print('Interpolating Data...')
+        EVDemandOutput.logMessage('Interpolating Data...')
         self.registration_data = registration_data.T.iloc[::-1]
         interpolated_df = self.registration_data.apply(self._interpolate_column, axis=0)
         interpolated_df = interpolated_df.fillna(0)
