@@ -309,6 +309,7 @@ namespace SmartEnergyLabDataApi.Models
                 //
                 if ( boundaries.Count>0 ) {
                     var psss=da.Substations.GetPrimarySubstationsByGridSupplyPointId(id);
+                    var pssDict=new Dictionary<PrimarySubstation,int>();
                     foreach( var boundary in boundaries) {
                         var numCustomers=0;
                         foreach( var pss in psss ) {
@@ -316,6 +317,11 @@ namespace SmartEnergyLabDataApi.Models
                             var lng = pss.GISData.Longitude;
                             if( GISUtilities.IsPointInPolygon(lat,lng, boundary.Latitudes,boundary.Longitudes )) {
                                 numCustomers += da.Substations.GetCustomersForPrimarySubstation(pss.Id);
+                                if ( pssDict.ContainsKey(pss)) {
+                                    pssDict[pss]+=1;
+                                } else {
+                                    pssDict.Add(pss,1);
+                                }
                             }
                         }
                         if ( numCustomers>0 ) {
@@ -325,6 +331,14 @@ namespace SmartEnergyLabDataApi.Models
                             rD.numCustomers = numCustomers;
                             evDi.regionData.Add(rD);
                         } 
+                    }
+                    //
+                    foreach( var pss in psss) {
+                        if ( !pssDict.ContainsKey(pss)) {
+                            Logger.Instance.LogInfoEvent($"pss [{pss.Name}],[{pss.Id}] not in any GSP boundary");
+                        } else if ( pssDict[pss]>1) {
+                            Logger.Instance.LogInfoEvent($"pss [{pss.Name}],[{pss.Id}] in multiple GSP boundaries");
+                        }
                     }
                 } else {
                     throw new Exception($"No boundaries defined for gsp=[{gsp.Name}]");
