@@ -37,7 +37,7 @@ Public Sub Init(smat As SparseMatrix, Optional Copy As Boolean = True)
     rmax = smat.Rupb
     
     ReDim rord(rmax) As Long
-    ReDim scal(rmax) As Double
+'    ReDim scal(rmax) As Double
     For r = 0 To rmax
         rord(r) = r
 '        scal(r) = smat.Rmaxel(r)

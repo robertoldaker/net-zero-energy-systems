@@ -182,3 +182,9 @@ Public Sub MergeSortInt(c() As Long, ord() As Long, m As Long, Optional n As Lon
     Wend
 End Sub
 
+Public Sub TestLP()
+    Dim a As New LP
+    
+    Debug.Print a.Test1
+    
+End Sub

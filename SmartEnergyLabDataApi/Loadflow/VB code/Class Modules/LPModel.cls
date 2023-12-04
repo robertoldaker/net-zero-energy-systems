@@ -19,6 +19,7 @@ Attribute VB_Exposed = True
 '
 ' L Dale 22 Feb 2017
 ' Revised to use collections and improve include functionality
+' 17 Nov 2023 Removed multisegment variables
 
 Option Explicit
 Option Base 0
@@ -34,28 +35,24 @@ Public Function ConsCollection() As Collection
     Set ConsCollection = LPConstraints
 End Function
 
-Public Function VarExists(name As String) As Boolean
-    Dim def As LPVarDef
+Public Function Exists(key As String, col As Collection) As Boolean
+    Dim obj As Object
     
     On Error GoTo errorhandler
-        Set def = LPVariables.Item(name)
-        VarExists = True
+    Set obj = col.Item(key)
+    Exists = True
     Exit Function
     
 errorhandler:
-    VarExists = False
+    Exists = False
+End Function
+
+Public Function VarExists(name As String) As Boolean
+    VarExists = Exists(name, LPVariables)
 End Function
 
 Public Function ConsExists(name As String) As Boolean
-    Dim def As LPConsDef
-    
-    On Error GoTo errorhandler
-        Set def = LPConstraints.Item(name)
-        ConsExists = True
-    Exit Function
-    
-errorhandler:
-    ConsExists = False
+    ConsExists = Exists(name, LPConstraints)
 End Function
 
 '
@@ -104,6 +101,7 @@ Public Function ConsDef(name As String, Equality As Boolean, Magnitude As Double
     Set ConsDef = def
 End Function
 
+
 '
 ' Include a model in this model
 ' Update original variable and constraint definitions
@@ -133,7 +131,7 @@ Public Function MakeLP() As LP
     Dim cvec() As Double
     Dim vn() As String, vname As String
     Dim cn() As String, cname As String
-    Dim mvs As Collection, mv As LPMSV
+'    Dim mvs As Collection, mv As LPMSV
     Dim vdef As LPVarDef
     Dim cdef As LPConsDef
     Dim Pairs() As Variant
@@ -151,7 +149,7 @@ Public Function MakeLP() As LP
     ReDim cn(numc - 1)
     ReDim vn(numv - 1)
     ReDim cvec(numv - 1)
-    Set mvs = New Collection
+'    Set mvs = New Collection
 
     For i = 0 To numv - 1
         Set vdef = LPVariables.Item(i + 1)
@@ -159,15 +157,15 @@ Public Function MakeLP() As LP
             .Id = i
             cvec(i) = .cost
             vn(i) = .name
-            If Not .MOmgr Is Nothing Then   ' Create mv structure if a multisegment variable
-                Set mv = New LPMSV
-                mv.name = .name
-                Set mv.mmo = New MO
-                .MOmgr.Copy mv.mmo          ' copy in merit order
-                mv.pos = .Ipos              ' initial position
-                mv.vid = i                  ' and var id
-                mvs.Add mv, .name
-            End If
+'            If Not .MOmgr Is Nothing Then   ' Create mv structure if a multisegment variable
+'                Set mv = New LPMSV
+'                mv.name = .name
+'                Set mv.mmo = New MO
+'                .MOmgr.Copy mv.mmo          ' copy in merit order
+'                mv.pos = .Ipos              ' initial position
+'                mv.vid = i                  ' and var id
+'                mvs.Add mv, .name
+'            End If
         End With
     Next i
 
@@ -193,21 +191,21 @@ Public Function MakeLP() As LP
         Next j
     Next i
     
-    For Each mv In mvs
-        Set vdef = LPVariables.Item(vn(mv.vid))
-        If Not ConsExists(vdef.vzc) Then
-            MsgBox "LP build: Unknown constraint " & vdef.vzc & " for multisegment variable " & vn(i)
-        End If
-        If Not ConsExists(vdef.vmc) Then
-            MsgBox "LP build: Unknown constraint " & vdef.vmc & " for multisegment variable " & vn(i)
-        End If
-        If Not ConsExists(vdef.vdc) Then
-            MsgBox "LP build: Unknown constraint " & vdef.vdc & " for multisegment variable " & vn(i)
-        End If
-        mv.dcid = ConsId(vdef.vdc)
-        mv.mcid = ConsId(vdef.vmc)
-        mv.zcid = ConsId(vdef.vzc)
-    Next mv
+'    For Each mv In mvs
+'        Set vdef = LPVariables.Item(vn(mv.vid))
+'        If Not ConsExists(vdef.vzc) Then
+'            MsgBox "LP build: Unknown constraint " & vdef.vzc & " for multisegment variable " & vn(i)
+'        End If
+'        If Not ConsExists(vdef.vmc) Then
+'            MsgBox "LP build: Unknown constraint " & vdef.vmc & " for multisegment variable " & vn(i)
+'        End If
+'        If Not ConsExists(vdef.vdc) Then
+'            MsgBox "LP build: Unknown constraint " & vdef.vdc & " for multisegment variable " & vn(i)
+'        End If
+'        mv.dcid = ConsId(vdef.vdc)
+'        mv.mcid = ConsId(vdef.vmc)
+'        mv.zcid = ConsId(vdef.vzc)
+'    Next mv
     
     Set rlp = New LP
     rlp.Init amat, bvec, cvec, vn, cn
@@ -248,37 +246,49 @@ Public Function VarId(name As String) As Long
     VarId = vdef.Id
 End Function
 
+
 Public Function Test() As Boolean
+    ' Model definitions stored to aid debugging
     Dim dcdef As LPConsDef
-    Dim gvdef As LPVarDef
-    Dim gzc As LPConsDef
-    Dim gmc As LPConsDef
-    Dim mmo As New MO
+    Dim gvdef(2) As LPVarDef    ' generation variables
+    Dim gzc(2) As LPConsDef     ' generation minimum constraints
+    Dim gmc(2) As LPConsDef     ' generation max constraints
+'    Dim mmo As New MO
     Dim mlp As LP, rc1 As Long, rc2 As Long
     Dim expected As Double, res As Double
     
-    mmo.Add "G1", 10#, 200#
-    mmo.Add "G2", 20#, 300#
-    mmo.Add "G3", 30#, 400#
+'    mmo.Add "G1", 10#, 200#
+'    mmo.Add "G2", 20#, 300#
+'    mmo.Add "G3", 30#, 400#
+
+    ' Create 3 gen variables with min and max constraints
+    Set gvdef(0) = Me.VarDef("g0var", "g0zc", 10#)
+    Set gvdef(1) = Me.VarDef("g1var", "g1zc", 20#)
+    Set gvdef(2) = Me.VarDef("g2var", "g2zc", 30#)
+    Set gzc(0) = Me.ConsDef("g0zc", False, 0#, Array("g0var", 1#))
+    Set gzc(1) = Me.ConsDef("g1zc", False, 0#, Array("g1var", 1#))
+    Set gzc(2) = Me.ConsDef("g2zc", False, 0#, Array("g2var", 1#))
+    Set gmc(0) = Me.ConsDef("g0mc", False, 200#, Array("g0var", -1#))
+    Set gmc(1) = Me.ConsDef("g1mc", False, 300#, Array("g1var", -1#))
+    Set gmc(2) = Me.ConsDef("g2mc", False, 400#, Array("g2var", -1#))
     
-    Set gvdef = Me.VarDef("gvar", "gzc")
-    Set dcdef = Me.ConsDef("dem", False, -550#, Array("gvar", 1#))
-    Set gzc = Me.ConsDef("gzc", False, 0#, Array("gvar", 1#))
-    Set gmc = Me.ConsDef("gmc", False, 999#, Array("gvar", -1#))
+    Set dcdef = Me.ConsDef("demc", False, -550#, Array("g0var", 1#, "g1var", 1#, "g2var", 1#))
+'    Set gzc = Me.ConsDef("gzc", False, 0#, Array("gvar", 1#))
+'    Set gmc = Me.ConsDef("gmc", False, 999#, Array("gvar", -1#))
     
-    With gvdef
-        Set .MOmgr = mmo
-        .vzc = "gzc"
-        .vmc = "gmc"
-        .vdc = "dem"
-    End With
+'    With gvdef
+'        Set .MOmgr = mmo
+'        .vzc = "gzc"
+'        .vmc = "gmc"
+'        .vdc = "dem"
+'    End With
     
-    Set mlp = Me.MakeLP
+    Set mlp = Me.MakeLP()
     rc1 = mlp.SolveLP(rc2)
     
-'    Debug.Print "G1"; mlp.SegmentDispatch("gvar", "G1")
-'    Debug.Print "G2"; mlp.SegmentDispatch("gvar", "G2")
-'    Debug.Print "G3"; mlp.SegmentDispatch("gvar", "G3")
+    Debug.Print "G1"; mlp.Slack(ConsId("g0zc"))
+    Debug.Print "G2"; mlp.Slack(ConsId("g1zc"))
+    Debug.Print "G3"; mlp.Slack(ConsId("g2zc"))
     
     expected = 10# * 200# + 20# * 300# + (550# - 200# - 300#) * 30#
     res = -mlp.Objective

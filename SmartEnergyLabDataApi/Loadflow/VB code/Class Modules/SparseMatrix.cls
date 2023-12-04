@@ -17,6 +17,7 @@ Attribute VB_Exposed = True
 ' AddRow routines avoid searching. Also shuffle of storage centralised  22 Jan 2017
 ' Addrow has optional argumnt to process upper diagonal elements only 11 Feb 2017
 ' Test routines added 2 Jan 2019
+' ReplaceCol and RowToVec added 19 Nov 2023
 
 Option Explicit
 Option Base 0
@@ -489,6 +490,45 @@ Public Sub ReplaceRow(ra As Long, sm As SparseMatrix, smr As Long)
         k = sm.NextKey(k, smr)
     Wend
 End Sub
+
+' Replace a column with a row from another sparse matrix (use to update part of a transpose)
+
+Public Sub ReplaceCol(c As Long, sm As SparseMatrix, smr As Long)
+    Dim r As Long, i As Long, v As Double
+    Dim k As Long
+    
+    k = sm.FirstKey(smr)
+    
+    For r = 0 To maxr
+        
+        If k <> -1 Then
+            sm.Contents k, i, v
+            
+            If r = i Then
+                Insert r, c, v
+                k = sm.NextKey(k, smr)
+            Else
+                Zero r, c
+            End If
+        Else
+            Zero r, c
+        End If
+    Next r
+End Sub
+
+' Copy sparse row r to vector
+
+Public Sub RowToVec(r As Long, vec() As Double)
+    Dim k As Long
+    Dim c As Long, v As Double
+    
+    ReDim vec(maxc) As Double
+    
+    For k = lst(r) To lst(r + 1) - 1
+        vec(ind(k)) = val(k)
+    Next k
+End Sub
+
 
 Public Property Let Cell(r As Long, c As Long, v As Double)
     Insert r, c, v

@@ -15,6 +15,7 @@ Attribute VB_Exposed = True
 ' 4 Feb 2018 Updated use of MO object
 ' 5 Feb 2018 Uses EnterBasis to swap constraints, read-only cmap remains for debug purposes
 ' Dec 2020 Removed multisegment variables, added constraint names
+' 17 Nov 2023 Replaced basis sparseinverse object with lu factors of basis
 
 Option Explicit
 Option Base 0
@@ -40,7 +41,7 @@ Private ev() As Double      'Primal constraint magnitude modifiers
 Private cv() As Double      'Variable costs
 Private eqc() As Boolean    'Primal constraint is equality
 Private sk() As Boolean     'Skip this constraint
-Private vn() As String      'Variable name (dual cost)
+Private vn() As String      'Variable name
 Private cn() As String      'Constraint name
 
 'Outputs
@@ -54,8 +55,8 @@ Private basisvalid As Boolean
 
 Private sv() As Double    'Sensitivity of dual variables to cost perturbations
 Private ssv() As Double   'Save of sv for the most infringed constraint
-Private btm As SparseMatrix
-Private invbm As SparseInverse
+Private bm As SparseMatrix ' basis formed by transposing selected constraint rows from atm
+Private bmsolve As SolveLin ' factors bm and solves bm.X = B
 Private vmax As Long      'number of variables-1 (column upb of Atm)
 Private cmax As Long      'number of constraints-1 (row upb of Atm)
 Private cm() As Long      'Ordering of rows (constraints) in atm, bv, etc)
@@ -64,7 +65,6 @@ Private fastsearch As Long   'enable greedy column selection while >0
 
 
 Public Sub Init(amat As SparseMatrix, bvec() As Double, cvec() As Double, vname() As String, cname() As String)
-    Dim mv As LPMSV
     Dim i As Long
     
     Set atm = amat
@@ -84,8 +84,8 @@ Public Sub Init(amat As SparseMatrix, bvec() As Double, cvec() As Double, vname(
     ReDim cm(cmax) As Long
     ReDim vm(cmax) As Long
     
-    Set btm = New SparseMatrix
-    Set invbm = New SparseInverse
+    Set bm = New SparseMatrix
+    Set bmsolve = New SolveLin
 
     maxiters = (vmax + 1) * 2
     
@@ -116,24 +116,24 @@ Public Sub RestoreCOrder(corder() As Long)
     basisvalid = False
 End Sub
 
+' Make basis transpose from relevant rows of atm, transpose btm and make solver
     
-Private Sub MakeInvBasis()
-    Dim i As Long, c As Long, tsz As Long
+Private Sub MakeBasis()
+    Dim btm As New SparseMatrix
     
-    For i = 0 To vmax                   ' Calc size of basis transpose
-        c = cm(i)
-        tsz = tsz + atm.Rsize(c)
-    Next i
-    btm.Init vmax, vmax, tsz / (vmax + 1)
-    For i = 0 To vmax
-        btm.ReplaceRow i, atm, cm(i)    ' Build basis transpose
-    Next i
-    
-    invbm.Init btm
+    btm.CopyMap atm, cm, vmax
+    bm.Transpose btm
+    bmsolve.Init bm
     basisvalid = True
 End Sub
 
+' Update basis matrix by replacing col v with constraint c, recalc bmsolve
 
+Private Sub UpdateBasis(v As Long, cons As Long)
+    bm.ReplaceCol v, atm, cons
+    bmsolve.Init bm
+    basisvalid = True
+End Sub
 
 ' Transposed constraint matrix
 
@@ -288,7 +288,8 @@ Private Function CalcSlack(r As Long) As Double
         
     res = bv(r) + ev(r)             ' capacity of constraint
     
-    invbm.MultMat atm, r, sv        ' sensistivity of variables to constraint
+    atm.RowToVec r, sv
+    bmsolve.Solve sv, sv        ' sensistivity of variables to constraint
     
     For i = 0 To vmax
         j = cm(i)
@@ -438,13 +439,11 @@ Public Function SolveLP(ByRef Return2 As Long) As Long
     res = lpIters
     
     If Not basisvalid Then
-        MakeInvBasis
-    Else
-        invbm.Check2 lpEpsilon
+        MakeBasis
     End If
     
     Do
-        invbm.MultVec cv, yv    ' Calc dual variables
+        bmsolve.Solve cv, yv    ' Calc dual variables
         
         xv = MostNegativeVar()
         
@@ -491,7 +490,7 @@ Public Function SolveLP(ByRef Return2 As Long) As Long
         Debug.Print " Enter constraint "; cn(cm(ev)); " for "; cn(cm(xv))
 #End If
         
-        invbm.Update xv, atm, cm(ev)
+        UpdateBasis xv, cm(ev)
         dv(cm(ev)) = 0#
         EnterBasis xv, cm(ev)
         basisvalid = True
@@ -500,9 +499,9 @@ Public Function SolveLP(ByRef Return2 As Long) As Long
         fastsearch = FASTCOUNT
         iter = iter + 1
         
-        If iter Mod InvIters = 0 Then
-            invbm.Check2 lpEpsilon
-        End If
+'        If iter Mod InvIters = 0 Then
+'            invbm.Check2 lpEpsilon
+'        End If
     Loop Until iter > maxiters
     
     Debug.Print "LP"; Id; " fail: maximum iterations exceeded"
