@@ -5,6 +5,7 @@ using SmartEnergyLabDataApi.Models;
 using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Loadflow;
+using static SmartEnergyLabDataApi.Models.LoadflowReference;
 
 namespace SmartEnergyLabDataApi.Controllers
 {
@@ -218,6 +219,27 @@ namespace SmartEnergyLabDataApi.Controllers
                 var bfr = lf.Boundary.RunBoundaryTrip(boundaryName, tripName);
                 return new LoadflowResults(lf, bfr);
             }
+        }
+
+        /// <summary>
+        /// Stores Loadflow base reference from spreadsheet
+        /// </summary>
+        /// <param name="file"></param>
+        [HttpPost]
+        [Route("Reference/UploadBase")]
+        public void UploadBaseReference(IFormFile file) {
+            var m=new LoadflowReference();
+            m.LoadBase(file);
+        }
+
+        /// <summary>
+        /// Runs Loadflow base against reference
+        /// </summary>
+        [HttpPost]
+        [Route("Reference/RunBase")]
+        public LoadflowErrors RunBaseReference(double tol=1e-6) {
+            var m=new LoadflowReference();
+            return m.RunBase(tol);
         }
     }
 }

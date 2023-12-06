@@ -44,6 +44,7 @@ namespace SmartEnergyLabDataApi.Models
             get
             {
                 string folder = Path.Combine(_baseFolder, "App_Data", "uploads");
+                Directory.CreateDirectory(folder); 
                 return folder;
             }
         }
