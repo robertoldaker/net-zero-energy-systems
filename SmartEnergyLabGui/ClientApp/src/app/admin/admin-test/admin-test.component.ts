@@ -30,7 +30,7 @@ export class AdminTestComponent extends ComponentBase implements OnInit, AfterVi
                 if ( df ) {
                     for( let i=0;i<df.length;i++) {
                         let title = df[i].getProperty("Substation");
-                        map.data.overrideStyle(df[i],{title: title, label: title, fillColor: 'red'});
+                        //map.data.overrideStyle(df[i],{title: title, label: title, fillColor: 'red'});
                     }
                 }
             });

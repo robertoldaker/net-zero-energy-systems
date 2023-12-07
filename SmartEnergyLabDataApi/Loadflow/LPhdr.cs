@@ -224,7 +224,8 @@ namespace SmartEnergyLabDataApi.Loadflow
             int il, im, Id;
             int first, last;
 
-            b = 0;
+            //??b = 0;            
+            b=1;
             upb = ord.Length-1;
 
             if ( m>upb + 1 -b ) {
