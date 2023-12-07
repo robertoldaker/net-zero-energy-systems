@@ -126,14 +126,9 @@ public static class Program
             EVDemandRunner.Initialise(builder.Environment.ContentRootPath,hubContext);
         }
         
-#if DEBUG
-        string host = "localhost";
-#else
-        string host = "localhost";
-#endif
         DataAccessBase.Initialise(new DbConnection(SCHEMA_VERSION, SCRIPT_VERSION)
         {
-            Server = host,
+            Server = getDbHostName(),
             DatabaseName = "smart_energy_lab",
             Username = "smart_energy_lab",
             Password = "1234567890",
@@ -145,6 +140,22 @@ public static class Program
 
         app.Run();
 
+    }
+
+    private static string getDbHostName() {
+        string host = "localhost";
+        #if DEBUG
+            // This allows us to have different db locations when debugging
+            var dbHostFilename = "debugDbHost.txt";
+            if ( File.Exists(dbHostFilename)) {
+                using (var sr = new StreamReader(dbHostFilename))
+                {
+                    // Read the stream as a string, and write the string to the console.
+                    host=sr.ReadToEnd();
+                }
+            }
+        #endif
+        return host;
     }
 }
 

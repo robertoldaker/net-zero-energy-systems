@@ -13,3 +13,4 @@ SmartEnergyLabDataApi/App_Data
 __pycache__
 EvDemandModel/EvDemandModel/Data
 EvDemandModel/EvDemandModel.zip
+SmartEnergyLabDataApi/debugDbHost.txt
