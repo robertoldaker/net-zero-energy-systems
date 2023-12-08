@@ -1,20 +1,33 @@
 using System.ComponentModel;
 using Antlr.Runtime;
+using Google.Protobuf.WellKnownTypes;
 using HaloSoft.EventLogger;
 using NHibernate.Linq.Clauses;
+using NHibernate.Util;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Loadflow;
 
 namespace SmartEnergyLabDataApi.Models;
 public class LoadflowReference {
 
-    private string getBaseFile() {
-        string folder = Path.Combine(AppFolders.Instance.Uploads,"Loadflow","Reference");
-        Directory.CreateDirectory(folder);
+    private string getBaseFilename() {
+        string folder = getReferenceFolder();
         return Path.Combine(folder,"LoadflowBase.xlsm");
     }
+
+    private string getReferenceFolder() {
+        string folder = Path.Combine(AppFolders.Instance.Uploads,"Loadflow","Reference");
+        Directory.CreateDirectory(folder);
+        return folder;
+    }
+
+    private string getB8Filename() {
+        string folder = getReferenceFolder();
+        return Path.Combine(folder,"LoadflowB8.xlsm");
+    }
+
     public void LoadBase(IFormFile file) {
-        string dest = getBaseFile();
+        string dest = getBaseFilename();
 
         using ( var fs = new FileStream(dest,FileMode.Create)) {
             using ( var sr=file.OpenReadStream() ) {
@@ -23,12 +36,22 @@ public class LoadflowReference {
         }
     }
 
-    public LoadflowErrors RunBase(double tol) {
+    public void LoadB8(IFormFile file) {
+        string dest = getB8Filename();
+
+        using ( var fs = new FileStream(dest,FileMode.Create)) {
+            using ( var sr=file.OpenReadStream() ) {
+                sr.CopyTo(fs);
+            }
+        }
+    }
+
+    public LoadflowErrors RunBase() {
         //
-        if ( File.Exists(getBaseFile())) {
-            var loadflowErrors = new LoadflowErrors(tol);
+        if ( File.Exists(getBaseFilename())) {
+            var loadflowErrors = new LoadflowErrors();
             var m = new LoadflowXlsmReader();
-            m.LoadResults(getBaseFile());
+            m.LoadResults(getBaseFilename());
             using( var lf = new Loadflow.Loadflow() ) {
                 lf.RunBaseCase("Auto");
                 var lfr = new LoadflowResults(lf);
@@ -66,63 +89,133 @@ public class LoadflowReference {
 
     }
 
+    public LoadflowErrors RunB8() {
+        //
+        if ( File.Exists(getB8Filename())) {
+            var loadflowErrors = new LoadflowErrors();
+            var m = new LoadflowXlsmReader();
+            m.LoadResults(getB8Filename(),"B8");
+            var boundaryName="B8";
+            using( var lf = new Loadflow.Loadflow() ) {
+                var bfr=lf.Boundary.RunAllBoundaryTrips(boundaryName, out List<AllTripsResult> singleTrips, out List<AllTripsResult> dualTrips);
+                var lfr = new LoadflowResults(lf,bfr);
+                // Single trips
+                foreach( var st in singleTrips ) {
+                    if ( m.SingleTripResults.TryGetValue(st.Trip.Text, out LoadflowXlsmReader.TripResult tr)) {
+                        loadflowErrors.AddTripResult(st.Trip.Text,RefErrorType.SingleTrip,st,tr);
+                    } else {
+                        throw new Exception($"Could not find trip [{st.Trip.Text}] in ref spreadsheet");
+                    }
+                }
+                // Dual trips
+                foreach( var st in dualTrips ) {
+                    if ( m.DualTripResults.TryGetValue(st.Trip.Text, out LoadflowXlsmReader.TripResult tr)) {
+                        loadflowErrors.AddTripResult(st.Trip.Text,RefErrorType.DualTrip,st,tr);
+                    } else {
+                        //?? Server does all 2-trip combinations but spreadsheet only does some.
+                        //??throw new Exception($"Could not find trip [{st.Trip.Text}] in ref spreadsheet");
+                    }
+                }
+            }
+            return loadflowErrors;
+        } else {
+            throw new Exception("No B8 reference has been loaded. Please load a B8 reference spreadsheet.");
+        }
+
+        //
+    }
+
     public class LoadflowErrors {
-        private double _tol;
-        public LoadflowErrors(double tol) {
-            _tol = tol;
-            NodeErrors = new Dictionary<string,List<RefError>>();
-            BranchErrors = new Dictionary<string,List<RefError>>();
-            ControlErrors = new Dictionary<string,List<RefError>>();
+        private List<RefError> _allErrors;
+        public LoadflowErrors() {
+            _allErrors = new List<RefError>();
+        }
+
+        public RefError MaxError {
+            get {
+                return _allErrors.OrderByDescending(m=>m.AbsDiff).First();
+            }
         }
 
         public void AddNodeResult(string name, NodeWrapper nw, LoadflowXlsmReader.NodeResult cr) {
-            var errors = new List<RefError>();
-            var mm = new RefError("Mismatch",nw.Mismatch,cr.Mismatch);
-            if ( mm.AbsDiff>_tol) {
-                errors.Add(mm);
-            }
-            if ( errors.Count>0) {
-                NodeErrors.Add(name,errors);
+            var error = new RefError(name,RefErrorType.Node,"Mismatch",nw.Mismatch,cr.Mismatch);
+            _allErrors.Add(error);
+        }
+
+        public List<RefError> NodeErrors {
+            get {
+                var list = filterAllErrors(RefErrorType.Node);
+                return list;
             }
         }
-        public Dictionary<string,List<RefError>> NodeErrors {get; set;}
 
         public void AddBranchResult(string name, BranchWrapper bw, LoadflowXlsmReader.BranchResult br) {
-            var errors = new List<RefError>();
-            var bFlow = new RefError("Power flow",bw.PowerFlow,br.bFlow);
-            if ( bFlow.AbsDiff>_tol) {
-                errors.Add(bFlow);
-            }
+            var bFlow = new RefError(name,RefErrorType.Branch,"Power flow",bw.PowerFlow,br.bFlow);
+            _allErrors.Add(bFlow);
             double? fp = bw.FreePower==99999 ? null: bw.FreePower;
-            var fPower = new RefError("Free power",fp,br.freePower);
-            if ( fPower.AbsDiff>_tol) {
-                errors.Add(fPower);
-            }
-            if ( errors.Count>0) {
-                BranchErrors.Add(name,errors);
+            var fPower = new RefError(name,RefErrorType.Branch,"Free power",fp,br.freePower);
+            _allErrors.Add(fPower);
+        }
+        public List<RefError> BranchErrors {
+            get {
+                var list = filterAllErrors(RefErrorType.Branch);
+                return list;
             }
         }
-        public Dictionary<string,List<RefError>> BranchErrors {get; set;}
         
         public void AddCtrlResult(string name, CtrlWrapper cw, LoadflowXlsmReader.CtrlResult cr) {
-            var errors = new List<RefError>();
-            var sp = new RefError("Set point",cw.SetPoint,cr.SetPoint);
-            if ( sp.AbsDiff>_tol) {
-                errors.Add(sp);
-            }
-            if ( errors.Count>0) {
-                ControlErrors.Add(name,errors);
+            var sp = new RefError(name,RefErrorType.Ctrl,"Set point",cw.SetPoint,cr.SetPoint);
+            _allErrors.Add(sp);
+        }
+        public List<RefError> ControlErrors {
+            get {
+                var list = filterAllErrors(RefErrorType.Ctrl);
+                return list;
             }
         }
-        public Dictionary<string,List<RefError>> ControlErrors {get; set;}
+
+        private List<RefError> filterAllErrors(RefErrorType type) {
+            var list = _allErrors.Where(m=>m.ObjectType == type).OrderByDescending(m=>m.AbsDiff).ToList();
+            return list;
+        }
+        public List<RefError> SingleTripErrors {
+            get {
+                var list = filterAllErrors(RefErrorType.SingleTrip);
+                return list;
+            }
+        }
+        public List<RefError> DualTripErrors {
+            get {
+                var list = filterAllErrors(RefErrorType.DualTrip);
+                return list;
+            }
+        }
+        public void AddTripResult(string name, RefErrorType type,AllTripsResult trc, LoadflowXlsmReader.TripResult trr) {
+            var sp = new RefError(name,type,"Surplus",trc.Capacity,trr.Capacity);
+            _allErrors.Add(sp);
+            var cap = new RefError(name,type,"Capacity",trc.Capacity,trr.Capacity);
+            _allErrors.Add(cap);
+            foreach( var ct in trc.Ctrls) {
+                if ( trr.SetPointDict.ContainsKey(ct.Code)) {
+                    var ctrError = new RefError(name,type,ct.Code,ct.SetPoint,trr.SetPointDict[ct.Code]);
+                    _allErrors.Add(ctrError);
+                }
+            }
+        }
     }
 
+    public enum RefErrorType { Node, Branch, Ctrl, SingleTrip, DualTrip }
+
     public class RefError {  
-        public RefError(string var, double? calc, double? r) {
+        public RefError(string objName,RefErrorType objType,string var, double? calc, double? r) {
+            ObjectName = objName;
+            ObjectType = objType;
             Variable=var;
             Ref = r;
             Calc = calc;
         }
+        public string ObjectName {get; set;}
+        public RefErrorType ObjectType {get; set;}
         public string Variable {get; set;}
         public double? Ref {get; set;}
         public double? Calc {get; set;}

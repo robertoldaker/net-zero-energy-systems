@@ -218,14 +218,14 @@ namespace SmartEnergyLabDataApi.Loadflow
         // Merge sort - stable (i.e. leaves sorted lists unchanged)
         // Sort first m items, optionally starting n items in, of c() by altering ord()
         // Non recursive, uses aux memory, stable
-        public static void MergeSortFlt( double[] c, int[] ord, int m, int n=0) {
+        public static void MergeSortFlt( double[] c, int[] ord, int m, int n=0, bool zeroIndex=true) {
             int w, b, upb, sz, i;
             int[] tmp;
             int il, im, Id;
             int first, last;
 
-            //??b = 0;            
-            b=1;
+            //??
+            b = zeroIndex ? 0 : 1;
             upb = ord.Length-1;
 
             if ( m>upb + 1 -b ) {
