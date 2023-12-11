@@ -311,6 +311,7 @@ namespace SmartEnergyLabDataApi.Loadflow
 
             } while(true);
 
+            _lf.StageResults.StageResult(sr, StageResultEnum.Pass, $"Control cost = {_ctrllp.Slack(_lf.Optimiser.bounzc.Id) - _ctrllp.Objective():f2}");
             sr = _lf.StageResults.NewStage($"{_boundnm} max transfer load flow");
 
             mi = _lf.MaxMismatch(mism);

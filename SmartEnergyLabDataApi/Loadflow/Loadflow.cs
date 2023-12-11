@@ -466,7 +466,8 @@ namespace SmartEnergyLabDataApi.Loadflow
                 ord[i] = i;
                 i++;
             }
-            LPhdr.MergeSortFlt(free, ord, n);
+            // False means its no zerobased index
+            LPhdr.MergeSortFlt(free, ord, n, 0, false);
         }
 
         public void CalcFreeDir(out double[] free, out int[] ord) {
@@ -492,7 +493,7 @@ namespace SmartEnergyLabDataApi.Loadflow
                 ord[i] = i;
                 i++;
             }
-            LPhdr.MergeSortFlt(free, ord, n);
+            LPhdr.MergeSortFlt(free, ord, n, 0 , false);
         }
 
         

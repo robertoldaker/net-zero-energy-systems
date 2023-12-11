@@ -221,9 +221,9 @@ namespace SmartEnergyLabDataApi.Controllers
             }
         }
 
-        /// <summary>
+
         /// Stores Loadflow base reference from spreadsheet
-        /// </summary>
+        /// /// </summary>
         /// <param name="file"></param>
         [HttpPost]
         [Route("Reference/UploadBase")]
@@ -232,14 +232,34 @@ namespace SmartEnergyLabDataApi.Controllers
             m.LoadBase(file);
         }
 
+        /// Stores Loadflow Boundary B8 reference from spreadsheet
+        /// /// </summary>
+        /// <param name="file"></param>
+        [HttpPost]
+        [Route("Reference/UploadB8")]
+        public void UploadB8Reference(IFormFile file) {
+            var m=new LoadflowReference();
+            m.LoadB8(file);
+        }
+
         /// <summary>
         /// Runs Loadflow base against reference
         /// </summary>
-        [HttpPost]
+        [HttpGet]
         [Route("Reference/RunBase")]
-        public LoadflowErrors RunBaseReference(double tol=1e-6) {
+        public LoadflowErrors RunBaseReference(bool showAllErrors=false) {
             var m=new LoadflowReference();
-            return m.RunBase(tol);
+            return m.RunBase(showAllErrors);
+        }
+
+        /// <summary>
+        /// Runs Loadflow B8 (AllTrips) against reference
+        /// </summary>
+        [HttpGet]
+        [Route("Reference/RunB8")]
+        public LoadflowErrors RunB8Reference(bool showAllErrors=false) {
+            var m=new LoadflowReference();
+            return m.RunB8(showAllErrors);
         }
     }
 }
