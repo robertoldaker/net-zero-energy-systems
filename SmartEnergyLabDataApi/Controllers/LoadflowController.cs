@@ -247,9 +247,9 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpGet]
         [Route("Reference/RunBase")]
-        public LoadflowErrors RunBaseReference() {
+        public LoadflowErrors RunBaseReference(bool showAllErrors=false) {
             var m=new LoadflowReference();
-            return m.RunBase();
+            return m.RunBase(showAllErrors);
         }
 
         /// <summary>
@@ -257,9 +257,9 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpGet]
         [Route("Reference/RunB8")]
-        public LoadflowErrors RunB8Reference() {
+        public LoadflowErrors RunB8Reference(bool showAllErrors=false) {
             var m=new LoadflowReference();
-            return m.RunB8();
+            return m.RunB8(showAllErrors);
         }
     }
 }

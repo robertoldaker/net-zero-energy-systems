@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 using Antlr.Runtime;
 using Google.Protobuf.WellKnownTypes;
 using HaloSoft.EventLogger;
@@ -46,10 +47,10 @@ public class LoadflowReference {
         }
     }
 
-    public LoadflowErrors RunBase() {
+    public LoadflowErrors RunBase(bool showAllErrors) {
         //
         if ( File.Exists(getBaseFilename())) {
-            var loadflowErrors = new LoadflowErrors();
+            var loadflowErrors = new LoadflowErrors(showAllErrors);
             var m = new LoadflowXlsmReader();
             m.LoadResults(getBaseFilename());
             using( var lf = new Loadflow.Loadflow() ) {
@@ -89,10 +90,10 @@ public class LoadflowReference {
 
     }
 
-    public LoadflowErrors RunB8() {
+    public LoadflowErrors RunB8(bool showAllErrors) {
         //
         if ( File.Exists(getB8Filename())) {
-            var loadflowErrors = new LoadflowErrors();
+            var loadflowErrors = new LoadflowErrors(showAllErrors);
             var m = new LoadflowXlsmReader();
             m.LoadResults(getB8Filename(),"B8");
             var boundaryName="B8";
@@ -127,8 +128,10 @@ public class LoadflowReference {
 
     public class LoadflowErrors {
         private List<RefError> _allErrors;
-        public LoadflowErrors() {
+        public  bool _showAllErrors;
+        public LoadflowErrors(bool showAllErrors) {
             _allErrors = new List<RefError>();
+            _showAllErrors = showAllErrors;
         }
 
         public RefError MaxError {
@@ -142,9 +145,10 @@ public class LoadflowReference {
             _allErrors.Add(error);
         }
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<RefError> NodeErrors {
             get {
-                var list = filterAllErrors(RefErrorType.Node);
+                var list = _showAllErrors ? filterAllErrors(RefErrorType.Node) : null;
                 return list;
             }
         }
@@ -156,9 +160,10 @@ public class LoadflowReference {
             var fPower = new RefError(name,RefErrorType.Branch,"Free power",fp,br.freePower);
             _allErrors.Add(fPower);
         }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<RefError> BranchErrors {
             get {
-                var list = filterAllErrors(RefErrorType.Branch);
+                var list = _showAllErrors ? filterAllErrors(RefErrorType.Branch) : null;
                 return list;
             }
         }
@@ -167,9 +172,11 @@ public class LoadflowReference {
             var sp = new RefError(name,RefErrorType.Ctrl,"Set point",cw.SetPoint,cr.SetPoint);
             _allErrors.Add(sp);
         }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<RefError> ControlErrors {
             get {
-                var list = filterAllErrors(RefErrorType.Ctrl);
+                var list = _showAllErrors ? filterAllErrors(RefErrorType.Ctrl) : null;
                 return list;
             }
         }
@@ -178,15 +185,19 @@ public class LoadflowReference {
             var list = _allErrors.Where(m=>m.ObjectType == type).OrderByDescending(m=>m.AbsDiff).ToList();
             return list;
         }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<RefError> SingleTripErrors {
             get {
-                var list = filterAllErrors(RefErrorType.SingleTrip);
+                var list = _showAllErrors ? filterAllErrors(RefErrorType.SingleTrip) : null;
                 return list;
             }
         }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<RefError> DualTripErrors {
             get {
-                var list = filterAllErrors(RefErrorType.DualTrip);
+                var list = _showAllErrors ? filterAllErrors(RefErrorType.DualTrip) : null;
                 return list;
             }
         }
@@ -216,6 +227,11 @@ public class LoadflowReference {
         }
         public string ObjectName {get; set;}
         public RefErrorType ObjectType {get; set;}
+        public string ObjectTypeStr {
+            get {
+                return ObjectType.ToString();
+            }
+        }
         public string Variable {get; set;}
         public double? Ref {get; set;}
         public double? Calc {get; set;}
