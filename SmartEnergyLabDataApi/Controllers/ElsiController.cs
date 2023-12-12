@@ -228,5 +228,15 @@ namespace SmartEnergyLabDataApi.Controllers
             }
             return Ok();
         }
+
+        /// <summary>
+        /// Stores Elsi reference spreadsheet
+        /// </summary>
+        /// <param name="file"></param>
+        public void UploadReference(IFormFile file) {
+            var m=new ElsiReference();
+            m.Load(file);
+        }
+
     }
 }
