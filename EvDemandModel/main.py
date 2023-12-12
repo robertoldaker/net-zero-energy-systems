@@ -6,6 +6,7 @@ import EvDemandModel.Utils
 import EvDemandModel.OnPlotParking
 # import EvDemandModel.SubstationMapping
 from importlib import reload
+import traceback
 
 def reload_modules(module_names):
     for module_name in module_names:
@@ -202,9 +203,7 @@ def runPrediction(line:str, lsoa_data_dict: dict, lsoa_boundaries: gpd.GeoDataFr
             EVDemandOutput.logMessage(f'id=[{rd.id}]')
             EVDemandOutput.logMessage(f'RegionType=[{rd.type}]')
             EVDemandOutput.logMessage(f'NumCustomers=[{rd.numCustomers}]')            
-            EVDemandOutput.logMessage(f'NumPolgons=[{len(rd.polygons)}]')            
-            for p in rd.polygons:
-                EVDemandOutput.logMessage(f'NumPoints=[{len(p.points)}]')            
+            EVDemandOutput.logMessage(f'Polgon bounds=[{rd.shapely_polygon.bounds}]')            
 
         #
         # Needs replacing with actual code to perform prediction
@@ -226,10 +225,11 @@ def runPrediction(line:str, lsoa_data_dict: dict, lsoa_boundaries: gpd.GeoDataFr
         EVDemandOutput.resultMessage(outputJson)# 
     except BaseException as e:
         #
-        # Catch any exceptions and write them to the server log
-        
+        # Catch any exceptions and write them to the server log        
         #
-        EVDemandOutput.errorMessage(e.args[0])
+        lines = traceback.format_exception(e)
+        for l in lines:
+            EVDemandOutput.errorMessage(l)
         EVDemandOutput.okMessage();
 
 if __name__ == "__main__":
@@ -258,8 +258,8 @@ if __name__ == "__main__":
 
     # %%
 
-    # substation_numbers = ds_data['Substation Number'].sample(10).values
-    # substations = CreateSubstationObjects.create_substation_objects(ds_data, substation_numbers)
+    #substation_numbers = ds_data['Substation Number'].sample(10).values
+    #substations = CreateSubstationObjects.create_substation_objects(ds_data, substation_numbers)
 
     # substation_data_mapper = SubstationObjectDataMapper(
     #     ds_data=ds_data,

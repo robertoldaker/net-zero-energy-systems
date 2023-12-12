@@ -3,6 +3,7 @@ using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
 using NHibernate;
 using NHibernate.Criterion;
+// NHibernate.Linq;
 using NHibernate.Transform;
 using Org.BouncyCastle.Asn1.Icao;
 using SmartEnergyLabDataApi.Data;
@@ -441,14 +442,6 @@ namespace SmartEnergyLabDataApi.Data
         public int GetNumPrimarySubstations(int gaId) {
             var num = Session.QueryOver<PrimarySubstation>().Where( m=>m.GeographicalArea.Id==gaId).RowCount();
             return num;
-        }
-
-        public int GetNumMultiBoundariesDist() {
-            GISData gisData=null;
-            var q = Session.QueryOver<DistributionSubstation>().Left.JoinAlias(m=>m.GISData,()=>gisData).
-                WithSubquery.Where( m=>QueryOver.Of<GISBoundary>().Where(n=>n.GISData.Id==gisData.Id).ToRowCountQuery().As<int>()>1 );
-            var rc = q.ToRowCountQuery().RowCount();
-            return rc;
         }
 
         #endregion

@@ -250,11 +250,9 @@ namespace SmartEnergyLabDataApi.Models
                 //
                 if ( boundaries.Count>0 ) {
                     var rD = new RegionData(id,RegionType.Dist);
-                    rD.polygons=new Polygon[boundaries.Count];
-                    int index=0;
-                    foreach( var boundary in boundaries) {
-                        rD.polygons[index++] = new Polygon(boundary.Latitudes,boundary.Longitudes);
-                    }
+                    // just use the one with the larget number of points
+                    var boundary = boundaries.OrderByDescending(m=>m.Latitudes.Count()).First();
+                    rD.polygon = new Polygon(boundary.Latitudes,boundary.Longitudes);
                     if ( dss.SubstationData!=null ) {
                         rD.numCustomers = dss.SubstationData.NumCustomers;
                     } else {
@@ -278,19 +276,37 @@ namespace SmartEnergyLabDataApi.Models
                 var boundaries = da.GIS.GetBoundaries(pss.GISData.Id);
                 //
                 if ( boundaries.Count>0 ) {
-                    var rD = new RegionData(id,RegionType.Primary);
-                    rD.polygons=new Polygon[boundaries.Count];
-                    int index=0;
+                    var dsss = da.Substations.GetDistributionSubstations(id);
+                    var dssDict=new Dictionary<DistributionSubstation,int>();
                     foreach( var boundary in boundaries) {
-                        rD.polygons[index++] = new Polygon(boundary.Latitudes,boundary.Longitudes);
+                        var numCustomers=0;
+                        foreach( var dss in dsss ) {
+                            var lat = dss.GISData.Latitude;
+                            var lng = dss.GISData.Longitude;
+                            if( dss.SubstationData!=null && GISUtilities.IsPointInPolygon(lat,lng, boundary.Latitudes,boundary.Longitudes )) {
+                                numCustomers += dss.SubstationData.NumCustomers;
+                                if ( dssDict.ContainsKey(dss)) {
+                                    dssDict[dss]+=1;
+                                } else {
+                                    dssDict.Add(dss,1);
+                                }
+                            }
+                        }
+                        if ( numCustomers>0 ) {
+                            var rD = new RegionData(id,RegionType.GSP);
+                            rD.polygon=new Polygon(boundary.Latitudes,boundary.Longitudes);
+                            rD.numCustomers = numCustomers;
+                            evDi.regionData.Add(rD);
+                        } 
                     }
-                    var numCustomers = da.Substations.GetCustomersForPrimarySubstation(id);
-                    if ( numCustomers>0 ) {
-                        rD.numCustomers = numCustomers;
-                    } else {
-                        throw new Exception($"Num customers is 0 for pss=[{pss.Name}]");
+                    //
+                    foreach( var dss in dsss) {
+                        if ( !dssDict.ContainsKey(dss)) {
+                            Logger.Instance.LogInfoEvent($"pss [{dss.Name}],[{dss.Id}] not in any Primary boundary");
+                        } else if ( dssDict[dss]>1) {
+                            Logger.Instance.LogInfoEvent($"pss [{dss.Name}],[{dss.Id}] in multiple Primary boundaries");
+                        }
                     }
-                    evDi.regionData.Add(rD);
                 } else {
                     throw new Exception($"No boundaries defined for pss=[{pss.Name}]");
                 }
@@ -326,8 +342,7 @@ namespace SmartEnergyLabDataApi.Models
                         }
                         if ( numCustomers>0 ) {
                             var rD = new RegionData(id,RegionType.GSP);
-                            rD.polygons = new Polygon[1];
-                            rD.polygons[0]=new Polygon(boundary.Latitudes,boundary.Longitudes);
+                            rD.polygon=new Polygon(boundary.Latitudes,boundary.Longitudes);
                             rD.numCustomers = numCustomers;
                             evDi.regionData.Add(rD);
                         } 
@@ -382,7 +397,7 @@ namespace SmartEnergyLabDataApi.Models
             }
             public int id {get; set;}
             public RegionType type{ get; set;}
-            public Polygon[] polygons {get; set;}
+            public Polygon polygon {get; set;}
             public int numCustomers {get; set;}
         } 
         /// <summary>

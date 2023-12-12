@@ -42,5 +42,25 @@ namespace SmartEnergyLabDataApi.Controllers
                 return m.GetBoundaries(ids);
             }
         }
+
+                /// <summary>
+        /// Gets the number of multi-boundaries by substation type
+        /// </summary>
+        /// <returns></returns> <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("MultiBoundaries")]
+        public Dictionary<string,Tuple<int,int>> GetNumberOfMultiBoundaries() {
+            var results = new Dictionary<string,Tuple<int,int>>();
+            using( var da = new DataAccess()) {
+                results.Add("Distribution",da.GIS.GetNumMultiBoundariesDist());
+                results.Add("Primary",da.GIS.GetNumMultiBoundariesPrimary());
+                results.Add("GSP",da.GIS.GetNumMultiBoundariesGSP());
+            }
+            return results;
+        }
+
     }
 }

@@ -1,5 +1,6 @@
 from enum import Enum
 import json
+import shapely
 
 class EVDemandInput:
     def __init__(self,dict=None)->None:
@@ -23,10 +24,11 @@ class EVDemandInput:
         def __init__(self,dict=None)->None:
             self.id: int
             self.type: EVDemandInput.RegionType
-            self.polygons: list[EVDemandInput.Polygon]
+            self.polygon: EVDemandInput.Polygon
             self.numCustomers: int
             if dict:
                 self.__dict__ = dict
+                self.shapely_polygon=shapely.Polygon(self.polygon.points)
     
     class VehicleUsage(Enum):
         Low=0
@@ -55,7 +57,7 @@ class EVDemandInput:
             elif (className=='EVDemandInput.PredictorParams'):
                 return EVDemandInput.PredictorParams(dict)
             elif (className=='EVDemandInput.Polygon'):
-                return EVDemandInput.PredictorParams(dict)
+                return EVDemandInput.Polygon(dict)
 
 class EVDemands:
     def __init__(self) -> None:

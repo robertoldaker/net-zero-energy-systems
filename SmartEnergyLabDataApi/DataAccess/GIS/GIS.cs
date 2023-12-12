@@ -1,5 +1,6 @@
 using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
+using NHibernate;
 using NHibernate.Criterion;
 
 namespace SmartEnergyLabDataApi.Data
@@ -132,5 +133,28 @@ namespace SmartEnergyLabDataApi.Data
             //
             return dict;
         }
+
+        public Tuple<int,int> GetNumMultiBoundariesDist() {
+            //
+            var list = Session.QueryOver<DistributionSubstation>().Fetch(SelectMode.Fetch, m=>m.GISData).List();
+            var mbs = list.Where( m=>m.GISData.NumBoundaries>1).Count();
+            return new Tuple<int, int>(mbs,list.Count);
+        }
+
+        public Tuple<int,int>  GetNumMultiBoundariesPrimary() {
+            //
+            var list = Session.QueryOver<PrimarySubstation>().Fetch(SelectMode.Fetch, m=>m.GISData).List();
+            var mbs = list.Where( m=>m.GISData.NumBoundaries>1).Count();
+            return new Tuple<int,int>(mbs,list.Count);
+        }
+
+        public Tuple<int,int> GetNumMultiBoundariesGSP() {
+            //
+            var list = Session.QueryOver<GridSupplyPoint>().Fetch(SelectMode.Fetch, m=>m.GISData).List();
+            var mbs = list.Where( m=>m.GISData.NumBoundaries>1).Count();
+            return new Tuple<int,int>(mbs,list.Count);
+        }
+
+
     }
 }
