@@ -443,6 +443,14 @@ namespace SmartEnergyLabDataApi.Data
             return num;
         }
 
+        public int GetNumMultiBoundariesDist() {
+            GISData gisData=null;
+            var q = Session.QueryOver<DistributionSubstation>().Left.JoinAlias(m=>m.GISData,()=>gisData).
+                WithSubquery.Where( m=>QueryOver.Of<GISBoundary>().Where(n=>n.GISData.Id==gisData.Id).ToRowCountQuery().As<int>()>1 );
+            var rc = q.ToRowCountQuery().RowCount();
+            return rc;
+        }
+
         #endregion
 
         #region SubstationClassification
