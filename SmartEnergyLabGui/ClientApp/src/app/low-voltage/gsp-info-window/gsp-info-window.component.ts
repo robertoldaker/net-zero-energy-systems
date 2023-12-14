@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { MapPowerService } from '../map-power.service';
 import { DataClientService } from 'src/app/data/data-client.service';
 import { EvDemandService } from '../ev-demand.service';
@@ -12,7 +12,8 @@ export class GspInfoWindowComponent implements OnInit {
 
     constructor(public mapPowerService: MapPowerService, 
                 private dataClientService: DataClientService,
-                public evDemandService: EvDemandService
+                public evDemandService: EvDemandService,
+                @Inject('DATA_URL') private baseUrl: string
                 ) { }
 
     ngOnInit(): void {
@@ -25,4 +26,10 @@ export class GspInfoWindowComponent implements OnInit {
         }
     }
 
+    downloadEvDemandJson() {
+        if ( this.mapPowerService.SelectedGridSupplyPoint ) {
+            let id = this.mapPowerService.SelectedGridSupplyPoint.id;
+            window.location.href = `${this.baseUrl}/EvDemand/Download/GridSupplyPoint?id=${id}`
+        }
+    }
 }

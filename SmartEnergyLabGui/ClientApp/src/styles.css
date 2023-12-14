@@ -136,6 +136,7 @@ div.mapInfoWindow div#buttonRow {
     width: 16px;
     opacity: 0.25;
     vertical-align: top;
+    margin-right: 10px;
 }
 
 .imgButton.enabled {
