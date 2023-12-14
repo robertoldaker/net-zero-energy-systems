@@ -4,7 +4,6 @@ import EvDemandModel.Preprocessing
 import EvDemandModel.Calibration
 import EvDemandModel.Utils
 import EvDemandModel.OnPlotParking
-# import EvDemandModel.SubstationMapping
 from importlib import reload
 import traceback
 
@@ -20,7 +19,6 @@ from EvDemandModel.Preprocessing import Preprocess
 from EvDemandModel.Calibration import CalculateCalibrationFactors
 from EvDemandModel.Utils import CalibrationFactorApplier
 from EvDemandModel.OnPlotParking import CalculateProportionOfVehiclesWithOnPlotParking, CalculateProportionOfEVsWithOnPlotParking
-# from EvDemandModel.SubstationMapping import LoadDistributionSubstationData, CreateSubstationObjects, SubstationObjectDataMapper
 
 from EvDemandModel.Utils.EVDemandOutput import EVDemandOutput
 from EvDemandModel.Utils.EVDemandInput import EVDemandInput
@@ -75,13 +73,13 @@ class EVDemandResult:
     def map_data_from_lsoa_to_substation(self, substation_data_list: list):
         for substation_data in substation_data_list:
             # Find intersections between substations and LSOAs
-            intersections = self._find_intersections_with_lsoas(substation_data.polygons) # Change to geometry
+            intersections = self._find_intersections_with_lsoas(substation_data.shapely_polygon)
 
             # Find Parent LSOAs (LSOA11CD's) based on non-empty intersections
             parent_lsoas = self._find_parent_lsoas(intersections)
 
             # Calculate the size of the intersections relative to the area of the substation
-            substation_relative_intersections = self._calculate_substation_relative_intersections(substation_data.polygons, parent_lsoas, intersections)
+            substation_relative_intersections = self._calculate_substation_relative_intersections(substation_data.shapely_polygon, parent_lsoas, intersections)
             
             # Calculate the size of the intersections relative to the area of the parent LSOAs
             lsoa_relative_intersections = self._calculate_lsoa_relative_intersections(parent_lsoas, intersections)
@@ -144,27 +142,29 @@ class EVDemandResult:
         # A list to store the resulting binomial samples for all LSOAs
         data_from_lsoas = []
 
-        if not np.nan(substation_numCustomers):
-            P = intersection_households
+        P = intersection_households
 
-        elif np.nan(substation_numCustomers):
-            P = lsoa_relative_intersections
+        # if not np.nan(substation_numCustomers):
+        #     P = intersection_households
 
-            for lsoa in parent_lsoas:
-                # n_values is a series of 1000 elements (samples)
-                n_values = np.maximum(lsoa_data[lsoa].fillna(0).astype(int), 0)
-                
-                # Probability remains the same across all 1000 samples for this LSOA
-                p = np.clip(P.loc[lsoa], 0, 1)
-                
-                # Generating binomial samples for this LSOA based on n_values and p
-                lsoa_samples = binom.rvs(n=n_values, p=p)
-                
-                # Appending this LSOA's binomial samples to the list
-                data_from_lsoas.append(lsoa_samples)
+        # elif np.nan(substation_numCustomers):
+        #     P = lsoa_relative_intersections
 
-            # Summing over the columns (i.e., summing the binomial samples of each LSOA)
-            total_data_from_lsoas = np.sum(data_from_lsoas, axis=0)
+        for lsoa in parent_lsoas:
+            # n_values is a series of 1000 elements (samples)
+            n_values = np.maximum(lsoa_data[lsoa].fillna(0).astype(int), 0)
+            
+            # Probability remains the same across all 1000 samples for this LSOA
+            p = np.clip(P.loc[lsoa], 0, 1)
+            
+            # Generating binomial samples for this LSOA based on n_values and p
+            lsoa_samples = binom.rvs(n=n_values, p=p)
+            
+            # Appending this LSOA's binomial samples to the list
+            data_from_lsoas.append(lsoa_samples)
+
+        # Summing over the columns (i.e., summing the binomial samples of each LSOA)
+        total_data_from_lsoas = np.sum(data_from_lsoas, axis=0)
 
         # Calculating percentiles for the resulting summed data
         return total_data_from_lsoas
@@ -205,21 +205,7 @@ def runPrediction(line:str, lsoa_data_dict: dict, lsoa_boundaries: gpd.GeoDataFr
             EVDemandOutput.logMessage(f'NumCustomers=[{rd.numCustomers}]')            
             EVDemandOutput.logMessage(f'Polgon bounds=[{rd.shapely_polygon.bounds}]')            
 
-        #
-        # Needs replacing with actual code to perform prediction
-        #
-        # count=1
-        # while count<=2:
-        #     EVDemandOutput.progressTextMessage(f"Processing input {count}...")
-        #     EVDemandOutput.progressMessage((int) ((count*100.0)/10.0))
-        #     time.sleep(1)
-        #     count+=1
         result = EVDemandResult(lsoa_data_dict, lsoa_boundaries, house_data).map_data_from_lsoa_to_substation(input.regionData)
-
-        #
-        # Dummy object that should be replaced with object holding the results of the prediction (EVDemandResult?)
-        #
-        # output= {'numRegionData': len(input.regionData)}
         outputJson = json.dumps(result)
         EVDemandOutput.logMessage("Processed input")
         EVDemandOutput.resultMessage(outputJson)# 
@@ -253,20 +239,7 @@ if __name__ == "__main__":
     bev_with_opp = adoptions['bev'].mul(opp_proportions['bev']).round(0)
     phev_with_opp = adoptions['phev'].mul(opp_proportions['phev']).round(0)
 
-    # %%
-    # ds_data = LoadDistributionSubstationData.load_data()
-
-    # %%
-
-    #substation_numbers = ds_data['Substation Number'].sample(10).values
-    #substations = CreateSubstationObjects.create_substation_objects(ds_data, substation_numbers)
-
-    # substation_data_mapper = SubstationObjectDataMapper(
-    #     ds_data=ds_data,
-    #     lsoa_boundaries=preprocessed_data['lsoa_boundaries'],
-    #     house_data=preprocessed_data['house_2021']
-    # )
-
+    #%%
     data = {
         'vehicles': adoptions['vehicle'], 
         'bevs': adoptions['bev'],
@@ -275,27 +248,20 @@ if __name__ == "__main__":
         'phevsWithOnPlotParking': phev_with_opp
     }
 
-    # substation_data_mapper.map_to_substation(substations=substations, data=data)
-
-    # index_values = [f"{i}%" for i in range(0, 101, 5)]
-
-    # attributes = {
-    #     'vehicles': 'vehicles',
-    #     'bevs': 'bevs',
-    #     'phevs': 'phevs',
-    #     'bevsWithOnPlotParking': 'bevsWithOnPlotParking',
-    #     'phevsWithOnPlotParking': 'phevsWithOnPlotParking'
-    # }
-
-    # substation_vehicle_data = {key: pd.DataFrame(index=index_values, columns=substation_numbers) for key in attributes}
-
-    # for df_name, attr in attributes.items():
-    #     for substation in substations:
-    #         substation_vehicle_data[df_name][substation.id] = getattr(substation.vehicles, attr)
-    
-    #
     # Write OK message so server knows this script is ready and wait for input
-    #
+
+    #%%
+    # EVDemandOutput.okMessage()
+
+    # def read_json_file_as_string(file_path):
+    #     with open(file_path, 'r') as file:
+    #         return file.read()
+    
+    # json_filepath = '/Users/isaacflower/Library/CloudStorage/OneDrive-UniversityofBath/Documents/PhD/EV Modelling/net-zero-energy-systems/EvDemandModel/EvDemandInput (example).json'
+    # line = read_json_file_as_string(json_filepath)
+
+    # runPrediction(line, data, preprocessed_data['lsoa_boundaries'], preprocessed_data['house_2021'])
+
     EVDemandOutput.okMessage()
     cont = True
     while(cont):
