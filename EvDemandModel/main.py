@@ -109,7 +109,7 @@ class EVDemandResult:
 
     def _find_intersections_with_lsoas(self, substation_geometry: Polygon) -> gpd.GeoSeries:
         intersections = self.lsoa_boundaries.geometry.intersection(substation_geometry)
-        if intersections.is_empty:
+        if intersections.is_empty.all():
             raise Exception("Can't find any intersections")
         return intersections
     
