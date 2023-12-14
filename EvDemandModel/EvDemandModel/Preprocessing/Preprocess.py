@@ -1,3 +1,5 @@
+import pandas as pd
+import numpy as np
 from .DataContainer import DataContainer
 from .SpecificPreprocessors import (CarVan2011DataPreprocessor, CarVan2021DataPreprocessor, 
                                    VehicleRegistrationsDataPreprocessor, EVRegistrationsDataPreprocessor, 
@@ -27,12 +29,60 @@ def preprocess() -> dict:
     # Preprocess the data
     processed_data = {key: processor.preprocess() for key, processor in data_preprocessors.items()}
 
-    # Find the common LSOAs
-    common_lsoas = ListUtilities.intersection_of_lists(*[processed_data[key].index for key in processed_data])
+    # # Find the common LSOAs
+    # common_lsoas = ListUtilities.intersection_of_lists(*[processed_data[key].index for key in processed_data])
 
-    # Filter and sort the datasets using the common LSOAs
-    for key in processed_data:
-        processed_data[key] = processed_data[key].loc[common_lsoas].sort_index()
+    # # Filter and sort the datasets using the common LSOAs
+    # for key in processed_data:
+    #     processed_data[key] = processed_data[key].loc[common_lsoas].sort_index()
+
+    # Assuming lsoa_boundaries is your master dataframe
+    lsoa_ids = processed_data['lsoa_boundaries'].index
+
+    # Accommodation types (retrieved from the image you've provided)
+    accommodation_types = [
+        'Detached', 
+        'Semi-detached', 
+        'Terraced',
+        'In a purpose-built block of flats or tenement',
+        'Part of a converted or shared house, including bedsits',
+        'Part of another converted building, for example, former school, church or warehouse',
+        'In a commercial building, for example, in an office building, hotel or over a shop',
+        'A caravan or other mobile or temporary structure'
+    ]
+
+    # Iterating through the dictionary of dataframes
+    for key, df in processed_data.items():
+        # Check if this is the accommodation type dataframe
+        if key == 'accommodation_type_2021':
+            # Find missing LSOA IDs
+            missing_lsoa_ids = set(lsoa_ids) - set(df.index.unique())
+
+            # For each missing LSOA ID, create new rows for each accommodation type
+            new_rows = []
+            for lsoa_id in missing_lsoa_ids:
+                for acc_type in accommodation_types:
+                    new_row = pd.Series({
+                        'LSOA21CD': lsoa_id,  # Assuming LSOA21CD should match the index
+                        'accommodation_type': acc_type,
+                        'Observation': np.nan
+                    }, name=lsoa_id)
+                    new_rows.append(new_row)
+
+            # After constructing new_rows with the loop
+            if new_rows:  # Check if there are any new rows to add
+                new_rows_df = pd.DataFrame(new_rows)
+                df = pd.concat([df, new_rows_df], ignore_index=False)
+                df.sort_index(inplace=True)  # Sort if needed
+
+                # Update the dictionary
+                processed_data[key] = df
+            
+        else:
+            # For other dataframes, simply reindex to align with lsoa_boundaries
+            processed_data[key] = df.reindex(lsoa_ids, fill_value=np.nan)
+
+    # Now all dataframes within preprocessed_data are aligned with lsoa_boundaries
     
     registration_interpolator = RegistrationInterpolator()
 
