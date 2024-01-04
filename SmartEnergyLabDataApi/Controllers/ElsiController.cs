@@ -6,6 +6,7 @@ using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Loadflow;
 using SmartEnergyLabDataApi.Elsi;
+using static SmartEnergyLabDataApi.Models.ElsiReference;
 
 namespace SmartEnergyLabDataApi.Controllers
 {
@@ -233,10 +234,26 @@ namespace SmartEnergyLabDataApi.Controllers
         /// Stores Elsi reference spreadsheet
         /// </summary>
         /// <param name="file"></param>
+        [HttpPost]
+        [Route("Reference/Upload")]
         public void UploadReference(IFormFile file) {
             var m=new ElsiReference();
             m.Load(file);
         }
+
+        /// <summary>
+        /// Runs Elsi against reference and returns variables with abs error greater than supplied tolerance
+        /// </summary>
+        /// <param name="day">Day number to use (1-365)</param>
+        /// <param name="tol">Tolerance to use for absolute error</param>
+        /// <param name="phase">Only consider this phase of the analysis (phases are "Availabilities", "Market phase", "Balance phase" and "Balance mechanism")</param>
+        [HttpGet]
+        [Route("Reference/Run")]
+        public ElsiErrors Run(int day=1, double tol=1e-6, string phase="All") {
+            var m=new ElsiReference();
+            return m.Run(day,tol,phase);
+        }
+        
 
     }
 }

@@ -103,7 +103,7 @@ public class LoadflowReference {
                 // Single trips
                 foreach( var st in singleTrips ) {
                     if ( m.SingleTripResults.TryGetValue(st.Trip.Text, out LoadflowXlsmReader.TripResult tr)) {
-                        loadflowErrors.AddTripResult(st.Trip.Text,RefErrorType.SingleTrip,st,tr);
+                        loadflowErrors.AddTripResult(st.Trip.Text,LoadflowRefErrorType.SingleTrip,st,tr);
                     } else {
                         throw new Exception($"Could not find trip [{st.Trip.Text}] in ref spreadsheet");
                     }
@@ -111,7 +111,7 @@ public class LoadflowReference {
                 // Dual trips
                 foreach( var st in dualTrips ) {
                     if ( m.DualTripResults.TryGetValue(st.Trip.Text, out LoadflowXlsmReader.TripResult tr)) {
-                        loadflowErrors.AddTripResult(st.Trip.Text,RefErrorType.DualTrip,st,tr);
+                        loadflowErrors.AddTripResult(st.Trip.Text,LoadflowRefErrorType.DualTrip,st,tr);
                     } else {
                         //?? Server does all 2-trip combinations but spreadsheet only does some.
                         //??throw new Exception($"Could not find trip [{st.Trip.Text}] in ref spreadsheet");
@@ -127,98 +127,98 @@ public class LoadflowReference {
     }
 
     public class LoadflowErrors {
-        private List<RefError> _allErrors;
+        private List<LoadflowRefError> _allErrors;
         public  bool _showAllErrors;
         public LoadflowErrors(bool showAllErrors) {
-            _allErrors = new List<RefError>();
+            _allErrors = new List<LoadflowRefError>();
             _showAllErrors = showAllErrors;
         }
 
-        public RefError MaxError {
+        public LoadflowRefError MaxError {
             get {
                 return _allErrors.OrderByDescending(m=>m.AbsDiff).First();
             }
         }
 
         public void AddNodeResult(string name, NodeWrapper nw, LoadflowXlsmReader.NodeResult cr) {
-            var error = new RefError(name,RefErrorType.Node,"Mismatch",nw.Mismatch,cr.Mismatch);
+            var error = new LoadflowRefError(name,LoadflowRefErrorType.Node,"Mismatch",nw.Mismatch,cr.Mismatch);
             _allErrors.Add(error);
         }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public List<RefError> NodeErrors {
+        public List<LoadflowRefError> NodeErrors {
             get {
-                var list = _showAllErrors ? filterAllErrors(RefErrorType.Node) : null;
+                var list = _showAllErrors ? filterAllErrors(LoadflowRefErrorType.Node) : null;
                 return list;
             }
         }
 
         public void AddBranchResult(string name, BranchWrapper bw, LoadflowXlsmReader.BranchResult br) {
-            var bFlow = new RefError(name,RefErrorType.Branch,"Power flow",bw.PowerFlow,br.bFlow);
+            var bFlow = new LoadflowRefError(name,LoadflowRefErrorType.Branch,"Power flow",bw.PowerFlow,br.bFlow);
             _allErrors.Add(bFlow);
             double? fp = bw.FreePower==99999 ? null: bw.FreePower;
-            var fPower = new RefError(name,RefErrorType.Branch,"Free power",fp,br.freePower);
+            var fPower = new LoadflowRefError(name,LoadflowRefErrorType.Branch,"Free power",fp,br.freePower);
             _allErrors.Add(fPower);
         }
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public List<RefError> BranchErrors {
+        public List<LoadflowRefError> BranchErrors {
             get {
-                var list = _showAllErrors ? filterAllErrors(RefErrorType.Branch) : null;
+                var list = _showAllErrors ? filterAllErrors(LoadflowRefErrorType.Branch) : null;
                 return list;
             }
         }
         
         public void AddCtrlResult(string name, CtrlWrapper cw, LoadflowXlsmReader.CtrlResult cr) {
-            var sp = new RefError(name,RefErrorType.Ctrl,"Set point",cw.SetPoint,cr.SetPoint);
+            var sp = new LoadflowRefError(name,LoadflowRefErrorType.Ctrl,"Set point",cw.SetPoint,cr.SetPoint);
             _allErrors.Add(sp);
         }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public List<RefError> ControlErrors {
+        public List<LoadflowRefError> ControlErrors {
             get {
-                var list = _showAllErrors ? filterAllErrors(RefErrorType.Ctrl) : null;
+                var list = _showAllErrors ? filterAllErrors(LoadflowRefErrorType.Ctrl) : null;
                 return list;
             }
         }
 
-        private List<RefError> filterAllErrors(RefErrorType type) {
+        private List<LoadflowRefError> filterAllErrors(LoadflowRefErrorType type) {
             var list = _allErrors.Where(m=>m.ObjectType == type).OrderByDescending(m=>m.AbsDiff).ToList();
             return list;
         }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public List<RefError> SingleTripErrors {
+        public List<LoadflowRefError> SingleTripErrors {
             get {
-                var list = _showAllErrors ? filterAllErrors(RefErrorType.SingleTrip) : null;
+                var list = _showAllErrors ? filterAllErrors(LoadflowRefErrorType.SingleTrip) : null;
                 return list;
             }
         }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public List<RefError> DualTripErrors {
+        public List<LoadflowRefError> DualTripErrors {
             get {
-                var list = _showAllErrors ? filterAllErrors(RefErrorType.DualTrip) : null;
+                var list = _showAllErrors ? filterAllErrors(LoadflowRefErrorType.DualTrip) : null;
                 return list;
             }
         }
-        public void AddTripResult(string name, RefErrorType type,AllTripsResult trc, LoadflowXlsmReader.TripResult trr) {
-            var sp = new RefError(name,type,"Surplus",trc.Capacity,trr.Capacity);
+        public void AddTripResult(string name, LoadflowRefErrorType type,AllTripsResult trc, LoadflowXlsmReader.TripResult trr) {
+            var sp = new LoadflowRefError(name,type,"Surplus",trc.Capacity,trr.Capacity);
             _allErrors.Add(sp);
-            var cap = new RefError(name,type,"Capacity",trc.Capacity,trr.Capacity);
+            var cap = new LoadflowRefError(name,type,"Capacity",trc.Capacity,trr.Capacity);
             _allErrors.Add(cap);
             foreach( var ct in trc.Ctrls) {
                 if ( trr.SetPointDict.ContainsKey(ct.Code)) {
-                    var ctrError = new RefError(name,type,ct.Code,ct.SetPoint,trr.SetPointDict[ct.Code]);
+                    var ctrError = new LoadflowRefError(name,type,ct.Code,ct.SetPoint,trr.SetPointDict[ct.Code]);
                     _allErrors.Add(ctrError);
                 }
             }
         }
     }
 
-    public enum RefErrorType { Node, Branch, Ctrl, SingleTrip, DualTrip }
+    public enum LoadflowRefErrorType { Node, Branch, Ctrl, SingleTrip, DualTrip }
 
-    public class RefError {  
-        public RefError(string objName,RefErrorType objType,string var, double? calc, double? r) {
+    public class LoadflowRefError {  
+        public LoadflowRefError(string objName,LoadflowRefErrorType objType,string var, double? calc, double? r) {
             ObjectName = objName;
             ObjectType = objType;
             Variable=var;
@@ -226,7 +226,7 @@ public class LoadflowReference {
             Calc = calc;
         }
         public string ObjectName {get; set;}
-        public RefErrorType ObjectType {get; set;}
+        public LoadflowRefErrorType ObjectType {get; set;}
         public string ObjectTypeStr {
             get {
                 return ObjectType.ToString();
