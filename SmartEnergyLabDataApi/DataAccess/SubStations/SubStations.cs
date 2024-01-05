@@ -188,9 +188,14 @@ namespace SmartEnergyLabDataApi.Data
             return dss;
         }
 
-        public DistributionSubstation GetDistributionSubstation(string nr)
+        public DistributionSubstation GetDistributionSubstationByNr(string nr)
         {
             return Session.QueryOver<DistributionSubstation>().Where(m => m.NR == nr).Take(1).SingleOrDefault();
+        }
+
+        public DistributionSubstation GetDistributionSubstationByExternalId(string externalId)
+        {
+            return Session.QueryOver<DistributionSubstation>().Where(m => m.ExternalId == externalId).Take(1).SingleOrDefault();
         }
 
         public DistributionSubstation GetDistributionSubstationByNRId(string nrId)
