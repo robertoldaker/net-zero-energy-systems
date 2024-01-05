@@ -25,6 +25,7 @@ namespace EnergySystemLabDataApi
 
     public class DataRow {
         public DataRow(DataAccess da, GeographicalArea geo) {
+            GeoGraphicalAreaId = geo.Id;
             GeoGraphicalArea = geo.Name;
             DNOIconUrl = getIconUrl(geo.DistributionNetworkOperator);
             DNO = geo.DistributionNetworkOperator.Name;
@@ -51,6 +52,7 @@ namespace EnergySystemLabDataApi
                 throw new Exception($"Unexpected DNO code [{dno.Code}] for dno [{dno.Name}]");
             }
         }
+        public int GeoGraphicalAreaId {get; set;}
         public string GeoGraphicalArea {get; set;}
         public string DNOIconUrl {get; set;}
         public string DNO {get; set;}

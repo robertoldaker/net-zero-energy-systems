@@ -137,6 +137,16 @@ namespace EnergySystemLabDataApi.SubStations
         public void GenerateError() {
             throw new Exception("This is an error generated for test purposes using \"Admin/GenerateError\"");
         }
+
+        /// <summary>
+        /// Deletes all GSPs, primrary and distribution substations for the given distribution area
+        /// </summary>
+        /// <param name="gaId"></param>
+        [HttpPost]
+        [Route("DeleteAllSubstations")]
+        public void DeleteAllSubstations(int gaId) {
+            //??Thread.Sleep(2000);
+        }
     }
 
 }

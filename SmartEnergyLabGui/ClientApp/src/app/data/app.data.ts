@@ -750,6 +750,7 @@ export interface DataModel {
 }
 
 export interface DataRow {
+    geoGraphicalAreaId: number,
     geoGraphicalArea: string;
     dno: string;
     dnoIconUrl: string;
