@@ -30,6 +30,15 @@ namespace SmartEnergyLabDataApi.Data
             Session.Save(gsp);
         }
 
+        public void DeleteAllGridSupplyPointsInGeographicalArea(int gaId) {
+            Logger.Instance.LogInfoEvent($"Started deletion of grid supply points for geographical area=[{gaId}]");
+            var gsps = GetGridSupplyPoints(gaId);
+            foreach( var gsp in gsps) {
+                Session.Delete(gsp);
+            }
+            Logger.Instance.LogInfoEvent($"Finished deletion of grid supply points");
+        }
+
         public GridSupplyPoint GetGridSupplyPoint(int id) {
             return Session.Get<GridSupplyPoint>(id);
         }

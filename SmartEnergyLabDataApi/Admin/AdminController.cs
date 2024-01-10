@@ -2,6 +2,7 @@
 using HaloSoft.EventLogger;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.SGT;
 using SmartEnergyLabDataApi.Models;
@@ -146,6 +147,12 @@ namespace EnergySystemLabDataApi.SubStations
         [Route("DeleteAllSubstations")]
         public void DeleteAllSubstations(int gaId) {
             //??Thread.Sleep(2000);
+            using( var da = new DataAccess() ) {
+                da.Substations.DeleteAllDistributionInGeographicalArea(gaId);
+                da.Substations.DeleteAllPrimaryInGeographicalArea(gaId);
+                da.SupplyPoints.DeleteAllGridSupplyPointsInGeographicalArea(gaId);
+                da.CommitChanges();
+            }
         }
     }
 

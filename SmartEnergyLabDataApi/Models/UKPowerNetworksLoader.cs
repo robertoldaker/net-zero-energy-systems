@@ -80,7 +80,7 @@ namespace SmartEnergyLabDataApi.Models
 
             //
             using( var da = new DataAccess()) {
-                var toAdd = new List<GridSupplyPoint>();
+                var toAdd = new List<dynamic>();
               
                 // Need a way of working out the GA since no info in api data                
                 foreach( var gspRecord in gspRecords) {
@@ -107,7 +107,7 @@ namespace SmartEnergyLabDataApi.Models
                         Logger.Instance.LogInfoEvent($"Added new GSP=[{gspRecord.gsp}]");
                         _gspProcessResult.NumAdded++;
                         added = true;
-                        toAdd.Add(gsp);
+                        toAdd.Add(new { gsp=gsp,gspRecord=gspRecord});
                     }
                     
                     // update GSP using record
@@ -115,17 +115,26 @@ namespace SmartEnergyLabDataApi.Models
                     if ( updated && !added ) {
                         _gspProcessResult.NumModified++;
                     }
-                    // Boundary
-                    try {
-                        boundaryLoader.AddGISData(gsp.GISData,gspRecord.geo_shape.geometry);
-                    } catch (Exception e) {
-                        Logger.Instance.LogErrorEvent(e.Message + $", for entry [{gsp.Name}]");
+                    if ( !added ) {
+                        // Boundary
+                        try {
+                            boundaryLoader.AddGISData(gsp.GISData,gspRecord.geo_shape.geometry);
+                        } catch (Exception e) {
+                            Logger.Instance.LogErrorEvent(e.Message + $", for entry [{gsp.Name}]");
+                        }
                     }
                     checkCancelled();
                 }
 
-                foreach( var gsp in toAdd) {
-                    da.SupplyPoints.Add(gsp);
+                foreach( var obj in toAdd) {
+                    da.SupplyPoints.Add(obj.gsp);
+                    // Boundary
+                    try {
+                        boundaryLoader.AddGISData(obj.gsp.GISData,obj.gspRecord.geo_shape.geometry);
+                    } catch (Exception e) {
+                        Logger.Instance.LogErrorEvent(e.Message + $", for entry [{obj.gsp.Name}]");
+                    }
+                    //
                     checkCancelled();
                 }
                 //
@@ -229,7 +238,7 @@ namespace SmartEnergyLabDataApi.Models
             var boundaryLoader = new GISBoundaryLoader(this);
             checkCancelled();
             using( var da = new DataAccess()) {
-                var toAdd = new List<PrimarySubstation>();
+                var toAdd = new List<dynamic>();
 
                 foreach( var primRecord in primAreaRecords) {
                     _primProcessResult.NumProcessed++;
@@ -246,7 +255,7 @@ namespace SmartEnergyLabDataApi.Models
                                 pss = new PrimarySubstation(ImportSource.UKPowerNetworksOpenData,primRecord.primary_feeder,primRecord.primary_site_functional_location,gsp);
                                 _primProcessResult.NumAdded++;
                                 added = true;
-                                toAdd.Add(pss);
+                                toAdd.Add(new { pss=pss, primRecord=primRecord });
                             } else {
                                 Logger.Instance.LogWarningEvent($"Could not find GSP with name [{ltdsRecord.grid_supply_point}] for primary substation [{primRecord.primary_substation_name}], ignoring ....");
                                 _primProcessResult.NumIgnored++;
@@ -265,16 +274,24 @@ namespace SmartEnergyLabDataApi.Models
                         _primProcessResult.NumModified++;
                     }
                     // Boundary
-                    try {
-                        boundaryLoader.AddGISData(pss.GISData,primRecord.geo_shape.geometry);
-                    } catch (Exception e) {
-                        Logger.Instance.LogErrorEvent(e.Message + $", for entry [{pss.Name}]");
+                    if ( !added ) {
+                        try {
+                            boundaryLoader.AddGISData(pss.GISData,primRecord.geo_shape.geometry);
+                        } catch (Exception e) {
+                            Logger.Instance.LogErrorEvent(e.Message + $", for entry [{pss.Name}]");
+                        }
                     }
                     checkCancelled();
                 }
 
-                foreach( var pss in toAdd) {
-                    da.Substations.Add(pss);
+                foreach( var obj in toAdd) {
+                    da.Substations.Add(obj.pss);
+                    //
+                    try {
+                        boundaryLoader.AddGISData(obj.pss.GISData,obj.primRecord.geo_shape.geometry);
+                    } catch (Exception e) {
+                        Logger.Instance.LogErrorEvent(e.Message + $", for entry [{obj.pss.Name}]");
+                    }
                     checkCancelled();
                 }
 

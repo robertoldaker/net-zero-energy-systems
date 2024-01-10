@@ -70,8 +70,8 @@ export class AdminDataComponent extends ComponentBase {
                 icon: MessageDialogIcon.Warning
             },
             ()=>{
-                this.dataService.DeleteAllSubstations(row.geoGraphicalAreaId,()=>{
-                    console.log('Deleted!')
+                this.dataService.DeleteAllSubstations(row.geoGraphicalAreaId,`Deleting all from [${row.geoGraphicalArea}] ...`,()=>{
+                    this.refresh()
                 });
             }
         )

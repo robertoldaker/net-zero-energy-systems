@@ -56,9 +56,8 @@ namespace SmartEnergyLabDataApi.Models
         }
 
         public string Load() {
-            //??var message = LoadSpatial();
-            //??message+=LoadDistributionData();
-            var message=LoadDistributionData();
+            var message = LoadSpatial();
+            message+=LoadDistributionData();
             return message;
         }
 
@@ -764,6 +763,7 @@ namespace SmartEnergyLabDataApi.Models
                             if ( !primCache.TryGetValue(feature.properties.PRIM_NRID, out pss)) {
                                 pss = da.Substations.GetPrimarySubstation(
                                     ImportSource.NationalGridDistributionOpenData,
+                                    null,
                                     feature.properties.PRIM_NRID.ToString(), 
                                     feature.properties.PRIM_NRID_NAME);
                                 if ( pss!=null ) {

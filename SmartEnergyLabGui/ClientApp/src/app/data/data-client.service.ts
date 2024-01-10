@@ -453,8 +453,8 @@ export class DataClientService {
         this.getBasicRequest('/Admin/PerformCleanup', onComplete)
     }
 
-    DeleteAllSubstations(gaId:number, onComplete: (resp: any)=>void | undefined) {
-        this.postRequestWithMessage('Deleting all...','/Admin/DeleteAllSubstations',{gaId: gaId}, onComplete);
+    DeleteAllSubstations(gaId:number, message:string,  onComplete: (resp: any)=>void | undefined) {
+        this.postRequestWithMessage(message,`/Admin/DeleteAllSubstations?gaId=${gaId}`,null, onComplete);
     }
 
     /* National grid */

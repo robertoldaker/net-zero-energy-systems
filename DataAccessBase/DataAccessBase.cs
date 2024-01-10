@@ -10,6 +10,9 @@ using System.Diagnostics;
 using MySql.Data.MySqlClient;
 using NHibernate.Tool.hbm2ddl;
 using Npgsql;
+using System.Data.Common;
+using Org.BouncyCastle.Security;
+using NHibernate.Mapping;
 
 namespace HaloSoft.DataAccess
 {
@@ -371,5 +374,81 @@ namespace HaloSoft.DataAccess
             }
         }
 
+        public class DbIndex {
+            public DbIndex() {
+                ColNames = new List<string>();
+            }
+            public DbIndex(string name, string tableName, params string[] colNames) {
+                Name = name;
+                TableName = tableName;
+                ColNames = new List<string>(colNames);
+            }
+            public string TableName {get; set;}
+            public List<string> ColNames {get; set;}
+            public string Name {get; set;}
+        }
+
+        public static List<DbIndex> CreateIndexesIfNotExist(List<DbIndex> indexes) {
+            if ( _dbConnection.DbProvider != DbProvider.PostgreSQL ) {
+                throw new Exception("CreateIndexesIfNotExist is only available for postgresql");
+            }
+            //
+            var existingIndexes = getExistingIndexesPostgreSql();
+            var newIndexes = new List<DbIndex>();
+            foreach( var index in indexes) {
+                if (!existingIndexes.ContainsKey(index.Name)) {
+                    createIndexPostgreSql(index);
+                    newIndexes.Add(index);
+                }
+            }
+            return newIndexes;
+        }
+
+        private static void createIndexPostgreSql(DbIndex dbIndex) {
+            var columnNames = string.Join(',',dbIndex.ColNames);
+            var sql = $"CREATE INDEX {dbIndex.Name} ON {dbIndex.TableName} ({columnNames})";
+            runPostgreSQL(sql);
+        }
+
+        private static Dictionary<string,DbIndex> getExistingIndexesPostgreSql() {
+            var sql = @"select
+    t.relname as table_name,
+    i.relname as index_name,
+    a.attname as column_name
+from
+    pg_class t,
+    pg_class i,
+    pg_index ix,
+    pg_attribute a
+where
+    t.oid = ix.indrelid
+    and i.oid = ix.indexrelid
+    and a.attrelid = t.oid
+    and a.attnum = ANY(ix.indkey)
+    and t.relkind = 'r'
+   -- and t.relname like 'mytable'
+order by
+    t.relname,
+    i.relname;";
+
+            var indexes = new Dictionary<string,DbIndex>(StringComparer.OrdinalIgnoreCase);
+            RunPostgreSQLQuery(sql,(row)=>{
+                    var tableName = row[0].ToString();
+                    var indexName = row[1].ToString();
+                    var columnName = row[2].ToString();
+                    DbIndex dbIndex;
+                    if ( indexes.ContainsKey(indexName) ) {
+                        dbIndex = indexes[indexName];
+                    } else {
+                        dbIndex = new DbIndex() {
+                            Name = indexName,
+                            TableName = tableName                            
+                        };
+                        indexes.Add(indexName,dbIndex);
+                    }
+                    dbIndex.ColNames.Add(columnName);
+                });
+            return indexes;
+        }
     }
 }

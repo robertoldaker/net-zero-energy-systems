@@ -6,6 +6,7 @@ using NHibernate.Criterion;
 // NHibernate.Linq;
 using NHibernate.Transform;
 using Org.BouncyCastle.Asn1.Icao;
+using Remotion.Linq.Parsing.Structure.IntermediateModel;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Models;
 using System.Diagnostics;
@@ -115,7 +116,7 @@ namespace SmartEnergyLabDataApi.Data
             results.AddRange(results3);
 
             return results;
-        }
+        }        
 
         #region DistributionSubstations
         public void SetSubstationParams(int id, SubstationParams sParams) {
@@ -167,6 +168,54 @@ namespace SmartEnergyLabDataApi.Data
         public void Delete(DistributionSubstation ds)
         {
             Session.Delete(ds);
+        }
+
+        public void DeleteAllDistributionInGeographicalArea(int gaId) {
+            Logger.Instance.LogInfoEvent($"Started deletion of distribution substations for daId={gaId}");                        
+            int count;
+            int skip=0;
+            int take = 1000;
+            int processed=0;
+            int initialCount=0;
+
+            do {
+                // process a 1000 at a time
+                using( var da = new DataAccess()) {
+                    var dsss = da.Substations.GetDistributionSubstations(gaId,0,take,out count);
+                    if ( initialCount==0) {
+                        initialCount = count;
+                    }
+                    foreach( var dss in dsss) {
+                        //
+                        da.Session.Delete(dss);
+                    }
+                    da.CommitChanges();
+                    //
+                    processed+=dsss.Count;
+                    Logger.Instance.LogInfoEvent($"Processed [{processed} of {initialCount}]");                        
+                }
+            } while(skip<count);
+
+
+           /* var results = this.Session.CreateSQLQuery("delete from distribution_substations ds where ds.geographicalareaid = :gaId")
+                        .AddScalar("count", NHibernateUtil.Int32)
+                        .SetParameter("gaId",gaId)
+                        .UniqueResult();
+                        
+                        
+            Logger.Instance.LogInfoEvent($"Finished, deleted={results}");  
+            */           
+        }
+
+        public IList<DistributionSubstation> GetDistributionSubstations( int gaId, int skip, int take, out int count) {
+            var q = this.Session.QueryOver<DistributionSubstation>().Where(m=>m.GeographicalArea.Id==gaId).OrderBy(m=>m.Id).Asc.Skip(skip).Take(take);            
+            count = q.RowCount();
+            return q.List();
+        }
+        public IList<DistributionSubstation> GetFirstUnlinkedDistributionSubstations( int take, out int count) {
+            var q = this.Session.QueryOver<DistributionSubstation>().Where(m=>m.GeographicalArea==null).Skip(0).Take(take);            
+            count = q.RowCount();
+            return q.List();
         }
 
         public DistributionSubstation GetDistributionSubstation(ImportSource source,string externalId, string externalId2=null, string name=null)
@@ -361,6 +410,16 @@ namespace SmartEnergyLabDataApi.Data
         public void Delete(PrimarySubstation ps)
         {
             Session.Delete(ps);
+        }
+
+        public void DeleteAllPrimaryInGeographicalArea(int gaId) {
+            // primary substations
+            Logger.Instance.LogInfoEvent($"Started deletion of primary substations for daId={gaId}"); 
+            var psss = GetPrimarySubstationsByGeographicalAreaId(gaId);
+            foreach( var pss in psss) {
+                Session.Delete(pss);
+            }
+            Logger.Instance.LogInfoEvent($"Finished deletion of primary substations");                        
         }
 
         public PrimarySubstation GetPrimarySubstation(int id) {

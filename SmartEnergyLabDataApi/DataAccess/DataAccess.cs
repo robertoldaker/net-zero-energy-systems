@@ -1,6 +1,10 @@
-﻿using HaloSoft.DataAccess;
+﻿using System.Collections.Immutable;
+using System.Security.Cryptography;
+using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
 using NHibernate;
+using Org.BouncyCastle.Crypto.Signers;
+using Remotion.Linq.Parsing.Structure.IntermediateModel;
 
 namespace SmartEnergyLabDataApi.Data
 {
@@ -46,9 +50,27 @@ namespace SmartEnergyLabDataApi.Data
             if ( oldVersion<30) {
                 updateSubstationClassifications();
             }
-            if ( oldVersion<35) {
-               //?? updateBoundaries();
+            if ( oldVersion<44) {
+                updateDistributionSubstationLinks();
             }
+        }
+
+        private static void updateDistributionSubstationLinks() {
+            int take = 1000;
+            int count;
+            Logger.Instance.LogInfoEvent("Started updating distribution substation links ...");
+            do {
+                using( var da = new DataAccess()) {
+                    var dsss = da.Substations.GetFirstUnlinkedDistributionSubstations(take,out count);
+                    foreach( var dss in dsss) {
+                        dss.GeographicalArea = dss.PrimarySubstation.GeographicalArea;
+                        dss.GridSupplyPoint = dss.PrimarySubstation.GridSupplyPoint;
+                    }
+                    da.CommitChanges();
+                    Logger.Instance.LogInfoEvent($"Updated distribution substation links, [{count}] left");
+                }
+            } while( count>0);
+            Logger.Instance.LogInfoEvent("Finished updating distribution substation links");
         }
 
         private static void updateSubstationIds() {
