@@ -146,7 +146,6 @@ namespace EnergySystemLabDataApi.SubStations
         [HttpPost]
         [Route("DeleteAllSubstations")]
         public void DeleteAllSubstations(int gaId) {
-            //??Thread.Sleep(2000);
             using( var da = new DataAccess() ) {
                 da.Substations.DeleteAllDistributionInGeographicalArea(gaId);
                 da.Substations.DeleteAllPrimaryInGeographicalArea(gaId);

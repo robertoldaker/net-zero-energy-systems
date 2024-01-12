@@ -1,4 +1,5 @@
-﻿using NHibernate.Mapping.Attributes;
+﻿using Google.Apis.Sheets.v4.Data;
+using NHibernate.Mapping.Attributes;
 using System.Text.Json.Serialization;
 
 namespace SmartEnergyLabDataApi.Data
@@ -61,6 +62,9 @@ namespace SmartEnergyLabDataApi.Data
         [Column( Name = "Season", Default ="4")]
         public virtual Season Season {get; set;}
 
+        [Property()]
+        public virtual bool IsDummy {get; set;}
+
 
         [Property(Type="HaloSoft.DataAccess.DoubleArrayType, DataAccessBase")]
         [Column(SqlType = "Double precision[]", Name = "Data")]
@@ -92,5 +96,21 @@ namespace SmartEnergyLabDataApi.Data
         [JsonIgnore]
         [ManyToOne(Column = "GridSupplyPointId", Cascade = "none")]
         public virtual GridSupplyPoint GridSupplyPoint { get; set; }
+
+        public virtual SubstationLoadProfile Copy(DistributionSubstation dss) {
+            var lp = new SubstationLoadProfile(dss);
+            //
+            lp.IntervalMins = this.IntervalMins;
+            lp.Data = this.Data;
+            lp.Day = this.Day;
+            lp.DeviceCount = this.DeviceCount;
+            lp.MonthNumber = this.MonthNumber;
+            lp.Source = this.Source;
+            lp.Type = this.Type;
+            lp.Year = this.Year;
+            lp.Season = this.Season;
+            //
+            return lp;
+        }
     }
 }

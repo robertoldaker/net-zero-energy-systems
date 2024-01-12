@@ -73,6 +73,15 @@ namespace SmartEnergyLabDataApi.Data
             return list;
         }
 
+        public IList<SubstationLoadProfile> GetDistributionSubstationLoadProfiles(int[] dssIds, LoadProfileSource source)
+        {
+            var q = Session.QueryOver<SubstationLoadProfile>().
+                Where(m=>m.DistributionSubstation.Id.IsIn(dssIds)).
+                And(m=>m.Source == source);
+            var list = q.List();
+            return list;
+        }
+
         public IList<SubstationLoadProfile> GetSubstationLoadProfile(DistributionNetworkOperator dno)
         {
             PrimarySubstation pss = null;
@@ -224,7 +233,7 @@ namespace SmartEnergyLabDataApi.Data
             }
             sql+=$"sum(data[{i}]) as data{i}\n";
             sql+="from substation_load_profiles slp\n";
-            sql+=$"where primarysubstationid={gaId} and slp.\"year\"={year} and slp.\"source\"={(int)source} group by slp.day,slp.monthnumber";
+            sql+=$"where primarysubstationid={gaId} and slp.\"source\"={(int)source} and slp.\"year\"={year} group by slp.day,slp.monthnumber";
             //
             return sql;
         }
@@ -238,7 +247,7 @@ namespace SmartEnergyLabDataApi.Data
             }
             sql+=$"sum(data[{i}]) as data{i}\n";
             sql+="from substation_load_profiles slp\n";
-            sql+=$"where geographicalareaid={gaId} and slp.\"year\"={year} and slp.\"source\"={(int)source} group by slp.day,slp.monthnumber";
+            sql+=$"where geographicalareaid={gaId} and slp.\"source\"={(int)source} and slp.\"year\"={year} group by slp.day,slp.monthnumber";
             //
             return sql;
         }
@@ -252,8 +261,7 @@ namespace SmartEnergyLabDataApi.Data
             }
             sql+=$"sum(data[{i}]) as data{i}\n";
             sql+="from substation_load_profiles slp\n";
-            //?? needs updating to use gspId when field is added
-            sql+=$"where slp.\"year\"={year} and slp.\"source\"={(int)source} group by slp.day,slp.monthnumber";
+            sql+=$"where slp.gridsupplypointid={gspId} and slp.\"source\"={(int)source} and slp.\"year\"={year} group by slp.day,slp.monthnumber";
             //
             return sql;
         }

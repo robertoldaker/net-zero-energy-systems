@@ -15,13 +15,16 @@
         </button>
         <mat-menu #loadNetworkDataMenu="matMenu" >
             <button mat-menu-item (click)="loadNetworkData(LoadNetworkDataSource.All)">
-              <span>All</span>
+                <div class="dnoImg" style="display:inline-block">&nbsp;</div>
+                <span>All</span>
             </button>
             <button mat-menu-item (click)="loadNetworkData(LoadNetworkDataSource.NGED)">
-              <span>National Grid Electricity Distribution</span>
+                <img class="dnoImg" src="assets/images/national-grid-icon.png"/>
+                <span>National Grid Electricity Distribution</span>
             </button>
             <button mat-menu-item (click)="loadNetworkData(LoadNetworkDataSource.UKPower)">
-              <span>UK Power Networks</span>
+                <img class="dnoImg" src="assets/images/uk-power-networks-icon.png"/>
+                <span>UK Power Networks</span>
             </button>
         </mat-menu>                          
         <button mat-raised-button color="primary" (click)="refresh()">

@@ -23,6 +23,10 @@ namespace SmartEnergyLabDataApi.Data
             new DataAccessBase.DbIndex("ix_year_source","substation_load_profiles","year","source"),
             new DataAccessBase.DbIndex("ix_num","substation_classifications","num"),
             new DataAccessBase.DbIndex("ix_substation_load_profiles_distributionSubstationId","substation_load_profiles","distributionsubstationid"),
+            new DataAccessBase.DbIndex("ix_slp_distributionSubstationId_source_year","substation_load_profiles","distributionsubstationid","source","year"),
+            new DataAccessBase.DbIndex("ix_slp_primarySubstationId_source_year","substation_load_profiles","primarysubstationid","source","year"),
+            new DataAccessBase.DbIndex("ix_slp_gridSupplyPointId_source_year","substation_load_profiles","gridsupplypointid","source","year"),
+            new DataAccessBase.DbIndex("ix_slp_geograhicalAreaId_source_year","substation_load_profiles","geographicalareaid","source","year"),
             // distribtion_substation_data
             new DataAccessBase.DbIndex("ix_distribution_substation_data_distributionSubstationId","distribution_substation_data","distributionsubstationid"),
             // substation_charging_params

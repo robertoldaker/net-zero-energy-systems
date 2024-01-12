@@ -30,6 +30,35 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
+        public IList<int> GetDistributionSubstationIdsWithLoadProfiles(LoadProfileSource source)
+        {
+            var dsss=Session.QueryOver<SubstationLoadProfile>().
+                Where( m=>m.Source == source).
+                And( m=>m.IsDummy == false).
+                Select(Projections.Distinct(Projections.Property<SubstationLoadProfile>(m=>m.DistributionSubstation.Id))).
+                List<int>();
+            return dsss;
+        }
+
+        public IList<DistributionSubstationData> GetDistributionSubstationData(int[] dsIds)
+        {
+            var dsd=Session.QueryOver<DistributionSubstationData>().
+                Where( m=>m.DistributionSubstation.Id.IsIn(dsIds)).
+                List();
+            return dsd;
+        }
+
+        public IList<DistributionSubstation> GetDistributionSubstationsWithoutLoadProfiles(int take, out int total)
+        {
+            DistributionSubstation ds=null;
+            var sq = QueryOver.Of<SubstationLoadProfile>().Where(m => m.DistributionSubstation.Id == ds.Id ).Select(m => m.Id);            
+            var q = Session.QueryOver<DistributionSubstation>(()=>ds).Where(m=>m.SubstationData!=null).WithSubquery.WhereNotExists(sq).Skip(0).Take(take);
+            total = q.RowCount();
+            var dsss = q.List();
+
+            return dsss;
+        }
+
         public string LoadDistributionSubstations(IFormFile file)
         {
             var loader = new DistributionSubstationLoader(DataAccess);
