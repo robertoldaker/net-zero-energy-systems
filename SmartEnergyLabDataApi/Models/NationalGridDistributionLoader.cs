@@ -532,7 +532,7 @@ namespace SmartEnergyLabDataApi.Models
         }
         private string loadPrimaries(string geoJsonFile) {
             int numNew = 0;
-            int numModified = 0;
+            int numFound = 0;
             int numIgnored=0;
             string name;
             //
@@ -564,7 +564,7 @@ namespace SmartEnergyLabDataApi.Models
                             numNew++;
                         } else {
                             pss.GridSupplyPoint = gsp;
-                            numModified++;
+                            numFound++;
                         }
                         //
                         pss.Name = feature.properties.PRIM_NRID_NAME;
@@ -586,7 +586,7 @@ namespace SmartEnergyLabDataApi.Models
             }
             //
             boundaryLoader.Load();
-            var msg=$"{name} area, [{numNew}] primary substations added, [{numModified}] modified, [{numIgnored}] ignored";
+            var msg=$"{name} area, [{numNew}] primary substations added, [{numFound}] found, [{numIgnored}] ignored";
             return msg;
         }
 
@@ -682,7 +682,7 @@ namespace SmartEnergyLabDataApi.Models
             private CKANDataLoader.CKANDataset _spd;
             private Feature[] _features;
             private int _numNew = 0;
-            private int _numModified = 0;
+            private int _numFound = 0;
             private int _numIgnored=0;
             private Dictionary<int,bool> _processedDict = new Dictionary<int,bool>();
             public DistributionLoader(NationalGridDistributionLoader loader, CKANDataLoader.CKANDataset  spd, string geoJsonFile) {
@@ -718,7 +718,7 @@ namespace SmartEnergyLabDataApi.Models
                         prevPercent = percent;
                     }
                 }
-                var msg=$"{area} area, [{_numNew}] distribution substations added, [{_numModified}] modified, [{_numIgnored}] ignored";
+                var msg=$"{area} area, [{_numNew}] distribution substations added, [{_numFound}] found, [{_numIgnored}] ignored";
                 return msg;
             }
 
@@ -782,7 +782,7 @@ namespace SmartEnergyLabDataApi.Models
                                 _numNew++;
                             } else {
                                 dss.PrimarySubstation = pss;
-                                _numModified++;
+                                _numFound++;
                             }
                             //
                             if ( string.IsNullOrEmpty(dss.ExternalId) && !string.IsNullOrEmpty(nr)) {

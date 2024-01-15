@@ -22,7 +22,7 @@ namespace SmartEnergyLabDataApi.Models
         public static void Initialise(string contentRootPath,IHubContext<NotificationHub> hubContext) {            
             _instance = new EVDemandRunner(contentRootPath);
             _hubContext = hubContext;
-            //?? not started at the mo to test other functionality
+            //?? not started at the mo since it uses 5GB memory and to possible create it as a separate service running on another server?
             //??_instance.start();
         }
 

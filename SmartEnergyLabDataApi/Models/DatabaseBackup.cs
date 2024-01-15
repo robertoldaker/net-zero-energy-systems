@@ -31,7 +31,7 @@ namespace SmartEnergyLabDataApi.Models
             var filename = $"{dbName}-{ts}.sql";
 
             var backup = new Execute();
-            var args = $"-c -f \"{filename}\" {dbName}";
+            var args = $"--clean --if-exists -f \"{filename}\" {dbName}";
             // explicitly using /usr/bin to ensure it picks up v14.
             // installing gdal brings in postgres12 which then means "pg_dump" is v12
             var exitCode = backup.Run("/usr/bin/pg_dump",args,LOCAL_PATH);

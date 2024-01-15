@@ -62,7 +62,8 @@ namespace SmartEnergyLabDataApi.Data
         [Column( Name = "Season", Default ="4")]
         public virtual Season Season {get; set;}
 
-        [Property()]
+        [Property(NotNull = true)]
+        [Column( Name = "IsDummy", Default ="false")]
         public virtual bool IsDummy {get; set;}
 
 
