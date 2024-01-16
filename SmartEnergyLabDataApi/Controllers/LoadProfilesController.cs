@@ -151,6 +151,16 @@ namespace SmartEnergyLabDataApi.Controllers
             var m = new LoadProfileGenerator();
             m.Generate();
         }
+
+        /// <summary>
+        /// Generates missing load profile data for distribution substations without load profile data
+        /// </summary>
+        [HttpPost]
+        [Route("ClearDummy")]
+        public void ClearDummy() {
+            var m = new LoadProfileGenerator();
+            m.ClearDummy();
+        }
     }
 
 }

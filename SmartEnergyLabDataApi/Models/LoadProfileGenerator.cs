@@ -1,6 +1,7 @@
 
 using System.Net.Http.Headers;
 using System.Xml.Schema;
+using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
 using NHibernate.Util;
 using Org.BouncyCastle.Crypto.Signers;
@@ -64,5 +65,11 @@ public class LoadProfileGenerator {
             var dsd = da.Substations.GetDistributionSubstationData(dsIds.ToArray());
             return dsd;
         }
+    }
+
+    public void ClearDummy() {
+        Logger.Instance.LogInfoEvent($"Clearing all dummy load profiles ...");
+        DataAccessBase.RunSql("delete from substation_load_profiles slp where slp.isdummy=true;");
+        Logger.Instance.LogInfoEvent($"Finished clearing dummy load profiles");
     }
 }
