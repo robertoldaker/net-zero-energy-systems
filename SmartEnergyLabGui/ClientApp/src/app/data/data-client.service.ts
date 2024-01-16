@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 
@@ -429,6 +429,10 @@ export class DataClientService {
     }
 
     /* Admin */
+    SystemInfo(onComplete: (resp:SystemInfo)=>void | undefined) {
+        this.getBasicRequest('/Admin/SystemInfo', onComplete)
+    }
+
     BackupDb(onComplete: (resp: any)=> void | undefined) {
         this.getBasicRequest('/Admin/BackupDb', onComplete);
     }
@@ -455,6 +459,10 @@ export class DataClientService {
 
     DeleteAllSubstations(gaId:number, message:string,  onComplete: (resp: any)=>void | undefined) {
         this.postRequestWithMessage(message,`/Admin/DeleteAllSubstations?gaId=${gaId}`,null, onComplete);
+    }
+
+    MaintenanceMode(state:boolean, onComplete: (resp: any)=>void | undefined) {
+        this.postRequest(`/Admin/MaintenanceMode?state=${state}`,null, onComplete);
     }
 
     /* National grid */

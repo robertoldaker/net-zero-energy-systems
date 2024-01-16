@@ -1,4 +1,12 @@
 /**
+ * Data definitions for Admin
+ */
+export interface SystemInfo {
+    processorCount: number,
+    maintenanceMode: boolean
+}
+
+/**
  * Data definitions for "Low voltage network"
  */
 export interface GridSupplyPoint {

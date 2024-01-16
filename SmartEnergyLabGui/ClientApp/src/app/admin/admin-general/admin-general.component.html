@@ -2,9 +2,15 @@
     <div class="message">{{message}}</div>
     <div class="title" style="margin-top: 0">Maintenance</div>
     <div class="toolbar">
-        <button mat-raised-button color="primary" (click)="startMaintenance()">Start maintenance</button>
-        <button mat-raised-button color="primary" (click)="stopMaintenance()">Stop maintenance</button>    
+        <div *ngIf="mainService.maintenanceMode" class="maintenanceMode">Maintenance mode is ON</div>
+        <button mat-raised-button color="primary" (click)="startMaintenance()" [disabled]="mainService.maintenanceMode">Start maintenance mode</button>
+        <button mat-raised-button color="primary" (click)="stopMaintenance()" [disabled]="!mainService.maintenanceMode">Stop maintenance mode</button>    
     </div>
+    <div class="title">System</div>
+    <div class="toolbar">
+        <span>Number of processors <b>{{mainService.processorCount}}</b></span>
+    </div>
+
     <div class="title">EV Demand Tool</div>
     <div class="toolbar">
         <button mat-raised-button color="primary" (click)="restartEVDemandTool()">Restart</button>

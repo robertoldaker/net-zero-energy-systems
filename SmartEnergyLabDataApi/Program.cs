@@ -135,6 +135,8 @@ public static class Program
             DbProvider = DbProvider.PostgreSQL
         }, DataAccess.SchemaUpdated, StartupScript.RunNewVersion);
 
+        AdminModel.Initialise(hubContext);
+
         StartupScript.RunStartup();
 
         // Needed to read spreadsheets

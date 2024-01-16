@@ -38,7 +38,7 @@ namespace EnergySystemLabDataApi.SubStations
         [Route("Logs")]
         public LogData Get()
         {
-            return (new AdminModel()).LoadLogFile();
+            return AdminModel.Instance.LoadLogFile();
         }
 
         /// <summary>
@@ -47,8 +47,18 @@ namespace EnergySystemLabDataApi.SubStations
         /// <returns></returns>
         [HttpGet]
         [Route("SystemInfo")]
-        public object SystemInfo() {
-            return new { ProcessorCount=Environment.ProcessorCount };
+        public SystemInfo SystemInfo() {
+            return new SystemInfo();
+        }
+
+        /// <summary>
+        /// Sets maintenance mode on/off
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("MaintenanceMode")]
+        public void MaintenanceMode(bool state) {
+            AdminModel.Instance.MaintenanceMode = state;
         }
 
         /// <summary>
