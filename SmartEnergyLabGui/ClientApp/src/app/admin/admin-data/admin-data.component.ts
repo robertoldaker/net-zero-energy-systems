@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, Inject, ViewChild } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { DataModel, DataRow, LoadNetworkDataSource } from 'src/app/data/app.data';
@@ -14,7 +14,7 @@ import { ComponentBase } from 'src/app/utils/component-base';
 })
 export class AdminDataComponent extends ComponentBase {
     
-    constructor(private dataService: DataClientService, private dialogService: DialogService) {
+    constructor(private dataService: DataClientService, private dialogService: DialogService, @Inject('DATA_URL') private baseUrl: string) {
         super()
         this.inCleanup = false;
         this.sort = null
@@ -52,6 +52,10 @@ export class AdminDataComponent extends ComponentBase {
         this.dataService.BackupDb((result)=>{
             console.log(result)
         })
+    }
+
+    backupDbLocally() {
+        window.location.href = `${this.baseUrl}/Admin/BackupDbLocally`
     }
 
     performCleanup() {

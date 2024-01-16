@@ -62,7 +62,7 @@ namespace EnergySystemLabDataApi.SubStations
         }
 
         /// <summary>
-        /// Backsup database
+        /// Backsup database to backup server
         /// </summary>
         /// <returns></returns>
         [HttpGet]
@@ -70,6 +70,20 @@ namespace EnergySystemLabDataApi.SubStations
         public IActionResult BackupDb() {
             _backupDbTask.Run();
             return this.Ok();
+        }
+
+        /// <summary>
+        /// Backsup database locally
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("BackupDbLocally")]
+        public IActionResult BackupDbLocally() {
+            var m = new DatabaseBackup(null);
+            var sr = m.BackupToStream(out string filename);
+            var fsr = new FileStreamResult(sr.BaseStream, "application/sql");
+			fsr.FileDownloadName = filename;
+			return fsr;
         }
 
         /// <summary>
@@ -163,6 +177,7 @@ namespace EnergySystemLabDataApi.SubStations
                 da.CommitChanges();
             }
         }
+
     }
 
 }

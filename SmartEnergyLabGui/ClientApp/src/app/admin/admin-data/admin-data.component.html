@@ -1,7 +1,11 @@
 <div style="overflow: auto; height: calc(100vh - 120px)">
     <div class="size">Database size: <b>{{model?.size}}</b></div>
     <div class="toolbar">
-        <button mat-raised-button color="primary" (click)="backupDb()">Backup Database</button>
+        <button mat-raised-button color="primary" (click)="backupDb()">Backup database to server</button>
+        <button mat-raised-button color="primary" (click)="backupDbLocally()">
+            Backup database locally
+            <mat-icon>arrow_downward</mat-icon>
+        </button>
         <button mat-raised-button color="primary" (click)="performCleanup()" disabled="{{inCleanup}}">            
             <div *ngIf="inCleanup" style="display: inline-block">
                 <mat-spinner diameter="20"></mat-spinner>
