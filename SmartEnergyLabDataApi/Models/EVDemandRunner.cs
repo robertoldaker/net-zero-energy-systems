@@ -22,7 +22,8 @@ namespace SmartEnergyLabDataApi.Models
         public static void Initialise(string contentRootPath,IHubContext<NotificationHub> hubContext) {            
             _instance = new EVDemandRunner(contentRootPath);
             _hubContext = hubContext;
-            _instance.start();
+            //?? not started at the mo since it uses 5GB memory and to possible create it as a separate service running on another server?
+            //??_instance.start();
         }
 
         public static EVDemandRunner Instance {
@@ -252,7 +253,7 @@ namespace SmartEnergyLabDataApi.Models
                     var rD = new RegionData(id,RegionType.Dist);
                     // just use the one with the larget number of points
                     var boundary = boundaries.OrderByDescending(m=>m.Latitudes.Count()).First();
-                    rD.polygon = new Polygon(boundary.Latitudes,boundary.Longitudes);
+                    rD.polygon = new Polygon(boundary.Longitudes,boundary.Latitudes);
                     if ( dss.SubstationData!=null ) {
                         rD.numCustomers = dss.SubstationData.NumCustomers;
                     } else {
@@ -294,7 +295,7 @@ namespace SmartEnergyLabDataApi.Models
                         }
                         if ( numCustomers>0 ) {
                             var rD = new RegionData(id,RegionType.GSP);
-                            rD.polygon=new Polygon(boundary.Latitudes,boundary.Longitudes);
+                            rD.polygon=new Polygon(boundary.Longitudes,boundary.Latitudes);
                             rD.numCustomers = numCustomers;
                             evDi.regionData.Add(rD);
                         } 
@@ -342,7 +343,7 @@ namespace SmartEnergyLabDataApi.Models
                         }
                         if ( numCustomers>0 ) {
                             var rD = new RegionData(id,RegionType.GSP);
-                            rD.polygon=new Polygon(boundary.Latitudes,boundary.Longitudes);
+                            rD.polygon=new Polygon(boundary.Longitudes,boundary.Latitudes);
                             rD.numCustomers = numCustomers;
                             evDi.regionData.Add(rD);
                         } 
@@ -369,11 +370,11 @@ namespace SmartEnergyLabDataApi.Models
                     return "EVDemandInput.Polygon";
                 }
             }
-            public Polygon(double[] latitudes, double[] longitudes) {
+            public Polygon(double[] longitudes, double[] latitudes) {
                 var minLength = Math.Min(latitudes.Length,longitudes.Length);
                 points = new double[minLength][];
                 for ( int i=0;i<minLength; i++) {
-                    points[i]=new double[2] { latitudes[i],longitudes[i]};
+                    points[i]=new double[2] { longitudes[i],latitudes[i]};
                 }
             }
             public double[][] points {get; set;}

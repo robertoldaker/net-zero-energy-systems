@@ -1,42 +1,112 @@
 ﻿using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
 using NHibernate;
+using NHibernate.Dialect.Schema;
 
 namespace SmartEnergyLabDataApi.Data
 {
     public class StartupScript
     {
+        private static readonly List<DataAccessBase.DbIndex> _indexes = new List<DataAccessBase.DbIndex>() {
+            // distribution_substations
+            new DataAccessBase.DbIndex("ix_external_id","distribution_substations","externalid"),
+            new DataAccessBase.DbIndex("ix_dss_source_externalId","distribution_substations","source","externalid"),
+            new DataAccessBase.DbIndex("ix_dss_source_externalId2","istribution_substations","source","externalid2"),
+            new DataAccessBase.DbIndex("ix_dss_source_name","distribution_substations","source","name"),
+            new DataAccessBase.DbIndex("ix_distribution_substations_substationDataId","distribution_substations","distributionsubstationdataid"),
+            new DataAccessBase.DbIndex("ix_distribution_substations_gisDataId","distribution_substations","gisdataid"),
+            new DataAccessBase.DbIndex("ix_distribution_substations_substationParamsId","distribution_substations","substationparamsid"),
+            new DataAccessBase.DbIndex("ix_distribution_substations_chargingParamsId","distribution_substations","chargingparamsid"),
+            new DataAccessBase.DbIndex("ix_distribution_substations_heatingParamsId","distribution_substations","heatingparamsid"),
+            // distribution_load_profiles
+            new DataAccessBase.DbIndex("ix_day_month_num","substation_load_profiles","day","monthnumber"),
+            new DataAccessBase.DbIndex("ix_year_source","substation_load_profiles","year","source"),
+            new DataAccessBase.DbIndex("ix_num","substation_classifications","num"),
+            new DataAccessBase.DbIndex("ix_substation_load_profiles_distributionSubstationId","substation_load_profiles","distributionsubstationid"),
+            new DataAccessBase.DbIndex("ix_slp_distributionSubstationId_source_year","substation_load_profiles","distributionsubstationid","source","year"),
+            new DataAccessBase.DbIndex("ix_slp_primarySubstationId_source_year","substation_load_profiles","primarysubstationid","source","year"),
+            new DataAccessBase.DbIndex("ix_slp_gridSupplyPointId_source_year","substation_load_profiles","gridsupplypointid","source","year"),
+            new DataAccessBase.DbIndex("ix_slp_geograhicalAreaId_source_year","substation_load_profiles","geographicalareaid","source","year"),
+            // distribtion_substation_data
+            new DataAccessBase.DbIndex("ix_distribution_substation_data_distributionSubstationId","distribution_substation_data","distributionsubstationid"),
+            // substation_charging_params
+            new DataAccessBase.DbIndex("ix_substation_charging_params_distributionSubstationId","substation_charging_params","distributionsubstationid"),
+            // substation_classifications
+            new DataAccessBase.DbIndex("ix_substation_classifications_distributionSubstationId","substation_classifications","distributionsubstationid"),
+            // substation_heating_params
+            new DataAccessBase.DbIndex("ix_substation_heating_params_distributionSubstationId","substation_heating_params","distributionsubstationid"),
 
-        public static void Run(int oldVersion, int newVersion)
+            // primary_substations
+            new DataAccessBase.DbIndex("ix_pss_source_externalId","primary_substations","source","externalid"),
+            new DataAccessBase.DbIndex("ix_pss_source_externalId2","primary_substations","source","externalid2"),
+            new DataAccessBase.DbIndex("ix_pss_source_name","primary_substations","source","name"),
+
+            // grid_supply_points
+            new DataAccessBase.DbIndex("ix_gsp_source_externalId","grid_supply_points","source","externalid"),
+            new DataAccessBase.DbIndex("ix_gsp_source_externalId2","grid_supply_points","source","externalid2"),
+            new DataAccessBase.DbIndex("ix_gsp_source_name","grid_supply_points","source","name"),
+
+            // gis_boundaries
+            new DataAccessBase.DbIndex("ix_gis_boundaries_gisDataId","gis_boundaries","gisdataid"),
+
+            // gis_data
+            new DataAccessBase.DbIndex("ix_gis_data_primarySubstationId","gis_data","primarysubstationid"),
+            new DataAccessBase.DbIndex("ix_gis_data_distributionSubstationId","gis_data","distributionsubstationid"),
+        };
+
+        public static void RunNewVersion(int oldVersion, int newVersion)
         {
             var script = new StartupScript();
             // this gets running with a fresh db
             if (oldVersion<1) {
-                script.createInitialIndexes();
-                script.createIndexes2();
-                script.createIndexes3();
+                //script.createInitialIndexes();
+                //script.createIndexes2();
+                //script.createIndexes3();
                 script.createDefaultDNOs();
                 script.createDefaultGeographicalAreas();
-            } else if (oldVersion<2 ) {
+            }
+            if (oldVersion<2 ) {
                 script.createSubstationParams();
-            } else if (oldVersion <3 ) {
+            }
+            if (oldVersion<3 ) {
                 script.populateSubstationLoadProfileKeys();
-            } else if ( oldVersion<4) {
+            }
+            if ( oldVersion<4) {
                 script.updateSubstationClassifications();
-            } else if ( oldVersion<5) {
+            }
+            if ( oldVersion<5) {
                 script.fixExistingDNOs();
                 script.fixExistingGAs();
                 script.createDefaultDNOs();
                 script.createDefaultGeographicalAreas();
-            } else if ( oldVersion<6) {
+            }
+            if ( oldVersion<6) {
                 script.fixGridSupplyPoints();
                 script.fixPrimaries();
                 script.fixDistributions();
-                script.createIndexes2();
-            } else if ( oldVersion<7) {
-                script.createIndexes3();
-            } else if ( oldVersion<8) {
+                //script.createIndexes2();
+            }
+            if ( oldVersion<7) {
+                //script.createIndexes3();
+            }
+            if ( oldVersion<8) {
                 script.updateLoadProfiles();
+            }
+        }
+
+        public static void RunStartup() {
+            //
+            var script = new StartupScript();
+            script.createIndexes();
+            script.createDefaultDNOs();
+            script.createDefaultGeographicalAreas();
+        }
+
+        private void createIndexes() {
+            // Ensure indexes are created
+            var newIndexes = DataAccessBase.CreateIndexesIfNotExist(_indexes);
+            foreach( var index in newIndexes) {
+                Logger.Instance.LogInfoEvent($"New index created [{index.Name}]");
             }
         }
 
@@ -124,6 +194,38 @@ namespace SmartEnergyLabDataApi.Data
                 if (DataAccess.DbConnection.DbProvider == DbProvider.PostgreSQL) {
                     // dist substations
                     DataAccess.RunSql("CREATE INDEX ix_gis_boundaries_gisDataId ON gis_boundaries (gisdataid)");
+                }
+            }
+            catch (Exception e) {
+                Logger.Instance.LogErrorEvent($"Error creating initial indexes [{e.Message}]");
+            }
+        }
+
+        private void createIndexes4()
+        {
+            try {
+                if (DataAccess.DbConnection.DbProvider == DbProvider.PostgreSQL) {
+                    // Links to primary substations
+                    DataAccess.RunSql("CREATE INDEX ix_gis_data_primarySubstationId ON gis_data (primarysubstationid)");
+                    
+                    // Dist substations table (with cascade="all_delete_orphan")
+                    // SubstationData
+                    DataAccess.RunSql("CREATE INDEX ix_distribution_substations_substationDataId ON distribution_substations (distributionsubstationdataid)");
+                    // GISData                    
+                    DataAccess.RunSql("CREATE INDEX ix_distribution_substations_gisDataId ON distribution_substations (gisdataid)");
+                    // SubstationParamsId
+                    DataAccess.RunSql("CREATE INDEX ix_distribution_substations_substationParamsId ON distribution_substations (substationparamsid)");
+                    // ChargingParams
+                    DataAccess.RunSql("CREATE INDEX ix_distribution_substations_chargingParamsId ON distribution_substations (chargingparamsid)");
+                    // HeatingParamsId
+                    DataAccess.RunSql("CREATE INDEX ix_distribution_substations_heatingParamsId ON distribution_substations (heatingparamsid)");
+                    // Links to Distribution substations
+                    DataAccess.RunSql("CREATE INDEX ix_gis_data_distributionSubstationId ON gis_data (distributionsubstationid)");
+                    DataAccess.RunSql("CREATE INDEX ix_distribution_substation_data_distributionSubstationId ON distribution_substation_data (distributionsubstationid)");
+                    DataAccess.RunSql("CREATE INDEX ix_substation_charging_params_distributionSubstationId ON substation_charging_params (distributionsubstationid)");
+                    DataAccess.RunSql("CREATE INDEX ix_substation_classifications_distributionSubstationId ON substation_classifications (distributionsubstationid)");
+                    DataAccess.RunSql("CREATE INDEX ix_substation_heating_params_distributionSubstationId ON substation_heating_params (distributionsubstationid)");
+                    DataAccess.RunSql("CREATE INDEX ix_substation_load_profiles_distributionSubstationId ON substation_load_profiles (distributionsubstationid)");
                 }
             }
             catch (Exception e) {

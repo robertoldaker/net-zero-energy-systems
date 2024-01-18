@@ -1,10 +1,11 @@
-﻿using NHibernate.Mapping.Attributes;
+﻿using NHibernate.Classic;
+using NHibernate.Mapping.Attributes;
 using System.Text.Json.Serialization;
 
 namespace SmartEnergyLabDataApi.Data
 {
     [Class(0, Table = "primary_substations")]
-    public class PrimarySubstation
+    public class PrimarySubstation : ILifecycle
     {
         public PrimarySubstation()
         {
@@ -113,5 +114,29 @@ namespace SmartEnergyLabDataApi.Data
         [JsonIgnore]
         [ManyToOne(Column = "DistributionNetworkOperatorId", Cascade = "none")]
         public virtual DistributionNetworkOperator DistributionNetworkOperator { get; set; }
+
+
+        public virtual LifecycleVeto OnSave(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual LifecycleVeto OnUpdate(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
+        {
+            if ( this.GISData!=null ) {
+                this.GISData.PrimarySubstation = null;
+            }
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual void OnLoad(NHibernate.ISession s, object id)
+        {
+        }
+
     }
 }

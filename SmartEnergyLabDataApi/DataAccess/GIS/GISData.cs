@@ -1,11 +1,13 @@
 ﻿using NHibernate.Mapping.Attributes;
+using NHibernate.Classic;
 using System.Text.Json.Serialization;
+using MySqlX.XDevAPI;
 
 namespace SmartEnergyLabDataApi.Data
 {
 
     [Class(0, Table = "gis_data")]
-    public class GISData
+    public class GISData : ILifecycle
     {
         public GISData()
         {
@@ -63,5 +65,29 @@ namespace SmartEnergyLabDataApi.Data
         [JsonIgnore]
         [ManyToOne(Column = "VehicleChargingStationId", Cascade = "none")]
         public virtual VehicleChargingStation VehicleChargingStation { get; set; }
+
+        public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
+        {
+            // Delete all boundaries pointing at this GISData record
+            var boundaries = s.QueryOver<GISBoundary>().Where(m=>m.GISData.Id==this.Id).List();
+            foreach( var b in boundaries) {
+                s.Delete(b);
+            }
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual void OnLoad(NHibernate.ISession s, object id)
+        {
+        }
+
+        public  virtual LifecycleVeto OnSave(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual LifecycleVeto OnUpdate(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
     }
 }

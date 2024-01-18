@@ -6,6 +6,7 @@ using NHibernate.Criterion;
 // NHibernate.Linq;
 using NHibernate.Transform;
 using Org.BouncyCastle.Asn1.Icao;
+using Remotion.Linq.Parsing.Structure.IntermediateModel;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Models;
 using System.Diagnostics;
@@ -27,6 +28,35 @@ namespace SmartEnergyLabDataApi.Data
             {
                 return (DataAccess) _dataAccess;
             }
+        }
+
+        public IList<int> GetDistributionSubstationIdsWithLoadProfiles(LoadProfileSource source)
+        {
+            var dsss=Session.QueryOver<SubstationLoadProfile>().
+                Where( m=>m.Source == source).
+                And( m=>m.IsDummy == false).
+                Select(Projections.Distinct(Projections.Property<SubstationLoadProfile>(m=>m.DistributionSubstation.Id))).
+                List<int>();
+            return dsss;
+        }
+
+        public IList<DistributionSubstationData> GetDistributionSubstationData(int[] dsIds)
+        {
+            var dsd=Session.QueryOver<DistributionSubstationData>().
+                Where( m=>m.DistributionSubstation.Id.IsIn(dsIds)).
+                List();
+            return dsd;
+        }
+
+        public IList<DistributionSubstation> GetDistributionSubstationsWithoutLoadProfiles(int take, out int total)
+        {
+            DistributionSubstation ds=null;
+            var sq = QueryOver.Of<SubstationLoadProfile>().Where(m => m.DistributionSubstation.Id == ds.Id ).Select(m => m.Id);            
+            var q = Session.QueryOver<DistributionSubstation>(()=>ds).Where(m=>m.SubstationData!=null).WithSubquery.WhereNotExists(sq).Skip(0).Take(take);
+            total = q.RowCount();
+            var dsss = q.List();
+
+            return dsss;
         }
 
         public string LoadDistributionSubstations(IFormFile file)
@@ -115,7 +145,7 @@ namespace SmartEnergyLabDataApi.Data
             results.AddRange(results3);
 
             return results;
-        }
+        }        
 
         #region DistributionSubstations
         public void SetSubstationParams(int id, SubstationParams sParams) {
@@ -169,6 +199,54 @@ namespace SmartEnergyLabDataApi.Data
             Session.Delete(ds);
         }
 
+        public void DeleteAllDistributionInGeographicalArea(int gaId) {
+            Logger.Instance.LogInfoEvent($"Started deletion of distribution substations for daId={gaId}");                        
+            int count;
+            int skip=0;
+            int take = 1000;
+            int processed=0;
+            int initialCount=0;
+
+            do {
+                // process a 1000 at a time
+                using( var da = new DataAccess()) {
+                    var dsss = da.Substations.GetDistributionSubstations(gaId,0,take,out count);
+                    if ( initialCount==0) {
+                        initialCount = count;
+                    }
+                    foreach( var dss in dsss) {
+                        //
+                        da.Session.Delete(dss);
+                    }
+                    da.CommitChanges();
+                    //
+                    processed+=dsss.Count;
+                    Logger.Instance.LogInfoEvent($"Processed [{processed} of {initialCount}]");                        
+                }
+            } while(skip<count);
+
+
+           /* var results = this.Session.CreateSQLQuery("delete from distribution_substations ds where ds.geographicalareaid = :gaId")
+                        .AddScalar("count", NHibernateUtil.Int32)
+                        .SetParameter("gaId",gaId)
+                        .UniqueResult();
+                        
+                        
+            Logger.Instance.LogInfoEvent($"Finished, deleted={results}");  
+            */           
+        }
+
+        public IList<DistributionSubstation> GetDistributionSubstations( int gaId, int skip, int take, out int count) {
+            var q = this.Session.QueryOver<DistributionSubstation>().Where(m=>m.GeographicalArea.Id==gaId).OrderBy(m=>m.Id).Asc.Skip(skip).Take(take);            
+            count = q.RowCount();
+            return q.List();
+        }
+        public IList<DistributionSubstation> GetFirstUnlinkedDistributionSubstations( int take, out int count) {
+            var q = this.Session.QueryOver<DistributionSubstation>().Where(m=>m.GeographicalArea==null).Skip(0).Take(take);            
+            count = q.RowCount();
+            return q.List();
+        }
+
         public DistributionSubstation GetDistributionSubstation(ImportSource source,string externalId, string externalId2=null, string name=null)
         {
             DistributionSubstation dss=null;
@@ -188,9 +266,14 @@ namespace SmartEnergyLabDataApi.Data
             return dss;
         }
 
-        public DistributionSubstation GetDistributionSubstation(string nr)
+        public DistributionSubstation GetDistributionSubstationByNr(string nr)
         {
             return Session.QueryOver<DistributionSubstation>().Where(m => m.NR == nr).Take(1).SingleOrDefault();
+        }
+
+        public DistributionSubstation GetDistributionSubstationByExternalId(string externalId)
+        {
+            return Session.QueryOver<DistributionSubstation>().Where(m => m.ExternalId == externalId).Take(1).SingleOrDefault();
         }
 
         public DistributionSubstation GetDistributionSubstationByNRId(string nrId)
@@ -356,6 +439,16 @@ namespace SmartEnergyLabDataApi.Data
         public void Delete(PrimarySubstation ps)
         {
             Session.Delete(ps);
+        }
+
+        public void DeleteAllPrimaryInGeographicalArea(int gaId) {
+            // primary substations
+            Logger.Instance.LogInfoEvent($"Started deletion of primary substations for daId={gaId}"); 
+            var psss = GetPrimarySubstationsByGeographicalAreaId(gaId);
+            foreach( var pss in psss) {
+                Session.Delete(pss);
+            }
+            Logger.Instance.LogInfoEvent($"Finished deletion of primary substations");                        
         }
 
         public PrimarySubstation GetPrimarySubstation(int id) {

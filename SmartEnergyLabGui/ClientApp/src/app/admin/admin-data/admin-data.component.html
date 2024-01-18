@@ -1,7 +1,11 @@
 <div style="overflow: auto; height: calc(100vh - 120px)">
     <div class="size">Database size: <b>{{model?.size}}</b></div>
     <div class="toolbar">
-        <button mat-raised-button color="primary" (click)="backupDb()">Backup Database</button>
+        <button mat-raised-button color="primary" (click)="backupDb()">Backup database to server</button>
+        <button mat-raised-button color="primary" (click)="backupDbLocally()">
+            Backup database locally
+            <mat-icon>arrow_downward</mat-icon>
+        </button>
         <button mat-raised-button color="primary" (click)="performCleanup()" disabled="{{inCleanup}}">            
             <div *ngIf="inCleanup" style="display: inline-block">
                 <mat-spinner diameter="20"></mat-spinner>
@@ -15,13 +19,16 @@
         </button>
         <mat-menu #loadNetworkDataMenu="matMenu" >
             <button mat-menu-item (click)="loadNetworkData(LoadNetworkDataSource.All)">
-              <span>All</span>
+                <div class="dnoImg" style="display:inline-block">&nbsp;</div>
+                <span>All</span>
             </button>
             <button mat-menu-item (click)="loadNetworkData(LoadNetworkDataSource.NGED)">
-              <span>National Grid Electricity Distribution</span>
+                <img class="dnoImg" src="assets/images/national-grid-icon.png"/>
+                <span>National Grid Electricity Distribution</span>
             </button>
             <button mat-menu-item (click)="loadNetworkData(LoadNetworkDataSource.UKPower)">
-              <span>UK Power Networks</span>
+                <img class="dnoImg" src="assets/images/uk-power-networks-icon.png"/>
+                <span>UK Power Networks</span>
             </button>
         </mat-menu>                          
         <button mat-raised-button color="primary" (click)="refresh()">
@@ -59,6 +66,21 @@
         <ng-container matColumnDef="numDist">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Distribution substations</th>
             <td mat-cell *matCellDef="let element">{{element.numDist}}</td>
+        </ng-container>
+
+        <!-- buttons -->
+        <ng-container matColumnDef="buttons">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
+            <td mat-cell *matCellDef="let element">
+                <button mat-icon-button aria-label="Commands" [matMenuTriggerFor]="menu">
+                    <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #menu="matMenu">
+                    <button mat-menu-item>
+                        <span (click)="deleteAll(element)">Delete all</span>
+                    </button>
+                </mat-menu>                
+            </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>

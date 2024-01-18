@@ -2,6 +2,7 @@
 using HaloSoft.EventLogger;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.SGT;
 using SmartEnergyLabDataApi.Models;
@@ -37,7 +38,7 @@ namespace EnergySystemLabDataApi.SubStations
         [Route("Logs")]
         public LogData Get()
         {
-            return (new AdminModel()).LoadLogFile();
+            return AdminModel.Instance.LoadLogFile();
         }
 
         /// <summary>
@@ -46,12 +47,22 @@ namespace EnergySystemLabDataApi.SubStations
         /// <returns></returns>
         [HttpGet]
         [Route("SystemInfo")]
-        public object SystemInfo() {
-            return new { ProcessorCount=Environment.ProcessorCount };
+        public SystemInfo SystemInfo() {
+            return new SystemInfo();
         }
 
         /// <summary>
-        /// Backsup database
+        /// Sets maintenance mode on/off
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("MaintenanceMode")]
+        public void MaintenanceMode(bool state) {
+            AdminModel.Instance.MaintenanceMode = state;
+        }
+
+        /// <summary>
+        /// Backsup database to backup server
         /// </summary>
         /// <returns></returns>
         [HttpGet]
@@ -59,6 +70,20 @@ namespace EnergySystemLabDataApi.SubStations
         public IActionResult BackupDb() {
             _backupDbTask.Run();
             return this.Ok();
+        }
+
+        /// <summary>
+        /// Backsup database locally
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("BackupDbLocally")]
+        public IActionResult BackupDbLocally() {
+            var m = new DatabaseBackup(null);
+            var sr = m.BackupToStream(out string filename);
+            var fsr = new FileStreamResult(sr.BaseStream, "application/sql");
+			fsr.FileDownloadName = filename;
+			return fsr;
         }
 
         /// <summary>
@@ -137,6 +162,22 @@ namespace EnergySystemLabDataApi.SubStations
         public void GenerateError() {
             throw new Exception("This is an error generated for test purposes using \"Admin/GenerateError\"");
         }
+
+        /// <summary>
+        /// Deletes all GSPs, primrary and distribution substations for the given distribution area
+        /// </summary>
+        /// <param name="gaId"></param>
+        [HttpPost]
+        [Route("DeleteAllSubstations")]
+        public void DeleteAllSubstations(int gaId) {
+            using( var da = new DataAccess() ) {
+                da.Substations.DeleteAllDistributionInGeographicalArea(gaId);
+                da.Substations.DeleteAllPrimaryInGeographicalArea(gaId);
+                da.SupplyPoints.DeleteAllGridSupplyPointsInGeographicalArea(gaId);
+                da.CommitChanges();
+            }
+        }
+
     }
 
 }

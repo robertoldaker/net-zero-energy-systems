@@ -13,6 +13,7 @@ namespace SmartEnergyLabDataApi.Models
         private HttpClient _httpClient;
         private object _httpClientLock = new object();
         private string _baseUrl = "https://ukpowernetworks.opendatasoft.com"; 
+        private string _apiKey = "93ad678d8dd616b2deb533bbb43c636ea09eca9faa8ce20b9c696c37";
         private TaskRunner _taskRunner;    
         private List<LTDSDemandRecord> _ltdsRecords;
         private readonly Dictionary<string,DNOAreas> _licenceAreasDict = new Dictionary<string, DNOAreas>() {
@@ -35,8 +36,7 @@ namespace SmartEnergyLabDataApi.Models
         
         public void Load() {
             updateMessage("Loading LTDS demand records ...");
-            //??_ltdsRecords = loadData<LTDSDemandRecord>("/api/records/1.0/search/?dataset=ltds-table-3a-load-data-observed&q=&facet=licencearea&facet=gridsupplypoint&facet=substation&facet=season&facet=year&refine.season=Winter&refine.year=22-23");
-            _ltdsRecords = loadData<LTDSDemandRecord>("/api/explore/v2.1/catalog/datasets/ltds-table-3a-load-data-observed/records?refine=year%3A%2222-23%22&refine=season%3A%22Winter%22");
+            _ltdsRecords = loadData<LTDSDemandRecord>("/api/explore/v2.1/catalog/datasets/ltds-table-3a-load-data-observed/records?refine=year%3A%2223-24%22",100);
             checkCancelled();
             updateProgress();
             loadGSPs();
@@ -64,11 +64,12 @@ namespace SmartEnergyLabDataApi.Models
             _gspProcessResult.Reset();
             var gspRecords = loadData<GSPRecord>($"/api/explore/v2.1/catalog/datasets/ukpn-grid-supply-points/records");
             foreach( var gspRecord in gspRecords) {
-                if ( gspRecord.geo_shape.type=="Polygon") {
-                    gspRecord.geo_shape.polygonCoords = gspRecord.geo_shape.coordinates.Deserialize<double[][][]>();                    
-                } else if ( gspRecord.geo_shape.type == "MultiPolygon") {
-                    gspRecord.geo_shape.multiPolygonCoords = gspRecord.geo_shape.coordinates.Deserialize<double[][][][]>();
-                }
+                var geoShape = gspRecord.geo_shape.geometry;
+                if ( geoShape.type=="Polygon") {
+                    geoShape.polygonCoords = geoShape.coordinates.Deserialize<double[][][]>();                    
+                } else if ( geoShape.type == "MultiPolygon") {
+                    geoShape.multiPolygonCoords = geoShape.coordinates.Deserialize<double[][][][]>();
+                } 
             }            
 
             // Add GSP
@@ -79,7 +80,7 @@ namespace SmartEnergyLabDataApi.Models
 
             //
             using( var da = new DataAccess()) {
-                var toAdd = new List<GridSupplyPoint>();
+                var toAdd = new List<dynamic>();
               
                 // Need a way of working out the GA since no info in api data                
                 foreach( var gspRecord in gspRecords) {
@@ -106,26 +107,34 @@ namespace SmartEnergyLabDataApi.Models
                         Logger.Instance.LogInfoEvent($"Added new GSP=[{gspRecord.gsp}]");
                         _gspProcessResult.NumAdded++;
                         added = true;
-                        toAdd.Add(gsp);
+                        toAdd.Add(new { gsp=gsp,gspRecord=gspRecord});
                     }
                     
-                    // Position of GSP
-                    gsp.GISData.Latitude = gspRecord.geo_point_2d[0];
-                    gsp.GISData.Longitude = gspRecord.geo_point_2d[1];
-                    if ( !added ) {
+                    // update GSP using record
+                    var updated=gspRecord.update(gsp);
+                    if ( updated && !added ) {
                         _gspProcessResult.NumModified++;
                     }
-                    // Boundary
-                    try {
-                        boundaryLoader.AddGISData(gsp.GISData,gspRecord.geo_shape);
-                    } catch (Exception e) {
-                        Logger.Instance.LogErrorEvent(e.Message + $", for entry [{gsp.Name}]");
+                    if ( !added ) {
+                        // Boundary
+                        try {
+                            boundaryLoader.AddGISData(gsp.GISData,gspRecord.geo_shape.geometry);
+                        } catch (Exception e) {
+                            Logger.Instance.LogErrorEvent(e.Message + $", for entry [{gsp.Name}]");
+                        }
                     }
                     checkCancelled();
                 }
 
-                foreach( var gsp in toAdd) {
-                    da.SupplyPoints.Add(gsp);
+                foreach( var obj in toAdd) {
+                    da.SupplyPoints.Add(obj.gsp);
+                    // Boundary
+                    try {
+                        boundaryLoader.AddGISData(obj.gsp.GISData,obj.gspRecord.geo_shape.geometry);
+                    } catch (Exception e) {
+                        Logger.Instance.LogErrorEvent(e.Message + $", for entry [{obj.gsp.Name}]");
+                    }
+                    //
                     checkCancelled();
                 }
                 //
@@ -214,10 +223,13 @@ namespace SmartEnergyLabDataApi.Models
             });
             updateProgress();
             foreach( var primRecord in primAreaRecords) {
-                if ( primRecord.geo_shape.type=="Polygon") {
-                    primRecord.geo_shape.polygonCoords = primRecord.geo_shape.coordinates.Deserialize<double[][][]>();                    
-                } else if ( primRecord.geo_shape.type == "MultiPolygon") {
-                    primRecord.geo_shape.multiPolygonCoords = primRecord.geo_shape.coordinates.Deserialize<double[][][][]>();
+                var geoShape = primRecord.geo_shape.geometry;
+                if ( geoShape.type=="Polygon") {
+                    geoShape.polygonCoords = geoShape.coordinates.Deserialize<double[][][]>();                    
+                } else if ( geoShape.type == "MultiPolygon" ) {
+                    geoShape.multiPolygonCoords = geoShape.coordinates.Deserialize<double[][][][]>();
+                } else {
+                    Logger.Instance.LogInfoEvent($"Unexpected geo shape type [{geoShape.type}] [{primRecord.primary_substation_name}]");
                 }
             }
 
@@ -226,7 +238,7 @@ namespace SmartEnergyLabDataApi.Models
             var boundaryLoader = new GISBoundaryLoader(this);
             checkCancelled();
             using( var da = new DataAccess()) {
-                var toAdd = new List<PrimarySubstation>();
+                var toAdd = new List<dynamic>();
 
                 foreach( var primRecord in primAreaRecords) {
                     _primProcessResult.NumProcessed++;
@@ -243,7 +255,7 @@ namespace SmartEnergyLabDataApi.Models
                                 pss = new PrimarySubstation(ImportSource.UKPowerNetworksOpenData,primRecord.primary_feeder,primRecord.primary_site_functional_location,gsp);
                                 _primProcessResult.NumAdded++;
                                 added = true;
-                                toAdd.Add(pss);
+                                toAdd.Add(new { pss=pss, primRecord=primRecord });
                             } else {
                                 Logger.Instance.LogWarningEvent($"Could not find GSP with name [{ltdsRecord.grid_supply_point}] for primary substation [{primRecord.primary_substation_name}], ignoring ....");
                                 _primProcessResult.NumIgnored++;
@@ -256,25 +268,30 @@ namespace SmartEnergyLabDataApi.Models
                         }
                     }
                     //
-                    pss.Name = primRecord.primary_substation_name;
-                    // Position of GSP
-                    pss.GISData.Latitude = primRecord.geo_point_2d[0];
-                    pss.GISData.Longitude = primRecord.geo_point_2d[1];
+                    var updated = primRecord.update(pss);
                     //
-                    if ( !added ) {
+                    if ( !added && updated) {
                         _primProcessResult.NumModified++;
                     }
                     // Boundary
-                    try {
-                        boundaryLoader.AddGISData(pss.GISData,primRecord.geo_shape);
-                    } catch (Exception e) {
-                        Logger.Instance.LogErrorEvent(e.Message + $", for entry [{pss.Name}]");
+                    if ( !added ) {
+                        try {
+                            boundaryLoader.AddGISData(pss.GISData,primRecord.geo_shape.geometry);
+                        } catch (Exception e) {
+                            Logger.Instance.LogErrorEvent(e.Message + $", for entry [{pss.Name}]");
+                        }
                     }
                     checkCancelled();
                 }
 
-                foreach( var pss in toAdd) {
-                    da.Substations.Add(pss);
+                foreach( var obj in toAdd) {
+                    da.Substations.Add(obj.pss);
+                    //
+                    try {
+                        boundaryLoader.AddGISData(obj.pss.GISData,obj.primRecord.geo_shape.geometry);
+                    } catch (Exception e) {
+                        Logger.Instance.LogErrorEvent(e.Message + $", for entry [{obj.pss.Name}]");
+                    }
                     checkCancelled();
                 }
 
@@ -318,7 +335,7 @@ namespace SmartEnergyLabDataApi.Models
                         _distProcessResult.NumBlank++;
                         continue;
                     }
-                    var dss = da.Substations.GetDistributionSubstation(record.functional_location);
+                    var dss = da.Substations.GetDistributionSubstationByExternalId(record.functional_location);
                     if ( dss==null) {
                         var pss = getPrimarySubstation(da,record.primary_feeder);
                         if ( pss!=null ) {
@@ -381,7 +398,8 @@ namespace SmartEnergyLabDataApi.Models
             List<T> records=new List<T>();
             string methodStr;
             do {
-                methodStr = methodUrl + $"&limit={rows}&offset={start}&apikey=d0cd41146c5594f1fb7e6f7c50b31c403a4984ceaa6db4ec00da5ff2";
+                var separator = methodUrl.Contains('?') ? "&" : "?";
+                methodStr = methodUrl + $"{separator}limit={rows}&offset={start}";
                 container = get<Container<T>>(methodStr);
                 checkCancelled();
                 if ( container.results.Length>0) {
@@ -446,6 +464,9 @@ namespace SmartEnergyLabDataApi.Models
             [JsonPropertyName("primaryfeeder")]
             public string primary_feeder {get; set;}
             
+            [JsonPropertyName("substationdesign")]
+            public string substation_design {get; set;}
+
             public int customer_count {get; set;}
 
             [JsonPropertyName("functionallocation")]
@@ -463,6 +484,18 @@ namespace SmartEnergyLabDataApi.Models
                 if ( dss.GISData.Longitude!=geopoint.lon) {
                     dss.GISData.Longitude = geopoint.lon;
                 }
+                var distData = dss.SubstationData;
+                if ( distData==null) {
+                    distData=new DistributionSubstationData(dss);
+                }
+                // Type (pole/ground)
+                if ( substation_design == "PMT") {
+                    distData.Type = DistributionSubstationType.Pole;
+                } else {
+                    distData.Type = DistributionSubstationType.Ground;
+                }
+                //
+                distData.NumCustomers = customer_count;
                 return updated;
             }
         }
@@ -494,24 +527,58 @@ namespace SmartEnergyLabDataApi.Models
 
             [JsonPropertyName("primarysitefunctionallocation")]
             public string primary_site_functional_location {get; set;}
-            public double[] geo_point_2d {get; set;}
-            public GeoShape geo_shape {get; set;}
+            public GeoPoint geo_point_2d {get; set;}
+            public GeoShapeGeometry geo_shape {get; set;}
+
+            public bool update(PrimarySubstation pss) {
+                bool updated = false;
+                if ( pss.Name != primary_substation_name) {
+                    pss.Name = primary_substation_name;
+                    updated = true;
+                }
+                // Position of GSP
+                if ( pss.GISData.Latitude!=geo_point_2d.lat) {
+                    pss.GISData.Latitude = geo_point_2d.lat;
+                    updated = true;
+                }
+                if ( pss.GISData.Longitude!=geo_point_2d.lon) {
+                    pss.GISData.Longitude = geo_point_2d.lon;
+                    updated = true;
+                }
+                //
+                return updated;
+            }
         }
 
         private class GSPRecord {
             public string gsp {get; set;}
-            public double[] geo_point_2d {get; set;}
-            public GeoShape geo_shape {get; set;}
+            public  GeoPoint geo_point_2d {get; set;}
+            public GeoShapeGeometry geo_shape {get; set;}
+
+            public bool update(GridSupplyPoint gsp) {
+                bool updated = false;
+                if ( gsp.GISData.Latitude!=geo_point_2d.lat ) {
+                    gsp.GISData.Latitude = geo_point_2d.lat;
+                    updated = true;
+                }
+                if ( gsp.GISData.Longitude!=geo_point_2d.lon ) {
+                    gsp.GISData.Longitude = geo_point_2d.lon;
+                    updated = true;
+                }
+                return updated;
+            }
+
+        }
+
+        public class GeoShapeGeometry {
+            public GeoShape geometry {get; set;}
         }
 
         public class GeoShape {
             public string type {get; set;}
             public JsonElement coordinates{ get; set; }
-
             public double[][][][] multiPolygonCoords {get; set;}
             public double[][][] polygonCoords {get; set;}
-
-
         }
 
         private class Fields<T> {
@@ -556,9 +623,10 @@ namespace SmartEnergyLabDataApi.Models
         {
             if (_httpClient == null) {
                 lock (_httpClientLock) {
-                    _httpClient = new HttpClient();
-                    _httpClient.BaseAddress = new Uri(_baseUrl);
-                    _httpClient.DefaultRequestHeaders.Add("Authorization","Apikey d0cd41146c5594f1fb7e6f7c50b31c403a4984ceaa6db4ec00da5ff2");
+                    _httpClient = new HttpClient() {
+                        BaseAddress = new Uri(_baseUrl)
+                    };
+                    _httpClient.DefaultRequestHeaders.Add("Authorization",$"Apikey {_apiKey}");
                 }
             }
             //

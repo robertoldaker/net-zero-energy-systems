@@ -33,5 +33,6 @@
         <mat-icon class="iconButton" (click)="edit()" title="edit">edit</mat-icon>
         <mat-icon class="iconButton" (click)="runClassificationTool()" title="run classification tool">directions_run</mat-icon>
         <img [class]="{imgButton: true, enabled: this.evDemandService.status.isReady}" src="/assets/images/EV.png" (click)="runEVDemandTool()" title="run EV Demand tool"/>
+        <mat-icon class="iconButton" (click)="downloadEvDemandJson()" title="download EvDemand json">cloud_download</mat-icon>
     </div>
 </div>

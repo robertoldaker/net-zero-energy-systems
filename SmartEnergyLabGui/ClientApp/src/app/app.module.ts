@@ -130,6 +130,7 @@ import { LoadflowMapComponent } from './loadflow/loadflow-map/loadflow-map.compo
 import { LoadflowMapKeyComponent } from './loadflow/loadflow-map/loadflow-map-key/loadflow-map-key.component';
 import { LoadflowLocInfoWindowComponent } from './loadflow/loadflow-map/loadflow-loc-info-window/loadflow-loc-info-window.component';
 import { LoadflowBranchInfoWindowComponent } from './loadflow/loadflow-map/loadflow-branch-info-window/loadflow-branch-info-window.component';
+import { MaintenanceOverlayComponent } from './admin/maintenance-overlay/maintenance-overlay.component';
 
 
 @NgModule({
@@ -215,7 +216,8 @@ import { LoadflowBranchInfoWindowComponent } from './loadflow/loadflow-map/loadf
         LoadflowMapComponent,
         LoadflowMapKeyComponent,
         LoadflowLocInfoWindowComponent,
-        LoadflowBranchInfoWindowComponent
+        LoadflowBranchInfoWindowComponent,
+        MaintenanceOverlayComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

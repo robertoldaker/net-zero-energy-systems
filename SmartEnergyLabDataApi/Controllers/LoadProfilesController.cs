@@ -26,7 +26,7 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Gets distribution substation load profiles
         /// </summary>
-        /// <param name="id">Primary substation id</param>
+        /// <param name="id">Distribution substation id</param>
         /// <param name="source">Source of load profiles</param>
         /// <param name="year">Year for data</param>
         /// <returns></returns>
@@ -83,12 +83,7 @@ namespace SmartEnergyLabDataApi.Controllers
         public IList<SubstationLoadProfile> GetGridSupplyPointLoadProfiles(int id, LoadProfileSource source, int year)
         {
             using( var da = new DataAccess()) {
-                //?? hardwired to Melksham for time being
-                //??if ( id==3) {
-                    return da.SubstationLoadProfiles.GetGridSupplyPointLoadProfiles(id, source, year, _carbonFetcher, _electricityCostFetcher);
-                //??} else {
-                //??    return new List<SubstationLoadProfile>();
-                //??}
+                return da.SubstationLoadProfiles.GetGridSupplyPointLoadProfiles(id, source, year, _carbonFetcher, _electricityCostFetcher);
             }
         }
 
@@ -145,6 +140,26 @@ namespace SmartEnergyLabDataApi.Controllers
                 da.CommitChanges();
                 return $"Added [{loader.NumAdded}], updated[{loader.NumUpdated}]";
             }
+        }
+
+        /// <summary>
+        /// Generates missing load profile data for distribution substations without load profile data
+        /// </summary>
+        [HttpPost]
+        [Route("GenerateMissing")]
+        public void GenerateMissing() {
+            var m = new LoadProfileGenerator();
+            m.Generate();
+        }
+
+        /// <summary>
+        /// Generates missing load profile data for distribution substations without load profile data
+        /// </summary>
+        [HttpPost]
+        [Route("ClearDummy")]
+        public void ClearDummy() {
+            var m = new LoadProfileGenerator();
+            m.ClearDummy();
         }
     }
 

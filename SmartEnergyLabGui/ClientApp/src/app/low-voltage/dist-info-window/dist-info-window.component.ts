@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { DataClientService } from '../../data/data-client.service';
 import { DialogService } from '../../dialogs/dialog.service';
 import { MapPowerService } from '../map-power.service';
@@ -14,7 +14,8 @@ export class DistInfoWindowComponent implements OnInit {
     constructor(public mapPowerService: MapPowerService, 
         private dialogService: DialogService, 
         private dataClientService: DataClientService,
-        public evDemandService: EvDemandService) {            
+        public evDemandService: EvDemandService,
+        @Inject('DATA_URL') private baseUrl: string) {            
     }
 
     ngOnInit(): void {
@@ -39,6 +40,13 @@ export class DistInfoWindowComponent implements OnInit {
             let id = this.mapPowerService.SelectedDistributionSubstation.id;
             console.log(id)
             this.dataClientService.RunEvDemandDistributionSubstation(id)
+        }
+    }
+
+    downloadEvDemandJson() {
+        if ( this.mapPowerService.SelectedDistributionSubstation) {
+            let id = this.mapPowerService.SelectedDistributionSubstation.id;
+            window.location.href = `${this.baseUrl}/EvDemand/Download/DistributionSubstation?id=${id}`
         }
     }
 

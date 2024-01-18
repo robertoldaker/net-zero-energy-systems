@@ -15,7 +15,7 @@ using SmartEnergyLabDataApi.Models;
 public static class Program
 {
     // Start the data access - this will check schema and run any startup scripts as needed
-    private const int SCHEMA_VERSION = 43;
+    private const int SCHEMA_VERSION = 45;
     private const int SCRIPT_VERSION = 8;
 
     public static void Main(string[] args)
@@ -133,7 +133,11 @@ public static class Program
             Username = "smart_energy_lab",
             Password = "1234567890",
             DbProvider = DbProvider.PostgreSQL
-        }, DataAccess.SchemaUpdated, StartupScript.Run);
+        }, DataAccess.SchemaUpdated, StartupScript.RunNewVersion);
+
+        AdminModel.Initialise(hubContext);
+
+        StartupScript.RunStartup();
 
         // Needed to read spreadsheets
         System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);

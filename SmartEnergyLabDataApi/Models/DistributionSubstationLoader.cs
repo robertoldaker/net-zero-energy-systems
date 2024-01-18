@@ -30,7 +30,7 @@ namespace SmartEnergyLabDataApi.Models
                 foreach( var feature in geoJson.features) {
                     string nr = feature.properties.NR.ToString();
                     Console.WriteLine($"Processing {nDone++} of {nDss}, [{feature.properties.NAME}] ");
-                    var dss = _da.Substations.GetDistributionSubstation(nr);
+                    var dss = _da.Substations.GetDistributionSubstationByNr(nr);
                     var pss = _da.Substations.GetPrimarySubstation(feature.properties.primary_NR.ToString());
                     if ( pss==null ) {
                         msg+=$"Could not find Primary substation with PRIM_NRID=[{feature.properties.PRIM_NRID}]\n";

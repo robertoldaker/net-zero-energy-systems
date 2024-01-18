@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using HaloSoft.EventLogger;
 using Renci.SshNet;
 
@@ -31,7 +32,7 @@ namespace SmartEnergyLabDataApi.Models
             var filename = $"{dbName}-{ts}.sql";
 
             var backup = new Execute();
-            var args = $"-c -f \"{filename}\" {dbName}";
+            var args = $"--clean --if-exists -f \"{filename}\" {dbName}";
             // explicitly using /usr/bin to ensure it picks up v14.
             // installing gdal brings in postgres12 which then means "pg_dump" is v12
             var exitCode = backup.Run("/usr/bin/pg_dump",args,LOCAL_PATH);
@@ -146,6 +147,32 @@ namespace SmartEnergyLabDataApi.Models
                 }
             }
             client.DeleteDirectory(path);
+        }
+
+        public StreamReader BackupToStream(out string filename) {
+
+            var dbName = "smart_energy_lab";
+            var args = $"--clean --if-exists {dbName}";
+            var now = DateTime.Now;
+            var ts = now.ToString("yyyy-MMM-dd-HH-mm-ss");
+            filename = $"{dbName}-{ts}.sql";
+
+            // explicitly using /usr/bin to ensure it picks up v14.
+            // installing gdal brings in postgres12 which then means "pg_dump" is v12
+            var exe = "/usr/bin/pg_dump";
+            ProcessStartInfo oInfo = new ProcessStartInfo(exe, args);
+			oInfo.UseShellExecute = false;
+			oInfo.CreateNoWindow = true;
+
+			oInfo.RedirectStandardOutput = true;
+			oInfo.RedirectStandardError = true;
+
+			StreamReader srOutput = null;
+			StreamReader srError = null;
+
+			Process proc = System.Diagnostics.Process.Start(oInfo);
+			srOutput = proc.StandardOutput;
+			return srOutput;            
         }
 
 

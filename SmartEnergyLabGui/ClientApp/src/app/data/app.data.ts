@@ -1,4 +1,12 @@
 /**
+ * Data definitions for Admin
+ */
+export interface SystemInfo {
+    processorCount: number,
+    maintenanceMode: boolean
+}
+
+/**
  * Data definitions for "Low voltage network"
  */
 export interface GridSupplyPoint {
@@ -750,6 +758,7 @@ export interface DataModel {
 }
 
 export interface DataRow {
+    geoGraphicalAreaId: number,
     geoGraphicalArea: string;
     dno: string;
     dnoIconUrl: string;

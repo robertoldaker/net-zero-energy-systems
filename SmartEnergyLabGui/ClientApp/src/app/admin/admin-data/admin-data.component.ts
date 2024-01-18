@@ -1,8 +1,10 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, Inject, ViewChild } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { DataModel, DataRow, LoadNetworkDataSource } from 'src/app/data/app.data';
 import { DataClientService } from 'src/app/data/data-client.service';
+import { DialogService } from 'src/app/dialogs/dialog.service';
+import { MessageDialogIcon } from 'src/app/dialogs/message-dialog/message-dialog.component';
 import { ComponentBase } from 'src/app/utils/component-base';
 
 @Component({
@@ -12,11 +14,11 @@ import { ComponentBase } from 'src/app/utils/component-base';
 })
 export class AdminDataComponent extends ComponentBase {
     
-    constructor(private dataService: DataClientService) {
+    constructor(private dataService: DataClientService, private dialogService: DialogService, @Inject('DATA_URL') private baseUrl: string) {
         super()
         this.inCleanup = false;
         this.sort = null
-        this.displayedColumns = ['geoGraphicalArea','dno','numGsps','numPrimary','numDist']
+        this.displayedColumns = ['geoGraphicalArea','dno','numGsps','numPrimary','numDist','buttons']
         this.tableData = new MatTableDataSource()
         this.refresh();
     }
@@ -52,6 +54,10 @@ export class AdminDataComponent extends ComponentBase {
         })
     }
 
+    backupDbLocally() {
+        window.location.href = `${this.baseUrl}/Admin/BackupDbLocally`
+    }
+
     performCleanup() {
         this.inCleanup = true;
         this.dataService.PerformCleanup( (result)=>{
@@ -59,6 +65,20 @@ export class AdminDataComponent extends ComponentBase {
             this.inCleanup = false;
             this.refresh()
         });
+    }
+
+    deleteAll(row: DataRow) {
+        this.dialogService.showMessageDialog(
+            {
+                message: `<div><div>This command will delete [<b>${row.numGsps}</b>] GSPs, [<b>${row.numPrimary}</b>] primary substations and [<b>${row.numDist}</b>] distribution substations.</div><div>&nbsp;</div><div>Continue?</div></div>`,
+                icon: MessageDialogIcon.Warning
+            },
+            ()=>{
+                this.dataService.DeleteAllSubstations(row.geoGraphicalAreaId,`Deleting all from [${row.geoGraphicalArea}] ...`,()=>{
+                    this.refresh()
+                });
+            }
+        )
     }
 
     inCleanup: boolean

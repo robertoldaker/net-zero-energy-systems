@@ -1,3 +1,4 @@
+using NHibernate.Classic;
 using NHibernate.Mapping.Attributes;
 using System.Text.Json.Serialization;
 
@@ -11,7 +12,7 @@ namespace SmartEnergyLabDataApi.Data
     }
 
     [Class(0, Table = "grid_supply_points")]
-    public class GridSupplyPoint
+    public class GridSupplyPoint : ILifecycle
     {
         public GridSupplyPoint()
         {
@@ -55,7 +56,7 @@ namespace SmartEnergyLabDataApi.Data
         [Formula(1, Content = "( select count(*) from primary_substations ds where (ds.gridsupplypointid = id) )")] 
         public virtual int NumberOfPrimarySubstations {get; set;}
 
-                /// <summary>
+        /// <summary>
         /// GIS data
         /// </summary>
         [ManyToOne(Column = "GISDataId", Cascade = "all-delete-orphan")]
@@ -75,6 +76,25 @@ namespace SmartEnergyLabDataApi.Data
         [ManyToOne(Column = "DistributionNetworkOperatorId", Cascade = "none")]
         public virtual DistributionNetworkOperator DistributionNetworkOperator { get; set; }
 
+        public virtual LifecycleVeto OnSave(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual LifecycleVeto OnUpdate(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
+        {
+
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual void OnLoad(NHibernate.ISession s, object id)
+        {
+        }
 
     }
 }
