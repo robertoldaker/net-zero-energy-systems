@@ -11,6 +11,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventLogger", "EventLogger\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartEnergyLabGui", "SmartEnergyLabGui\SmartEnergyLabGui.csproj", "{EDBC8B26-927F-449A-AD66-F30B63F87C7F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EvDemandService", "EvDemandService\EvDemandService.csproj", "{75A3B1ED-8DBC-4C45-9BFA-46B72515C058}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonInterfaces", "CommonInterfaces\CommonInterfaces.csproj", "{34C1C7D2-ECD5-46A5-8D21-273EE91C93F3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{EDBC8B26-927F-449A-AD66-F30B63F87C7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EDBC8B26-927F-449A-AD66-F30B63F87C7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EDBC8B26-927F-449A-AD66-F30B63F87C7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75A3B1ED-8DBC-4C45-9BFA-46B72515C058}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75A3B1ED-8DBC-4C45-9BFA-46B72515C058}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75A3B1ED-8DBC-4C45-9BFA-46B72515C058}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75A3B1ED-8DBC-4C45-9BFA-46B72515C058}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34C1C7D2-ECD5-46A5-8D21-273EE91C93F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34C1C7D2-ECD5-46A5-8D21-273EE91C93F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34C1C7D2-ECD5-46A5-8D21-273EE91C93F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34C1C7D2-ECD5-46A5-8D21-273EE91C93F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

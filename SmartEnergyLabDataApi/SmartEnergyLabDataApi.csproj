@@ -30,9 +30,10 @@
     <ItemGroup>
         <ProjectReference Include="..\DataAccessBase\DataAccessBase.csproj" />
         <ProjectReference Include="..\EventLogger\EventLogger.csproj" />
+        <ProjectReference Include="..\CommonInterfaces\CommonInterfaces.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <Content Include="LowVoltage\EVDemand\**" CopyToPublishDirectory="PreserveNewest"/>
+        <Content Include="LowVoltage\EVDemand\**" CopyToPublishDirectory="PreserveNewest" />
     </ItemGroup>
 
 </Project>

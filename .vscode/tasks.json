@@ -51,6 +51,18 @@
             "problemMatcher": "$msCompile"
         },
         {
+            "label": "build EV Demand API",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/EvDemandService/EvDemandService.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
             "type": "npm",
             "script": "build",
             "path": "SmartEnergyLabGui/ClientApp",

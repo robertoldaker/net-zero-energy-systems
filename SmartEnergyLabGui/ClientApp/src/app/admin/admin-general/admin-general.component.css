@@ -22,3 +22,8 @@ div.maintenanceMode {
     font-size: large;
     font-weight: bold;
 }
+
+div.error {
+    color: darkred;
+    font-weight: bold;
+}

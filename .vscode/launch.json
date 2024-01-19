@@ -4,7 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-    
+
         {
             "name": "Data api",
             "type": "coreclr",
@@ -41,6 +41,19 @@
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"
             }
+        },
+        {
+            "name": "EV Demand API",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build EV Demand API",
+            "program": "${workspaceFolder}/EvDemandService/bin/Debug/net6.0/EvDemandService.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/EvDemandService",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
         },
         {
             "name": ".NET Core Attach",

@@ -122,8 +122,6 @@ public static class Program
             ClassificationToolBackgroundTask.Register(backgroundTasks);
             DatabaseBackupBackgroundTask.Register(backgroundTasks);
             LoadNetworkDataBackgroundTask.Register(backgroundTasks);
-            EVDemandBackgroundTask.Register(backgroundTasks);
-            EVDemandRunner.Initialise(builder.Environment.ContentRootPath,hubContext);
         }
         
         DataAccessBase.Initialise(new DbConnection(SCHEMA_VERSION, SCRIPT_VERSION)

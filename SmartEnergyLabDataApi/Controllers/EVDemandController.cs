@@ -8,6 +8,8 @@ using SmartEnergyLabDataApi.Loadflow;
 using SmartEnergyLabDataApi.Elsi;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using CommonInterfaces.Models;
+using CommonInterfaces.Clients;
 
 namespace SmartEnergyLabDataApi.Controllers;
 
@@ -15,10 +17,23 @@ namespace SmartEnergyLabDataApi.Controllers;
 [ApiController]
 public class EVDemandController : ControllerBase
 {
-    private EVDemandBackgroundTask _backgroundTask;
 
-    public EVDemandController(IBackgroundTasks backgroundTasks) {
-        _backgroundTask = backgroundTasks.GetTask<EVDemandBackgroundTask>(EVDemandBackgroundTask.Id);
+    public EVDemandController() {
+    }
+
+    [HttpGet]
+    [Route("Input/DistributionSubstation")]
+    public EVDemandInput InputDistributionSubstation(int id) 
+    {
+        using( var da = new DataAccess()) {
+            var dss = da.Substations.GetDistributionSubstation(id);
+            if ( dss!=null) {
+                var edi = EVDemandUtils.CreateFromDistributionId(id);
+                return edi;
+            } else {
+                throw new Exception($"Cannot find distribution substation with is=[{id}]");
+            }
+        }
     }
 
     [HttpGet]
@@ -28,7 +43,7 @@ public class EVDemandController : ControllerBase
         using( var da = new DataAccess()) {
             var dss = da.Substations.GetDistributionSubstation(id);
             if ( dss!=null) {
-                var edi = EVDemandInput.CreateFromDistributionId(id);
+                var edi = EVDemandUtils.CreateFromDistributionId(id);
                 var json=JsonSerializer.Serialize(edi);
                 var ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
                 var fsr = new FileStreamResult(ms, "application/json");
@@ -41,13 +56,28 @@ public class EVDemandController : ControllerBase
     }
 
     [HttpGet]
+    [Route("Input/PrimarySubstation")]
+    public EVDemandInput InputPrimarySubstation(int id) 
+    {
+        using( var da = new DataAccess()) {
+            var dss = da.Substations.GetPrimarySubstation(id);
+            if ( dss!=null) {
+                var edi = EVDemandUtils.CreateFromPrimaryId(id);
+                return edi;
+            } else {
+                throw new Exception($"Cannot find primary substation with is=[{id}]");
+            }
+        }
+    }
+
+    [HttpGet]
     [Route("Download/PrimarySubstation")]
     public ActionResult DownloadPrimarySubstation(int id) 
     {
         using( var da = new DataAccess()) {
             var dss = da.Substations.GetPrimarySubstation(id);
             if ( dss!=null) {
-                var edi = EVDemandInput.CreateFromPrimaryId(id);
+                var edi = EVDemandUtils.CreateFromPrimaryId(id);
                 var json=JsonSerializer.Serialize(edi);
                 var ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
                 var fsr = new FileStreamResult(ms, "application/json");
@@ -60,13 +90,28 @@ public class EVDemandController : ControllerBase
     }
 
     [HttpGet]
+    [Route("Input/GridSupplyPoint")]
+    public EVDemandInput InputGridSupplyPoint(int id) 
+    {
+        using( var da = new DataAccess()) {
+            var dss = da.SupplyPoints.GetGridSupplyPoint(id);
+            if ( dss!=null) {
+                var edi = EVDemandUtils.CreateFromGridSupplyPointId(id);
+                return edi;
+            } else {
+                throw new Exception($"Cannot find distribution substation with is=[{id}]");
+            }
+        }
+    }
+
+    [HttpGet]
     [Route("Download/GridSupplyPoint")]
     public ActionResult DownloadGridSupplyPoint(int id) 
     {
         using( var da = new DataAccess()) {
             var dss = da.SupplyPoints.GetGridSupplyPoint(id);
             if ( dss!=null) {
-                var edi = EVDemandInput.CreateFromGridSupplyPointId(id);
+                var edi = EVDemandUtils.CreateFromGridSupplyPointId(id);
                 var json=JsonSerializer.Serialize(edi);
                 var ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
                 var fsr = new FileStreamResult(ms, "application/json");
@@ -84,9 +129,11 @@ public class EVDemandController : ControllerBase
     /// <param>Db id of the substation</param>
     [HttpPost]
     [Route("Run/DistributionSubstation")]
-    public void RunDistributionSubstation(int id)
+    public string RunDistributionSubstation(int id)
     {
-        _backgroundTask.RunDistributionSubstation(id);
+        var m = new EVDemandClient();        
+        var input  = this.InputDistributionSubstation(id);
+        return m.Predictor.Run(input);
     }
 
     /// <summary>
@@ -95,9 +142,11 @@ public class EVDemandController : ControllerBase
     /// <param>Db id of the substation</param>
     [HttpPost]
     [Route("Run/PrimarySubstation")]
-    public void RunPrimarySubstation(int id)
+    public string RunPrimarySubstation(int id)
     {
-        _backgroundTask.RunPrimarySubstation(id);
+        var m = new EVDemandClient();        
+        var input  = this.InputPrimarySubstation(id);
+        return m.Predictor.Run(input);
     }    
 
     /// <summary>
@@ -106,9 +155,11 @@ public class EVDemandController : ControllerBase
     /// <param>Db id of the supply point</param>
     [HttpPost]
     [Route("Run/GridSupplyPoint")]
-    public void RunGridSupplyPoint(int id)
+    public string RunGridSupplyPoint(int id)
     {
-        _backgroundTask.RunGridSupplyPoint(id);
+        var m = new EVDemandClient();        
+        var input  = this.InputGridSupplyPoint(id);
+        return m.Predictor.Run(input);
     }    
 
     /// <summary>
@@ -118,7 +169,8 @@ public class EVDemandController : ControllerBase
     [Route("Status")]
     public object GetStatus()
     {
-        return EVDemandRunner.Instance.GetStatus();
+        var m = new EVDemandClient();
+        return m.Admin.Status();
     }    
 
     /// <summary>
@@ -128,6 +180,7 @@ public class EVDemandController : ControllerBase
     [Route("Restart")]
     public void Restart()
     {
-        EVDemandRunner.Instance.Restart();
+        var m = new EVDemandClient();
+        m.Admin.Restart();
     }    
 }

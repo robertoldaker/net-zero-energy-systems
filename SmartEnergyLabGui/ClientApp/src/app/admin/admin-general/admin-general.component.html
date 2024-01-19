@@ -13,6 +13,7 @@
 
     <div class="title">EV Demand Tool</div>
     <div class="toolbar">
+        <div class="error">{{evDemandService.errorMessage}}</div>
         <button mat-raised-button color="primary" (click)="restartEVDemandTool()">Restart</button>
         <label>Is running
             <input type="checkbox" disabled [checked]="evDemandService.status.isRunning"/>

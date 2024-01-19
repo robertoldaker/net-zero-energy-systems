@@ -1,3 +1,11 @@
 {
-    "dotnet.defaultSolution": "SmartEnergyLabDataApi.sln"
+    "dotnet.defaultSolution": "SmartEnergyLabDataApi.sln",
+    "angular-schematics.schematicsDefaultOptions": {
+        "angular-*": {
+            "externalTemplate": true
+        },
+        "angular-component": {
+            "skipDisplayBlock": true
+        }
+    }
 }

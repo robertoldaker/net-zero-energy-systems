@@ -20,6 +20,17 @@ export function getDataUrl() {
     }
 }
 
+export function getEvDemandUrl() {
+
+    if (environment.production) {
+        return appSettings.Production.EvDemandUrl
+    } else if (environment.staging) {
+        return appSettings.Staging.EvDemandUrl
+    } else {
+        return appSettings.Development.EvDemandUrl
+    }
+}
+
 export function getMode() {
     if (environment.production) {
         return 'Production'
@@ -33,6 +44,7 @@ export function getMode() {
 const providers = [
     { provide: 'BASE_URL', useFactory: getBaseUrl, deps: [] },
     { provide: 'DATA_URL', useFactory: getDataUrl, deps: [] },
+    { provide: 'EV_DEMAND_URL', useFactory: getEvDemandUrl, deps: [] },
     { provide: 'MODE', useFactory: getMode, deps:[] }
 ];
 

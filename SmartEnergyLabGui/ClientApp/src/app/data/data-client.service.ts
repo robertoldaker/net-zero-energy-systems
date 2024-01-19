@@ -490,13 +490,6 @@ export class DataClientService {
         this.postRequestWithParams('/EVDemand/Run/GridSupplyPoint',{},params,()=>{})
     }
 
-    GetEVDemandStatus(onLoad: (resp: EVDemandStatus)=>void) {
-        this.getRequest<EVDemandStatus>("/EvDemand/Status", onLoad)
-    }
-
-    RestartEVDemand() {
-        this.getBasicRequest("/EvDemand/Restart", ()=>{})
-    }
     /* shared */
     private getBasicRequest(url: string, onLoad: (resp: any)=>void | undefined) {
         this.http.get(this.baseUrl + url).subscribe(resp => {
