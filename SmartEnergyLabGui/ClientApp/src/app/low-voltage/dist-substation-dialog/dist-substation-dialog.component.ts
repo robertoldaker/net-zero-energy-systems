@@ -79,7 +79,7 @@ export class DistSubstationDialogComponent implements OnInit {
             let id = this.mapPowerService.SelectedDistributionSubstation.id;
             let name = this.mapPowerService.SelectedDistributionSubstation.name;
             this.dataClientService.SetSubstationParams(id, this.params, ()=>{
-                // Perform a reload on the instance stoed in mapDataServic
+                // Perform a reload on the instance stored in mapDataService
                 this.mapPowerService.reloadSelected();
                 this.snackBar.open(`Successfully saved parameters for [${name}]`,"close")
                 this.dialogRef.close();
