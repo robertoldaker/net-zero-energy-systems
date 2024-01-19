@@ -1,0 +1,8 @@
+<mat-tab-group [preserveContent]="true">
+    <mat-tab label="Main">
+        <app-admin-logs [logService]="dataClientService"></app-admin-logs>
+    </mat-tab>
+    <mat-tab label="EV Demand Tool">
+        <app-admin-logs [logService]="evDemandClientService"></app-admin-logs>
+    </mat-tab>
+</mat-tab-group>    

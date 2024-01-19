@@ -1,4 +1,5 @@
 using CommonInterfaces.Models;
+using HaloSoft.EventLogger;
 
 namespace CommonInterfaces.Clients;
 
@@ -40,7 +41,10 @@ public class EVDemandClient {
         }
 
         public string Run(EVDemandInput input) {
-            return _httpApiClient.Post("/Predictor/Run",input);
+            var resp = _httpApiClient.Post("/Predictor/Run",input);
+            Logger.Instance.LogInfoEvent("Response from Ev predictor");
+            Logger.Instance.LogInfoEvent(resp);
+            return resp;
         }
     }
 

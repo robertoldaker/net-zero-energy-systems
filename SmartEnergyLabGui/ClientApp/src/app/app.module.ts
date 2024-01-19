@@ -122,7 +122,7 @@ import { MapKeyComponent } from './low-voltage/map/map-key/map-key.component';
 import { AdminHomeComponent } from './admin/admin-home/admin-home.component';
 import { AdminUsersComponent } from './admin/admin-users/admin-users.component';
 import { AdminGeneralComponent } from './admin/admin-general/admin-general.component';
-import { AdminLogsComponent } from './admin/admin-logs/admin-logs.component';
+import { AdminLogsComponent } from './admin/admin-logs-home/admin-logs/admin-logs.component';
 import { AdminHeaderComponent } from './admin/admin-home/admin-header/admin-header.component';
 import { AdminDataComponent } from './admin/admin-data/admin-data.component';
 import { AdminTestComponent } from './admin/admin-test/admin-test.component';
@@ -131,6 +131,7 @@ import { LoadflowMapKeyComponent } from './loadflow/loadflow-map/loadflow-map-ke
 import { LoadflowLocInfoWindowComponent } from './loadflow/loadflow-map/loadflow-loc-info-window/loadflow-loc-info-window.component';
 import { LoadflowBranchInfoWindowComponent } from './loadflow/loadflow-map/loadflow-branch-info-window/loadflow-branch-info-window.component';
 import { MaintenanceOverlayComponent } from './admin/maintenance-overlay/maintenance-overlay.component';
+import { AdminLogsHomeComponent } from './admin/admin-logs-home/admin-logs-home.component';
 
 
 @NgModule({
@@ -217,7 +218,8 @@ import { MaintenanceOverlayComponent } from './admin/maintenance-overlay/mainten
         LoadflowMapKeyComponent,
         LoadflowLocInfoWindowComponent,
         LoadflowBranchInfoWindowComponent,
-        MaintenanceOverlayComponent
+        MaintenanceOverlayComponent,
+        AdminLogsHomeComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

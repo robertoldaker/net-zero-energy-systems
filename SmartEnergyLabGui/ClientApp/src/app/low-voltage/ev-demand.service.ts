@@ -1,15 +1,14 @@
 import { Injectable } from '@angular/core';
-import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { EVDemandStatus } from '../data/app.data';
-import { DataClientService } from '../data/data-client.service';
 import { EvDemandClientService } from '../data/ev-demand-client.service';
+import { EVDemandSignalRService } from './ev-demand-signalr.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class EvDemandService {
 
-    constructor(private signalRService: SignalRService,private evClientService: EvDemandClientService) { 
+    constructor(private signalRService: EVDemandSignalRService,private evClientService: EvDemandClientService) { 
         this.errorMessage = "";
         this.evClientService.GetEVDemandStatus((data)=>{
             this.status=data

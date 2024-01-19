@@ -34,4 +34,7 @@ export class EvDemandClientService {
         this.hsc.GetBasicRequest("/Admin/Restart", ()=>{})
     }
     
+    Logs(onLoad: (resp: any)=> void | undefined) {
+        this.hsc.GetBasicRequest("/Admin/Logs", onLoad)
+    }
 }

@@ -777,7 +777,10 @@ export interface GridSubstation {
     gisData: GISData    
 }
 
-
+/* generic logs */
+export interface ILogs {
+    Logs(onComplete: (resp: any)=> void | undefined): void
+}
 
 
 
