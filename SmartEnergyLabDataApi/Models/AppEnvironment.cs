@@ -1,8 +1,8 @@
 using System.Reflection;
+using CommonInterfaces.Models;
 
 namespace SmartEnergyLabDataApi.Models
 {
-    public enum Context { Development, Staging, Production }
     public class AppEnvironment
     {
         private static AppEnvironment _instance;

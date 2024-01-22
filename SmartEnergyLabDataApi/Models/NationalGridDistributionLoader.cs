@@ -12,6 +12,7 @@ using NHibernate.Util;
 using Microsoft.Extensions.FileProviders;
 using Org.BouncyCastle.Bcpg.Sig;
 using Org.BouncyCastle.Crypto.Signers;
+using CommonInterfaces.Models;
 
 namespace SmartEnergyLabDataApi.Models
 {

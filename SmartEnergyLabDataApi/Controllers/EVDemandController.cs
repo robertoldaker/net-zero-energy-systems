@@ -131,7 +131,7 @@ public class EVDemandController : ControllerBase
     [Route("Run/DistributionSubstation")]
     public string RunDistributionSubstation(int id)
     {
-        var m = new EVDemandClient();        
+        var m = new EVDemandClient(AppEnvironment.Instance.Context);        
         var input  = this.InputDistributionSubstation(id);
         return m.Predictor.Run(input);
     }
@@ -144,7 +144,7 @@ public class EVDemandController : ControllerBase
     [Route("Run/PrimarySubstation")]
     public string RunPrimarySubstation(int id)
     {
-        var m = new EVDemandClient();        
+        var m = new EVDemandClient(AppEnvironment.Instance.Context);        
         var input  = this.InputPrimarySubstation(id);
         return m.Predictor.Run(input);
     }    
@@ -157,7 +157,7 @@ public class EVDemandController : ControllerBase
     [Route("Run/GridSupplyPoint")]
     public string RunGridSupplyPoint(int id)
     {
-        var m = new EVDemandClient();        
+        var m = new EVDemandClient(AppEnvironment.Instance.Context);        
         var input  = this.InputGridSupplyPoint(id);
         return m.Predictor.Run(input);
     }    
@@ -169,7 +169,7 @@ public class EVDemandController : ControllerBase
     [Route("Status")]
     public object GetStatus()
     {
-        var m = new EVDemandClient();
+        var m = new EVDemandClient(AppEnvironment.Instance.Context);
         return m.Admin.Status();
     }    
 
@@ -180,7 +180,7 @@ public class EVDemandController : ControllerBase
     [Route("Restart")]
     public void Restart()
     {
-        var m = new EVDemandClient();
+        var m = new EVDemandClient(AppEnvironment.Instance.Context);
         m.Admin.Restart();
     }    
 }

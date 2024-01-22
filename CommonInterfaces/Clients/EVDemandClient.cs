@@ -7,8 +7,14 @@ public class EVDemandClient {
 
     private HttpApiClient _httpApiClient;
 
-    public EVDemandClient() {
-        _httpApiClient = new HttpApiClient("http://localhost:5134");
+    public EVDemandClient(Context appContext) {
+        string baseUrl = "";
+        if ( appContext == Context.Development || appContext == Context.Staging) {
+            baseUrl = "http://localhost:5134";
+        } else {
+            baseUrl = "http://ev-demand.net-zero-energy-systems.org";
+        }
+        _httpApiClient = new HttpApiClient(baseUrl);
         Admin = new AdminClient(_httpApiClient);
         Predictor = new PredictorClient(_httpApiClient);
     }

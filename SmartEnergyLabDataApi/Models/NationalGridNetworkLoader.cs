@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using CommonInterfaces.Models;
 using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
 

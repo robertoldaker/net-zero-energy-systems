@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using CommonInterfaces.Models;
 using HaloSoft.EventLogger;
 using Renci.SshNet;
 
