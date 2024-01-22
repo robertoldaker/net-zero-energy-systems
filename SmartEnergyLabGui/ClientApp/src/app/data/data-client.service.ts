@@ -226,6 +226,7 @@ export class DataClientService implements ILogs {
      * Classification tool
      */
     RunClassificationTool(input: ClassificationToolInput, onLoad: (output: ClassificationToolOutput) => void, onError?:(resp:any)=>void, onComplete?:()=>void) {
+        this.showMessageService.showMessage("Calculating ...");
         this.http.post<ClassificationToolOutput>(this.baseUrl + '/ClassificationTool/Run', input).subscribe(
             result => {
                 if (onLoad !== undefined) {
@@ -233,7 +234,10 @@ export class DataClientService implements ILogs {
                 }
             }, 
             error => { this.logErrorMessage(error) }, 
-            ()=> { if ( onComplete ) onComplete() }
+            ()=> { 
+                this.showMessageService.clearMessage();
+                if ( onComplete ) onComplete() 
+            }
         );
     }
 
