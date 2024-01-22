@@ -779,7 +779,7 @@ export interface GridSubstation {
 
 /* generic logs */
 export interface ILogs {
-    Logs(onComplete: (resp: any)=> void | undefined): void
+    Logs(onComplete: (resp: any)=> void | undefined, onError: (resp:any)=>void): void
 }
 
 

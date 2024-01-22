@@ -19,22 +19,15 @@ export class EvDemandClientService {
 
     private hsc: HttpServiceClient
     
-    GetEVDemandStatus(onLoad: (resp: EVDemandStatus)=>void, onError: (resp: any)=>void) {
-        //?? don't use normal way since we need to trap the error message
-        //?? this.hsc.GetRequest<EVDemandStatus>("/EvDemand/Status", onLoad)
-        let url = "/Admin/Status"
-        this.http.get<EVDemandStatus>(this.baseUrl + url).subscribe(resp => {
-            if ( onLoad) {
-                onLoad(resp);
-            }
-        },onError)
+    GetEVDemandStatus(onLoad: (resp: EVDemandStatus)=>void, onError?: ((resp: string)=>void)) {
+        this.hsc.GetBasicRequest("/Admin/Status", onLoad, onError)
     }
 
     RestartEVDemand() {
-        this.hsc.GetBasicRequest("/Admin/Restart", ()=>{})
+        this.hsc.GetBasicRequest("/Admin/Restart",()=>{})
     }
     
-    Logs(onLoad: (resp: any)=> void | undefined) {
-        this.hsc.GetBasicRequest("/Admin/Logs", onLoad)
+    Logs(onLoad: (resp: any)=> void | undefined, onError: (resp: string)=>void) {
+        this.hsc.GetBasicRequest("/Admin/Logs", onLoad, onError)
     }
 }

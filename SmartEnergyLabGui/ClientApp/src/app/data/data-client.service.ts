@@ -19,7 +19,7 @@ export class DataClientService implements ILogs {
     /**
      * Substations
      */
-    GetPrimarySubstation(id: number, onLoad: (pss: PrimarySubstation) => void | undefined) {
+    GetPrimarySubstation(id: number, onLoad: (pss: PrimarySubstation) => void) {
         this.http.get<PrimarySubstation>(this.baseUrl + `/Substations/PrimarySubstation?id=${id}`).subscribe(result => {
             if (onLoad !== undefined) {
                 onLoad(result);
@@ -441,7 +441,7 @@ export class DataClientService implements ILogs {
         this.getBasicRequest(`/Admin/LoadNetworkData?source=${source}`, onComplete);
     }
 
-    Logs(onComplete: (resp: any)=> void | undefined) {
+    Logs(onComplete: (resp: any)=> void | undefined, onError: (resp:any)=>void) {
         this.getBasicRequest('/Admin/Logs', onComplete);
     }
 

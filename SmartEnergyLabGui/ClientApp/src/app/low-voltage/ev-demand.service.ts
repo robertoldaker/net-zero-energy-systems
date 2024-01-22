@@ -16,7 +16,7 @@ export class EvDemandService {
             console.log(data)
         }, (resp)=>{
             console.log(resp)
-            this.errorMessage = resp.message
+            this.errorMessage = resp
         })
         this.signalRService.hubConnection.on("EVDemandStatus",(data)=>{
             console.log('SignalR EVDemandStatus')

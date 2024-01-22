@@ -30,6 +30,8 @@ export class AdminLogsComponent implements OnInit {
                         }
                     }, 200)
                 }
+            }, (resp)=>{
+                this.Logs = resp
             })    
         }
     }
