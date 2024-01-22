@@ -11,6 +11,7 @@ export class ClassificationToolService {
 
     output: ClassificationToolOutput | undefined
     input: ClassificationToolInput | undefined
+    toolRunning: boolean = false
 
     constructor(private dataClientService: DataClientService) {
         
@@ -18,10 +19,17 @@ export class ClassificationToolService {
 
     run(input: ClassificationToolInput) {
         this.input = input
-        this.dataClientService.RunClassificationTool(input, (output: ClassificationToolOutput) => {
-            this.output = output
-            this.OutputLoaded.emit(output)
-        })
+        this.toolRunning = true;
+        this.dataClientService.RunClassificationTool(input, 
+            (output: ClassificationToolOutput) => {
+                this.output = output
+                this.OutputLoaded.emit(output)
+            }, 
+            undefined, 
+            () => {
+                this.toolRunning = false;
+            }
+        )
     }
 
     OutputLoaded = new EventEmitter<ClassificationToolOutput>()

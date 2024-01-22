@@ -225,12 +225,16 @@ export class DataClientService implements ILogs {
     /**
      * Classification tool
      */
-    RunClassificationTool(input: ClassificationToolInput, onLoad: (output: ClassificationToolOutput) => void | undefined) {
-        this.http.post<ClassificationToolOutput>(this.baseUrl + '/ClassificationTool/Run', input).subscribe(result => {
-            if (onLoad !== undefined) {
-                onLoad(result);
-            }
-        }, error => { this.logErrorMessage(error) });
+    RunClassificationTool(input: ClassificationToolInput, onLoad: (output: ClassificationToolOutput) => void, onError?:(resp:any)=>void, onComplete?:()=>void) {
+        this.http.post<ClassificationToolOutput>(this.baseUrl + '/ClassificationTool/Run', input).subscribe(
+            result => {
+                if (onLoad !== undefined) {
+                    onLoad(result);
+                }
+            }, 
+            error => { this.logErrorMessage(error) }, 
+            ()=> { if ( onComplete ) onComplete() }
+        );
     }
 
     RunClassificationToolOnSubstation(id: number, onLoad?: () => void) {

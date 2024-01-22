@@ -1,16 +1,17 @@
 <div style="display: grid; grid-auto-flow: column;">
     <div class="inputColumn">
         <div class="title">Elexon profile</div>
-        <div style="display: grid; grid-auto-flow: row; margin-top: 1rem; width: 50%">
+        <div style="display: grid; grid-auto-flow: row; margin-top: 1rem; width: 100%">
             <mat-form-field appearance="fill" *ngFor="let num of [1,2,3,4,5,6,7,8]">
-                <mat-label>Elexon profile {{num}}</mat-label>
+                <mat-label><b>{{num}}</b> - {{elexonInfo[num-1]}}
+                </mat-label>
                 <input [type]="'number'" matInput [(ngModel)]="input.elexonProfile[num-1]">
             </mat-form-field>
         </div>
     </div>
     <div class="inputColumn">
         <div class="title">Transformer type</div>
-        <div style="display: grid; grid-auto-flow: row; margin-top: 1rem; width: 50%">
+        <div style="display: grid; grid-auto-flow: row; margin-top: 1rem; width: 100%">
             <mat-form-field appearance="fill">
                 <mat-label>Substation mount</mat-label>
                 <select matNativeControl [(ngModel)]="input.substationMount">
@@ -46,5 +47,5 @@
     </div>
 </div>
 <div style="text-align:center">
-    <button mat-raised-button color="primary" style="width: 50%" (click)="run()">Calculate</button>
+    <button mat-raised-button color="primary" style="width: 50%" (click)="run()" [disabled]="this.service.toolRunning">Calculate</button>
 </div>

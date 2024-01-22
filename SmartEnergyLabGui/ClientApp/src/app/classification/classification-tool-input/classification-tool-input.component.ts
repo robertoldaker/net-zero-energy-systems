@@ -10,8 +10,9 @@ import { ClassificationToolService } from '../classification-tool.service';
 export class ClassificationToolInputComponent implements OnInit {
 
     input: ClassificationToolInput
+    elexonInfo: string[]
 
-    constructor( private service: ClassificationToolService) {
+    constructor( public service: ClassificationToolService) {
         this.input = {
             "elexonProfile": [
               233,22,7,5,0,0,0,1
@@ -24,6 +25,16 @@ export class ClassificationToolInputComponent implements OnInit {
             "totalLength": 1.404,
             "percentageOverhead": 0
           }
+          this.elexonInfo = [
+            "Domestic Unrestricted Customers",
+            "Domestic Economy 7 Customers",
+            "Non-Domestic Unrestricted Customers",
+            "Non-Domestic Economy 7 Customers",
+            "Non-Domestic Maximum Demand (MD) Customers with a Peak Load Factor (LF) of less than 20%",
+            "Non-Domestic Maximum Demand Customers with a Peak Load Factor between 20% and 30%",
+            "Non-Domestic Maximum Demand Customers with a Peak Load Factor between 30% and 40%",
+            "Non-Domestic Maximum Demand Customers with a Peak Load Factor over 40%"
+          ]
     }
 
 
