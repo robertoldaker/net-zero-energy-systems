@@ -31,7 +31,8 @@ namespace SmartEnergyLabDataApi.Data
             int[] data = new int[8];
             for (int i = 0; i < 8; i++)
             {
-                int value = classifications.Where(m => m.Num == i + 1).Select(m => m.NumberOfEACs).FirstOrDefault();
+                // Spreadsheet from Bath had number of EACS but later spreadsheet for areas in Wales only had number of customers
+                int value = classifications.Where(m => m.Num == i + 1).Select(m => m.NumberOfEACs!=0 ? m.NumberOfEACs : m.NumberOfCustomers).FirstOrDefault();
                 data[i] = value;
             }
             return data;

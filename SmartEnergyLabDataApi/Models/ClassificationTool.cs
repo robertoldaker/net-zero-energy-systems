@@ -86,7 +86,7 @@ namespace SmartEnergyLabDataApi.Models
                     updateLoadProfiles(da,loadProfiles,dss,Day.Sunday,output);
                     updateLoadProfiles(da,loadProfiles,dss,Day.Weekday,output);
                     //
-                    var message = $"Created data for [{dss.Name}]";
+                    var message = $"Created load profile data for [{dss.Name}]";
                     if ( taskRunner!=null ) {
                         int percentCompleted = (i*100)/dsss.Count;
                         taskRunner.Update(TaskState.RunningState.Running, message, percentCompleted);

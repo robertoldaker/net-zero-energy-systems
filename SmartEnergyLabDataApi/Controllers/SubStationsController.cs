@@ -275,7 +275,7 @@ namespace SmartEnergyLabDataApi.Controllers
         }         
 
         /// <summary>
-        /// Set substation charging params
+        /// Set substation heating params
         /// </summary>
         /// <returns></returns>
         [HttpPut]
@@ -288,5 +288,21 @@ namespace SmartEnergyLabDataApi.Controllers
             }
         }    
 
+        /*
+        ** Have abandoned for the mo since classification tool cannot generate monthly load profiles??
+        **
+        /// <summary>
+        /// Loads elexon profiles from spreadsheet
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("LoadElexonProfilesFromSpreadsheet")]        
+        public void LoadElexonProfiles(IFormFile file)
+        {
+            var m = new ElexonProfileCsvReader();
+            m.Load(file);
+            return;
+        } 
+        */
     }
 }
