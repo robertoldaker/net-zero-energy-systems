@@ -322,6 +322,13 @@ namespace SmartEnergyLabDataApi.Data
             return q.List();
         }
 
+        public IList<DistributionSubstation> GetDistributionSubstationsByGSPId(int gspId)
+        {
+            var q = Session.QueryOver<DistributionSubstation>().
+                Where(m => m.GridSupplyPoint.Id == gspId);
+            return q.List();
+        }
+
         public IList<DistributionSubstation> GetDistributionSubstations(int primaryId)
         {
             var q = Session.QueryOver<DistributionSubstation>().
@@ -461,24 +468,21 @@ namespace SmartEnergyLabDataApi.Data
                 pss = Session.QueryOver<PrimarySubstation>().Where( m=>m.Source==source && m.ExternalId==externalId).Take(1).SingleOrDefault();
             }
             if ( pss==null && externalId2!=null ) {
-                pss = Session.QueryOver<PrimarySubstation>().Where(m=>m.Source==source && m.ExternalId2 == externalId2).Take(1).SingleOrDefault();
+                pss = Session.QueryOver<PrimarySubstation>().Where(m=>m.Source==source && m.ExternalId2==externalId2).Take(1).SingleOrDefault();
             } 
             if ( pss==null && name!=null ) {
-                pss = Session.QueryOver<PrimarySubstation>().Where(m=>m.Source==source && m.Name == name).Take(1).SingleOrDefault();
+                pss = Session.QueryOver<PrimarySubstation>().Where(m=>m.Source==source && m.Name.IsInsensitiveLike(name,MatchMode.Exact)).Take(1).SingleOrDefault();
             } 
             return pss;
         }
 
-        public PrimarySubstation GetPrimarySubstationLike(MatchMode matchMode, ImportSource source, string externalId, string externalId2=null, string name=null) {
+        public PrimarySubstation GetPrimarySubstationLike(MatchMode matchMode, ImportSource source, string externalId, string externalId2=null) {
             PrimarySubstation pss=null;
             if ( externalId!=null ) {
                 pss = Session.QueryOver<PrimarySubstation>().Where( m=>m.Source==source && m.ExternalId.IsLike(externalId,matchMode)).Take(1).SingleOrDefault();
             }
             if ( pss==null && externalId2!=null ) {
                 pss = Session.QueryOver<PrimarySubstation>().Where(m=>m.Source==source && m.ExternalId2.IsLike(externalId2,matchMode)).Take(1).SingleOrDefault();
-            } 
-            if ( pss==null && name!=null ) {
-                pss = Session.QueryOver<PrimarySubstation>().Where(m=>m.Source==source && m.Name.IsLike(name,matchMode)).Take(1).SingleOrDefault();
             } 
             return pss;
         }

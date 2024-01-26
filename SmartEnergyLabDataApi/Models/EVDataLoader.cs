@@ -10,7 +10,6 @@ namespace SmartEnergyLabDataApi.Models
     public class EVDataLoader
     {
         private DataAccess _da;
-        private int _gaId;
 
         private Dictionary<string,Dictionary<string,double>> _forecastsDict;
         private profile? _profile;
@@ -19,15 +18,14 @@ namespace SmartEnergyLabDataApi.Models
 
         private int _numAdded,_numUpdated;
 
-        public EVDataLoader(DataAccess da, int gaId)
+        public EVDataLoader(DataAccess da, int gspId)
         {
             _da = da;
-            _gaId = gaId;
             // Cache of any existing load profiles
             var existingLoadProfiles = _da.SubstationLoadProfiles.GetSubstationLoadProfiles(LoadProfileType.EV,LoadProfileSource.EV_Pred);
-            _cache = new ObjectCache<SubstationLoadProfile>(_da, existingLoadProfiles, m=>GetKey(m.DistributionSubstation.ExternalId,m.Year,m.MonthNumber,m.Day), (m,k)=>{} );
+            _cache = new ObjectCache<SubstationLoadProfile>(_da, existingLoadProfiles, m=>GetKey(m.DistributionSubstation.ExternalId,m.MonthNumber,m.Day), (m,k)=>{} );
             // Cache of distribution substations
-            var existingDistrictSubstations = _da.Substations.GetDistributionSubstationsByGAId(_gaId);
+            var existingDistrictSubstations = _da.Substations.GetDistributionSubstationsByGSPId(gspId);
             _dssDict = new Dictionary<string,DistributionSubstation>();
             foreach( var dss in existingDistrictSubstations) {
                 _dssDict.Add(dss.ExternalId,dss);
@@ -37,32 +35,46 @@ namespace SmartEnergyLabDataApi.Models
 
         public void Load(IFormFile forecastsFile, IFormFile profilesFile)
         {
+            Logger.Instance.LogInfoEvent("Start loading EV data");
 
             loadProfile(profilesFile);            
             loadForecasts(forecastsFile);
 
             // 
+            int baseYear = 2021;
             _numAdded = 0;
             _numUpdated = 0;
             int loopCount=0;
             foreach( var ssId in _forecastsDict.Keys) {
                 if (_dssDict.ContainsKey(ssId)) {
-                    foreach( var yearStr in _forecastsDict[ssId].Keys) {
-                        int year = int.Parse(yearStr);
-                        double numEvs = _forecastsDict[ssId][yearStr];
-                        // loop over each month
-                        for(int i=1;i<=12;i++) {
-                            updateLoadProfile(ssId,numEvs,year,i,Day.Saturday);
-                            updateLoadProfile(ssId,numEvs,year,i,Day.Sunday);
-                            updateLoadProfile(ssId,numEvs,year,i,Day.Weekday);
-                        }
+                    var scalingFactors = getScalingFactors(baseYear,_forecastsDict[ssId]);
+                    // loop over each month
+                    for(int i=1;i<=12;i++) {
+                        updateLoadProfile(ssId,scalingFactors,baseYear,i,Day.Saturday);
+                        updateLoadProfile(ssId,scalingFactors,baseYear,i,Day.Sunday);
+                        updateLoadProfile(ssId,scalingFactors,baseYear,i,Day.Weekday);
                     }
                 } else {
-                    Console.WriteLine($"Ignoring substation [{ssId}]");
+                    Logger.Instance.LogInfoEvent($"Substation [{ssId}] not found");
                 }
                 loopCount++;
-                Console.WriteLine($"Processed [{loopCount}] of [{_forecastsDict.Keys.Count}]");
             }
+            Logger.Instance.LogInfoEvent("End loading EV data");
+        }
+
+        public double[] getScalingFactors(int baseYear, Dictionary<string,double> factorsDict) {
+
+            int finalYear=2050;
+            double[] scalingFactors = new double[finalYear-baseYear+1];
+            for( int i=0;i<scalingFactors.Length;i++) { 
+                int year = baseYear+i;
+                if (factorsDict.ContainsKey(year.ToString())) {
+                    scalingFactors[i]=factorsDict[year.ToString()];
+                } else {
+                    scalingFactors[i]=0;
+                }
+            }
+            return scalingFactors;
         }
 
         public int NumAdded  {
@@ -77,21 +89,18 @@ namespace SmartEnergyLabDataApi.Models
             }
         }
 
-        private void updateLoadProfile(string ssId, double numEvs, int year, int month, Day day) {
+        private void updateLoadProfile(string ssId, double[] scalingFactors, int baseYear, int month, Day day) {
             // Scale profile by number of Evs
             double[] profile=getProfile(month,day);
-            for(int i=0;i<profile.Length;i++) {
-                profile[i]*=numEvs;
-            }
             // Get hold of any existing db object
-            var lp = _cache.GetOrCreate(GetKey(ssId,year,month,day),out bool created);
+            var lp = _cache.GetOrCreate(GetKey(ssId,month,day),out bool created);
             if ( created ) {
                 // If newly created ensure its initialised
                 lp.setDistributionSubstation(_dssDict[ssId]);
                 lp.Type = LoadProfileType.EV;
                 lp.Source = LoadProfileSource.EV_Pred;
                 lp.MonthNumber = month;
-                lp.Year = year;
+                lp.Year = baseYear;
                 lp.Day = day;
                 lp.IntervalMins=30;
                 _numAdded++;
@@ -99,7 +108,7 @@ namespace SmartEnergyLabDataApi.Models
                 _numUpdated++;
             }
             lp.Data = profile;
-            lp.DeviceCount = numEvs;
+            lp.ScalingFactors = scalingFactors;
         }
 
         private double[] getProfile(int m, Day day) {
@@ -144,8 +153,8 @@ namespace SmartEnergyLabDataApi.Models
             return profileDict.Values.ToArray();
         }
 
-        private string GetKey(string ssId, int year, int month, Day day) {
-            return $"{ssId}:{year}:{month}:{day}";
+        private string GetKey(string ssId, int month, Day day) {
+            return $"{ssId}:{month}:{day}";
         }
 
         private void loadForecasts(IFormFile file) {

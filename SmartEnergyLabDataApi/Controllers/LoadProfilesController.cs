@@ -110,35 +110,45 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Uploads EV load profile prediction data
         /// </summary>
-        /// <param name="gaId">Id of geographical area</param>
         /// <param name="forecastsFile">Json file containing forecast data</param>
         /// <param name="profileFile">Json file containing profile data</param>
         [HttpPost]
         [Route("LoadEVData")]
-        public string LoadEVData(int gaId, IFormFile forecastsFile, IFormFile profileFile) {
+        public string LoadEVData(IFormFile forecastsFile, IFormFile profileFile) {
             using( var da = new DataAccess() ) {
-                var loader = new EVDataLoader(da, gaId);
-                loader.Load(forecastsFile, profileFile);
-                da.CommitChanges();
-                return $"Added [{loader.NumAdded}], updated[{loader.NumUpdated}]";
+                var gspName = "Melksham  S.G.P.";
+                var gsp = da.SupplyPoints.GetGridSupplyPointByName(gspName);
+                if ( gsp!=null ) {
+                    var loader = new EVDataLoader(da, gsp.Id);
+                    loader.Load(forecastsFile, profileFile);
+                    da.CommitChanges();
+                    return $"Added [{loader.NumAdded}], updated[{loader.NumUpdated}]";
+                } else {
+                    throw new Exception($"Cannot find grid supply point [{gspName}]");
+                }
             }
         }
 
         /// <summary>
         /// Uploads HP load profile prediction data
         /// </summary>
-        /// <param name="gaId">Id of geaographical area</param>
         /// <param name="file">Heat pump json file containing prediciotn data</param>
         [HttpPost]
         [DisableRequestSizeLimit]
         [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
         [Route("LoadHPData")]
-        public string LoadHPData(int gaId, IFormFile file) {
-            using( var da = new DataAccess() ) {
-                var loader = new HPDataLoader(da, gaId);
-                loader.Load(file);
-                da.CommitChanges();
-                return $"Added [{loader.NumAdded}], updated[{loader.NumUpdated}]";
+        public string LoadHPData( IFormFile file) {
+            using( var da = new DataAccess() ) {                
+                var gspName = "Melksham  S.G.P.";
+                var gsp = da.SupplyPoints.GetGridSupplyPointByName(gspName);
+                if ( gsp!=null) {
+                    var loader = new HPDataLoader(da, gsp.Id);
+                    loader.Load(file);
+                    da.CommitChanges();
+                    return $"Added [{loader.NumAdded}], updated[{loader.NumUpdated}]";
+                } else {
+                    throw new Exception($"Cannot find grid supply point [{gspName}]");
+                }
             }
         }
 

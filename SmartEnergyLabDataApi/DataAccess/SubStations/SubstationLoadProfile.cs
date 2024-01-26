@@ -36,9 +36,9 @@ namespace SmartEnergyLabDataApi.Data
 
         /// <summary>
         /// Number of HPs or EVs (0 if Type=base)
+        /// Now set by a call to AdjustForYear and not stored in Db
         /// </summary>
         /// <value></value>
-        [Property()]
         public virtual double DeviceCount {get; set;}
 
         /// <summary>
@@ -66,6 +66,9 @@ namespace SmartEnergyLabDataApi.Data
         [Column( Name = "IsDummy", Default ="false")]
         public virtual bool IsDummy {get; set;}
 
+        [Property(Type="HaloSoft.DataAccess.DoubleArrayType, DataAccessBase")]
+        [Column(SqlType = "Double precision[]", Name = "ScalingFactors")]
+        public virtual double[] ScalingFactors { get; set; }
 
         [Property(Type="HaloSoft.DataAccess.DoubleArrayType, DataAccessBase")]
         [Column(SqlType = "Double precision[]", Name = "Data")]
@@ -112,6 +115,27 @@ namespace SmartEnergyLabDataApi.Data
             lp.Season = this.Season;
             //
             return lp;
+        }
+
+        public virtual void AdjustForYear(int year) {
+            if ( this.DeviceCount!=0) {
+                throw new Exception($"AdjustForYear has already been called for this load profile [{this.Id}]");
+            }
+            int offset = year - this.Year;
+            if ( offset<0) {
+                throw new Exception($"Incorrect year for scaling load profile [{year}], offset < 0");
+            } else if (this.ScalingFactors==null) {
+                throw new Exception($"Null scaling factors attempting to adjust load profile [{year}]");
+            } else if (offset>=this.ScalingFactors.Length) {
+                throw new Exception($"Incorrect year for scaling load profile [{year}], offset[{offset}] >= length of scaling factors[{this.ScalingFactors.Length}]");
+            }
+            // Scale data by the device count
+            double sf = this.ScalingFactors[offset];
+            for( int i=0;i<this.Data.Length;i++) {
+                this.Data[i] = this.Data[i]*sf;
+            }
+            // set device count
+            this.DeviceCount=sf;
         }
     }
 }

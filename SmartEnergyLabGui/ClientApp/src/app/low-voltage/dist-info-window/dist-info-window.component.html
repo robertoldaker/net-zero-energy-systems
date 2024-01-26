@@ -6,7 +6,7 @@
     <table id="table">
         <tr>
             <td>Name:</td>
-            <td>{{mapPowerService.SelectedDistributionSubstation?.name}}</td>
+            <td>{{mapPowerService.SelectedDistributionSubstation?.name}} ({{mapPowerService.SelectedDistributionSubstation?.id}})</td>
         </tr>
         <tr>
             <td>Rating (kW):</td>
@@ -19,14 +19,6 @@
         <tr>
             <td>Customers:</td>
             <td>{{mapPowerService.NumberOfCustomers}}</td>
-        </tr>
-        <tr>
-            <td>Number of EVs:</td>
-            <td>{{mapPowerService.NumberOfEVs ? mapPowerService.NumberOfEVs.toFixed(0):''}}</td>
-        </tr>
-        <tr>
-            <td>Number of HPs:</td>
-            <td>{{mapPowerService.NumberOfHPs ? mapPowerService.NumberOfHPs.toFixed(0):''}}</td>
         </tr>
     </table>
     <div id="buttonRow">

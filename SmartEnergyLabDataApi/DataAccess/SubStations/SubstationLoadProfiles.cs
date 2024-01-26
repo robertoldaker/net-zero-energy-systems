@@ -2,7 +2,9 @@ using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
 using NHibernate;
 using NHibernate.Criterion;
+using NHibernate.Util;
 using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Loadflow;
 using SmartEnergyLabDataApi.Models;
 using System.Diagnostics;
 using System.Text.Json;
@@ -51,14 +53,16 @@ namespace SmartEnergyLabDataApi.Data
             IElectricityCostFetcher? costFetcher=null
             )
         {
-            if ( source==LoadProfileSource.LV_Spreadsheet) {
-                year = 2016;
-            }
             var q = Session.QueryOver<SubstationLoadProfile>().
                 Where(m=>m.DistributionSubstation.Id == id).
-                And(m=>m.Source == source).
-                And(m=>m.Year == year);
+                And(m=>m.Source == source);
             var list = q.List();
+            if ( source == LoadProfileSource.EV_Pred || source == LoadProfileSource.HP_Pred) {
+                // adjust load profiles so they give the correct data for the given year
+                foreach( var lp in list) {
+                    lp.AdjustForYear(year);
+                }
+            }
             if( carbonFetcher!=null) {
                 foreach( var lp in list) {
                     lp.AddCarbonData(carbonFetcher);
@@ -118,16 +122,18 @@ namespace SmartEnergyLabDataApi.Data
                 IElectricityCostFetcher? costFetcher=null
                 )
         {
-            if ( source==LoadProfileSource.LV_Spreadsheet || source==LoadProfileSource.Tool) {
-                year = 2016;
-            }
-            var q = getPrimarySubstationQuery(id,source,year);
+            var q = getPrimarySubstationQuery(id,source);
             // This is the default load profile
             var dlp = q.Take(1).SingleOrDefault();
             //
             IList<SubstationLoadProfile> list;
             if ( dlp!=null ) {
-                var sql = getPrimarySubstationSQLQuery(id, source, year, dlp);
+                string sql;
+                if (  source == LoadProfileSource.LV_Spreadsheet ) {
+                    sql = getPrimarySubstationSQLQuery(id, source, dlp);  
+                } else {
+                    sql = getPrimarySubstationSQLQuery(id, source, year, dlp);
+                }
                 //
                 var objs = Session.CreateSQLQuery(sql).List<object>();
                 // Create a list of load profiles
@@ -139,11 +145,10 @@ namespace SmartEnergyLabDataApi.Data
         }
 
         IQueryOver<SubstationLoadProfile,SubstationLoadProfile> getPrimarySubstationQuery(
-            int pssId, LoadProfileSource source, int year) {
+            int pssId, LoadProfileSource source) {
                 var q = Session.QueryOver<SubstationLoadProfile>().
                 Where(m => m.PrimarySubstation.Id == pssId).
-                And(m=>m.Source == source).
-                And(m=>m.Year == year);
+                And(m=>m.Source == source);
             return q;
         }
 
@@ -173,18 +178,19 @@ namespace SmartEnergyLabDataApi.Data
                         )
         {
             //
-            // Always return 2016 when source is spreadsheet
-            if ( source==LoadProfileSource.LV_Spreadsheet || source==LoadProfileSource.Tool) {
-                year = 2016;
-            }
-            var q = getGeographicalAreaQuery(gaId, source, year);
+            var q = getGeographicalAreaQuery(gaId, source);
             
             // This is the default load profile
             var dlp = q.Take(1).SingleOrDefault();
             //
             IList<SubstationLoadProfile> list;
             if ( dlp!=null ) {
-                var sql = getGeographicalAreaSQLQuery(gaId, source, year, dlp);
+                string sql;
+                if ( source == LoadProfileSource.LV_Spreadsheet) {
+                    sql = getGeographicalAreaSQLQuery(gaId, source, dlp);
+                } else {
+                    sql = getGeographicalAreaSQLQuery(gaId, source, year, dlp);
+                }
                 //
                 var objs=Session.CreateSQLQuery(sql).List<object>();
                 // Get aggregated load profiles by day and month
@@ -202,18 +208,19 @@ namespace SmartEnergyLabDataApi.Data
                         )
         {
             //
-            // Always return 2016 when source is spreadsheet
-            if ( source==LoadProfileSource.LV_Spreadsheet || source==LoadProfileSource.Tool) {
-                year = 2016;
-            }
-            var q = getGridSupplyPointQuery(gspId, source, year);
+            var q = getGridSupplyPointQuery(gspId, source);
             
             // This is the default load profile
             var dlp = q.Take(1).SingleOrDefault();
             //
             IList<SubstationLoadProfile> list;
             if ( dlp!=null ) {
-                var sql = getGridSupplyPointSQLQuery(gspId, source, year, dlp);
+                string sql;
+                if ( source==LoadProfileSource.LV_Spreadsheet ) {
+                    sql = getGridSupplyPointSQLQuery(gspId, source, dlp);
+                } else {
+                    sql = getGridSupplyPointSQLQuery(gspId, source, year, dlp);
+                }
                 //
                 var objs=Session.CreateSQLQuery(sql).List<object>();
                 // Get aggregated load profiles by day and month
@@ -224,67 +231,112 @@ namespace SmartEnergyLabDataApi.Data
             return list;
         }
 
-        private string getPrimarySubstationSQLQuery(int gaId, LoadProfileSource source, int year, SubstationLoadProfile slp) {
+        private string getPrimarySubstationSQLQuery(int pssId, LoadProfileSource source, SubstationLoadProfile slp) {
             int nData = slp.Data.Length;
-            string sql="select slp.day,slp.monthnumber,sum(devicecount) as devicecount,\n";
+            string sql="select slp.day,slp.monthnumber,\n";
             int i;
             for(i=1;i<nData;i++) {
                 sql+=$"sum(data[{i}]) as data{i},\n";
             }
             sql+=$"sum(data[{i}]) as data{i}\n";
             sql+="from substation_load_profiles slp\n";
-            sql+=$"where primarysubstationid={gaId} and slp.\"source\"={(int)source} and slp.\"year\"={year} group by slp.day,slp.monthnumber";
+            sql+=$"where primarysubstationid={pssId} and slp.\"source\"={(int)source} group by slp.day,slp.monthnumber";
+            //
+            return sql;
+        }
+
+        private string getPrimarySubstationSQLQuery(int pssId, LoadProfileSource source, int year, SubstationLoadProfile slp) {
+            int yearOffset = year - slp.Year + 1;
+            int nData = slp.Data.Length;
+            string sql=$"select slp.day,slp.monthnumber,sum(scalingfactors[{yearOffset}]) as devicecount,\n";
+            int i;
+            for(i=1;i<nData;i++) {
+                sql+=$"sum(data[{i}]*scalingfactors[{yearOffset}]) as data{i},\n";
+            }
+            sql+=$"sum(data[{i}]*scalingfactors[{yearOffset}]) as data{i}\n";
+            sql+="from substation_load_profiles slp\n";
+            sql+=$"where primarysubstationid={pssId} and slp.\"source\"={(int)source} group by slp.day,slp.monthnumber";
+            //
+            return sql;
+        }
+
+        private string getGeographicalAreaSQLQuery(int gaId, LoadProfileSource source, SubstationLoadProfile slp) {
+            int nData = slp.Data.Length;
+            string sql="select slp.day,slp.monthnumber,\n";
+            int i;
+            for(i=1;i<nData;i++) {
+                sql+=$"sum(data[{i}]) as data{i},\n";
+            }
+            sql+=$"sum(data[{i}]) as data{i}\n";
+            sql+="from substation_load_profiles slp\n";
+            sql+=$"where geographicalareaid={gaId} and slp.\"source\"={(int)source} group by slp.day,slp.monthnumber";
             //
             return sql;
         }
 
         private string getGeographicalAreaSQLQuery(int gaId, LoadProfileSource source, int year, SubstationLoadProfile slp) {
+            int yearOffset = year - slp.Year + 1;
             int nData = slp.Data.Length;
-            string sql="select slp.day,slp.monthnumber,sum(devicecount) as devicecount,\n";
+            string sql=$"select slp.day,slp.monthnumber,sum(scalingfactors[{yearOffset}]) as devicecount,\n";
+            int i;
+            for(i=1;i<nData;i++) {
+                sql+=$"sum(data[{i}]*scalingfactors[{yearOffset}]) as data{i},\n";
+            }
+            sql+=$"sum(data[{i}]*scalingfactors[{yearOffset}]) as data{i}\n";
+            sql+="from substation_load_profiles slp\n";
+            sql+=$"where geographicalareaid={gaId} and slp.\"source\"={(int)source} group by slp.day,slp.monthnumber";
+            //
+            return sql;
+        }
+
+        private string getGridSupplyPointSQLQuery(int gspId, LoadProfileSource source, SubstationLoadProfile slp) {
+            int nData = slp.Data.Length;
+            string sql="select slp.day,slp.monthnumber,\n";
             int i;
             for(i=1;i<nData;i++) {
                 sql+=$"sum(data[{i}]) as data{i},\n";
             }
             sql+=$"sum(data[{i}]) as data{i}\n";
             sql+="from substation_load_profiles slp\n";
-            sql+=$"where geographicalareaid={gaId} and slp.\"source\"={(int)source} and slp.\"year\"={year} group by slp.day,slp.monthnumber";
+            sql+=$"where slp.gridsupplypointid={gspId} and slp.\"source\"={(int)source} group by slp.day,slp.monthnumber";
             //
             return sql;
         }
 
         private string getGridSupplyPointSQLQuery(int gspId, LoadProfileSource source, int year, SubstationLoadProfile slp) {
+            int yearOffset = year - slp.Year + 1;
             int nData = slp.Data.Length;
-            string sql="select slp.day,slp.monthnumber,sum(devicecount) as devicecount,\n";
+            string sql=$"select slp.day,slp.monthnumber,sum(scalingfactors[{yearOffset}]) as devicecount,\n";
             int i;
             for(i=1;i<nData;i++) {
-                sql+=$"sum(data[{i}]) as data{i},\n";
+                sql+=$"sum(data[{i}]*scalingfactors[{yearOffset}]) as data{i},\n";
             }
-            sql+=$"sum(data[{i}]) as data{i}\n";
+            sql+=$"sum(data[{i}]*scalingfactors[{yearOffset}]) as data{i}\n";
             sql+="from substation_load_profiles slp\n";
-            sql+=$"where slp.gridsupplypointid={gspId} and slp.\"source\"={(int)source} and slp.\"year\"={year} group by slp.day,slp.monthnumber";
+            sql+=$"where slp.gridsupplypointid={gspId} and slp.\"source\"={(int)source} group by slp.day,slp.monthnumber";
             //
             return sql;
         }
 
         IQueryOver<SubstationLoadProfile,SubstationLoadProfile> getGeographicalAreaQuery(
-            int gaId, LoadProfileSource source, int year) {
+            int gaId, LoadProfileSource source) {
                 var q = Session.QueryOver<SubstationLoadProfile>().
-                Where(m=>m.Source == source).
-                Where(m=>m.Year == year).            
-                Where(m => m.GeographicalArea.Id == gaId);
+                Where(m => m.GeographicalArea.Id == gaId).
+                Where(m=>m.Source == source);
             return q;
         }
 
         IQueryOver<SubstationLoadProfile,SubstationLoadProfile> getGridSupplyPointQuery(
-            int gspId, LoadProfileSource source, int year) {
+            int gspId, LoadProfileSource source) {
                 var q = Session.QueryOver<SubstationLoadProfile>().
                 Where(m=>m.GridSupplyPoint.Id==gspId).
-                Where(m=>m.Source == source).
-                Where(m=>m.Year == year);
+                Where(m=>m.Source == source);
             return q;
         }
 
-        IList<SubstationLoadProfile> getLoadProfiles( IList<object> objs, SubstationLoadProfile dlp, ICarbonIntensityFetcher? carbonFetcher, IElectricityCostFetcher? costFetcher ) {
+        IList<SubstationLoadProfile> getLoadProfiles( IList<object> objs, SubstationLoadProfile dlp, ICarbonIntensityFetcher? carbonFetcher, IElectricityCostFetcher? costFetcher ) {            
+            //
+            int dataOffset = (dlp.Source == LoadProfileSource.LV_Spreadsheet) ? 2 : 3;
             // Create a set of load profiles for each Day/month combination
             List<SubstationLoadProfile> list = new List<SubstationLoadProfile>();
             foreach( var obj in objs) {
@@ -298,11 +350,13 @@ namespace SmartEnergyLabDataApi.Data
                 lp.IntervalMins = dlp.IntervalMins;
                 lp.Type = dlp.Type;
                 //
-                lp.DeviceCount =  objArray[2]!=null?(double) objArray[2]:0;
-                int dataLength = objArray.Length-3;
+                if ( dataOffset==3) {
+                    lp.DeviceCount =  objArray[2]!=null?(double) objArray[2]:0;
+                }
+                int dataLength = objArray.Length-dataOffset;
                 lp.Data = new double[dataLength];
                 for(int i=0;i<dataLength;i++) {                    
-                    lp.Data[i] = objArray[i+3]!=null ? (double) objArray[i+3] : 0;
+                    lp.Data[i] = objArray[i+dataOffset]!=null ? (double) objArray[i+dataOffset] : 0;
                 }
                 if ( carbonFetcher!=null ) {
                     lp.AddCarbonData(carbonFetcher);

@@ -10,7 +10,6 @@ namespace SmartEnergyLabDataApi.Models
     public class HPDataLoader
     {
         private DataAccess _da;
-        private int _gaId;
 
         private ObjectCache<SubstationLoadProfile> _cache;
         private Dictionary<string,DistributionSubstation> _dssDict;
@@ -21,15 +20,14 @@ namespace SmartEnergyLabDataApi.Models
 
         private int _numAdded,_numUpdated;
 
-        public HPDataLoader(DataAccess da, int gaId)
+        public HPDataLoader(DataAccess da, int gspId)
         {
             _da = da;
-            _gaId = gaId;
             // Cache of any existing load profiles
             var existingLoadProfiles = _da.SubstationLoadProfiles.GetSubstationLoadProfiles(LoadProfileType.HP,LoadProfileSource.HP_Pred);
-            _cache = new ObjectCache<SubstationLoadProfile>(_da, existingLoadProfiles, m=>GetKey(m.DistributionSubstation.ExternalId,m.Year,m.MonthNumber,m.Day), (m,k)=>{} );
+            _cache = new ObjectCache<SubstationLoadProfile>(_da, existingLoadProfiles, m=>GetKey(m.DistributionSubstation.ExternalId,m.MonthNumber,m.Day), (m,k)=>{} );
             // Cache of distribution substations
-            var existingDistrictSubstations = _da.Substations.GetDistributionSubstationsByGAId(_gaId);
+            var existingDistrictSubstations = _da.Substations.GetDistributionSubstationsByGSPId(gspId);
             _dssDict = new Dictionary<string,DistributionSubstation>();
             foreach( var dss in existingDistrictSubstations) {
                 _dssDict.Add(dss.ExternalId,dss);
@@ -39,39 +37,64 @@ namespace SmartEnergyLabDataApi.Models
 
         public void Load(IFormFile file)
         {
-
+            Logger.Instance.LogInfoEvent("Started loading HP data...");
             // 
             _numAdded = 0;
             _numUpdated = 0;
+            //
+            int startYear = 2021;
+            int endYear = 2050;
 
             //
             var dataList = loadLoadProfileData(file);
+            var ssIds = dataList.Select(m=>m.ssId).Distinct().ToList();
             //
-            int count=0;
-            foreach( var lpd in dataList) {
-                if (_dssDict.ContainsKey(lpd.ssId)) {
-                    var lp = _cache.GetOrCreate(GetKey(lpd.ssId,lpd.year,(int) lpd.month,lpd.day),out bool created);
-                    if ( created ) {
-                        // If newly created ensure its initialised
-                        lp.setDistributionSubstation(_dssDict[lpd.ssId]);
-                        lp.Type = LoadProfileType.HP;
-                        lp.Source = LoadProfileSource.HP_Pred;
-                        lp.MonthNumber = (int) lpd.month;
-                        lp.Year = lpd.year;
-                        lp.Day = lpd.day;
-                        lp.IntervalMins=30;
-                        _numAdded++;
-                    } else {
-                        _numUpdated++;
+            foreach( var ssId in ssIds) {
+                if (_dssDict.ContainsKey(ssId)) {
+                    var lps = dataList.Where(m=>m.ssId == ssId).ToList();
+                    var years = lps.Select(m=>m.year).Distinct().ToList();
+                    var maxYear = years.Max();
+                    var maxLps = lps.Where(m=>m.year==maxYear).ToList();
+                    //
+                    foreach( var maxLp in maxLps) {
+                        // scale load profile by hp count
+                        var data = maxLp.data;
+                        for( int i=0;i<data.Length;i++) {                        
+                            data[i]=data[i]/maxLp.count;
+                        }
+                        // work out scale factors - actually count of hp from previous years
+                        var otherLPs = lps.Where(m=>m.month==maxLp.month && m.day==maxLp.day).ToList();
+                        double[] scaleFactors = new double[endYear-startYear+1];
+                        for( int i=0;i<scaleFactors.Length;i++) {
+                            int year = startYear+i;
+                            double? count = otherLPs.Where(m=>m.year==year).Select(m=>m.count).SingleOrDefault();
+                            scaleFactors[i]=count!=null ? (double) count : 0;
+                        }
+                        //
+                        var lp = _cache.GetOrCreate(GetKey(ssId,(int) maxLp.month,maxLp.day),out bool created);
+                        if ( created ) {
+                            // If newly created ensure its initialised
+                            lp.setDistributionSubstation(_dssDict[ssId]);
+                            lp.Type = LoadProfileType.HP;
+                            lp.Source = LoadProfileSource.HP_Pred;
+                            lp.MonthNumber = (int) maxLp.month;
+                            lp.Year = startYear;
+                            lp.Day = maxLp.day;
+                            lp.IntervalMins=30;
+                            _numAdded++;
+                        } else {
+                            _numUpdated++;
+                        }
+                        lp.Data = data;
+                        lp.ScalingFactors = scaleFactors;
                     }
-                    lp.Data = lpd.data;
-                    lp.DeviceCount = lpd.count;                    
                 } else {
-                    Console.WriteLine($"Ignoring substation with id=[{lpd.ssId}]");
+                    Logger.Instance.LogInfoEvent($"Cannot find substation with id=[{ssId}]");
                 }
-                Console.WriteLine($"Processed [{count++}] of [{dataList.Count}]");
             }
-
+            //
+            Logger.Instance.LogInfoEvent($"Finished loading HP data, profiles added=[{_numAdded}], updated=[{_numUpdated}]");
+            //
         }
 
         private List<loadProfileData> loadLoadProfileData(IFormFile file) {
@@ -129,8 +152,8 @@ namespace SmartEnergyLabDataApi.Models
             }
         }
 
-        private string GetKey(string ssId, int year, int month, Day day) {
-            return $"{ssId}:{year}:{month}:{day}";
+        private string GetKey(string ssId, int month, Day day) {
+            return $"{ssId}:{month}:{day}";
         }
 
 
