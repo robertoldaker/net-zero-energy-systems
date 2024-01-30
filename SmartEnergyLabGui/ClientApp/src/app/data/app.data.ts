@@ -755,6 +755,14 @@ export interface ChangePassword {
 export interface DataModel {
     rows: DataRow[];
     size: string;
+    diskUsage: DiskUsage;
+}
+
+export interface DiskUsage {
+    found: boolean
+    total: number
+    used: number
+    available: number    
 }
 
 export interface DataRow {

@@ -42,6 +42,7 @@ export class AdminDataComponent extends ComponentBase {
     refresh() {
         this.dataService.DataModel((dm)=>{
             this.model = dm;
+            console.log(dm);
             this.tableData = new MatTableDataSource(this.model.rows)
             this.tableData.sortingDataAccessor = this.sortDataAccessor
             this.tableData.sort = this.sort

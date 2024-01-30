@@ -3,8 +3,9 @@ div.tableContainer {
 
 div.size {
     margin-bottom: 1rem;
-    font-size: 1rem;
+    font-size: 0.8rem;
     float: right;
+    text-align: right;
 }
 
 table.data {

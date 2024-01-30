@@ -1,5 +1,8 @@
 <div style="overflow: auto; height: calc(100vh - 120px)">
-    <div class="size">Database size: <b>{{model?.size}}</b></div>
+    <div class="size">
+        <div>Database size: <b>{{model?.size}}</b></div>
+        <div *ngIf="model?.diskUsage?.found">Disk space: <b>{{model?.diskUsage?.used}} GB</b> used, <b>{{model?.diskUsage?.available}} GB</b> avail</div>
+    </div>
     <div class="toolbar">
         <button mat-raised-button color="primary" (click)="backupDb()">Backup database to server</button>
         <button mat-raised-button color="primary" (click)="backupDbLocally()">
