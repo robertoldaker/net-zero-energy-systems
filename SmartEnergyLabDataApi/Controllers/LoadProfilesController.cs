@@ -153,23 +153,25 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
-        /// Generates missing load profile data for distribution substations without load profile data
+        /// Generates missing base load profile data for distribution substations without load profile data
         /// </summary>
+        /// <param name="type">Type of load profile  (0-base, 1-EVs, 2- HPs)</param>
         [HttpPost]
         [Route("GenerateMissing")]
-        public void GenerateMissing() {
+        public void GenerateMissing(LoadProfileType type) {
             var m = new LoadProfileGenerator();
-            m.Generate();
+            m.Generate(type);
         }
 
         /// <summary>
         /// Generates missing load profile data for distribution substations without load profile data
         /// </summary>
+        /// <param name="type">Type of load profile (0-base, 1-EVs, 2- HPs)</param>
         [HttpPost]
         [Route("ClearDummy")]
-        public void ClearDummy() {
+        public void ClearDummy(LoadProfileType type) {
             var m = new LoadProfileGenerator();
-            m.ClearDummy();
+            m.ClearDummy(type);
         }
     }
 

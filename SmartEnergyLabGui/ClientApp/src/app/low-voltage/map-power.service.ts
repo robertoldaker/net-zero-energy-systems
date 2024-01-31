@@ -50,9 +50,6 @@ export class MapPowerService {
     NumberOfEVs: number | undefined
     NumberOfHPs: number | undefined
 
-    private lPsLoaded = new Map<LoadProfileSource,boolean>();
-    private clsLoaded: boolean = false;
-
     private loadProfileSources:LoadProfileSource[] = [LoadProfileSource.LV_Spreadsheet,LoadProfileSource.EV_Pred,LoadProfileSource.HP_Pred]
     public year:number;
 
@@ -65,7 +62,6 @@ export class MapPowerService {
                 this.NumberOfCustomers = distSubstation.substationData.numCustomers
             }
             this.clearlPsLoaded()
-            this.clsLoaded = false
             this.loadProfileSources.forEach(source=>{
                 this.DataClientService.GetDistributionSubstationLoadProfiles(distSubstation.id, source, this.year, (loadProfiles) => {
                     this.loadProfilesLoaded(loadProfiles, source)
@@ -79,9 +75,6 @@ export class MapPowerService {
     }
 
     private clearlPsLoaded() {
-        this.lPsLoaded.forEach((value,key) => {
-            this.lPsLoaded.set(key,false);
-        });
         this.NumberOfEVs=undefined;
         this.NumberOfHPs=undefined;
     }
@@ -99,35 +92,16 @@ export class MapPowerService {
             this.NumberOfHPs = loadProfiles[0].deviceCount;
         }
         this.LoadProfileMap.set(source,loadProfiles)
-        this.lPsLoaded.set(source,true)
         if ( this.PerCustomerLoadProfiles ) {
             // Only calculate when we have classifications loaded
-            if ( this.clsLoaded ) {
-                this.calcPerCustomerLoadProfiles(source)
-                this.LoadProfilesLoaded.emit(source)
-            }
-        } else {
-            this.LoadProfilesLoaded.emit(source);
+            this.calcPerCustomerLoadProfiles(source)
         }
+        this.LoadProfilesLoaded.emit(source)
     }
 
     private classificationLoaded(classifications:SubstationClassification[]) {
         this.Classifications = classifications;
-        // Now found via substationData - for NGED substations
-        //if ( this.NumberOfCustomers==undefined) {
-        //    this.NumberOfCustomers = this.getNumberOfCustomers(classifications)
-        //}
-        this.clsLoaded = true;
         this.ClassificationsLoaded.emit(classifications);
-        if ( this.PerCustomerLoadProfiles) {
-            // Only calculate when we have classifications loaded
-            this.lPsLoaded.forEach((value,key)=>{
-                if ( value ) {
-                    this.calcPerCustomerLoadProfiles(key);
-                    this.LoadProfilesLoaded.emit(key);        
-                }
-            });
-        }
     }
 
     private calcPerCustomerLoadProfiles(source: LoadProfileSource) {
@@ -164,13 +138,12 @@ export class MapPowerService {
             });
             this.DataClientService.GetCustomersForGridSupplyPoint(gsp.id,(numCustomers)=> {
                 this.NumberOfCustomers = numCustomers
-            })
-            this.clearlPsLoaded();
-            this.clsLoaded = false;
-            this.loadProfileSources.forEach(source=>{
-                this.DataClientService.GetGridSupplyPointLoadProfiles(gsp.id,  source, this.year, (loadProfiles) => {
-                    this.loadProfilesLoaded(loadProfiles,source)
-                })    
+                this.clearlPsLoaded();
+                this.loadProfileSources.forEach(source=>{
+                    this.DataClientService.GetGridSupplyPointLoadProfiles(gsp.id,  source, this.year, (loadProfiles) => {
+                        this.loadProfilesLoaded(loadProfiles,source)
+                    })    
+                })
             })
         } else {
             this.PrimarySubstations = []
@@ -193,13 +166,12 @@ export class MapPowerService {
             });
             this.DataClientService.GetCustomersForPrimarySubstation(pss.id,(numCustomers)=> {
                 this.NumberOfCustomers = numCustomers
-            })
-            this.clearlPsLoaded();
-            this.clsLoaded = false;
-            this.loadProfileSources.forEach(source=>{
-                this.DataClientService.GetPrimarySubstationLoadProfiles(pss.id, source, this.year, (loadProfiles) => {
-                    this.loadProfilesLoaded(loadProfiles, source)
-                })    
+                this.clearlPsLoaded();
+                this.loadProfileSources.forEach(source=>{
+                    this.DataClientService.GetPrimarySubstationLoadProfiles(pss.id, source, this.year, (loadProfiles) => {
+                        this.loadProfilesLoaded(loadProfiles, source)
+                    })    
+                })
             })
             this.DataClientService.GetPrimarySubstationClassifications(pss.id, true, (classifications) => {
                 this.classificationLoaded(classifications)
@@ -325,7 +297,6 @@ export class MapPowerService {
                 });    
             }
             this.clearlPsLoaded();
-            this.clsLoaded = false;
             this.loadProfileSources.forEach(source=>{
                 if ( this.geographicalArea!=undefined) {
                     this.DataClientService.GetGeographicalAreaLoadProfiles(this.geographicalArea.id,  source, this.year, (loadProfiles) => {

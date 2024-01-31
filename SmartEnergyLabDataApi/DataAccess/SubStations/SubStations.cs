@@ -48,10 +48,10 @@ namespace SmartEnergyLabDataApi.Data
             return dsd;
         }
 
-        public IList<DistributionSubstation> GetDistributionSubstationsWithoutLoadProfiles(int take, out int total)
+        public IList<DistributionSubstation> GetDistributionSubstationsWithoutLoadProfiles(LoadProfileSource source, int take, out int total)
         {
             DistributionSubstation ds=null;
-            var sq = QueryOver.Of<SubstationLoadProfile>().Where(m => m.DistributionSubstation.Id == ds.Id ).Select(m => m.Id);            
+            var sq = QueryOver.Of<SubstationLoadProfile>().Where(m => m.DistributionSubstation.Id == ds.Id && m.Source == source).Select(m => m.Id);            
             var q = Session.QueryOver<DistributionSubstation>(()=>ds).Where(m=>m.SubstationData!=null).WithSubquery.WhereNotExists(sq).Skip(0).Take(take);
             total = q.RowCount();
             var dsss = q.List();

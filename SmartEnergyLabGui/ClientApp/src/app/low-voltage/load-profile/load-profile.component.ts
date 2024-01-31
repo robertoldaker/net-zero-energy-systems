@@ -51,21 +51,24 @@ export class LoadProfileComponent implements OnInit {
         let title="";
         if ( this.type == LoadProfileType.Base) {
             title='Base Power'
-            if ( this.mapPowerService.NumberOfCustomers!==undefined) {
+            if ( !this.mapPowerService.PerCustomerLoadProfiles && this.mapPowerService.NumberOfCustomers!==undefined) {
                 title+=` (customers: ${this.mapPowerService.NumberOfCustomers})`
             }
         } else if ( this.type == LoadProfileType.VehicleCharging ) {
             title='Vehicle charging'
-            if ( this.mapPowerService.NumberOfEVs!==undefined) {
+            if ( !this.mapPowerService.PerCustomerLoadProfiles && this.mapPowerService.NumberOfEVs!==undefined) {
                 title+=` (EVs: ${this.mapPowerService.NumberOfEVs?.toFixed(0)})`
             }
         } else if ( this.type == LoadProfileType.HeatPumps ) {
             title=`Heat pumps `
-            if ( this.mapPowerService.NumberOfHPs!==undefined) {
+            if ( !this.mapPowerService.PerCustomerLoadProfiles && this.mapPowerService.NumberOfHPs!==undefined) {
                 title+=` (HPs: ${this.mapPowerService.NumberOfHPs?.toFixed(0)})`
             }
         } else {
             throw Error(`Unexpected load profile type [${this.type}]`);
+        }
+        if ( this.mapPowerService.PerCustomerLoadProfiles ) {
+            title+=' (per customer)'
         }
         return title
     }

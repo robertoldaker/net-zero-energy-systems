@@ -106,6 +106,7 @@ namespace SmartEnergyLabDataApi.Data
             //
             lp.IntervalMins = this.IntervalMins;
             lp.Data = this.Data;
+            lp.ScalingFactors = this.ScalingFactors;
             lp.Day = this.Day;
             lp.DeviceCount = this.DeviceCount;
             lp.MonthNumber = this.MonthNumber;
