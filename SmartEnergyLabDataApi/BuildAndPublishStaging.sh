@@ -1,5 +1,6 @@
 #
-dest="rob@odin.local"
+dest="rob@lv-data-test.net-zero-energy-systems.org"
+port="2358"
 app="SmartEnergyLabDataApi"
 
 function raiseError()
@@ -29,10 +30,10 @@ popd
 
 echo "Copying to $dest"
 # sftp and ssh use key based authentication that needs setting up - see https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server
-echo -e "cd installs\nput $app.zip" | sftp $dest
+echo -e "cd installs\nput $app.zip" | sftp -P $port $dest
 echo "Installing on $dest"
 #
-ssh $dest "bash ~/installs/autoInstall.sh $app"
+ssh -p $port $dest "bash ~/installs/autoInstall.sh $app"
 
 echo "Build & publish successful. Press any key to continue";
 read
