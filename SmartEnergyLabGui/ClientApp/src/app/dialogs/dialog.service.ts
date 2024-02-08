@@ -15,6 +15,7 @@ import { ElsiDataVersion } from '../data/app.data';
 import { MessageDialog, MessageDialogComponent } from './message-dialog/message-dialog.component';
 import { AboutElsiDialogComponent } from '../elsi/about-elsi-dialog/about-elsi-dialog.component';
 import { ElsiHelpDialogComponent } from '../elsi/elsi-help-dialog/elsi-help-dialog.component';
+import { NeedsLogonComponent } from '../main/main-menu/needs-logon/needs-logon.component';
 
 @Injectable({
     providedIn: 'root'
@@ -81,6 +82,10 @@ export class DialogService {
                 onOk()
             }
         });
+    }
+
+    showNeedsLogonDialog() {
+        let dialogRef = this.dialog.open(NeedsLogonComponent, this.defaultOptions)
     }
 
     showAboutElsiDialog() {

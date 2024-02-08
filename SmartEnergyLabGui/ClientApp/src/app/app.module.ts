@@ -132,6 +132,7 @@ import { LoadflowLocInfoWindowComponent } from './loadflow/loadflow-map/loadflow
 import { LoadflowBranchInfoWindowComponent } from './loadflow/loadflow-map/loadflow-branch-info-window/loadflow-branch-info-window.component';
 import { MaintenanceOverlayComponent } from './admin/maintenance-overlay/maintenance-overlay.component';
 import { AdminLogsHomeComponent } from './admin/admin-logs-home/admin-logs-home.component';
+import { NeedsLogonComponent } from './main/main-menu/needs-logon/needs-logon.component';
 
 
 @NgModule({
@@ -219,7 +220,8 @@ import { AdminLogsHomeComponent } from './admin/admin-logs-home/admin-logs-home.
         LoadflowLocInfoWindowComponent,
         LoadflowBranchInfoWindowComponent,
         MaintenanceOverlayComponent,
-        AdminLogsHomeComponent
+        AdminLogsHomeComponent,
+        NeedsLogonComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
