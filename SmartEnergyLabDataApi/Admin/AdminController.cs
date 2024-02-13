@@ -154,7 +154,9 @@ namespace EnergySystemLabDataApi.SubStations
         [HttpGet]
         [Route("PerformCleanup")]
         public void PerformCleanup() {
+            Logger.Instance.LogInfoEvent("Started database cleanup...");
             DataAccessBase.PerformCleanup();
+            Logger.Instance.LogInfoEvent("Finished database cleanup");
         }
 
         [HttpGet]

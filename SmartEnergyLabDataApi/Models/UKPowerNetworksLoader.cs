@@ -13,7 +13,9 @@ namespace SmartEnergyLabDataApi.Models
         private HttpClient _httpClient;
         private object _httpClientLock = new object();
         private string _baseUrl = "https://ukpowernetworks.opendatasoft.com"; 
-        private string _apiKey = "93ad678d8dd616b2deb533bbb43c636ea09eca9faa8ce20b9c696c37";
+        // key generated from the UK power networks opn data website
+        // https://ukpowernetworks.opendatasoft.com/account/api-keys/
+        private string _apiKey = "85297c02f6b19c9c03a1eee027cd16469a1b053fa342361c5718f837";
         private TaskRunner _taskRunner;    
         private List<LTDSDemandRecord> _ltdsRecords;
         private readonly Dictionary<string,DNOAreas> _licenceAreasDict = new Dictionary<string, DNOAreas>() {

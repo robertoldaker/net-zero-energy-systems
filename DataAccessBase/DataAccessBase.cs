@@ -321,14 +321,14 @@ namespace HaloSoft.DataAccess
             }
         }
 
-        private static void runPostgreSQL(string sql)
+        private static void runPostgreSQL(string sql, int timeout=600 )
         {
             var connStr = _dbConnection.GetConnectionString();
             using (var con = new NpgsqlConnection(connStr)) {
                 con.Open();
 
                 using var cmd = new NpgsqlCommand(sql, con) {
-                    CommandTimeout = 600 // 10 mins
+                    CommandTimeout = timeout
                 };
 
                 var version = cmd.ExecuteNonQuery().ToString();
@@ -372,7 +372,7 @@ namespace HaloSoft.DataAccess
 
         public static void PerformCleanup() {
             if ( _dbConnection.DbProvider == DbProvider.PostgreSQL) {
-                runPostgreSQL("VACUUM FULL ANALYZE");
+                runPostgreSQL("VACUUM FULL ANALYZE",7200); // 2 hr timeout
             }
         }
 
