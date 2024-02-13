@@ -327,7 +327,9 @@ namespace HaloSoft.DataAccess
             using (var con = new NpgsqlConnection(connStr)) {
                 con.Open();
 
-                using var cmd = new NpgsqlCommand(sql, con);
+                using var cmd = new NpgsqlCommand(sql, con) {
+                    CommandTimeout = 600 // 10 mins
+                };
 
                 var version = cmd.ExecuteNonQuery().ToString();
             }
@@ -336,11 +338,11 @@ namespace HaloSoft.DataAccess
         public static void RunPostgreSQLQuery(string sql, Action<NpgsqlDataReader> rowRead)
         {
             var connStr = _dbConnection.GetConnectionString();
-            using (var con = new NpgsqlConnection(connStr)) {
+            
+            using ( var con = new NpgsqlConnection(connStr)) {
                 con.Open();
-
                 using var cmd = new NpgsqlCommand(sql, con);
-
+                cmd.CommandTimeout = 600; // 10 mins
                 var reader = cmd.ExecuteReader();
                 if ( reader.HasRows ) {
                     while( reader.Read()) {

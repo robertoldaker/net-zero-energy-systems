@@ -16,6 +16,17 @@ public class LoadProfileGenerator {
 
     public void Generate(LoadProfileType type) {
         Logger.Instance.LogInfoEvent($"Started generating missing load profiles for type [{type}]...");
+        var source = getSource(type);
+        _sourceDsd = getDistributionDataBySource(source);
+        Logger.Instance.LogInfoEvent($"After getting source DistributionData");
+        int total;
+        do {
+            total = generateNextBatch(source);
+        } while( total>0);
+        Logger.Instance.LogInfoEvent($"Finished generating missing load profiles");
+    }
+
+    private LoadProfileSource getSource(LoadProfileType type) {
         LoadProfileSource source;
         if ( type==LoadProfileType.Base) {
             source = LoadProfileSource.LV_Spreadsheet;
@@ -26,45 +37,48 @@ public class LoadProfileGenerator {
         } else {
             throw new Exception($"Unexpected value for type [{type}]");
         }
-        _sourceDsd = getDistributionDataBySource(source);
-        int total;
-        do {
-            total = generateNextBatch(source);
-        } while( total>0);
-        Logger.Instance.LogInfoEvent($"Finished generating missing load profiles");
+        return source;
     }
 
     private int generateNextBatch(LoadProfileSource source) {
         int total=0;
-        int batchSize=2000;
+        int batchSize=5000;
         using( var da = new DataAccess() ) {
-            var dssDict = new Dictionary<DistributionSubstation,int>();
-            var targetDist = da.Substations.GetDistributionSubstationsWithoutLoadProfiles(source, batchSize, out total);
+            var diDict = new Dictionary<Substations.DistributionInfo,int>();
+            var toAdd = new List<SubstationLoadProfile>();
+            //
+            var targetDis = da.Substations.GetDistributionSubstationsWithoutLoadProfiles(source, batchSize, out total);
             Logger.Instance.LogInfoEvent($"Processing next batch, remaining=[{total}]");            
-            foreach( var dss in targetDist) {
-                var sourceId = getClosestSubstationId(dss);
-                dssDict.Add(dss, sourceId);
+            foreach( var di in targetDis) {
+                var sourceId = getClosestSubstationId(di);
+                diDict.Add(di, sourceId);
             }
             // get distinct list of distribution ids to lookup
-            var ids = dssDict.Values.Distinct().ToArray();
+            var ids = diDict.Values.Distinct().ToArray();
             var allLoadProfiles = da.SubstationLoadProfiles.GetDistributionSubstationLoadProfiles(ids,source);
-            foreach( var dss in targetDist) {
-                var sourceId = dssDict[dss];
+            //??Logger.Instance.LogInfoEvent($"After AllLoadProfiles");            
+            foreach( var di in targetDis) {
+                var sourceId = diDict[di];
+                var dss = da.Substations.GetDistributionSubstation(di.Id);
                 var lps = allLoadProfiles.Where(m=>m.DistributionSubstation.Id==sourceId).ToList();
                 foreach( var lp in lps) {
                     var newLp = lp.Copy(dss);
                     newLp.IsDummy = true;
-                    da.SubstationLoadProfiles.Add(newLp);
-                }
+                    toAdd.Add(newLp);
+                }                
             }
-
+            //??Logger.Instance.LogInfoEvent($"Before LoadProfile add");            
+            foreach( var lp in toAdd) {
+                da.SubstationLoadProfiles.Add(lp);
+            }
+            //??Logger.Instance.LogInfoEvent($"Before Commit");            
             da.CommitChanges();
         }
         return total;
     }
 
-    private int getClosestSubstationId(DistributionSubstation dss) {        
-        var targetCustomers = dss.SubstationData.NumCustomers;
+    private int getClosestSubstationId(Substations.DistributionInfo di) {        
+        var targetCustomers = di.NumCustomers;
         var dsd = _sourceDsd.OrderBy(m=>Math.Abs(m.NumCustomers-targetCustomers)).FirstOrDefault();
         return dsd.DistributionSubstation.Id;
     }   
@@ -88,7 +102,8 @@ public class LoadProfileGenerator {
     public void ClearDummy(LoadProfileType type) {
         Logger.Instance.LogInfoEvent($"Clearing all dummy load profiles ...");
         int intType=(int) type;
-        DataAccessBase.RunSql($"delete from substation_load_profiles slp where slp.isdummy=true and slp.type={intType};");
+        var tableName = "substation_load_profiles";
+        DataAccessBase.RunSql($"delete from {tableName} slp where slp.isdummy=true and slp.type={intType};");
         Logger.Instance.LogInfoEvent($"Finished clearing dummy load profiles");
     }
 }

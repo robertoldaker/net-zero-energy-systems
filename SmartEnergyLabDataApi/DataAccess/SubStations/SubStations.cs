@@ -48,15 +48,32 @@ namespace SmartEnergyLabDataApi.Data
             return dsd;
         }
 
-        public IList<DistributionSubstation> GetDistributionSubstationsWithoutLoadProfiles(LoadProfileSource source, int take, out int total)
+        public class DistributionInfo {
+            public int Id {get; set;}
+            public int DataId {get; set;}
+            public int NumCustomers {get; set;}
+        }
+
+        public IList<DistributionInfo> GetDistributionSubstationsWithoutLoadProfiles(LoadProfileSource source, int take, out int total)
         {
             DistributionSubstation ds=null;
+            DistributionSubstationData dsData=null;
+            DistributionInfo dI = null;
             var sq = QueryOver.Of<SubstationLoadProfile>().Where(m => m.DistributionSubstation.Id == ds.Id && m.Source == source).Select(m => m.Id);            
-            var q = Session.QueryOver<DistributionSubstation>(()=>ds).Where(m=>m.SubstationData!=null).WithSubquery.WhereNotExists(sq).Skip(0).Take(take);
+            var q = Session.QueryOver<DistributionSubstation>(()=>ds).Left.JoinAlias(m=>m.SubstationData,()=>dsData).Where(m=>m.SubstationData!=null).
+                        WithSubquery.WhereNotExists(sq).
+                        SelectList(l=>l.
+                            Select(m=>m.Id).WithAlias(()=>dI.Id).
+                            Select(()=>dsData.Id).WithAlias(()=>dI.DataId).
+                            Select(()=>dsData.NumCustomers).WithAlias(()=>dI.NumCustomers)
+                            ).
+                        TransformUsing(Transformers.AliasToBean<DistributionInfo>()).
+                        Skip(0).Take(take);
             total = q.RowCount();
-            var dsss = q.List();
 
-            return dsss;
+            var result = q.List<DistributionInfo>();
+
+            return result;
         }
 
         public string LoadDistributionSubstations(IFormFile file)
