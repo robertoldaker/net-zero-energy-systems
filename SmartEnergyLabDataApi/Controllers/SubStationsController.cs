@@ -288,6 +288,20 @@ namespace SmartEnergyLabDataApi.Controllers
             }
         }    
 
+        /// <summary>
+        /// Prints Bath comparison data
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("PrintBathData")]        
+        public void PrintBathData()
+        {
+            using (var da = new DataAccess()) {
+                da.Substations.PrintBathData();
+                da.CommitChanges();
+            }
+        }    
+
         /*
         ** Have abandoned for the mo since classification tool cannot generate monthly load profiles??
         **

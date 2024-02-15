@@ -13,12 +13,13 @@ namespace SmartEnergyLabDataApi.Models;
 public class LoadProfileGenerator {
 
     private IList<DistributionSubstationData> _sourceDsd;
+    private Dictionary<DistributionSubstation,DistData> _distDataDict;
 
     public void Generate(LoadProfileType type) {
         Logger.Instance.LogInfoEvent($"Started generating missing load profiles for type [{type}]...");
         var source = getSource(type);
-        _sourceDsd = getDistributionDataBySource(source);
-        Logger.Instance.LogInfoEvent($"After getting source DistributionData");
+        _distDataDict = getCustomerDataUsingClassifications();
+        Logger.Instance.LogInfoEvent($"After getting source _distDataDict");
         int total;
         do {
             total = generateNextBatch(source);
@@ -56,7 +57,7 @@ public class LoadProfileGenerator {
             // get distinct list of distribution ids to lookup
             var ids = diDict.Values.Distinct().ToArray();
             var allLoadProfiles = da.SubstationLoadProfiles.GetDistributionSubstationLoadProfiles(ids,source);
-            //??Logger.Instance.LogInfoEvent($"After AllLoadProfiles");            
+            Logger.Instance.LogInfoEvent($"After AllLoadProfiles");            
             foreach( var di in targetDis) {
                 var sourceId = diDict[di];
                 var dss = da.Substations.GetDistributionSubstation(di.Id);
@@ -67,20 +68,32 @@ public class LoadProfileGenerator {
                     toAdd.Add(newLp);
                 }                
             }
-            //??Logger.Instance.LogInfoEvent($"Before LoadProfile add");            
+            Logger.Instance.LogInfoEvent($"Before LoadProfile add");            
             foreach( var lp in toAdd) {
                 da.SubstationLoadProfiles.Add(lp);
             }
-            //??Logger.Instance.LogInfoEvent($"Before Commit");            
+            Logger.Instance.LogInfoEvent($"Before Commit");            
             da.CommitChanges();
         }
         return total;
     }
 
-    private int getClosestSubstationId(Substations.DistributionInfo di) {        
+    /*private int getClosestSubstationId(Substations.DistributionInfo di) {        
         var targetCustomers = di.NumCustomers;
         var dsd = _sourceDsd.OrderBy(m=>Math.Abs(m.NumCustomers-targetCustomers)).FirstOrDefault();
         return dsd.DistributionSubstation.Id;
+    } */  
+
+    private int getClosestSubstationId(Substations.DistributionInfo di) {        
+        DistData dsd=null;
+        if ( di.DayMaxDemand!=0) {
+            dsd = _distDataDict.Values.Where(m=>m.MaxLoad>0).OrderBy(m=>Math.Abs(m.MaxLoad-di.DayMaxDemand)).FirstOrDefault();
+        } else if ( di.NumCustomers!=0) {
+            dsd = _distDataDict.Values.OrderBy(m=>Math.Abs(m.NumCustomers-di.NumCustomers)).FirstOrDefault();
+        } else {
+
+        }
+        return dsd!=null ? dsd.DistId : 0;
     }   
 
     private IList<DistributionSubstationData> getSpreadsheetLoadedDistributionData() {
@@ -99,11 +112,77 @@ public class LoadProfileGenerator {
         }
     }
 
+    public class DistData {
+        public int DistId {get; set;}
+        public int NumCustomers {get; set;}
+        public double MaxLoad {get; set;}
+    }
+
+    private Dictionary<DistributionSubstation,DistData> getCustomerDataUsingClassifications() {
+        Logger.Instance.LogInfoEvent("Started load getCustomerDataUsingClassifications ...");
+        var dict = new Dictionary<DistributionSubstation,DistData>();
+        using (var da = new DataAccess() ) {
+            var cs = da.Substations.GetSubstationClassifications();
+            foreach( var c in cs) {
+                if ( !dict.ContainsKey(c.DistributionSubstation)) {
+                    dict.Add(c.DistributionSubstation,new DistData() {
+                        //
+                        DistId = c.DistributionSubstation.Id
+                    });
+                }
+                dict[c.DistributionSubstation].NumCustomers+=c.NumberOfCustomers;
+            }
+            //
+            int[] ids = dict.Values.Select(m=>m.DistId).ToArray();
+            //
+            var lpss = da.SubstationLoadProfiles.GetSubstationLoadProfiles(ids,LoadProfileSource.LV_Spreadsheet);
+            foreach( var dd in dict.Values ) {
+                //
+                var lps = lpss.Where(m=>m.DistributionSubstation.Id==dd.DistId).ToList();
+                //
+                double maxLoad =0;
+                foreach( var lp in lps) {
+                    var cmax = lp.Data.Max();
+                    if ( cmax>maxLoad) {
+                        maxLoad=cmax;
+                    }
+                }
+                //
+                dd.MaxLoad = maxLoad;
+            }
+            
+        }
+        Logger.Instance.LogInfoEvent("Finished load getCustomerDataUsingClassifications");
+        return dict;
+    }
+
     public void ClearDummy(LoadProfileType type) {
         Logger.Instance.LogInfoEvent($"Clearing all dummy load profiles ...");
         int intType=(int) type;
         var tableName = "substation_load_profiles";
         DataAccessBase.RunSql($"delete from {tableName} slp where slp.isdummy=true and slp.type={intType};");
         Logger.Instance.LogInfoEvent($"Finished clearing dummy load profiles");
+    }
+
+    public DistributionSubstation GetClosestProfileDistSubstation(int distId) {
+        using (var da = new DataAccess() ) {
+            var targetDist = da.Substations.GetDistributionSubstation(distId);
+            _distDataDict = getCustomerDataUsingClassifications();
+            if (targetDist.SubstationData==null) {
+                throw new Exception("Null distribution data");
+            } else if ( targetDist.SubstationData.NumCustomers==0 && targetDist.SubstationData.DayMaxDemand==0 ) {
+                throw new Exception("NumCustomers and DayMaxDemand are 0");
+            }
+            //
+            var distInfo = new Substations.DistributionInfo() {
+                Id = targetDist.Id,
+                NumCustomers = targetDist.SubstationData.NumCustomers,
+                DayMaxDemand = targetDist.SubstationData.DayMaxDemand
+            };
+            //
+            int sourceId = getClosestSubstationId(distInfo);
+            var dss = da.Substations.GetDistributionSubstation(sourceId);
+            return dss;
+        }       
     }
 }

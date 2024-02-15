@@ -107,6 +107,16 @@ namespace SmartEnergyLabDataApi.Data
 
             return q.List();
         }
+
+        public IList<SubstationLoadProfile> GetSubstationLoadProfiles(int[] dssIds, LoadProfileSource source)
+        {
+            var q = Session.QueryOver<SubstationLoadProfile>().
+                Where(m => m.DistributionSubstation.Id.IsIn(dssIds)).
+                And(m=>m.Source==source);
+
+            return q.List();
+        }
+
         public IList<SubstationLoadProfile> GetSubstationLoadProfiles(LoadProfileType type, LoadProfileSource source)
         {
             var q = Session.QueryOver<SubstationLoadProfile>().

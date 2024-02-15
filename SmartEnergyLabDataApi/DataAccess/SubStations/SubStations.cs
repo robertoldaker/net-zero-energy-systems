@@ -48,10 +48,18 @@ namespace SmartEnergyLabDataApi.Data
             return dsd;
         }
 
+        public IList<SubstationClassification> GetSubstationClassifications()
+        {
+            var dsd=Session.QueryOver<SubstationClassification>().
+                List();
+            return dsd;
+        }
+
         public class DistributionInfo {
             public int Id {get; set;}
             public int DataId {get; set;}
             public int NumCustomers {get; set;}
+            public double DayMaxDemand {get; set;}
         }
 
         public IList<DistributionInfo> GetDistributionSubstationsWithoutLoadProfiles(LoadProfileSource source, int take, out int total)
@@ -60,12 +68,15 @@ namespace SmartEnergyLabDataApi.Data
             DistributionSubstationData dsData=null;
             DistributionInfo dI = null;
             var sq = QueryOver.Of<SubstationLoadProfile>().Where(m => m.DistributionSubstation.Id == ds.Id && m.Source == source).Select(m => m.Id);            
-            var q = Session.QueryOver<DistributionSubstation>(()=>ds).Left.JoinAlias(m=>m.SubstationData,()=>dsData).Where(m=>m.SubstationData!=null).
+            var q = Session.QueryOver<DistributionSubstation>(()=>ds).
+                        Left.JoinAlias(m=>m.SubstationData,()=>dsData).
+                        Where(()=>dsData.NumCustomers!=0 || dsData.DayMaxDemand!=0).
                         WithSubquery.WhereNotExists(sq).
                         SelectList(l=>l.
                             Select(m=>m.Id).WithAlias(()=>dI.Id).
                             Select(()=>dsData.Id).WithAlias(()=>dI.DataId).
-                            Select(()=>dsData.NumCustomers).WithAlias(()=>dI.NumCustomers)
+                            Select(()=>dsData.NumCustomers).WithAlias(()=>dI.NumCustomers).
+                            Select(()=>dsData.DayMaxDemand).WithAlias(()=>dI.DayMaxDemand)
                             ).
                         TransformUsing(Transformers.AliasToBean<DistributionInfo>()).
                         Skip(0).Take(take);
@@ -556,6 +567,24 @@ namespace SmartEnergyLabDataApi.Data
         public int GetNumPrimarySubstations(int gaId) {
             var num = Session.QueryOver<PrimarySubstation>().Where( m=>m.GeographicalArea.Id==gaId).RowCount();
             return num;
+        }
+
+        public void PrintBathData() {
+            /*var gsp = DataAccess.SupplyPoints.GetGridSupplyPointByName("Melksham  S.G.P.");
+            var dist = Session.QueryOver<DistributionSubstation>().Where( m=>m.GridSupplyPoint==gsp).List();
+            foreach( var dss in dist) {
+                var classifications = Session.QueryOver<SubstationClassification>().Where( m=>m.DistributionSubstation==dss).List();
+                var totalCust = classifications.Sum(m=>m.NumberOfCustomers);
+                var totalEacs = classifications.Sum(m=>m.NumberOfEACs);
+                var totalCon = classifications.Sum(m=>m.ConsumptionKwh);
+                var numCust=dss.SubstationData?.NumCustomers;
+                var dayMaxDemand = dss.SubstationData?.DayMaxDemand;
+                var nightMaxDemand = dss.SubstationData?.NightMaxDemand;
+                Logger.Instance.LogInfoEvent($"Name={dss.Name}, NumCusts={numCust}, day/night={dayMaxDemand}/{nightMaxDemand}, totalCust={totalCust}, totalEacs={totalEacs}, totalCon={totalCon}");
+            }*/
+            //
+            var results = Session.QueryOver<DistributionSubstationData>().Where( m=>m.NumCustomers>0 ).SelectList(l=>l.SelectAvg(m=>m.DayMaxDemand/m.NumCustomers)).SingleOrDefault<double>();
+            Logger.Instance.LogInfoEvent($"Avg ratio={1/(double) results}");
         }
 
         #endregion

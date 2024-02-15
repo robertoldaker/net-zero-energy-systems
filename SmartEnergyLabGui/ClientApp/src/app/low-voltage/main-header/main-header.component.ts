@@ -61,7 +61,7 @@ export class MainHeaderComponent implements AfterViewInit {
                 clearTimeout(this.searchTimeoutId);
             }
             this.searchTimeoutId=setTimeout(()=>{
-                this.dataClientService.Search(searchStr,20, (results)=>{
+                this.dataClientService.Search(searchStr,50, (results)=>{
                     this.searchOptions = results;
                     if ( this.searchOptions.length==0) {
                         this.autoCompleteOpen = false;
