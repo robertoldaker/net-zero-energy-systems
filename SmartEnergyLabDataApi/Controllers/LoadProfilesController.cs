@@ -178,11 +178,12 @@ namespace SmartEnergyLabDataApi.Controllers
         /// Finds closest matching dist. substation based on numCustomers and dayMaxDemand
         /// </summary>
         /// <param name="distId">Id of distribution substation</param>
+        /// <param name="type">Type of load profile</param>
         [HttpGet]
         [Route("FindClosestDistributionSubstation")]
-        public DistributionSubstation FindClosestDistributionSubstation(int distId) {
+        public DistributionSubstation FindClosestDistributionSubstation(int distId, LoadProfileType type) {
             var m = new LoadProfileGenerator();
-            return m.GetClosestProfileDistSubstation(distId);
+            return m.GetClosestProfileDistSubstation(distId, type);
         }
     }
 

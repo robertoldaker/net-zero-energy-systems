@@ -48,9 +48,13 @@ namespace SmartEnergyLabDataApi.Data
             return dsd;
         }
 
-        public IList<SubstationClassification> GetSubstationClassifications()
+        public IList<SubstationClassification> GetSubstationClassifications(LoadProfileType type)
         {
+            DistributionSubstation ds=null;
+            var sq = QueryOver.Of<SubstationLoadProfile>().Where(m => m.DistributionSubstation.Id == ds.Id && m.Type == type && m.IsDummy==false).Select(m=>m.Id);            
             var dsd=Session.QueryOver<SubstationClassification>().
+                Left.JoinAlias(m=>m.DistributionSubstation,()=>ds).
+                WithSubquery.WhereExists(sq).
                 List();
             return dsd;
         }

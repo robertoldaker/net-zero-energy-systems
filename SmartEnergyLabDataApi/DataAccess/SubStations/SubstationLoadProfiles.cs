@@ -117,6 +117,25 @@ namespace SmartEnergyLabDataApi.Data
             return q.List();
         }
 
+        public IList<SubstationLoadProfile> GetSubstationLoadProfiles(LoadProfileType type, bool isDummy)
+        {
+            var q = Session.QueryOver<SubstationLoadProfile>().
+                And(m=>m.IsDummy==isDummy).
+                And(m=>m.Type==type);
+
+            return q.List();
+        }
+        public int GetSubstationLoadProfileCount(int distId,LoadProfileType type, bool isDummy)
+        {
+            var q = Session.QueryOver<SubstationLoadProfile>().
+                Where( m=>m.DistributionSubstation.Id == distId).
+                And(m=>m.IsDummy==isDummy).
+                And(m=>m.Type==type);
+
+            return q.RowCount();
+        }
+
+
         public IList<SubstationLoadProfile> GetSubstationLoadProfiles(LoadProfileType type, LoadProfileSource source)
         {
             var q = Session.QueryOver<SubstationLoadProfile>().

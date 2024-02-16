@@ -18,7 +18,7 @@ public class LoadProfileGenerator {
     public void Generate(LoadProfileType type) {
         Logger.Instance.LogInfoEvent($"Started generating missing load profiles for type [{type}]...");
         var source = getSource(type);
-        _distDataDict = getCustomerDataUsingClassifications();
+        _distDataDict = getRealDataUsingClassifications(type);
         Logger.Instance.LogInfoEvent($"After getting source _distDataDict");
         int total;
         do {
@@ -118,11 +118,11 @@ public class LoadProfileGenerator {
         public double MaxLoad {get; set;}
     }
 
-    private Dictionary<DistributionSubstation,DistData> getCustomerDataUsingClassifications() {
+    private Dictionary<DistributionSubstation,DistData> getRealDataUsingClassifications(LoadProfileType type) {
         Logger.Instance.LogInfoEvent("Started load getCustomerDataUsingClassifications ...");
         var dict = new Dictionary<DistributionSubstation,DistData>();
         using (var da = new DataAccess() ) {
-            var cs = da.Substations.GetSubstationClassifications();
+            var cs = da.Substations.GetSubstationClassifications(type);
             foreach( var c in cs) {
                 if ( !dict.ContainsKey(c.DistributionSubstation)) {
                     dict.Add(c.DistributionSubstation,new DistData() {
@@ -156,6 +156,32 @@ public class LoadProfileGenerator {
         return dict;
     }
 
+    private Dictionary<DistributionSubstation,DistData> getRealDistProfileData(LoadProfileType type) {
+        Logger.Instance.LogInfoEvent("Started load getRealDistProfileData ...");
+        var dict = new Dictionary<DistributionSubstation,DistData>();
+        using (var da = new DataAccess() ) {
+            var lpss = da.SubstationLoadProfiles.GetSubstationLoadProfiles(type,false);
+            foreach( var lp in lpss ) {
+                //
+                if ( !dict.ContainsKey(lp.DistributionSubstation)) {
+                    dict.Add(lp.DistributionSubstation,new DistData() {
+                        //
+                        DistId = lp.DistributionSubstation.Id
+                    });
+                }
+                //
+                var distData = dict[lp.DistributionSubstation];
+                //
+                var cmax = lp.Data.Max();
+                if ( cmax>distData.MaxLoad) {
+                    distData.MaxLoad=cmax;
+                }
+            }            
+        }
+        Logger.Instance.LogInfoEvent("Finished load getRealDistProfileData");
+        return dict;
+    }
+
     public void ClearDummy(LoadProfileType type) {
         Logger.Instance.LogInfoEvent($"Clearing all dummy load profiles ...");
         int intType=(int) type;
@@ -164,10 +190,10 @@ public class LoadProfileGenerator {
         Logger.Instance.LogInfoEvent($"Finished clearing dummy load profiles");
     }
 
-    public DistributionSubstation GetClosestProfileDistSubstation(int distId) {
+    public DistributionSubstation GetClosestProfileDistSubstation(int distId, LoadProfileType type) {
         using (var da = new DataAccess() ) {
             var targetDist = da.Substations.GetDistributionSubstation(distId);
-            _distDataDict = getCustomerDataUsingClassifications();
+            _distDataDict = getRealDataUsingClassifications(type);
             if (targetDist.SubstationData==null) {
                 throw new Exception("Null distribution data");
             } else if ( targetDist.SubstationData.NumCustomers==0 && targetDist.SubstationData.DayMaxDemand==0 ) {
