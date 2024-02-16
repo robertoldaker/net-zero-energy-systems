@@ -12,7 +12,6 @@ namespace SmartEnergyLabDataApi.Models;
 
 public class LoadProfileGenerator {
 
-    private IList<DistributionSubstationData> _sourceDsd;
     private Dictionary<DistributionSubstation,DistData> _distDataDict;
 
     public void Generate(LoadProfileType type) {
@@ -77,12 +76,6 @@ public class LoadProfileGenerator {
         }
         return total;
     }
-
-    /*private int getClosestSubstationId(Substations.DistributionInfo di) {        
-        var targetCustomers = di.NumCustomers;
-        var dsd = _sourceDsd.OrderBy(m=>Math.Abs(m.NumCustomers-targetCustomers)).FirstOrDefault();
-        return dsd.DistributionSubstation.Id;
-    } */  
 
     private int getClosestSubstationId(Substations.DistributionInfo di) {        
         DistData dsd=null;
@@ -189,6 +182,14 @@ public class LoadProfileGenerator {
         DataAccessBase.RunSql($"delete from {tableName} slp where slp.isdummy=true and slp.type={intType};");
         Logger.Instance.LogInfoEvent($"Finished clearing dummy load profiles");
     }
+
+    public void ClearAllDummy() {
+        Logger.Instance.LogInfoEvent($"Clearing all dummy load profiles ...");
+        var tableName = "substation_load_profiles";
+        DataAccessBase.RunSql($"delete from {tableName} slp where slp.isdummy=true;");
+        Logger.Instance.LogInfoEvent($"Finished clearing dummy load profiles");
+    }
+
 
     public DistributionSubstation GetClosestProfileDistSubstation(int distId, LoadProfileType type) {
         using (var da = new DataAccess() ) {

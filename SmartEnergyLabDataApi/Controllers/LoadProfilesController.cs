@@ -153,18 +153,30 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
-        /// Generates missing base load profile data for distribution substations without load profile data
+        /// Generates missing base load profile data for distribution substations without load profile data for a given type
         /// </summary>
         /// <param name="type">Type of load profile  (0-base, 1-EVs, 2- HPs)</param>
         [HttpPost]
-        [Route("GenerateMissing")]
-        public void GenerateMissing(LoadProfileType type) {
+        [Route("GenerateMissingForType")]
+        public void GenerateMissingForType(LoadProfileType type) {
             var m = new LoadProfileGenerator();
             m.Generate(type);
         }
 
         /// <summary>
-        /// Generates missing load profile data for distribution substations without load profile data
+        /// Generates missing base load profile data for distribution substations without load profile data
+        /// </summary>
+        [HttpPost]
+        [Route("GenerateMissing")]
+        public void GenerateMissing() {
+            var m = new LoadProfileGenerator();
+            m.Generate(LoadProfileType.Base);
+            m.Generate(LoadProfileType.EV);
+            m.Generate(LoadProfileType.HP);
+        }
+
+        /// <summary>
+        /// Clears dummy load profiles for a given type
         /// </summary>
         /// <param name="type">Type of load profile (0-base, 1-EVs, 2- HPs)</param>
         [HttpPost]
@@ -172,6 +184,16 @@ namespace SmartEnergyLabDataApi.Controllers
         public void ClearDummy(LoadProfileType type) {
             var m = new LoadProfileGenerator();
             m.ClearDummy(type);
+        }
+
+        /// <summary>
+        /// Clears all dummy load profiles
+        /// </summary>
+        [HttpPost]
+        [Route("ClearAllDummy")]
+        public void ClearAllDummy() {
+            var m = new LoadProfileGenerator();
+            m.ClearAllDummy();
         }
 
         /// <summary>
