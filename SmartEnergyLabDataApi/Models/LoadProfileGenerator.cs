@@ -18,7 +18,6 @@ public class LoadProfileGenerator {
         Logger.Instance.LogInfoEvent($"Started generating missing load profiles for type [{type}]...");
         var source = getSource(type);
         _distDataDict = getRealDataUsingClassifications(type);
-        Logger.Instance.LogInfoEvent($"After getting source _distDataDict");
         int total;
         do {
             total = generateNextBatch(source);
@@ -56,7 +55,6 @@ public class LoadProfileGenerator {
             // get distinct list of distribution ids to lookup
             var ids = diDict.Values.Distinct().ToArray();
             var allLoadProfiles = da.SubstationLoadProfiles.GetDistributionSubstationLoadProfiles(ids,source);
-            Logger.Instance.LogInfoEvent($"After AllLoadProfiles");            
             foreach( var di in targetDis) {
                 var sourceId = diDict[di];
                 var dss = da.Substations.GetDistributionSubstation(di.Id);
@@ -67,11 +65,9 @@ public class LoadProfileGenerator {
                     toAdd.Add(newLp);
                 }                
             }
-            Logger.Instance.LogInfoEvent($"Before LoadProfile add");            
             foreach( var lp in toAdd) {
                 da.SubstationLoadProfiles.Add(lp);
             }
-            Logger.Instance.LogInfoEvent($"Before Commit");            
             da.CommitChanges();
         }
         return total;
