@@ -207,6 +207,13 @@ namespace SmartEnergyLabDataApi.Controllers
             var m = new LoadProfileGenerator();
             return m.GetClosestProfileDistSubstation(distId, type);
         }
+
+        [HttpGet]
+        [Route("DownloadDistDummyProfiles")]
+        public IActionResult DownloaddistDummyProfiles() {
+            var m = new LoadProfileGenerator();
+            return m.DownloadDistDummyProfiles();
+        }
     }
 
 }

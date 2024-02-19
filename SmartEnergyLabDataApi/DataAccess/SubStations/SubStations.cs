@@ -61,6 +61,8 @@ namespace SmartEnergyLabDataApi.Data
 
         public class DistributionInfo {
             public int Id {get; set;}
+            public string Name { get; set;}
+            public ImportSource Source {get; set;}
             public int DataId {get; set;}
             public int NumCustomers {get; set;}
             public double DayMaxDemand {get; set;}
@@ -87,6 +89,33 @@ namespace SmartEnergyLabDataApi.Data
             total = q.RowCount();
 
             var result = q.List<DistributionInfo>();
+
+            return result;
+        }
+
+        public IList<DistributionInfo> GetDistributionSubstationsWithDummyLoadProfiles( int skip, int take, out int total)
+        {
+            DistributionSubstation ds=null;
+            DistributionSubstationData dsData=null;
+            DistributionInfo dI = null;
+            var sq = QueryOver.Of<SubstationLoadProfile>().Where(m => m.DistributionSubstation.Id == ds.Id && m.IsDummy==true).Select(m => m.Id);            
+            var q = Session.QueryOver<DistributionSubstation>(()=>ds).
+                        Left.JoinAlias(m=>m.SubstationData,()=>dsData).
+                        Where(()=>dsData.NumCustomers!=0 || dsData.DayMaxDemand!=0).
+                        WithSubquery.WhereExists(sq).
+                        SelectList(l=>l.
+                            Select(m=>m.Id).WithAlias(()=>dI.Id).
+                            Select(m=>m.Name).WithAlias(()=>dI.Name).
+                            Select(m=>m.Source).WithAlias(()=>dI.Source).
+                            Select(()=>dsData.Id).WithAlias(()=>dI.DataId).
+                            Select(()=>dsData.NumCustomers).WithAlias(()=>dI.NumCustomers).
+                            Select(()=>dsData.DayMaxDemand).WithAlias(()=>dI.DayMaxDemand)
+                            ).
+                        TransformUsing(Transformers.AliasToBean<DistributionInfo>());
+                        
+            total = q.RowCount();
+
+            var result = q.Skip(skip).Take(take).List<DistributionInfo>();
 
             return result;
         }

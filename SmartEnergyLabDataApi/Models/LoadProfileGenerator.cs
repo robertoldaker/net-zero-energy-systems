@@ -3,6 +3,8 @@ using System.Net.Http.Headers;
 using System.Xml.Schema;
 using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
+using Microsoft.AspNetCore.Mvc;
+using NHibernate.Driver;
 using NHibernate.Util;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Controllers;
@@ -18,6 +20,7 @@ public class LoadProfileGenerator {
         Logger.Instance.LogInfoEvent($"Started generating missing load profiles for type [{type}]...");
         var source = getSource(type);
         _distDataDict = getRealDataUsingClassifications(type);
+
         int total;
         do {
             total = generateNextBatch(source);
@@ -207,5 +210,61 @@ public class LoadProfileGenerator {
             var dss = da.Substations.GetDistributionSubstation(sourceId);
             return dss;
         }       
+
+
     }
+    public FileStreamResult DownloadDistDummyProfiles() {
+        int skip=0;
+        int take = 1000;
+        int total;
+        Logger.Instance.LogInfoEvent("Started DownloadDistDummyProfiles");
+        var fileName = "DistSubstationDummyProfileData.csv";
+        var filePath = Path.Combine(AppFolders.Instance.Temp,fileName);
+        using( var fs = File.Open(filePath,FileMode.Create)) {
+            using ( var sw = new StreamWriter(fs)) {
+                sw.WriteLine("Name,Id,Source,Num of customers, Max Day Demand, Base profile (max),EV profile (max), HP profile (max)");
+                do {                    
+                    using (var da = new DataAccess() ) {
+                        var list = da.Substations.GetDistributionSubstationsWithDummyLoadProfiles(skip,take,out total);
+                        Logger.Instance.LogInfoEvent($"After GetDistributionSubstations ...");
+                        var ids = list.Select(m=>m.Id).ToArray();
+                        var lpsBase = da.SubstationLoadProfiles.GetSubstationLoadProfiles(ids,LoadProfileSource.LV_Spreadsheet);
+                        Logger.Instance.LogInfoEvent($"After GetSubstation load profiles 1 ...");
+                        var lpsEV = da.SubstationLoadProfiles.GetSubstationLoadProfiles(ids,LoadProfileSource.EV_Pred);
+                        Logger.Instance.LogInfoEvent($"After GetSubstation load profiles 2 ...");
+                        var lpsHP = da.SubstationLoadProfiles.GetSubstationLoadProfiles(ids,LoadProfileSource.HP_Pred);
+                        Logger.Instance.LogInfoEvent($"After GetSubstation load profiles 3 ...");
+                        //                        
+                        foreach( var dsi in list) {                            
+                            var maxBase = maxLP(lpsBase.Where(m=>m.DistributionSubstation.Id==dsi.Id).ToList());
+                            var maxEV = maxLP(lpsEV.Where(m=>m.DistributionSubstation.Id==dsi.Id).ToList());
+                            var maxHP = maxLP(lpsHP.Where(m=>m.DistributionSubstation.Id==dsi.Id).ToList());
+                            sw.WriteLine($"{dsi.Name},{dsi.Id},{dsi.Source},{dsi.NumCustomers},{dsi.DayMaxDemand},{maxBase:f1},{maxEV:f1},{maxHP:f1}");
+                        }
+                        //
+                        skip+=list.Count;
+                        Logger.Instance.LogInfoEvent($"Count={skip}/{total}");
+                    }
+                } while( skip<total );
+            }
+        }
+        //
+        var fss = File.Open(filePath,FileMode.Open);
+        //
+        var fsr = new FileStreamResult(fss, "application/json");
+        fsr.FileDownloadName = fileName;
+        Logger.Instance.LogInfoEvent("Finished DownloadDistDummyProfiles");
+        return fsr;        
+    }
+    private static double maxLP(List<SubstationLoadProfile> lps) {
+        double max=0;
+        foreach( var lp in lps) {
+            var lpMax = lp.Data.Max();
+            if ( lpMax>max) {
+                max = lpMax;
+            }
+        }
+        return max;
+    }
+
 }
