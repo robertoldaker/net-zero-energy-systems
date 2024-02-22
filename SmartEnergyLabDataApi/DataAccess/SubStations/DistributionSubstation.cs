@@ -25,6 +25,7 @@ namespace SmartEnergyLabDataApi.Data
             GeographicalArea = primarySubstation.GeographicalArea;
             GISData = new GISData(this);
             SubstationParams = new SubstationParams(this);
+            SubstationData = new DistributionSubstationData(this);
         }
 
         /// <summary>

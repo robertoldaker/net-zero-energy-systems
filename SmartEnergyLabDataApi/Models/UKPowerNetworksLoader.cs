@@ -16,7 +16,7 @@ namespace SmartEnergyLabDataApi.Models
         // key generated from the UK power networks opn data website
         // https://ukpowernetworks.opendatasoft.com/account/api-keys/
         private string _apiKey = "85297c02f6b19c9c03a1eee027cd16469a1b053fa342361c5718f837";
-        private TaskRunner _taskRunner;    
+        private TaskRunner? _taskRunner;    
         private List<LTDSDemandRecord> _ltdsRecords;
         private readonly Dictionary<string,DNOAreas> _licenceAreasDict = new Dictionary<string, DNOAreas>() {
             {"Eastern Power Networks (EPN)",DNOAreas.EastEngland},
@@ -28,11 +28,10 @@ namespace SmartEnergyLabDataApi.Models
         private ProcessResult _primProcessResult = new ProcessResult("Primary Substations");
         private Regex _primaryFeederRegEx = new Regex(@"^(\w+\d+) ");
         private Dictionary<string,PrimarySubstation?> _primaryDict = new Dictionary<string, PrimarySubstation?>();
-
         private const int NTASKS = 6;
         private int _tasksDone=0;
 
-        public UKPowerNetworkLoader(TaskRunner taskRunner) {
+        public UKPowerNetworkLoader(TaskRunner? taskRunner) {
             _taskRunner = taskRunner;
         }
         

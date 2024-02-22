@@ -180,7 +180,7 @@ namespace SmartEnergyLabDataApi.Models
         public static int Id;
     }
 
-    public enum LoadNetworkDataSource {All,NGED,UKPower}
+    public enum LoadNetworkDataSource {All,NGED,UKPower,NPG}
 
     public class LoadNetworkDataBackgroundTask : BackgroundTaskBase
     {
@@ -202,6 +202,11 @@ namespace SmartEnergyLabDataApi.Models
                         stateUpdate(TaskState.RunningState.Running,"Started loading UK Power Network data");
                         var ukPowerNetworksLoader = new UKPowerNetworkLoader((TaskRunner?)taskRunner);
                         ukPowerNetworksLoader.Load();
+                    }
+                    if ( _source == LoadNetworkDataSource.All || _source==LoadNetworkDataSource.NPG) {
+                        stateUpdate(TaskState.RunningState.Running,"Started loading Northern Power Grid data");
+                        var northernPowerGridLoader = new NorthernPowerGridLoader((TaskRunner?)taskRunner);
+                        northernPowerGridLoader.Load();
                     }
                     stateUpdate(TaskState.RunningState.Finished, $"{NAME} finished", 100);
                 } catch( Exception e) {

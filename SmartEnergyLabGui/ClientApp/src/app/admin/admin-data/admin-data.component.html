@@ -33,6 +33,10 @@
                 <img class="dnoImg" src="assets/images/uk-power-networks-icon.png"/>
                 <span>UK Power Networks</span>
             </button>
+            <button mat-menu-item (click)="loadNetworkData(LoadNetworkDataSource.NPG)">
+                <img class="dnoImg" src="assets/images/northern-power-grid-icon.png"/>
+                <span>Northern Power Grid</span>
+            </button>
         </mat-menu>                          
         <button mat-raised-button color="primary" (click)="refresh()">
             <mat-icon>refresh</mat-icon>

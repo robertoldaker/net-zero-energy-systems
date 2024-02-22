@@ -144,7 +144,8 @@ export interface NameValuePair {
 export enum LoadNetworkDataSource {
     All,
     NGED,
-    UKPower
+    UKPower,
+    NPG
 }
 
 /**

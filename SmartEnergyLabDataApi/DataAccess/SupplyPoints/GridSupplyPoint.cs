@@ -8,7 +8,8 @@ namespace SmartEnergyLabDataApi.Data
     public enum ImportSource {
         File,
         NationalGridDistributionOpenData,
-        UKPowerNetworksOpenData
+        UKPowerNetworksOpenData,
+        NorthernPowerGridOpenData
     }
 
     [Class(0, Table = "grid_supply_points")]
