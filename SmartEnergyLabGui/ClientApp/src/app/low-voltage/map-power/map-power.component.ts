@@ -124,11 +124,12 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
         })
     }
     addGridSupplyPointMarker(gsp: GridSupplyPoint) {
+        let anchorOffset = gsp.needsNudge ? 0 : 25;
         let icon = {
             url: "/assets/images/grid-supply-point.png", // url
             scaledSize: new google.maps.Size(50, 50), // scaled size
             origin: new google.maps.Point(0, 0), // origin
-            anchor: new google.maps.Point(25, 50) // anchor
+            anchor: new google.maps.Point(anchorOffset, 50) // anchor
         };
 
         this.gspMarkerOptions.push({ 

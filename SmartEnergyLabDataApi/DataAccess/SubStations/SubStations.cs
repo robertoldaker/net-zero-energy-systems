@@ -177,6 +177,11 @@ namespace SmartEnergyLabDataApi.Data
             public int ParentId {get; set;}
             public string Type {get; set;}
             public string Name {get; set;}            
+            public string Key {
+                get {
+                    return $"{Type}:{Id}";
+                }
+            }
         }
 
         public IList<SubstationSearchResult> Search(string str, int maxResults) {
@@ -190,12 +195,15 @@ namespace SmartEnergyLabDataApi.Data
             var results=q1Results.Select(m=>new SubstationSearchResult(m.Id,0,m.Name,m.GetType().Name)).ToList();
 
             // Primary substations
-            mResults = (maxResults - results.Count)/2;
-            var q2=Session.QueryOver<PrimarySubstation>().
-                Where( m=>m.Name.IsInsensitiveLike(str, MatchMode.Anywhere) || m.ExternalId.IsInsensitiveLike(str));
-            var q2Results=q2.Take(mResults).List();
-            var results2=q2Results.Select(m=>new SubstationSearchResult(m.Id,m.GridSupplyPoint.Id,m.Name,m.GetType().Name)).ToList();
-            results.AddRange(results2);
+            try {
+                var q2=Session.QueryOver<PrimarySubstation>().
+                    Where( m=>m.Name.IsInsensitiveLike(str, MatchMode.Anywhere) || m.ExternalId.IsInsensitiveLike(str));
+                var q2Results=q2.Take(mResults).List();
+                var results2=q2Results.Select(m=>new SubstationSearchResult(m.Id,m.GridSupplyPoint.Id,m.Name,m.GetType().Name)).ToList();
+                results.AddRange(results2);
+            } catch(NullReferenceException) {
+                Logger.Instance.LogInfoEvent($"Null reference exception with search [{str}]");
+            }
 
             // Distribution substations
             mResults = maxResults - results.Count;
@@ -523,6 +531,14 @@ namespace SmartEnergyLabDataApi.Data
             return Session.QueryOver<PrimarySubstation>().Where(m=>m.Id == id).Take(1).SingleOrDefault();
         }
 
+        public IList<PrimarySubstation> GetPrimarySubstationsLike(ImportSource source, string name) {
+            var list = Session.QueryOver<PrimarySubstation>().
+                Where(m=>m.Source==source && m.Name.IsInsensitiveLike(name,MatchMode.Start)).
+                OrderBy(m=>m.Name).Asc.
+                List();
+            return list;
+        }
+
         public PrimarySubstation GetPrimarySubstation(ImportSource source, string externalId, string externalId2=null, string name=null) {
             PrimarySubstation pss=null;
             if ( externalId!=null ) {
@@ -570,6 +586,14 @@ namespace SmartEnergyLabDataApi.Data
             } else {
                 return Session.QueryOver<PrimarySubstation>().Where(m => m.Name == name).Take(1).SingleOrDefault();
             }
+        }
+        public PrimarySubstation GetPrimarySubstationAtLocation(double lat, double lon) {
+            GISData gisData=null;
+            // See if there is a primary substation with an exact location match
+            return Session.QueryOver<PrimarySubstation>().Left.
+                    JoinAlias(m=>m.GISData,()=>gisData).
+                    Where(m=>gisData.Latitude==lat).And(m=>gisData.Longitude==lon).
+                    Take(1).SingleOrDefault();
         }
         public IList<PrimarySubstation> GetPrimarySubstations()
         {

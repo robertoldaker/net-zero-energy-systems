@@ -30,6 +30,11 @@ namespace SmartEnergyLabDataApi.Data
             Session.Save(gsp);
         }
 
+        public void Delete(GridSupplyPoint gsp)
+        {
+            Session.Delete(gsp);
+        }
+
         public void DeleteAllGridSupplyPointsInGeographicalArea(int gaId) {
             Logger.Instance.LogInfoEvent($"Started deletion of grid supply points for geographical area=[{gaId}]");
             var gsps = GetGridSupplyPoints(gaId);
@@ -74,6 +79,9 @@ namespace SmartEnergyLabDataApi.Data
             return Session.QueryOver<GridSupplyPoint>().Where( m=>m.Name == name).Take(1).SingleOrDefault();
         }
 
+        public GridSupplyPoint GetGridSupplyPointLike(string name) {
+            return Session.QueryOver<GridSupplyPoint>().Where( m=>m.Name.IsInsensitiveLike(name,MatchMode.Exact)).Take(1).SingleOrDefault();
+        }
         public GridSupplyPoint GetGridSupplyPoint(GeographicalArea ga, string name) {
             return Session.QueryOver<GridSupplyPoint>().Where( m=>m.Name.IsInsensitiveLike(name) && m.GeographicalArea == ga).Take(1).SingleOrDefault();
         }

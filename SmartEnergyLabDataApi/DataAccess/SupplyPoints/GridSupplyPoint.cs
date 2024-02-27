@@ -53,6 +53,14 @@ namespace SmartEnergyLabDataApi.Data
         [Property()]
         public virtual string Name { get; set; }
 
+        [Property(NotNull = true)]
+        [Column( Name = "IsDummy", Default ="false")]
+        public virtual bool IsDummy {get; set;}
+
+        [Property(NotNull = true)]
+        [Column( Name = "NeedsNudge", Default ="false")]
+        public virtual bool NeedsNudge {get; set;}
+
         [Property(0)]
         [Formula(1, Content = "( select count(*) from primary_substations ds where (ds.gridsupplypointid = id) )")] 
         public virtual int NumberOfPrimarySubstations {get; set;}

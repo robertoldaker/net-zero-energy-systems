@@ -80,8 +80,8 @@ export class MainHeaderComponent implements AfterViewInit {
     }
 
     searchOptionSelected(e:any) {
-        let name:string = e.option.value;
-        let selectedObj = this.searchOptions.find(m=>m.name == name)
+        let key:string = e.option.value;
+        let selectedObj = this.searchOptions.find(m=>m.key == key)
         if ( selectedObj) {
             this.mapPowerService.setSelectedObj(selectedObj)
         }
@@ -97,6 +97,15 @@ export class MainHeaderComponent implements AfterViewInit {
             src+="distribution-substation.png"
         }
         return src
+    }
+
+    display(key:any) {
+        if ( this.searchOptions) {
+            let obj = this.searchOptions.find(m=>m.key == key);
+            return  obj ? obj.name : "";    
+        } else {
+            return "";
+        }
     }
 
 

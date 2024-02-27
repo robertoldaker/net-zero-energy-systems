@@ -15,7 +15,9 @@ export interface GridSupplyPoint {
     nr: string,
     name: string,
     gisData: GISData
-    numberOfPrimarySubstations: number
+    numberOfPrimarySubstations: number,
+    isDummy: boolean,
+    needsNudge: boolean
 }
 
 export interface PrimarySubstation {
@@ -74,7 +76,8 @@ export interface SubstationSearchResult {
     id: number,
     parentId: number,
     name: string,
-    type: string
+    type: string,
+    key:string
 }
 
 export interface SubstationParams {

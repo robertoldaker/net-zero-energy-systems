@@ -1,6 +1,9 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using HaloSoft.EventLogger;
+using MySql.Data.Types;
 using NHibernate.Criterion;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
@@ -16,12 +19,24 @@ public class NorthernPowerGridLoader {
     private string _apiKey = "dd2fce73b6487e3d3943580c048231b8b0518d0169db407ae981e7bc";
     private TaskRunner? _taskRunner; 
     private Dictionary<string,string> _upstreamSiteAliases = new Dictionary<string, string>() {
-        { "Fourstones" , "Fourstones 33Kv" },
-        { "Linton", "Blyth 132Kv"},
-        { "Blyth 132/66Kv", "Blyth 66Kv"},
-        { "Spennymoor", "Spennymoor Gsp"},
-        { "Bradford", "Bradford West"},
+       { "Linton", "Blyth 132Kv"},
+       { "Blyth 132/66Kv", "Blyth 66Kv"},
+       { "Spennymoor", "Spennymoor Gsp"},
+       { "Bradford", "Bradford West"},
     };
+    private Dictionary<string,string> _primarySiteAliases = new Dictionary<string, string>() {
+       { "Sharlston New", "Sharlston"},
+       { "Roecliffe Industrial", "Boroughbridge/Roecliffe Industrial"},
+    };
+
+    private List<NPGSiteUtilisationRecord> _allRecords;
+    private List<NPGSiteUtilisationRecord> _gspRecords;
+    private List<NPGSiteUtilisationRecord> _primRecords;
+    private List<NPGSiteUtilisationRecord> _distRecords;
+    private List<NPGCombinedServiceAreaRecord> _boundaryRecords;
+
+    private Regex _distRegEx1 = new Regex(@"(\s\d+)$");
+    private Regex _distRegEx2 = new Regex(@"(33\/11)$");
 
     public NorthernPowerGridLoader(TaskRunner? taskRunner) {
         _taskRunner = taskRunner;
@@ -29,32 +44,218 @@ public class NorthernPowerGridLoader {
 
 
     public void Load() {
-            var url = "/api/explore/v2.1/catalog/datasets/npg-site-utilisation/exports/json?lang=en&timezone=Europe%2FLondon";
-            var allRecords = get<List<NPGSiteUtilisationRecord>>(url);
+        
+        var url = "/api/explore/v2.1/catalog/datasets/npg-site-utilisation/exports/json?lang=en&timezone=Europe%2FLondon";
+        _allRecords = get<List<NPGSiteUtilisationRecord>>(url);
+        Logger.Instance.LogInfoEvent($"Loaded [{_allRecords.Count}] site utilisation records");
+        checkCancelled();
 
-            // Process GSPs
-            var gspRecords = allRecords.Where(m=>m.substation_class=="Grid Supply Point").ToList();
-            // From email with NPG it appears that primaries/BSPs with associated_upstream_site == site_name mean they are actually connected to grid
-            // so am adding them as extra GSPs
-            var extraRecords = allRecords.Where( m=>m.site_name==m.associated_upstream_site && m.substation_class!="Distribution" && gspRecords.Where(n=>n.site_name==m.site_name).Count()==0).ToList();
-            gspRecords.AddRange(extraRecords);
-            processGspRecords(gspRecords);
+        // Process GSPs
+        _gspRecords = _allRecords.Where(m=>m.substation_class=="Grid Supply Point").ToList();
+        var extraRecords = _allRecords.
+                        // From email with NPG it appears that primaries/BSPs with associated_upstream_site == site_name mean they are actually connected to grid
+                        // so am adding them as extra GSPs
+                        Where( m=>m.site_name==m.associated_upstream_site && m.substation_class!="Distribution").
+                        // But sometime this site already exists so do not add a second one
+                        Where( m=>_gspRecords.Where(n=>n.site_name==m.site_name).Count()==0).ToList();
+        _gspRecords.AddRange(extraRecords);
+        processGspRecords();
+        checkCancelled();
 
-            // Process primaries
-            var primaryRecords = allRecords.Where(m=>m.substation_class=="Primary" || m.substation_class=="Bulk Supply Point").ToList();
-            processPrimaryRecords(primaryRecords, allRecords);
+        // Process primaries (treating BSPs as primaries)
+        _primRecords = _allRecords.Where(m=>m.substation_class=="Primary" || m.substation_class=="Bulk Supply Point").ToList();
+        processPrimaryRecords();
+        checkCancelled();
 
-            // Process distrubtion
-            var distRecords = allRecords.Where(m=>m.substation_class=="Distribution").ToList();
-            processDistRecords(distRecords);
+        // Nudge some GSPs so they do not block underlying primaries
+        checkGspsPostImport();
+        checkCancelled();
+
+        // Process distribution
+        _distRecords = _allRecords.Where(m=>m.substation_class=="Distribution").ToList();
+        processDistRecords();
+        checkCancelled();
+        
+        // Now load boundaries
+        var boundUrl = "/api/explore/v2.1/catalog/datasets/substation_combined_service_areas/exports/json?lang=en&timezone=Europe%2FLondon";
+        _boundaryRecords = get<List<NPGCombinedServiceAreaRecord>>(boundUrl);
+        
+        processBoundaryRecords();
+        
     }
 
-    private void processGspRecords(List<NPGSiteUtilisationRecord> records) {
+    private void processBoundaryRecords() {
+        var boundaryLoader = new GISBoundaryLoader(this);
+        using ( var da = new DataAccess() ) {
+            foreach( var record in _boundaryRecords) {
+                GISData gisData=null;
+                var name = record.primary;
+                if ( record.substation_class=="Primary" || record.substation_class=="BSP" ) {
+                    var pss = da.Substations.GetPrimarySubstation(ImportSource.NorthernPowerGridOpenData,null,null,name);
+                    if ( pss!=null) {
+                        gisData = pss.GISData;
+                    } else {
+                        Logger.Instance.LogWarningEvent($"Cannot find primary substation [{name}]");
+                    }
+                } else if ( record.substation_class == "GSP") {
+                    var gsp = da.SupplyPoints.GetGridSupplyPointLike(name);
+                    if ( gsp!=null) {
+                        gisData = gsp.GISData;
+                    } else {
+                        Logger.Instance.LogWarningEvent($"Cannot find GSP [{name}]");
+                    }
+                } else {
+                    Logger.Instance.LogWarningEvent($"Unexpected substation_class found [{record.substation_class}]");
+                }
+                //
+                if ( gisData!=null) {
+                    // This stores the geometry and GISData id for later loading
+                    boundaryLoader.AddGISData(gisData,record.geo_shape.geometry);
+                }
+            }
+        }
+        // Add/remove/edit boundaries as required
+        boundaryLoader.Load();
+    }
+
+    private class GISBoundaryLoader {
+        private Dictionary<int,Geometry> _geometryDict = new Dictionary<int, Geometry>();
+
+        private NorthernPowerGridLoader _parentLoader;
+
+        public GISBoundaryLoader(NorthernPowerGridLoader parentLoader) {
+            _parentLoader = parentLoader;
+        }
+        public void AddGISData( GISData data, Geometry geometry) {
+            if ( _geometryDict.ContainsKey(data.Id)) {
+                Logger.Instance.LogWarningEvent($"Duplicate key found in feature dict for gidDataId=[{data.Id}]");
+            } else {
+                _geometryDict.Add(data.Id,geometry);
+            }
+        }
+
+        private void addNewBoundaries(DataAccess da, GISData gisData, Geometry geometry) {
+            var boundaries = new List<GISBoundary>();
+            var boundariesToAdd = new List<GISBoundary>();
+            var boundariesToDelete = new List<GISBoundary>();
+            var elements = geometry.coordinates.Deserialize<double[][][][]>();
+            if ( elements!=null && boundaries!=null) {
+                gisData.UpdateBoundaryPoints(elements,boundaries, boundariesToAdd, boundariesToDelete);
+            }
+            // add boundaries
+            foreach( var boundary in boundariesToAdd) {
+                da.GIS.Add(boundary);
+                _parentLoader.checkCancelled();
+            }
+        }
+
+        public void Load() {
+            var sw = new Stopwatch();
+            sw.Start();
+            using( var da = new DataAccess() ) {
+                _parentLoader.checkCancelled();
+                var boundaryDict = da.GIS.GetBoundaryDict(_geometryDict.Keys.ToArray());
+                _parentLoader.checkCancelled();
+
+                var boundariesToAdd = new List<GISBoundary>();
+                var boundariesToDelete = new List<GISBoundary>();
+                foreach( var k in _geometryDict.Keys) {
+                    var gisData = da.GIS.Get<GISData>(k);
+                    if ( gisData!=null ) {
+                        var geometry = _geometryDict[k];
+                        IList<GISBoundary> boundaries;
+                        if ( boundaryDict.ContainsKey(k)) {
+                            boundaries = boundaryDict[k];
+                        } else {
+                            boundaries = new List<GISBoundary>();
+                        }
+                        var elements = geometry.coordinates.Deserialize<double[][][][]>();
+                        if ( elements!=null && boundaries!=null) {
+                            updateBoundaryPoints(gisData,elements,boundaries, boundariesToAdd, boundariesToDelete);
+                        }
+                    }
+                    _parentLoader.checkCancelled();
+                }
+                // add boundaries
+                foreach( var boundary in boundariesToAdd) {
+                    da.GIS.Add(boundary);
+                    _parentLoader.checkCancelled();
+                }
+                // remove boundaries
+                foreach( var boundary in boundariesToDelete) {
+                    da.GIS.Delete(boundary);
+                    _parentLoader.checkCancelled();
+                }
+                _parentLoader.checkCancelled();
+                //
+                da.CommitChanges();
+            }
+            //
+            sw.Stop();
+            //
+            Logger.Instance.LogInfoEvent($"Boundary load for [{_geometryDict.Keys.Count}] features done in {sw.Elapsed}s");
+        }
+        private void updateBoundaryPoints(GISData gisData, double[][][][] elements, 
+                IList<GISBoundary> boundaries, 
+                IList<GISBoundary> boundariesToAdd,
+                IList<GISBoundary> boundariesToDelete) {
+            var numBoundaries = elements.Length;
+            if ( numBoundaries>1) {
+                //??Logger.Instance.LogInfoEvent($"Num boundaries > 1 [{numBoundaries}]");
+            }
+
+            gisData.AdjustBoundaryLists(numBoundaries,boundaries,boundariesToAdd,boundariesToDelete);
+
+            for(int i=0; i<numBoundaries;i++) {
+                int length = elements[i][0].Length;
+                boundaries[i].Latitudes = new double[length];
+                boundaries[i].Longitudes = new double[length];
+                for(int index=0; index<length; index++) {
+                    boundaries[i].Latitudes[index] = elements[i][0][index][1];
+                    boundaries[i].Longitudes[index] = elements[i][0][index][0];
+                }
+            }
+        }
+
+    }
+
+
+    private void checkGspsPostImport() {
+        using( var da = new DataAccess() ) {
+            var dno = da.Organisations.GetDistributionNetworkOperator(DNOCode.NorthernPowerGrid);
+            var gsps = da.SupplyPoints.GetGridSupplyPoints(dno);
+            var toDelete = new List<GridSupplyPoint>();
+            foreach( var gsp in gsps) {
+                // Remove ones with no primaries
+                if ( gsp.NumberOfPrimarySubstations==0 ) {
+                    toDelete.Add(gsp);
+                }
+                //
+                var pss = da.Substations.GetPrimarySubstationAtLocation(gsp.GISData.Latitude,gsp.GISData.Longitude);
+                // nudge it if the primary is one of its children
+                if ( pss!=null && pss.GridSupplyPoint.Id==gsp.Id) {
+                    // This will tell the gui to nudge the GSP out of the way
+                    if ( !gsp.NeedsNudge ) {
+                        gsp.NeedsNudge = true;
+                        Logger.Instance.LogInfoEvent($"Nudging GSP [{gsp.Name}] since located over Primary [{pss.Name}]");
+                    }
+                }                
+            }
+            foreach( var gsp in toDelete) {
+                da.SupplyPoints.Delete(gsp);
+                Logger.Instance.LogInfoEvent($"Removing GSP with no primary substations attached [{gsp.Name}]");
+            }
+            //
+            da.CommitChanges();
+        }
+    }
+
+    private void processGspRecords() {
         updateMessage("Processing GSP records ...");
         using ( var da = new DataAccess()) {
             int nAdded=0;
             var dno = da.Organisations.GetDistributionNetworkOperator(DNOCode.NorthernPowerGrid);
-            foreach( var record in records) {
+            foreach( var record in _gspRecords) {
                 var gsp = da.SupplyPoints.GetGridSupplyPointByName(record.site_name);
                 if ( gsp==null) {
                     var ga = getGeographicalArea(da, record);
@@ -65,6 +266,11 @@ public class NorthernPowerGridLoader {
                 // update fields
                 gsp.GISData.Latitude = record.geopoint.lat;
                 gsp.GISData.Longitude = record.geopoint.lon;
+                // Note these are dummy GSPs for primary/BSP that are connected to the grid - need to offset them to allow the underlying primary/BSP
+                // to be shown
+                if ( record.site_name==record.associated_upstream_site ) {
+                    gsp.IsDummy = true;
+                }
             }
             da.CommitChanges();
             Logger.Instance.LogInfoEvent($"[{nAdded}] GSPs added");
@@ -72,13 +278,13 @@ public class NorthernPowerGridLoader {
     }
 
 
-    private void processPrimaryRecords(List<NPGSiteUtilisationRecord> primRecords, List<NPGSiteUtilisationRecord> allRecords) {
+    private void processPrimaryRecords() {
         updateMessage("Processing Primary records ...");        
         using ( var da = new DataAccess()) {
             int nAdded=0;
             var dno = da.Organisations.GetDistributionNetworkOperator(DNOCode.NorthernPowerGrid);
-            foreach( var primRecord in primRecords) {
-                var gsp = getGridSupplyPoint(da,primRecord,allRecords);
+            foreach( var primRecord in _primRecords) {
+                var gsp = getGridSupplyPoint(da,primRecord);
                 if ( gsp!=null) {
                     var pss = da.Substations.GetPrimarySubstation(ImportSource.NorthernPowerGridOpenData,null,null,primRecord.site_name);
                     if ( pss==null) {
@@ -103,12 +309,12 @@ public class NorthernPowerGridLoader {
         return $"{record.geopoint.lat:F6}:{record.geopoint.lon:F6}";
     }
 
-    private GridSupplyPoint getGridSupplyPoint(DataAccess da, NPGSiteUtilisationRecord primRecord, List<NPGSiteUtilisationRecord> allRecords) {
+    private GridSupplyPoint getGridSupplyPoint(DataAccess da, NPGSiteUtilisationRecord primRecord) {
         // First see if we have a GSP in the db
         var gsp = da.SupplyPoints.GetGridSupplyPointByName(primRecord.associated_upstream_site);
         if ( gsp==null ) {
             // see if its connected to a BSP and use this??
-            var bspRecord = allRecords.Where( m=>m.site_name == primRecord.associated_upstream_site).FirstOrDefault();
+            var bspRecord = _allRecords.Where( m=>m.site_name == primRecord.associated_upstream_site).FirstOrDefault();
             if ( bspRecord!=null) {
                 gsp = da.SupplyPoints.GetGridSupplyPointByName(bspRecord.associated_upstream_site);
             }
@@ -133,11 +339,11 @@ public class NorthernPowerGridLoader {
         }
     }
 
-    private void processDistRecords(List<NPGSiteUtilisationRecord> distRecords) {
+    private void processDistRecords() {
         int nAdded = 0;
         int nIgnored = 0;
         Dictionary<string,bool> notFound=new Dictionary<string, bool>();
-        processSegments<NPGSiteUtilisationRecord>(distRecords,
+        processSegments<NPGSiteUtilisationRecord>(_distRecords,
                         // Note - its quicker to process using 100 instead of 1000
                         100,(loaded,total,records)=>{
                             updateMessage($"Processing NPG site utilisation records [{loaded}] of [{total}]...",false);
@@ -161,6 +367,7 @@ public class NorthernPowerGridLoader {
     }
 
     private void processRecords(IEnumerable<NPGSiteUtilisationRecord> records, ref int nAdded, ref int nIgnored, Dictionary<string,bool> notFound) {
+        checkCancelled();
         using ( var da = new DataAccess() ) {
             foreach( var distRecord in records) {
                 var pss = getPrimarySubstation(da,distRecord);
@@ -201,6 +408,27 @@ public class NorthernPowerGridLoader {
     private PrimarySubstation getPrimarySubstation(DataAccess da, NPGSiteUtilisationRecord distRecord) {
         // First see if we have a Primary in the db
         var pss = da.Substations.GetPrimarySubstation(ImportSource.NorthernPowerGridOpenData,null,null,distRecord.associated_upstream_site);
+        if ( pss==null) {
+            // If not then need to make changes to the name and then lookup
+            var name = distRecord.associated_upstream_site;
+            var match1 = _distRegEx1.Match(name);
+            var match2 = _distRegEx2.Match(name);
+            // See if its an alias
+            if ( _primarySiteAliases.ContainsKey(name)) {
+                name = _primarySiteAliases[name];
+            } else if ( match1.Success ) {
+                // e.g. "Fish Dam Lane 22496" => "Fist Dam Lane"
+                name = name.Replace(match1.Groups[1].Value,"");
+            } else if ( match2.Success) {
+                // e.g. "Bingley 33/11 => "Bingley 33/11Kv"
+                name = name.Replace(match2.Groups[1].Value,$"{match2.Groups[1].Value}Kv");
+            }
+            //
+            var list = da.Substations.GetPrimarySubstationsLike(ImportSource.NorthernPowerGridOpenData,name);
+            if ( list.Count>0 ) {
+                pss = list[0];
+            }
+        }
         return pss;
     }
 
@@ -215,6 +443,23 @@ public class NorthernPowerGridLoader {
 
     private void updateProgress(int percent) {
         _taskRunner?.Update(percent);
+    }
+
+    private class NPGCombinedServiceAreaRecord {
+        public GeoPoint geo_point_2d {get; set;}
+        public GeoShape geo_shape {get; set;}
+        public string primary {get; set;}
+        public string substation_class {get; set;}
+    }
+
+    private class GeoShape {
+        public string type {get; set;}
+        public Geometry geometry {get; set;}
+    }
+
+    private class Geometry {
+        public string type {get; set;}
+        public JsonElement coordinates {get; set;}        
     }
 
     private class GeoPoint {

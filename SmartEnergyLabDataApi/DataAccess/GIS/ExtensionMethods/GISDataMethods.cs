@@ -26,7 +26,7 @@ namespace SmartEnergyLabDataApi.Data
             if ( numBoundaries>1) {
                 //??Logger.Instance.LogInfoEvent($"Num boundaries > 1 [{numBoundaries}]");
             }
-            gisData.adjustBoundaryLists(numBoundaries,boundaries,boundariesToAdd,boundariesToDelete);
+            gisData.AdjustBoundaryLists(numBoundaries,boundaries,boundariesToAdd,boundariesToDelete);
 
             for(int i=0; i<numBoundaries;i++) {
                 int length = elements[i][0].Length;
@@ -58,7 +58,7 @@ namespace SmartEnergyLabDataApi.Data
                 IList<GISBoundary> boundariesToDelete) {
             if ( geoShape.type=="MultiPolygon" ) {
                 int numBoundaries = geoShape.multiPolygonCoords.Length;
-                gisData.adjustBoundaryLists(numBoundaries,boundaries,boundariesToAdd,boundariesToDelete);
+                gisData.AdjustBoundaryLists(numBoundaries,boundaries,boundariesToAdd,boundariesToDelete);
                 for( int i=0;i<numBoundaries;i++) {
                     int length = geoShape.multiPolygonCoords[i][0].Length;
                     boundaries[i].Latitudes = new double[length];
@@ -72,7 +72,7 @@ namespace SmartEnergyLabDataApi.Data
                 }
             } else if ( geoShape.type=="Polygon") {
                 int length = geoShape.polygonCoords[0].Length;
-                gisData.adjustBoundaryLists(1,boundaries,boundariesToAdd,boundariesToDelete);
+                gisData.AdjustBoundaryLists(1,boundaries,boundariesToAdd,boundariesToDelete);
                 var boundary = boundaries[0];
                 boundary.Latitudes = new double[length];
                 boundary.Longitudes = new double[length];
@@ -100,7 +100,7 @@ namespace SmartEnergyLabDataApi.Data
         }
 
 
-        private static void adjustBoundaryLists(this GISData gisData,int numBoundaries, 
+        public static void AdjustBoundaryLists(this GISData gisData,int numBoundaries, 
             IList<GISBoundary> boundaries, 
             IList<GISBoundary> boundariesToAdd,
             IList<GISBoundary> boundariesToDelete) {

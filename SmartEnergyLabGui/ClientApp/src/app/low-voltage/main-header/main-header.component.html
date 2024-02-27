@@ -10,8 +10,8 @@
             <button *ngIf="searchService.isShown" mat-icon-button aria-label="Search" (click)="showSearch(false)">
                 <mat-icon>close</mat-icon>
             </button>
-            <mat-autocomplete #auto (optionSelected)="searchOptionSelected($event)" (opened)="autoCompleteOpened()" (closed)="autoCompleteClosed()">
-                <mat-option *ngFor="let option of searchOptions" [value]="option.name">
+            <mat-autocomplete #auto (optionSelected)="searchOptionSelected($event)" (opened)="autoCompleteOpened()" (closed)="autoCompleteClosed()" [displayWith]="display">
+                <mat-option *ngFor="let option of searchOptions" [value]="option.key">
                     <img class="substationIcon" [src]="getImageSrc(option.type)" />
                     <span>{{option.name}}</span>
                 </mat-option>
