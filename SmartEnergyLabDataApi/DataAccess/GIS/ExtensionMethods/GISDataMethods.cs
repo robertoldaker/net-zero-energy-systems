@@ -21,7 +21,8 @@ namespace SmartEnergyLabDataApi.Data
         public static void UpdateBoundaryPoints(this GISData gisData, double[][][][] elements, 
                 IList<GISBoundary> boundaries, 
                 IList<GISBoundary> boundariesToAdd,
-                IList<GISBoundary> boundariesToDelete) {
+                IList<GISBoundary> boundariesToDelete,
+                bool updateLocations=true) {
             var numBoundaries = elements.Length;
             if ( numBoundaries>1) {
                 //??Logger.Instance.LogInfoEvent($"Num boundaries > 1 [{numBoundaries}]");
@@ -41,14 +42,48 @@ namespace SmartEnergyLabDataApi.Data
                 }
             }
 
-            var maxIndex = getMaxIndex(elements);
+            if ( updateLocations ) {
+                var maxIndex = getMaxIndex(elements);
 
-            // set longitude/lat as average of boundary with most points until we can get a better fix?
-            if ( boundaries[maxIndex].Latitudes.Length!=0 ) {
-                gisData.Latitude = boundaries[maxIndex].Latitudes.Sum()/boundaries[maxIndex].Latitudes.Length;
+                // set longitude/lat as average of boundary with most points until we can get a better fix?
+                if ( boundaries[maxIndex].Latitudes.Length!=0 ) {
+                    gisData.Latitude = boundaries[maxIndex].Latitudes.Sum()/boundaries[maxIndex].Latitudes.Length;
+                }
+                if ( boundaries[maxIndex].Longitudes.Length!=0 ) {
+                    gisData.Longitude = boundaries[maxIndex].Longitudes.Sum()/boundaries[maxIndex].Longitudes.Length;
+                }
             }
-            if ( boundaries[maxIndex].Longitudes.Length!=0 ) {
-                gisData.Longitude = boundaries[maxIndex].Longitudes.Sum()/boundaries[maxIndex].Longitudes.Length;
+        }
+
+        public static void UpdateBoundaryPoints(this GISData gisData, double[][][] elements, 
+                IList<GISBoundary> boundaries, 
+                IList<GISBoundary> boundariesToAdd,
+                IList<GISBoundary> boundariesToDelete,
+                bool updateLocations=true) {
+            var numBoundaries = 1;
+            gisData.AdjustBoundaryLists(numBoundaries,boundaries,boundariesToAdd,boundariesToDelete);
+
+            int length = elements[0].Length;
+            boundaries[0].Latitudes = new double[length];
+            boundaries[0].Longitudes = new double[length];
+            for(int index=0; index<length; index++) {
+                var eastings = elements[0][index][0];
+                var northings = elements[0][index][1];
+                var latLong=LatLonConversions.ConvertOSToLatLon(eastings,northings);
+                boundaries[0].Latitudes[index] = latLong.Latitude;
+                boundaries[0].Longitudes[index] = latLong.Longitude;
+            }
+
+            if ( updateLocations ) {
+                var maxIndex = 0;
+
+                // set longitude/lat as average of boundary with most points until we can get a better fix?
+                if ( boundaries[maxIndex].Latitudes.Length!=0 ) {
+                    gisData.Latitude = boundaries[maxIndex].Latitudes.Sum()/boundaries[maxIndex].Latitudes.Length;
+                }
+                if ( boundaries[maxIndex].Longitudes.Length!=0 ) {
+                    gisData.Longitude = boundaries[maxIndex].Longitudes.Sum()/boundaries[maxIndex].Longitudes.Length;
+                }
             }
         }
 

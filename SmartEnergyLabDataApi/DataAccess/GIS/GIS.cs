@@ -155,6 +155,20 @@ namespace SmartEnergyLabDataApi.Data
             return new Tuple<int,int>(mbs,list.Count);
         }
 
+        public IList<GISBoundary> GetPrimaryBoundaries(ImportSource source) {
+            PrimarySubstation pss=null;
+
+            var gisIds = Session.QueryOver<GISData>().Left.JoinAlias(m=>m.PrimarySubstation,()=>pss).
+                    Where(m=>m.PrimarySubstation!=null && pss.Source == source).Select(m=>m.Id).List<int>().ToArray();
+
+            var list = Session.QueryOver<GISBoundary>().Where( m=>m.GISData.Id.IsIn(gisIds)).Fetch(SelectMode.Fetch,m=>m.GISData).List();
+            return list;
+        }
+
+        public PrimarySubstation GetPrimarySubstation(int gisId) {
+            return Session.QueryOver<PrimarySubstation>().Where( m=>m.GISData.Id == gisId).Take(1).SingleOrDefault();
+        }
+
 
     }
 }

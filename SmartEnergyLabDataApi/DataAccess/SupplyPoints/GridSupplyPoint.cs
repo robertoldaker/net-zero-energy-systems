@@ -9,7 +9,8 @@ namespace SmartEnergyLabDataApi.Data
         File,
         NationalGridDistributionOpenData,
         UKPowerNetworksOpenData,
-        NorthernPowerGridOpenData
+        NorthernPowerGridOpenData,
+        ScottishAndSouthernOpenData
     }
 
     [Class(0, Table = "grid_supply_points")]

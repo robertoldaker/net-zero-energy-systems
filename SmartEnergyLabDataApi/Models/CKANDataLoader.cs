@@ -23,6 +23,13 @@ namespace SmartEnergyLabDataApi.Models
             _datasets = get<CKANDatasets>(_packageUrl);
         }
 
+        public CKANDataLoader(string baseUrl, string packageUrl, string packageName) {
+            _baseUrl = baseUrl;
+            _packageName = packageName;
+            _packageUrl = $"/api/3/action/package_show?id=generation-availability-and-network-capacity";
+            _datasets = get<CKANDatasets>(_packageUrl);
+        }
+
 
         public List<T> LoadAll<T>(string datasetName, Action<int>? progress=null) {
             var list = new List<T>();

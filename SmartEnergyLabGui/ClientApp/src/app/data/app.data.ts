@@ -148,7 +148,8 @@ export enum LoadNetworkDataSource {
     All,
     NGED,
     UKPower,
-    NPG
+    NPG,
+    SSEN
 }
 
 /**

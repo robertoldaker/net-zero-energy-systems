@@ -1,4 +1,4 @@
-<google-map width="100%" height="100%" [center]="center" [zoom]="zoom" [options]="options" (zoomChanged)="zoomChanged()" (centerChanged)="centerChanged()">
+<google-map width="100%" height="100%" [center]="center" [zoom]="zoom" [options]="options" (zoomChanged)="zoomChanged()" (centerChanged)="centerChanged($event)">
     <div #key>
         <app-map-key></app-map-key>
     </div>

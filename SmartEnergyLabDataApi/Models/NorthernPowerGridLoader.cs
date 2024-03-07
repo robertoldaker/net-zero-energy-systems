@@ -134,21 +134,6 @@ public class NorthernPowerGridLoader {
             }
         }
 
-        private void addNewBoundaries(DataAccess da, GISData gisData, Geometry geometry) {
-            var boundaries = new List<GISBoundary>();
-            var boundariesToAdd = new List<GISBoundary>();
-            var boundariesToDelete = new List<GISBoundary>();
-            var elements = geometry.coordinates.Deserialize<double[][][][]>();
-            if ( elements!=null && boundaries!=null) {
-                gisData.UpdateBoundaryPoints(elements,boundaries, boundariesToAdd, boundariesToDelete);
-            }
-            // add boundaries
-            foreach( var boundary in boundariesToAdd) {
-                da.GIS.Add(boundary);
-                _parentLoader.checkCancelled();
-            }
-        }
-
         public void Load() {
             var sw = new Stopwatch();
             sw.Start();

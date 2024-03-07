@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Text.Json;
 using System.Web;
+using CommonInterfaces.Models;
 using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
 
@@ -58,6 +60,30 @@ namespace SmartEnergyLabDataApi.Models
             }
             return c;
         }
+
+        public static void ConvertToGeoJson(string srcFile, string geoJsonFile) {
+
+            var processStartInfo = new ProcessStartInfo();
+            processStartInfo.CreateNoWindow = true;
+            processStartInfo.UseShellExecute = false;
+            processStartInfo.Arguments = $"-f GeoJSON \"{geoJsonFile}\" \"{srcFile}\"";
+            // Can't get the service to pick up ogr2ogr so have to mention it explicitly
+            if ( AppEnvironment.Instance.Context == Context.Production) {
+                processStartInfo.FileName = "/home/roberto/anaconda3/bin/ogr2ogr";
+            } else {
+                processStartInfo.FileName = "ogr2ogr";
+            }
+
+            // enable raising events because Process does not raise events by default
+            processStartInfo.UseShellExecute = false;
+            var process = new Process();
+            process.StartInfo = processStartInfo;
+
+            process.Start();
+
+            process.WaitForExit();
+        }
+
 
     }
 

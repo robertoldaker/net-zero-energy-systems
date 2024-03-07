@@ -37,6 +37,10 @@
                 <img class="dnoImg" src="assets/images/northern-power-grid-icon.png"/>
                 <span>Northern Power Grid</span>
             </button>
+            <button mat-menu-item (click)="loadNetworkData(LoadNetworkDataSource.SSEN)">
+                <img class="dnoImg" src="assets/images/scottish-and-southern-electricity-networks-icon.png"/>
+                <span>Scottish and Southern Electricity Networks</span>
+            </button>
         </mat-menu>                          
         <button mat-raised-button color="primary" (click)="refresh()">
             <mat-icon>refresh</mat-icon>

@@ -375,7 +375,8 @@ namespace SmartEnergyLabDataApi.Models
                         if ( stream!=null) {
                             saveToFile(stream, gPkgFile);
                             checkCancelled();
-                            convertToGeoJson(gPkgFile,geoJsonFile);
+                            updateMessage($"Converting [{_spd.name}] to geoJson ...");
+                            GISUtilities.ConvertToGeoJson(gPkgFile,geoJsonFile);
                         }
                     }
                 }
@@ -826,31 +827,6 @@ namespace SmartEnergyLabDataApi.Models
                 };
             }
         }
-
-        private void convertToGeoJson(string gPkgFile, string geoJsonFile) {
-            updateMessage($"Converting [{_spd.name}] to geoJson ...");
-
-            var processStartInfo = new ProcessStartInfo();
-            processStartInfo.CreateNoWindow = true;
-            processStartInfo.UseShellExecute = false;
-            processStartInfo.Arguments = $"-f GeoJSON \"{geoJsonFile}\" \"{gPkgFile}\"";
-            // Can't get the service to pick up ogr2ogr so have to mention it explicitly
-            if ( AppEnvironment.Instance.Context == Context.Production) {
-                processStartInfo.FileName = "/home/roberto/anaconda3/bin/ogr2ogr";
-            } else {
-                processStartInfo.FileName = "ogr2ogr";
-            }
-
-            // enable raising events because Process does not raise events by default
-            processStartInfo.UseShellExecute = false;
-            var process = new Process();
-            process.StartInfo = processStartInfo;
-
-            process.Start();
-
-            process.WaitForExit();
-        }
-
 
         private HttpClient getHttpClientGpkg()
         {

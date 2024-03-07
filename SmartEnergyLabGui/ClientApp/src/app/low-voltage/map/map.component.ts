@@ -38,14 +38,16 @@ export class MapComponent extends ComponentBase implements OnInit, AfterViewInit
 
     }
 
-    zoom = 7
+    // initial zoom and position for UK including Shetland isles
+    zoom = 6
     center: google.maps.LatLngLiteral = {
-        lat: 52.561928, lng: -1.464854
+        //??lat: 52.561928, lng: -1.464854        
+        lat: 55.6, lng: -1.464854
     }
     options: google.maps.MapOptions = {            
         disableDoubleClickZoom: true,
         mapTypeId: 'roadmap',
-        minZoom: 7,
+        minZoom: this.zoom,
         styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }, { stylers: [{ gamma: 1.5 }] }],
         mapTypeControl: false,
         scaleControl: true
@@ -95,12 +97,13 @@ export class MapComponent extends ComponentBase implements OnInit, AfterViewInit
     } 
     
     zoomChanged() {
-        console.log(`zoomChanged ${this.map?.googleMap?.getZoom()}`)
+        //??console.log(`zoomChanged ${this.map?.googleMap?.getZoom()}`)
     }
 
-    centerChanged() {
-        //console.log('centerChanged')
-        //console.log(this.center)
+    centerChanged(e: any) {
+        //??console.log(e)
+        //??console.log('centerChanged')
+        //??console.log(this.center)
     }
 
     panToBounds(bounds: google.maps.LatLngBounds) {
