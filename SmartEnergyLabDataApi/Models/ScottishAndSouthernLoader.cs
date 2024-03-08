@@ -55,8 +55,7 @@ public class ScottishAndSouthernLoader {
     }
 
     private void processSSENSubstationData() {
-        //??var dataFile = downloadSSENSubstationData();
-        var dataFile = Path.Combine(AppFolders.Instance.Temp,"ssen-substation-data.csv");
+        var dataFile = downloadSSENSubstationData();
         var loader = new DistributionDataLoader(this,dataFile);
         loader.Load();
     }
