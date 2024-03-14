@@ -81,21 +81,27 @@ def main():
         inputData = inputData.replace("$COMMIT_ID$",commitId).replace("$COMMIT_DATE$",commitDate)
 
         # write out file
+        #if not outputVersionFile:
+        #    outputVersionFile = inputVersionFile
+
         with open(outputVersionFile, 'w') as file:
             file.write(inputData)
 
     ap = argparse.ArgumentParser(description="CheckVersion")
-    ap.add_argument("folder")
-    ap.add_argument("inputVersionFile")
-    ap.add_argument("outputVersionFile")
+    ap.add_argument("folder",nargs='?',help="Folder to perform git checks",default='.')
+    ap.add_argument("inputVersionFile",nargs='?',help="Input file to insert git log info",default='')
+    ap.add_argument("outputVersionFile",nargs='?',help="Output file for git log info. Use blank to overite the input file.",default='')
     args = vars(ap.parse_args())
     folder = args['folder']
     if not os.path.exists(folder):
         raise Exception(f'folder [{folder}] does not exist')
     inputVersionFile = args['inputVersionFile']
-    if not os.path.exists(inputVersionFile):
+    if inputVersionFile and not os.path.exists(inputVersionFile):
         raise Exception(f'Input file [{inputVersionFile}] does not exist')
     outputVersionFile = args['outputVersionFile']
+    # use input file as output file if output file not set
+    if not outputVersionFile:
+        outputVersionFile = inputVersionFile
     
     #
     gu = GitUtils(folder)
@@ -117,10 +123,11 @@ def main():
             writeToStdError(file)
         exit(3)
     
-    info = gu.GetLatestLogInfo()
-    commitId = info[0].decode()
-    commitDate = info[1].decode()
-    UpdateVersionFile()
+    if inputVersionFile:
+        info = gu.GetLatestLogInfo()
+        commitId = info[0].decode()
+        commitDate = info[1].decode()
+        UpdateVersionFile()
     
 if __name__ == '__main__':
     main()
