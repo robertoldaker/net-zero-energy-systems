@@ -35,12 +35,8 @@ class GitUtils:
                 gitState = GitState.NEEDS_COMMIT
                 while lineIndex<len(lines):
                     line = lines[lineIndex].decode()
-                    if line.startswith('\tmodified:'):
-                        file = line.replace('\tmodified:','')
-                        filesToCommit.append(file)
-                    if line.startswith('\tdeleted:'):
-                        file = line.replace('\tdeleted:','')
-                        filesToCommit.append(file)
+                    if line.startswith('\t'):
+                        filesToCommit.append(line)
                     if line == b'':
                         break
                     lineIndex+=1
@@ -49,8 +45,7 @@ class GitUtils:
                 while lineIndex<len(lines):
                     line = lines[lineIndex].decode()
                     if line.startswith('\t'):
-                        file = line.replace('\t','')
-                        filesToAdd.append(file)
+                        filesToAdd.append(line)
                     if line == b'':
                         break
                     lineIndex+=1
@@ -105,6 +100,7 @@ def main():
     #
     gu = GitUtils(folder)
     (gs,filesToCommit,filesToAdd) = gu.GetStatus()
+    print(gs)
     if gs == GitState.NEEDS_COMMIT:
         writeToStdError(f'Git repository needs a commit and push to publish staged changes before app. can be published. Files to commit ...')
         for file in filesToCommit:
