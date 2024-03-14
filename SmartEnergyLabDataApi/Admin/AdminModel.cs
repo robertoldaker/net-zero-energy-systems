@@ -62,6 +62,10 @@ namespace SmartEnergyLabDataApi.Models
 
     public class SystemInfo {
 
+        public SystemInfo() {
+            VersionData = new VersionData();
+        }
+
         public int ProcessorCount { 
             get {
                 return Environment.ProcessorCount;
@@ -73,6 +77,8 @@ namespace SmartEnergyLabDataApi.Models
                 return AdminModel.Instance.MaintenanceMode;
             }
         }
+
+        public VersionData VersionData { get; private set; }
     }
 
     public class LogData {

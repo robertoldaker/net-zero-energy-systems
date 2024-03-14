@@ -71,5 +71,6 @@
             "label": "npm: build - SmartEnergyLabGui/ClientApp",
             "detail": "ng build"
         }
+        
     ]
 }
