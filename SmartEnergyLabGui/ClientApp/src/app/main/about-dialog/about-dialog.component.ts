@@ -121,8 +121,8 @@ export class AboutDialogComponent implements OnInit {
     }
 
     versions: Version[]
-    commitId: string = "$COMMIT_ID$"
-    commitDate: string = "$COMMIT_DATE$"
+    commitId: string = "e8f2f7265f86a1a87f36f5f44e5641d70d354193"
+    commitDate: string = "Thu Mar 14 17:16:14 2024 +0000"
     DialogFooterButtons: any = DialogFooterButtonsEnum
     ModificationTypeEnum: any = ModificationTypeEnum
 

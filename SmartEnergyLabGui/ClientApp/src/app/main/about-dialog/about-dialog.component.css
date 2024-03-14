@@ -3,6 +3,21 @@ div#container {
     max-height: 400px;
 }
 
+div.sectionTitle {
+    font-weight: bold;
+    color: var(--primary-colour);
+    font-size: 1em;
+}
+
+table.versionTable {
+    font-size: 0.9rem;
+}
+
+table.versionTable td:first-child {
+    font-weight:bold;
+    padding-right: 1rem;
+}
+
 div.version {
 }
 

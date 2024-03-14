@@ -1,6 +1,11 @@
 <app-dialog-header [dialogRef]="dialogRef">Smart Energy Tools ({{mode}})</app-dialog-header>
-<div>
-    <table>
+<div class="sectionTitle">Build info</div>
+<div style="padding-left: 1rem">
+    <table class="versionTable">
+        <tr>
+            <td>Version:</td>
+            <td>{{versions[0].name}}</td>
+        </tr>
         <tr>
             <td>Commit id:</td>
             <td>{{commitId}}</td>
@@ -11,9 +16,10 @@
         </tr>
     </table>
 </div>
-<div id="container">
+<div class="sectionTitle" style="margin-top: 0.5rem">Version history</div>
+<div id="container" style="padding-left: 1rem">
     <div class="version" *ngFor="let version of versions" >
-        <div id="title">Version {{version.name}}</div>
+        <div id="title">{{version.name}}</div>
         <ul style="padding-left: 1rem">
             <li id="modification" *ngFor="let mod of version.modifications">
                 <div id="description">{{mod.description}}</div>
