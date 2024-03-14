@@ -10,8 +10,8 @@ function raiseError()
     exit -1;
 }
 
-# Not implemented yet
-# perl -I../Build ../Build/UpdateVersionFile.pl .. VersionData.csx VersionData.cs
+# Check version control and also generate VersionData.cs before publishing
+python ../Scripts/CheckVersion.py .. ./ClientApp/src/app/main/about-dialog/about-dialog.component.ts
 if [ $? -ne 0 ]; then
     raiseError;
 fi 
