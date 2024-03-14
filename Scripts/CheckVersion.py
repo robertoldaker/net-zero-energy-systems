@@ -100,7 +100,6 @@ def main():
     #
     gu = GitUtils(folder)
     (gs,filesToCommit,filesToAdd) = gu.GetStatus()
-    print(gs)
     if gs == GitState.NEEDS_COMMIT:
         writeToStdError(f'Git repository needs a commit and push to publish staged changes before app. can be published. Files to commit ...')
         for file in filesToCommit:
