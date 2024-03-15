@@ -10,7 +10,7 @@ function raiseError()
     exit -1;
 }
 
-# Check version control and also generate VersionData.cs before publishing
+# Check version control and also update about-dialog before publishing
 python ../Scripts/CheckVersion.py .. ./ClientApp/src/app/main/about-dialog/about-dialog.component.ts
 if [ $? -ne 0 ]; then
     raiseError;
