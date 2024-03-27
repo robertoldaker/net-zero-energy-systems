@@ -111,6 +111,24 @@ ogr2ogr
 cd websites/SmartEnergyLabDataApi
 ln -s /home/rob/anaconda3/bin/ogr2ogr .
 
+#
+# install smtp server - also installs postfix which is what we want
+#
+# see also https://hostadvice.com/how-to/how-to-setup-postfix-as-send-only-mail-server-on-an-ubuntu-18-04-dedicated-server-or-vps/
+sudo apt install mailutils
+# will start a gui - enter "internet site"
+# and "net-zero-energy-systems.org" as domain
+# now configure postfix
+sudo nano /etc/postfix/main.cf
+# make it only respond locally by ensuring "inet_interfaces = loopback-only" is set
+
+# restart postfix (could use sudo systemctl restart postfix?)
+sudo service postfix restart
+# Look in these places for errors
+# sudo cat /var/log/mail.log
+# sudo cat /var/log/mail.err
+# postqueue -p
+
 
 
 
