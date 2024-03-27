@@ -230,5 +230,3 @@ _Pvt_Extensions
 # FAKE - F# Make
 .fake/
 
-#/ClientApp/src/app/main/about-dialog/about-dialog.component.ts
-about-dialog.component.ts
