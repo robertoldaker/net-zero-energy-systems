@@ -11,7 +11,7 @@ function raiseError()
 }
 
 # Check version control and also generate VersionData.cs before publishing
-python ../Scripts/CheckVersion.py .. VersionData.csx VersionData.cs
+python ../Scripts/CheckVersion.py . VersionData.csx VersionData.cs
 if [ $? -ne 0 ]; then
     raiseError;
 fi 
