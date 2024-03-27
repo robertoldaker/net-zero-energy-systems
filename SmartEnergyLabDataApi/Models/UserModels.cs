@@ -1,9 +1,12 @@
 using System.Security.Claims;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.ObjectPool;
+using Org.BouncyCastle.Crypto.Modes;
 using SmartEnergyLabDataApi.Common;
 using SmartEnergyLabDataApi.Controllers;
 using SmartEnergyLabDataApi.Data;
@@ -101,6 +104,38 @@ namespace SmartEnergyLabDataApi.Models
             }).Wait();
         }
 
+        public bool ForgotPassword() {
+            if ( _user!=null ) {
+                sendChangePasswordLink();
+                return true;
+            } else {
+                addError("email",$"No user registered with the given email address");
+                return false;
+            }
+        }
+
+        private void sendChangePasswordLink() {
+            // This link lasts for one day
+            var ld = new LinkData<int>(_user.Id, new TimeSpan(1, 0, 0, 0));
+            string token = Crypto.Instance.EncryptAsBase64(ld.Serialize());
+            string url = _c.Request.GetFullyQualifiedUrl("/ResetPassword", new { token=token});
+            //
+            if ( AppEnvironment.Instance.Context==CommonInterfaces.Models.Context.Development) {
+                url = url.Replace(":5095",":44463");
+            }
+            //
+            var email = new Email(Email.SystemEmailAddress.Admin);
+            email.Send(_user.Email,"Net Zero Enery Systems password reset",@$"
+<div>Please find a link to reset your password below:-</div>
+<br/>
+<div>
+<a href=""{url}"">{url}</a>
+</div>
+<br/>
+<div>Net Zero Energy Systems</div>");
+        }
+
+
     }
 
     public class CurrentUserModel : DbModel {
@@ -120,6 +155,59 @@ namespace SmartEnergyLabDataApi.Models
         }
 
     }
+
+    public class ResetPassword {
+        public string Token {get; set;}
+        public string NewPassword1 {get; set;}
+        public string NewPassword2 {get; set;}
+        public LinkData<int> GetLinkData() {
+            var token = Token.Replace(" ","+"); // + gets interpreted as space by the browser so need to revert
+            string json;
+            json = Crypto.Instance.DecryptFromBase64(token);
+            var ld = JsonSerializer.Deserialize<LinkData<int>>(json);
+            return ld;
+        }
+    }
+
+    public class ResetPasswordModel : DbModel
+    {
+        private ResetPassword _resetPassword;
+        private User _user;
+        public ResetPasswordModel(ControllerBase c, ResetPassword resetPassword) : base(c) {
+            _resetPassword = resetPassword;
+        }
+
+        protected override void checkModel()
+        {
+            //
+            LinkData<int> ld;
+            try {
+                ld = _resetPassword.GetLinkData();
+            } catch ( Exception) {
+                this.addError("","Problem decrypting token - please request a new reset password link");
+                return;
+            }
+            if ( ld.HasTimedOut()) {
+                this.addError("","Link has timed out - please request a new reset password link");
+            } else {
+                _user = _da.Users.GetUser(ld.Data);
+                //
+                if ( _user==null)  {
+                    this.addError("",$"Cannot find user with id=[{ld.Data}]");
+                } else if ( _resetPassword.NewPassword1!=_resetPassword.NewPassword2) {
+                    this.addError("newPassword1","Passwords do not match");
+                    this.addError("newPassword2","Passwords do not match");
+                }
+            }
+
+        }
+
+        protected override void beforeSave()
+        {
+            _user.SetPassword(_resetPassword.NewPassword1);
+        }
+    }
+        
 
     public class ChangePassword {
         public string Password {get; set;}

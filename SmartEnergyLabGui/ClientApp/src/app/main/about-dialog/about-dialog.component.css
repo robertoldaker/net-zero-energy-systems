@@ -3,6 +3,10 @@ div#container {
     max-height: 400px;
 }
 
+div.section {
+    padding-left: 1rem;
+}
+
 div.sectionTitle {
     font-weight: bold;
     color: var(--primary-colour);

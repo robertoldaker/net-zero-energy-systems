@@ -5,6 +5,7 @@ import { MessageDialogIcon } from 'src/app/dialogs/message-dialog/message-dialog
 import { ShowMessageService } from 'src/app/main/show-message/show-message.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { ElsiDataService } from '../elsi-data.service';
+import { DialogFooterButtonsEnum } from 'src/app/dialogs/dialog-footer/dialog-footer.component';
 
 @Component({
     selector: 'app-elsi-dialog',
@@ -110,7 +111,8 @@ export class ElsiDialogComponent extends ComponentBase implements OnInit {
         if ( this.service.dataset) {
             this.dialogService.showMessageDialog({
                 message: `Are you sure you wish to delete the dataset <b>${this.service.dataset.name}</b>?`,
-                icon: MessageDialogIcon.Info
+                icon: MessageDialogIcon.Info,
+                buttons: DialogFooterButtonsEnum.OKCancel
                 }, ()=>{
                     if ( this.service.dataset) {
                         this.service.deleteDataset(this.service.dataset, ()=>{

@@ -3,6 +3,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { DataModel, DataRow, LoadNetworkDataSource } from 'src/app/data/app.data';
 import { DataClientService } from 'src/app/data/data-client.service';
+import { DialogFooterButtonsEnum } from 'src/app/dialogs/dialog-footer/dialog-footer.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { MessageDialogIcon } from 'src/app/dialogs/message-dialog/message-dialog.component';
 import { ComponentBase } from 'src/app/utils/component-base';
@@ -72,7 +73,8 @@ export class AdminDataComponent extends ComponentBase {
         this.dialogService.showMessageDialog(
             {
                 message: `<div><div>This command will delete [<b>${row.numGsps}</b>] GSPs, [<b>${row.numPrimary}</b>] primary substations and [<b>${row.numDist}</b>] distribution substations.</div><div>&nbsp;</div><div>Continue?</div></div>`,
-                icon: MessageDialogIcon.Warning
+                icon: MessageDialogIcon.Warning,
+                buttons: DialogFooterButtonsEnum.OKCancel
             },
             ()=>{
                 this.dataService.DeleteAllSubstations(row.geoGraphicalAreaId,`Deleting all from [${row.geoGraphicalArea}] ...`,()=>{

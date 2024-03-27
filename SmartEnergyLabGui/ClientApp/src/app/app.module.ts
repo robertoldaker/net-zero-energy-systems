@@ -133,6 +133,7 @@ import { LoadflowBranchInfoWindowComponent } from './loadflow/loadflow-map/loadf
 import { MaintenanceOverlayComponent } from './admin/maintenance-overlay/maintenance-overlay.component';
 import { AdminLogsHomeComponent } from './admin/admin-logs-home/admin-logs-home.component';
 import { NeedsLogonComponent } from './main/main-menu/needs-logon/needs-logon.component';
+import { ResetPasswordComponent } from './users/reset-password/reset-password.component';
 
 
 @NgModule({
@@ -221,7 +222,8 @@ import { NeedsLogonComponent } from './main/main-menu/needs-logon/needs-logon.co
         LoadflowBranchInfoWindowComponent,
         MaintenanceOverlayComponent,
         AdminLogsHomeComponent,
-        NeedsLogonComponent
+        NeedsLogonComponent,
+        ResetPasswordComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -232,6 +234,7 @@ import { NeedsLogonComponent } from './main/main-menu/needs-logon/needs-logon.co
             { path: '',   redirectTo: '/lowVoltage', pathMatch: 'full' }, // redirect to `first-component`
             { path: 'bathLV',   redirectTo: '/lowVoltage', pathMatch: 'full' }, // redirect to `first-component`
             { path: 'lowVoltage', component: HomeComponent},
+            { path: 'ResetPassword', component: HomeComponent},
             { path: 'loadflow', component: LoadflowHomeComponent},
             { path: 'elsi', component: ElsiHomeComponent},
             { path: 'classificationTool', component: ClassificationToolComponent},

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DataClientService } from 'src/app/data/data-client.service';
 import { EvDemandClientService } from 'src/app/data/ev-demand-client.service';
+import { DialogFooterButtonsEnum } from 'src/app/dialogs/dialog-footer/dialog-footer.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { MessageDialogIcon } from 'src/app/dialogs/message-dialog/message-dialog.component';
 import { EvDemandService } from 'src/app/low-voltage/ev-demand.service';
@@ -22,7 +23,11 @@ export class AdminGeneralComponent implements OnInit {
     }
 
     startMaintenance() {
-        this.dialogService.showMessageDialog({ message: "This will start maintenance mode. Are you sure?", icon: MessageDialogIcon.Warning}, ()=>{
+        this.dialogService.showMessageDialog({ 
+                message: "This will start maintenance mode. Are you sure?", 
+                icon: MessageDialogIcon.Warning,
+                buttons: DialogFooterButtonsEnum.OKCancel
+            }, ()=>{
             this.dataClientService.MaintenanceMode(true,()=>{
 
             });    
@@ -30,7 +35,11 @@ export class AdminGeneralComponent implements OnInit {
     }
 
     stopMaintenance() {
-        this.dialogService.showMessageDialog({ message: "This will stop maintenance mode. Are you sure?", icon: MessageDialogIcon.Warning}, ()=>{
+        this.dialogService.showMessageDialog({ 
+                message: "This will stop maintenance mode. Are you sure?", 
+                icon: MessageDialogIcon.Warning,
+                buttons: DialogFooterButtonsEnum.OKCancel
+            }, ()=>{
             this.dataClientService.MaintenanceMode(false,()=>{
                 
             });

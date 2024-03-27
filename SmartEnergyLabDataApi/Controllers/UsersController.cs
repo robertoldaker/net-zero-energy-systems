@@ -63,6 +63,28 @@ namespace SmartEnergyLabDataApi.Controllers
             return Ok();
         }
 
+        [HttpPost]
+        [Route("ResetPassword")]
+        public IActionResult ResetPassword([FromBody] ResetPassword resetPassword) {
+            using( var m = new ResetPasswordModel(this, resetPassword) ) {
+                if ( !m.Save() ) {
+                    return this.ModelErrors(m.Errors);
+                }
+            }
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("ForgotPassword")]
+        public IActionResult ForgotPassword([FromBody] Logon logon) {
+            using( var m = new LogonModel(this, logon) ) {
+                if ( !m.ForgotPassword() ) {
+                    return this.ModelErrors(m.Errors);
+                }
+            }
+            return Ok();
+        }
+
         [HttpGet]
         [Route("Users")]
         public IList<User> Users() {

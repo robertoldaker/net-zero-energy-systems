@@ -757,6 +757,12 @@ export interface ChangePassword {
     newPassword2: string
 }
 
+export interface ResetPassword {
+    token: string
+    newPassword1: string
+    newPassword2: string
+}
+
 export interface DataModel {
     rows: DataRow[];
     size: string;

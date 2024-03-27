@@ -16,6 +16,7 @@ import { MessageDialog, MessageDialogComponent } from './message-dialog/message-
 import { AboutElsiDialogComponent } from '../elsi/about-elsi-dialog/about-elsi-dialog.component';
 import { ElsiHelpDialogComponent } from '../elsi/elsi-help-dialog/elsi-help-dialog.component';
 import { NeedsLogonComponent } from '../main/main-menu/needs-logon/needs-logon.component';
+import { ResetPasswordComponent } from '../users/reset-password/reset-password.component';
 
 @Injectable({
     providedIn: 'root'
@@ -27,7 +28,7 @@ export class DialogService {
 
     }
 
-    private defaultOptions:MatDialogConfig<any> = { position: { top: "100px"} }
+    private defaultOptions:MatDialogConfig<any> = { position: { top: "100px"}, disableClose: true }
 
     showClassificationToolDialog() {
         let dialogRef = this.dialog.open(ClassificationToolDialogComponent, this.defaultOptions)
@@ -65,6 +66,12 @@ export class DialogService {
 
     showChangePasswordDialog() {
         let dialogRef = this.dialog.open(ChangePasswordComponent, this.defaultOptions)
+    }
+
+    showResetPasswordDialog(token:string) {
+        let options = { ... this.defaultOptions}
+        options.data = { token: token}
+        let dialogRef = this.dialog.open(ResetPasswordComponent, options)
     }
 
     showElsiDatasetDialog(data: ElsiDataVersion | null) {

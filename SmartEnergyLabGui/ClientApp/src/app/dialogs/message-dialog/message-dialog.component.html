@@ -3,5 +3,5 @@
     <div id="icon"><mat-icon [ngStyle]="{'color': iconColor}">{{iconName}}</mat-icon></div>
     <div id="message" [innerHTML]="data.message"></div>
 </div>
-<app-dialog-footer [dialogRef]="dialogRef" (onOk)="ok()"></app-dialog-footer>
+<app-dialog-footer [buttons]="data.buttons" [dialogRef]="dialogRef" (onOk)="ok()"></app-dialog-footer>
 

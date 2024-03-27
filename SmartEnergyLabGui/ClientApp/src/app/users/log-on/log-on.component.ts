@@ -4,6 +4,9 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { DataClientService } from 'src/app/data/data-client.service';
 import { DialogBase } from 'src/app/dialogs/diaglog-base';
 import { UserService } from '../user.service';
+import { DialogService } from 'src/app/dialogs/dialog.service';
+import { MessageDialogIcon } from 'src/app/dialogs/message-dialog/message-dialog.component';
+import { DialogFooterButtonsEnum } from 'src/app/dialogs/dialog-footer/dialog-footer.component';
 
 @Component({
     selector: 'app-log-on',
@@ -12,7 +15,7 @@ import { UserService } from '../user.service';
 })
 export class LogOnComponent extends DialogBase implements OnInit {
 
-    constructor(public dialogRef: MatDialogRef<LogOnComponent>, private service: DataClientService, private userService: UserService) {
+    constructor(public dialogRef: MatDialogRef<LogOnComponent>, private service: DataClientService, private userService: UserService, private dialogService: DialogService) {
         super();
         this.addFormControl('email')
         this.addFormControl('password')
@@ -22,7 +25,8 @@ export class LogOnComponent extends DialogBase implements OnInit {
     }
 
     logon() {
-        this.service.Logon(this.form.value,(resp)=>{
+        let v = this.getFormValues()
+        this.service.Logon(v,(resp)=>{
             this.userService.checkLogon();
             this.dialogRef.close();
         },(error)=>{
@@ -31,4 +35,30 @@ export class LogOnComponent extends DialogBase implements OnInit {
         )
     }
 
+    forgotPassword() {
+        let v = this.getFormValues()
+        this.service.ForgotPassword(v,(resp)=>{
+            this.dialogRef.close();                    
+            this.dialogService.showMessageDialog({
+                    message: `An email has been sent to <b>${v.email}</b> with a link to change your password.<br/><br/>PLEASE REMEBER TO CHECK YOUR SPAM FOLDER</br>`,
+                    icon: MessageDialogIcon.Info,
+                    buttons: DialogFooterButtonsEnum.Close
+                }, ()=>{})
+        },(error)=>{
+            this.fillErrors(error);
+        }
+        )
+    }
+
+    getFormValues() {
+        let v = this.form.value
+        if ( v.email==null) {
+            v.email = ""
+        }
+        if ( v.password==null) {
+            v.password=""
+        }
+        console.log(v)
+        return v;
+    }
 }

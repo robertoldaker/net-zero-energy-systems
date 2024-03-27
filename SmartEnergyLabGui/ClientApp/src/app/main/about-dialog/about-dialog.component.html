@@ -1,6 +1,6 @@
 <app-dialog-header [dialogRef]="dialogRef">Smart Energy Tools ({{mode}})</app-dialog-header>
 <div class="sectionTitle">Build info</div>
-<div style="padding-left: 1rem">
+<div class="section">
     <table class="versionTable">
         <tr>
             <td>Version:</td>
@@ -17,7 +17,7 @@
     </table>
 </div>
 <div class="sectionTitle" style="margin-top: 0.5rem">Version history</div>
-<div id="container" style="padding-left: 1rem">
+<div id="container" class="section">
     <div class="version" *ngFor="let version of versions" >
         <div id="title">{{version.name}}</div>
         <ul style="padding-left: 1rem">
@@ -31,5 +31,10 @@
         </ul>
         <mat-divider style="margin-bottom: 1rem"></mat-divider>
     </div>
+</div>
+<div class="sectionTitle" style="margin-top: 0.5rem">Credits</div>
+<div class="section" style="font-size: 0.8rem">
+    <div>Icon courtesy of:-</div>
+    <a href="https://www.flaticon.com/free-icons/power-plant" title="power plant icons" target="_blank">Power plant icons created by Freepik - Flaticon</a>
 </div>
 <app-dialog-footer [dialogRef]="dialogRef" [buttons]="DialogFooterButtons.Close"></app-dialog-footer>

@@ -7,6 +7,7 @@ import { MessageDialogIcon } from '../dialogs/message-dialog/message-dialog.comp
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { UserService } from '../users/user.service';
 import { ServiceBase } from '../utils/service-base';
+import { DialogFooterButtonsEnum } from '../dialogs/dialog-footer/dialog-footer.component';
 
 @Injectable({
     providedIn: 'root'
@@ -150,7 +151,8 @@ export class ElsiDataService extends ServiceBase {
                 if ( count>0 && this.dataset) {
                     this.dialogService.showMessageDialog({
                         message: `This will delete <b>${count}</b> day result(s) associated with this dataset <b>${this.dataset.name}</b>. Continue?`,
-                        icon: MessageDialogIcon.Info
+                        icon: MessageDialogIcon.Info,
+                        buttons: DialogFooterButtonsEnum.OKCancel
                         }, ()=>{
                             this.saveUserEdit(userEdit);
                         })        
@@ -173,7 +175,8 @@ export class ElsiDataService extends ServiceBase {
                 if ( count>0 && this.dataset) {
                     this.dialogService.showMessageDialog({
                         message: `This will delete <b>${count}</b> day result(s) associated with this dataset <b>${this.dataset.name}</b>. Continue?`,
-                        icon: MessageDialogIcon.Info
+                        icon: MessageDialogIcon.Info,
+                        buttons: DialogFooterButtonsEnum.OKCancel
                         }, ()=>{
                             this.deleteUserEdit(userEditId);
                         })        

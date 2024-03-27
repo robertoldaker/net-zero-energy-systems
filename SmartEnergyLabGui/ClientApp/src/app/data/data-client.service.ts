@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 
@@ -420,6 +420,10 @@ export class DataClientService implements ILogs {
         this.postDialogRequest<Logon>('/Users/Logon', logon, onOk, onError);
     }
 
+    ForgotPassword(logon: Logon, onOk: (resp: string)=> void | undefined, onError: (error: any)=>void | undefined) {
+        this.postDialogRequest<Logon>('/Users/ForgotPassword', logon, onOk, onError);
+    }
+
     Logoff(onOk: (resp: string)=> void | undefined,) {
         this.postRequest<void>('/Users/Logoff', undefined, onOk);
     }
@@ -430,6 +434,10 @@ export class DataClientService implements ILogs {
 
     ChangePassword(changePassword: ChangePassword, onLoad: (resp: string)=> void | undefined, onError: (error: any)=>void | undefined) {
         this.postDialogRequest<ChangePassword>('/Users/ChangePassword', changePassword, onLoad, onError);
+    }
+
+    ResetPassword(resetPassword: ResetPassword, onLoad: (resp: string)=> void | undefined, onError: (error: any)=>void | undefined) {
+        this.postDialogRequest<ResetPassword>('/Users/ResetPassword', resetPassword, onLoad, onError);
     }
 
     GetUsers(onLoad: (resp: User[])=> void | undefined) {

@@ -1,19 +1,22 @@
 <app-dialog-header [dialogRef]="dialogRef">Log on</app-dialog-header>
-<div mat-dialog-content id="content">
+<div mat-dialog-content id="content" style="width: 10cm">
     <form [formGroup]="form">
         <div>
-            <mat-form-field>
+            <mat-form-field style="width: 7cm">
                 <mat-label>Email</mat-label>
                 <input matInput placeholder="Enter email" formControlName="email" [type]="'email'">
                 <mat-error>{{getError('email')}}</mat-error>    
             </mat-form-field>
         </div>
         <div>
-            <mat-form-field>
+            <mat-form-field style="width: 7cm">
                 <mat-label>Password</mat-label>
                 <input matInput placeholder="Enter password" formControlName="password" [type]="'password'">
                 <mat-error>{{getError('password')}}</mat-error>    
             </mat-form-field>    
+        </div>
+        <div style="margin-bottom: 1rem">
+            <span class="link dialog" (click)="forgotPassword()">Forgot password</span>
         </div>
     </form>
 </div>

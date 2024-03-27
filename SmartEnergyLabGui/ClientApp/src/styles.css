@@ -197,6 +197,11 @@ span.link {
     cursor: pointer;
 }
 
+span.link.dialog {
+    font-size: 0.85em;
+    color: var(--primary-colour)
+}
+
 .iconLink {
     cursor: pointer;
     margin-left: 1rem;
