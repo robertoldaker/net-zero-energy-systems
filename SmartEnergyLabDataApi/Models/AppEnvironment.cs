@@ -90,9 +90,9 @@ namespace SmartEnergyLabDataApi.Models
 
         public string GetGuiBaseUrl() {
             if ( Context == Context.Production) {
-                return "https://lv-data.net-zero-energy-systems.org";
+                return "https://lv-app.net-zero-energy-systems.org";
             } else if ( Context == Context.Staging) {
-                return "http://lv-data-test.net-zero-energy-systems.org";
+                return "http://lv-app-test.net-zero-energy-systems.org";
             } else if ( Context == Context.Development) {
                 return "http://localhost:44463";
             } else {
