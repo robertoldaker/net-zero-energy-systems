@@ -24,9 +24,12 @@ export class DialogBase extends ComponentBase {
         }
     }
 
-    protected addFormControl(name: string):FormControl {
+    protected addFormControl(name: string,value:any=null):FormControl {
         let fc = new FormControl()
         this.form.addControl(name, fc);
+        if ( value!=null ) {
+            fc.setValue(value)
+        }
         return fc
     }
 

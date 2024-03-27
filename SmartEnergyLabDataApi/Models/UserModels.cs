@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.ObjectPool;
+using NHibernate.Mapping.Attributes;
 using Org.BouncyCastle.Crypto.Modes;
+using Org.BouncyCastle.Crypto.Tls;
 using SmartEnergyLabDataApi.Common;
 using SmartEnergyLabDataApi.Controllers;
 using SmartEnergyLabDataApi.Data;
@@ -36,9 +38,17 @@ namespace SmartEnergyLabDataApi.Models
             if ( string.IsNullOrEmpty(_newUser.Name) ) {
                 addError("name","Field is mandatory");
             }
-            if ( _newUser.Password != _newUser.ConfirmPassword ) {
-                addError("password","Fields must match");
-                addError("confirmPassword","Fields must match");
+            if ( string.IsNullOrEmpty(_newUser.Password)) {
+                addError("password","Field is mandatory");
+            }
+            if ( string.IsNullOrEmpty(_newUser.ConfirmPassword)) {
+                addError("confirmPassword","Field is mandatory");
+            }
+            if ( !string.IsNullOrEmpty(_newUser.Password) && !string.IsNullOrEmpty(_newUser.ConfirmPassword)) {
+                if (_newUser.Password != _newUser.ConfirmPassword ) {
+                    addError("password","Fields must match");
+                    addError("confirmPassword","Fields must match");
+                }
             }
         }
 
@@ -65,32 +75,42 @@ namespace SmartEnergyLabDataApi.Models
 
     public class LogonModel : DbModel
     {
-        private User _user;
+        Logon _logon;
         private string _password;
         public LogonModel(ControllerBase c, Logon logon) : base(c) {
-            _user = _da.Users.GetUser(logon.Email);
+            _logon = logon;
             _password = logon.Password;
         }
 
         public bool TryLogon() {
-            if ( _user!=null ) {
-                if ( _user.VerifyPassword(_password) ) {
-                    logon();
-                    return true;
-                } else {
-                    addError("password","Authentication failed");
-                    return false;
-                }
-            } else {
-                addError("email","No email found");
-                return false;
+            bool result = false;
+            if ( string.IsNullOrEmpty(_logon.Email)) {
+                addError("email","Field is mandatory");
             }
+            if ( string.IsNullOrEmpty(_logon.Password)) {
+                addError("password","Field is mandatory");
+            }
+            if ( !string.IsNullOrEmpty(_logon.Email) && !string.IsNullOrEmpty(_logon.Password) ) {
+                var user = _da.Users.GetUser(_logon.Email);
+                if ( user!=null ) {
+                    if ( user.VerifyPassword(_password) ) {
+                        logon(user);
+                        result = true;
+                    } else {
+                        addError("password","Authentication failed");
+                    }
+                } else {
+                    addError("email","No email found");
+                }
+            }
+
+            return result;            
         }
 
-        private void logon() {
+        private void logon(User user) {
             var claims = new List<Claim>
                     {
-                        new Claim(ClaimTypes.Name, _user.Id.ToString()),
+                        new Claim(ClaimTypes.Name, user.Id.ToString()),
                     };
 
             var userIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -105,23 +125,29 @@ namespace SmartEnergyLabDataApi.Models
         }
 
         public bool ForgotPassword() {
-            if ( _user!=null ) {
-                sendChangePasswordLink();
-                return true;
-            } else {
-                addError("email",$"No user registered with the given email address");
+            if ( string.IsNullOrEmpty(_logon.Email) ) {
+                addError("email","Field is mandatory");
                 return false;
+            } else {
+                var user = _da.Users.GetUser(_logon.Email);
+                if ( user!=null ) {
+                    sendChangePasswordLink(user);
+                    return true;
+                } else {
+                    addError("email",$"No user registered with the given email address");
+                    return false;
+                }
             }
         }
 
-        private void sendChangePasswordLink() {
+        private void sendChangePasswordLink(User user) {
             // This link lasts for one day
-            var ld = new LinkData<int>(_user.Id, new TimeSpan(1, 0, 0, 0));
+            var ld = new LinkData<int>(user.Id, new TimeSpan(1, 0, 0, 0));
             string token = Crypto.Instance.EncryptAsBase64(ld.Serialize());
             string url = AppEnvironment.Instance.GetGuiUrl("/ResetPassword", new { token=token});
             //
             var email = new Email(Email.SystemEmailAddress.Admin);
-            email.Send(_user.Email,"Net Zero Enery Systems password reset",@$"
+            email.Send(user.Email,"Net Zero Enery Systems password reset",@$"
 <div>Please find a link to reset your password below:-</div>
 <br/>
 <div>
@@ -190,10 +216,19 @@ namespace SmartEnergyLabDataApi.Models
                 //
                 if ( _user==null)  {
                     this.addError("",$"Cannot find user with id=[{ld.Data}]");
-                } else if ( _resetPassword.NewPassword1!=_resetPassword.NewPassword2) {
-                    this.addError("newPassword1","Passwords do not match");
-                    this.addError("newPassword2","Passwords do not match");
-                }
+                } else {
+                    if ( string.IsNullOrEmpty(_resetPassword.NewPassword1) ) {
+                        this.addError("newPassword1","Field is mandatory");
+                    }
+                    if ( string.IsNullOrEmpty(_resetPassword.NewPassword2) ) {
+                        this.addError("newPassword2","Field is mandatory");
+                    }
+                    if ( !string.IsNullOrEmpty(_resetPassword.NewPassword1) && !string.IsNullOrEmpty(_resetPassword.NewPassword2) ) {
+                        if ( _resetPassword.NewPassword1 != _resetPassword.NewPassword2 ) {
+                            this.addError("newPassword2","Passwords do not match");
+                        }
+                    }
+                } 
             }
 
         }
@@ -223,15 +258,29 @@ namespace SmartEnergyLabDataApi.Models
         protected override void checkModel()
         {
             //
+            if ( string.IsNullOrEmpty(_changePassword.Password) ) {
+                this.addError("password","Field is mandatory");
+            }
+            if ( string.IsNullOrEmpty(_changePassword.NewPassword1) ) {
+                this.addError("newPassword1","Field is mandatory");
+            }
+            if ( string.IsNullOrEmpty(_changePassword.NewPassword2) ) {
+                this.addError("newPassword2","Field is mandatory");
+            }
+            //
+            if ( this.Errors.Count>0 ) {
+                return;
+            }
+            //
             if ( _user==null ) {
                 throw new Exception("User not logged in");
             }
             if ( !_user.VerifyPassword(_changePassword.Password)) {
                 this.addError("password","Authentication error");
-            }
-            if ( _changePassword.NewPassword1!=_changePassword.NewPassword2) {
-                this.addError("newPassword1","Passwords do not match");
-                this.addError("newPassword2","Passwords do not match");
+            } else {
+                if ( _changePassword.NewPassword1 != _changePassword.NewPassword2 ) {
+                    this.addError("newPassword2","Passwords do not match");
+                }
             }
         }
 

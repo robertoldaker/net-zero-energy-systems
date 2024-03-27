@@ -16,8 +16,8 @@ export class ResetPasswordComponent extends DialogBase implements OnInit {
         private service: DataClientService, 
         private messageService: ShowMessageService) {
         super();
-        this.addFormControl('newPassword1')
-        this.addFormControl('newPassword2')
+        this.addFormControl('newPassword1','')
+        this.addFormControl('newPassword2','')
     }
 
     ngOnInit(): void {
@@ -25,11 +25,7 @@ export class ResetPasswordComponent extends DialogBase implements OnInit {
 
     save() {
         let v = this.form.value
-        // this generates a problem at the server (missing variables) so need to ensure these are set to something and not null
-        v.newPassword1=v.newPassword1==null ? "" : v.newPassword1
-        v.newPassword2=v.newPassword2==null ? "" : v.newPassword2
         v.token = this.data.token
-        console.log(v)
         this.service.ResetPassword(v,()=>{
             this.dialogRef.close();
             this.messageService.showMessageWithTimeout("Password successfully changed")

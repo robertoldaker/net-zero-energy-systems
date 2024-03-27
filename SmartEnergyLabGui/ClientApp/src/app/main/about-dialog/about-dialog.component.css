@@ -1,6 +1,8 @@
-div#container {
+div.container {
     overflow-y: auto;
-    max-height: 400px;
+    height: 400px;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
 }
 
 div.section {

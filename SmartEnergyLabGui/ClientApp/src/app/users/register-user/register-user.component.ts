@@ -15,22 +15,18 @@ export class RegisterUserComponent extends DialogBase implements OnInit {
     constructor(public dialogRef: MatDialogRef<RegisterUserComponent>, 
         private service: DataClientService, private messageService: ShowMessageService) { 
         super()
-        this.addFormControl('email')
-        this.addFormControl('name')
-        this.addFormControl('password')
-        this.addFormControl('confirmPassword')
+        this.addFormControl('email','')
+        this.addFormControl('name','')
+        this.addFormControl('password','')
+        this.addFormControl('confirmPassword','')
     }
 
     ngOnInit(): void {
     }
 
-    input: any
-    email: string = ''
-    name: string = ''
-    password: string = ''
-    confirmPassword: string =''
-
     save() {
+        let v = this.form.value
+        console.log(v)
         this.service.SaveNewUser(this.form.value,(resp)=>{
                 this.dialogRef.close()
                 this.messageService.showMessageWithTimeout("Registration successfull! Please logon using the logon button")

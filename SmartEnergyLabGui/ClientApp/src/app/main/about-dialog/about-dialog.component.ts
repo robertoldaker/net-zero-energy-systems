@@ -2,6 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { ModificationTypeEnum, Version } from '../../data/app.data';
 import { DialogFooterButtonsEnum } from '../../dialogs/dialog-footer/dialog-footer.component';
+import { MainService } from '../main.service';
 
 @Component({
     selector: 'app-about-dialog',
@@ -10,7 +11,7 @@ import { DialogFooterButtonsEnum } from '../../dialogs/dialog-footer/dialog-foot
 })
 export class AboutDialogComponent implements OnInit {
 
-    constructor(public dialogRef: MatDialogRef<AboutDialogComponent>, @Inject('MODE') public mode: string) {
+    constructor(public dialogRef: MatDialogRef<AboutDialogComponent>, @Inject('MODE') public mode: string, public mainService: MainService) {
         this.versions = [];
         this.versions.push( {
             name: "0.1",

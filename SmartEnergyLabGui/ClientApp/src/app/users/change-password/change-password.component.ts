@@ -13,9 +13,9 @@ export class ChangePasswordComponent extends DialogBase implements OnInit {
 
     constructor(public dialogRef: MatDialogRef<ChangePasswordComponent>, private service: DataClientService, private messageService: ShowMessageService) {
         super();
-        this.addFormControl('password')
-        this.addFormControl('newPassword1')
-        this.addFormControl('newPassword2')
+        this.addFormControl('password','')
+        this.addFormControl('newPassword1','')
+        this.addFormControl('newPassword2','')
     }
 
     ngOnInit(): void {

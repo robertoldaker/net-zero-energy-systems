@@ -1,40 +1,65 @@
 <app-dialog-header [dialogRef]="dialogRef">Smart Energy Tools ({{mode}})</app-dialog-header>
-<div class="sectionTitle">Build info</div>
-<div class="section">
-    <table class="versionTable">
-        <tr>
-            <td>Version:</td>
-            <td>{{versions[0].name}}</td>
-        </tr>
-        <tr>
-            <td>Commit id:</td>
-            <td>{{commitId}}</td>
-        </tr>
-        <tr>
-            <td>Commit date:</td>
-            <td>{{commitDate}}</td>
-        </tr>
-    </table>
-</div>
-<div class="sectionTitle" style="margin-top: 0.5rem">Version history</div>
-<div id="container" class="section">
-    <div class="version" *ngFor="let version of versions" >
-        <div id="title">{{version.name}}</div>
-        <ul style="padding-left: 1rem">
-            <li id="modification" *ngFor="let mod of version.modifications">
-                <div id="description">{{mod.description}}</div>
-                <div style="line-height: 80%">
-                    <div *ngIf="mod.type == ModificationTypeEnum.Bug" class="tag bug">Bug fix</div>
-                    <div *ngIf="mod.type == ModificationTypeEnum.Enhancement" class="tag enhancement">Enhancement</div>    
-                </div>
-            </li>    
-        </ul>
-        <mat-divider style="margin-bottom: 1rem"></mat-divider>
-    </div>
-</div>
-<div class="sectionTitle" style="margin-top: 0.5rem">Credits</div>
-<div class="section" style="font-size: 0.8rem">
-    <div>Icon courtesy of:-</div>
-    <a href="https://www.flaticon.com/free-icons/power-plant" title="power plant icons" target="_blank">Power plant icons created by Freepik - Flaticon</a>
-</div>
+<mat-tab-group [preserveContent]="true" style="width: 15cm">
+    <mat-tab label="Version history">
+        <div class="container section">
+            <div class="version" *ngFor="let version of versions" >
+                <div id="title">{{version.name}}</div>
+                <ul style="padding-left: 1rem">
+                    <li id="modification" *ngFor="let mod of version.modifications">
+                        <div id="description">{{mod.description}}</div>
+                        <div style="line-height: 80%">
+                            <div *ngIf="mod.type == ModificationTypeEnum.Bug" class="tag bug">Bug fix</div>
+                            <div *ngIf="mod.type == ModificationTypeEnum.Enhancement" class="tag enhancement">Enhancement</div>    
+                        </div>
+                    </li>    
+                </ul>
+                <mat-divider style="margin-bottom: 1rem"></mat-divider>
+            </div>
+        </div>        
+    </mat-tab>
+    <mat-tab label="Info">
+        <div class="container section">
+            <div class="sectionTitle" style="margin-top: 1rem">App info</div>
+            <div class="section">
+                <table class="versionTable">
+                    <tr>
+                        <td>Version:</td>
+                        <td>{{versions[0].name}}</td>
+                    </tr>
+                    <tr>
+                        <td>Commit id:</td>
+                        <td>{{commitId}}</td>
+                    </tr>
+                    <tr>
+                        <td>Commit date:</td>
+                        <td>{{commitDate}}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="sectionTitle" style="margin-top: 0.5rem">Server info</div>
+            <div class="section">
+                <table class="versionTable">
+                    <tr>
+                        <td>Version:</td>
+                        <td>{{mainService.serverVersionData?.version}}</td>
+                    </tr>
+                    <tr>
+                        <td>Commit id:</td>
+                        <td>{{mainService.serverVersionData?.commitId}}</td>
+                    </tr>
+                    <tr>
+                        <td>Commit date:</td>
+                        <td>{{mainService.serverVersionData?.commitDate}}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="sectionTitle" style="margin-top: 0.5rem">Credits</div>
+            <div class="section" style="font-size: 0.8rem">
+                <div>Icon courtesy of:-</div>
+                <a href="https://www.flaticon.com/free-icons/power-plant" title="power plant icons" target="_blank">Power plant icons created by Freepik - Flaticon</a>
+            </div>            
+        </div>
+    </mat-tab>
+</mat-tab-group> 
+
 <app-dialog-footer [dialogRef]="dialogRef" [buttons]="DialogFooterButtons.Close"></app-dialog-footer>

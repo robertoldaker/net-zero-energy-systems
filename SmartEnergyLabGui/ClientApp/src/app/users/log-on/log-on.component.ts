@@ -17,8 +17,8 @@ export class LogOnComponent extends DialogBase implements OnInit {
 
     constructor(public dialogRef: MatDialogRef<LogOnComponent>, private service: DataClientService, private userService: UserService, private dialogService: DialogService) {
         super();
-        this.addFormControl('email')
-        this.addFormControl('password')
+        this.addFormControl('email','')
+        this.addFormControl('password','')
     }
 
     ngOnInit(): void {
@@ -51,14 +51,6 @@ export class LogOnComponent extends DialogBase implements OnInit {
     }
 
     getFormValues() {
-        let v = this.form.value
-        if ( v.email==null) {
-            v.email = ""
-        }
-        if ( v.password==null) {
-            v.password=""
-        }
-        console.log(v)
-        return v;
+        return this.form.value;
     }
 }

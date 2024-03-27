@@ -12,17 +12,12 @@ import { MessageDialogIcon } from 'src/app/dialogs/message-dialog/message-dialog
 export class MainMenuComponent implements OnInit {
 
     constructor(
-        private mainService: MainService, 
         public userService: UserService, 
         private dialogService: DialogService,
         @Inject('DATA_URL') private baseUrl: string) { }
 
     ngOnInit(): void {
 
-    }
-
-    get version() {
-        return this.mainService.version;
     }
 
     openDocument() {

@@ -4,6 +4,13 @@
 export interface SystemInfo {
     processorCount: number,
     maintenanceMode: boolean
+    versionData: VersionData
+}
+
+export interface VersionData {
+    version: string,
+    commitId: string,
+    commitDate: string
 }
 
 /**
