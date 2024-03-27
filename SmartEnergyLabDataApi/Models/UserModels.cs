@@ -118,11 +118,7 @@ namespace SmartEnergyLabDataApi.Models
             // This link lasts for one day
             var ld = new LinkData<int>(_user.Id, new TimeSpan(1, 0, 0, 0));
             string token = Crypto.Instance.EncryptAsBase64(ld.Serialize());
-            string url = _c.Request.GetFullyQualifiedUrl("/ResetPassword", new { token=token});
-            //
-            if ( AppEnvironment.Instance.Context==CommonInterfaces.Models.Context.Development) {
-                url = url.Replace(":5095",":44463");
-            }
+            string url = AppEnvironment.Instance.GetGuiUrl("/ResetPassword", new { token=token});
             //
             var email = new Email(Email.SystemEmailAddress.Admin);
             email.Send(_user.Email,"Net Zero Enery Systems password reset",@$"

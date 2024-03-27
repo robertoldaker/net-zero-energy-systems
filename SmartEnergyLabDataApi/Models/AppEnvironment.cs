@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Web;
 using CommonInterfaces.Models;
 
 namespace SmartEnergyLabDataApi.Models
@@ -85,6 +86,45 @@ namespace SmartEnergyLabDataApi.Models
             _maintenanceMode = File.Exists(_activeFilename);
             //
             //??NotificationHubSender.Instance.SendMaintenanceModeUpdateEvent(_maintenanceMode);
+        }
+
+        public string GetGuiBaseUrl() {
+            if ( Context == Context.Production) {
+                return "https://lv-data.net-zero-energy-systems.org";
+            } else if ( Context == Context.Staging) {
+                return "http://lv-data-test.net-zero-energy-systems.org";
+            } else if ( Context == Context.Development) {
+                return "http://localhost:44463";
+            } else {
+                throw new Exception($"Unexpected context [{Context}]");
+            }
+        }
+
+        public string GetGuiUrl(string action, object? ps=null) {
+            string url = GetGuiBaseUrl();
+            url += action;
+            //
+            if (ps != null)
+            {
+                url += "?";
+                Type t = ps.GetType();
+
+                PropertyInfo[] pi = t.GetProperties();
+                bool first = true;
+                foreach (PropertyInfo p in pi)
+                {
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        url += "&";
+                    }
+                    url += HttpUtility.HtmlEncode(p.Name) + "=" + HttpUtility.HtmlEncode(p.GetValue(ps, null).ToString());
+                }
+            }
+            return url;            
         }
     }
 }
