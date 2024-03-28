@@ -22,3 +22,8 @@ div.dialogHeader {
 .closeIcon:hover {
     color: white
 }
+
+img.dialogIcon {
+    width: 40px;
+    margin-right: 10px;
+}
