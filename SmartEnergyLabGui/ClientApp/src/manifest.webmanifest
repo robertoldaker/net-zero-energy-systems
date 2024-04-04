@@ -1,6 +1,6 @@
 {
-  "name": "SmartEnergyLabGui",
-  "short_name": "SmartEnergyLabGui",
+  "name": "Smart Energy Lab",
+  "short_name": "Smart Energy Lab",
   "theme_color": "#1976d2",
   "background_color": "#fafafa",
   "display": "standalone",
