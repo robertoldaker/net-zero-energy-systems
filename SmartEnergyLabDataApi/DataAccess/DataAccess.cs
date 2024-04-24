@@ -26,6 +26,7 @@ namespace SmartEnergyLabDataApi.Data
             Admin = new Admin(this);
             GIS = new GIS(this);
             NationalGrid = new NationalGrid(this);
+            SolarInstallations = new SolarInstallations(this);
         }
 
         public SimplusGridTool SimplusGridTool { get; private set; }
@@ -41,7 +42,7 @@ namespace SmartEnergyLabDataApi.Data
         public Admin Admin {get; private set;}
         public GIS GIS {get; private set;}
         public NationalGrid NationalGrid { get; private set;}
-
+        public SolarInstallations SolarInstallations { get; private set;}
         public static void SchemaUpdated(int oldVersion, int newVersion)
         {
             if ( oldVersion<29 ) {

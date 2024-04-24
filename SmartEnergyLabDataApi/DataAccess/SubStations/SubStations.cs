@@ -354,6 +354,13 @@ namespace SmartEnergyLabDataApi.Data
         {
             return Session.Get<DistributionSubstation>(id);
         }
+        public DistributionSubstation GetDistributionSubstation(GridSupplyPoint gsp, string name)
+        {
+            var q=Session.QueryOver<DistributionSubstation>().
+                Where( m=>m.GridSupplyPoint == gsp).
+                And( m=>m.Name.IsInsensitiveLike(name));
+            return q.Take(1).SingleOrDefault();
+        }
         
         public IList<DistributionSubstation> GetDistributionSubstations(DistributionNetworkOperator dno)
         {
