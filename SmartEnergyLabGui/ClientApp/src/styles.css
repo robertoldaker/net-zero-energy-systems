@@ -54,7 +54,7 @@ div.chartHeader {
     align-items: baseline; 
     font-size: 10pt; 
     background-color: #eee;
-    min-height: 40px
+    min-height: 40px;
 }
 
 div.chartHeader > div.title {

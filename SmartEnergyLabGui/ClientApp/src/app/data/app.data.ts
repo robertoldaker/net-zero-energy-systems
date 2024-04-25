@@ -808,5 +808,12 @@ export interface ILogs {
     Logs(onComplete: (resp: any)=> void | undefined, onError: (resp:any)=>void): void
 }
 
+/* solar installations */
+export interface SolarInstallation {
+    id: number,
+    year: number,
+    gisData: GISData
+}
+
 
 

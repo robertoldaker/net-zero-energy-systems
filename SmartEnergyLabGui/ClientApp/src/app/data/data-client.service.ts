@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword, SolarInstallation } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 
@@ -504,6 +504,31 @@ export class DataClientService implements ILogs {
     RunEvDemandGridSupplyPoint(id: number) {
         const params = new HttpParams().append('id', id)
         this.postRequestWithParams('/EVDemand/Run/GridSupplyPoint',{},params,()=>{})
+    }
+
+    /* Solar installations */
+    GetSolarInstallationsByGridSupplyPoint(gspId: number,year: number,onLoad: (boundaries: SolarInstallation[])=> void) {
+        this.http.get<SolarInstallation[]>(this.baseUrl + `/SolarInstallations/SolarInstallationsByGridSupplyPoint?gspId=${gspId}&year=${year}`).subscribe( result => {
+            if ( onLoad ) {
+                onLoad(result)
+            }
+        }, error => this.logErrorMessage(error));        
+    }
+
+    GetSolarInstallationsByPrimarySubstation(pssId: number,year: number,onLoad: (boundaries: SolarInstallation[])=> void) {
+        this.http.get<SolarInstallation[]>(this.baseUrl + `/SolarInstallations/SolarInstallationsByPrimarySubstation?pssId=${pssId}&year=${year}`).subscribe( result => {
+            if ( onLoad ) {
+                onLoad(result)
+            }
+        }, error => this.logErrorMessage(error));        
+    }
+
+    GetSolarInstallationsByDistributionSubstation(dssId: number,year: number,onLoad: (boundaries: SolarInstallation[])=> void) {
+        this.http.get<SolarInstallation[]>(this.baseUrl + `/SolarInstallations/SolarInstallationsByDistributionSubstation?dssId=${dssId}&year=${year}`).subscribe( result => {
+            if ( onLoad ) {
+                onLoad(result)
+            }
+        }, error => this.logErrorMessage(error));        
     }
 
     /* shared */

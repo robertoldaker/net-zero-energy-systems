@@ -1,7 +1,16 @@
+div.chartContainer {
+    display: grid;
+    height: calc(100vh - 120px); 
+    grid-auto-flow: rows;
+    grid-template-rows: auto 0.333fr 0.333fr 0.333fr;
+}
+
 div.menuRadioItem {
     padding: 3px 3px 3px 10px
 }
 
 div.loadProfilePlot {
-    height: calc((100% - 45px) / 3);
+    /* height: calc((100% - 45px) / 3); */
+    /* height: 100px; */
 }
+

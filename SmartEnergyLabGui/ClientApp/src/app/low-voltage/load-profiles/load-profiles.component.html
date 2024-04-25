@@ -1,70 +1,72 @@
-<div class="chartHeader borderBottom">
-    <div class="selectContainer">
-        <div class="label">Year</div>
-        <select class="form-select form-select-sm" [(ngModel)]="year" (ngModelChange)="reload()">
-            <option *ngFor="let y of years" [value]="y.value.toString()" [disabled]="y.disabled">
-                {{y.name}}
-            </option>
-        </select>
-        <div class="label" style="margin-left: 20px">{{selectorLabel}}</div>
-        <select class="form-select form-select-sm" [(ngModel)]="selectorDef" (ngModelChange)="redraw()">
-            <option *ngFor="let selector of selectors" [value]="selector.value.toString()"
-                [disabled]="selector.disabled">
-                {{selector.name}}
-            </option>
-        </select>
-        <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="More options">
-            <mat-icon>more_vert</mat-icon>
-        </button>
-        <mat-menu #menu="matMenu">
-            <button mat-menu-item (click)="showByDayOfWeek()">
-                <mat-icon *ngIf="isShowByDayOfWeek">check</mat-icon>
-                <mat-icon *ngIf="!isShowByDayOfWeek"></mat-icon>
-                <span>Show by day of week</span>
+<div class="chartContainer">
+    <div class="chartHeader borderBottom">
+        <div class="selectContainer">
+            <div class="label">Year</div>
+            <select class="form-select form-select-sm" [(ngModel)]="year" (ngModelChange)="reload()">
+                <option *ngFor="let y of years" [value]="y.value.toString()" [disabled]="y.disabled">
+                    {{y.name}}
+                </option>
+            </select>
+            <div class="label" style="margin-left: 20px">{{selectorLabel}}</div>
+            <select class="form-select form-select-sm" [(ngModel)]="selectorDef" (ngModelChange)="redraw()">
+                <option *ngFor="let selector of selectors" [value]="selector.value.toString()"
+                    [disabled]="selector.disabled">
+                    {{selector.name}}
+                </option>
+            </select>
+            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="More options">
+                <mat-icon>more_vert</mat-icon>
             </button>
-            <button mat-menu-item (click)="showByMonth()" *ngIf="mapPowerService.isActual">
-                <mat-icon *ngIf="isShowByMonth">check</mat-icon>
-                <mat-icon *ngIf="!isShowByMonth"></mat-icon>
-                <span>Show by month</span>
-            </button>
-            <button mat-menu-item (click)="showBySeason()" *ngIf="mapPowerService.isPredicted">
-                <mat-icon *ngIf="isShowBySeason">check</mat-icon>
-                <mat-icon *ngIf="!isShowBySeason"></mat-icon>
-                <span>Show by season</span>
-            </button>
-            <mat-divider></mat-divider>
-            <button mat-menu-item (click)="showLoad()">
-                <mat-icon *ngIf="isShowLoad">check</mat-icon>
-                <mat-icon *ngIf="!isShowLoad"></mat-icon>
-                <span>Show Load (kw)</span>
-            </button>
-            <button mat-menu-item (click)="showCarbon()">
-                <mat-icon *ngIf="isShowCarbon">check</mat-icon>
-                <mat-icon *ngIf="!isShowCarbon"></mat-icon>
-                <span>Show Carbon (gCo2 per h)</span>
-            </button>
-            <button mat-menu-item (click)="showCost()">
-                <mat-icon *ngIf="isShowCost">check</mat-icon>
-                <mat-icon *ngIf="!isShowCost"></mat-icon>
-                <span>Show Cost (p per h)</span>
-            </button>
-            <mat-divider></mat-divider>
-            <div mat-menu-item>
-                <label>
-                    <input type="checkbox" [(ngModel)]="mapPowerService.PerCustomerLoadProfiles"
-                        (ngModelChange)="reload()" style="margin-right: 16px; margin-left: 4px">
-                    Per customer
-                </label>
-            </div>
-        </mat-menu>
+            <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="showByDayOfWeek()">
+                    <mat-icon *ngIf="isShowByDayOfWeek">check</mat-icon>
+                    <mat-icon *ngIf="!isShowByDayOfWeek"></mat-icon>
+                    <span>Show by day of week</span>
+                </button>
+                <button mat-menu-item (click)="showByMonth()" *ngIf="mapPowerService.isActual">
+                    <mat-icon *ngIf="isShowByMonth">check</mat-icon>
+                    <mat-icon *ngIf="!isShowByMonth"></mat-icon>
+                    <span>Show by month</span>
+                </button>
+                <button mat-menu-item (click)="showBySeason()" *ngIf="mapPowerService.isPredicted">
+                    <mat-icon *ngIf="isShowBySeason">check</mat-icon>
+                    <mat-icon *ngIf="!isShowBySeason"></mat-icon>
+                    <span>Show by season</span>
+                </button>
+                <mat-divider></mat-divider>
+                <button mat-menu-item (click)="showLoad()">
+                    <mat-icon *ngIf="isShowLoad">check</mat-icon>
+                    <mat-icon *ngIf="!isShowLoad"></mat-icon>
+                    <span>Show Load (kw)</span>
+                </button>
+                <button mat-menu-item (click)="showCarbon()">
+                    <mat-icon *ngIf="isShowCarbon">check</mat-icon>
+                    <mat-icon *ngIf="!isShowCarbon"></mat-icon>
+                    <span>Show Carbon (gCo2 per h)</span>
+                </button>
+                <button mat-menu-item (click)="showCost()">
+                    <mat-icon *ngIf="isShowCost">check</mat-icon>
+                    <mat-icon *ngIf="!isShowCost"></mat-icon>
+                    <span>Show Cost (p per h)</span>
+                </button>
+                <mat-divider></mat-divider>
+                <div mat-menu-item>
+                    <label>
+                        <input type="checkbox" [(ngModel)]="mapPowerService.PerCustomerLoadProfiles"
+                            (ngModelChange)="reload()" style="margin-right: 16px; margin-left: 4px">
+                        Per customer
+                    </label>
+                </div>
+            </mat-menu>
+        </div>
     </div>
-</div>
-<div class="borderBottom loadProfilePlot">
-    <app-load-profile [type]="loadProfileTypes.Base"></app-load-profile>
-</div>
-<div class="borderBottom  loadProfilePlot" >
-    <app-load-profile [type]="loadProfileTypes.VehicleCharging"></app-load-profile>
-</div>
-<div class="loadProfilePlot">
-    <app-load-profile [type]="loadProfileTypes.HeatPumps"></app-load-profile>
-</div>
+    <div class="borderBottom loadProfilePlot">
+        <app-load-profile [type]="loadProfileTypes.Base"></app-load-profile>
+    </div>
+    <div class="borderBottom  loadProfilePlot" >
+        <app-load-profile [type]="loadProfileTypes.VehicleCharging"></app-load-profile>
+    </div>
+    <div class="loadProfilePlot">
+        <app-load-profile [type]="loadProfileTypes.HeatPumps"></app-load-profile>
+    </div>
+</div>    

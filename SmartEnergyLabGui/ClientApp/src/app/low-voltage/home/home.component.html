@@ -6,7 +6,23 @@
                 <app-map></app-map>
             </as-split-area>
             <as-split-area  [size]="30">
-                <app-load-profiles style="height: 100%;"></app-load-profiles>
+                <!--<div style="display: grid; grid-auto-flow: row; height: 100%; grid-template-rows: auto 1fr;">
+                    <div>
+                        <span>Load profiles</span>
+                        <span>Solar installations</span>
+                    </div>
+                    <div>
+                        <app-load-profiles></app-load-profiles>
+                    </div>
+                </div>-->
+                <mat-tab-group animationDuration="0ms" [preserveContent]="true" style="height: 100%">
+                    <mat-tab label="Load profiles"  style="height: 100%">
+                        <app-load-profiles></app-load-profiles>
+                    </mat-tab>
+                    <mat-tab label="Solar installations"  style="height: 100%">
+                        <div>Solar installations!</div>
+                    </mat-tab>
+                </mat-tab-group>                    
             </as-split-area>
         </as-split>
     </div>
