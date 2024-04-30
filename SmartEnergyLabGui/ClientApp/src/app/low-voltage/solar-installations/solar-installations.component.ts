@@ -3,27 +3,28 @@ import { MapPowerService } from '../map-power.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { EChartsOption } from 'echarts';
 import { SolarInstallation } from 'src/app/data/app.data';
+import { DataClientService } from 'src/app/data/data-client.service';
 
 @Component({
     selector: 'app-solar-installations',
     templateUrl: './solar-installations.component.html',
     styleUrls: ['./solar-installations.component.css']
 })
-export class SolarInstallationsComponent extends ComponentBase {
+export class SolarInstallationsComponent extends ComponentBase implements OnInit {
 
     constructor(private mapPowerService: MapPowerService) { 
         super()
         this.minYear = 2011
-        this.maxYear = 2024
-        this.addSub(mapPowerService.SolarInstallationsLoaded.subscribe((solarInstallations)=>{
+        this.maxYear = 2024        
+        this.addSub(mapPowerService.AllSolarInstallationsLoaded.subscribe((solarInstallations)=>{
             console.log(`solar installations loaded [${solarInstallations.length}]`)
-            this.genDatasource(solarInstallations)
-        }))
+            this.redraw(solarInstallations)
+        }))        
     }
 
-    private genDatasource( sis: SolarInstallation[]) {
-        this.data = []
-        this.years = []
+    private genDatasource( sis: SolarInstallation[]): { years: string[], data: number[] } {
+        let data = []
+        let years = []
         let dataMap = new Map<number,number>()
         for( let i=0;i<sis.length;i++) {
             let si = sis[i]
@@ -38,50 +39,21 @@ export class SolarInstallationsComponent extends ComponentBase {
         let total = 0;
         for ( let year = this.minYear; year<=this.maxYear;year++) {
             let number = dataMap.get(year)
-            this.years.push(year.toString());
+            years.push(year.toString());
             if ( number ) {
                 total+=number
-                this.data.push(total) 
+                data.push(total) 
             } else {
-                this.data.push(total)
+                data.push(total)
             }
         }
-       // if ( this.chartOptions.xAxis) {
-       //     this.chartOptions.xAxis.data = 
-       // }
-
-    }
-
-    private dataSource: [number,number][] = []
-    private years: string[] = []
-    private data: number[] = []
-    
-    chartOptions: EChartsOption = {
-        xAxis: {
-            type: 'category',
-            name: 'Year',
-            nameLocation: 'middle', nameGap: 25, nameTextStyle: { fontWeight: 'bold'},
-            data: [2011,2012]
-          },
-          animation: false,
-          yAxis: {
-            type: 'value',
-            name: 'Installations',
-            nameLocation: 'middle', nameGap: 55, nameTextStyle: { fontWeight: 'bold'},
-          },
-          series: [
-            {
-              data: [100,200],
-              type: 'bar'
-            }
-          ]
-    } 
-    
-    private get yAxis():any {
-        return { type: 'value', name: 'Number of installations', nameLocation: 'middle', nameGap: 55, nameTextStyle: { fontWeight: 'bold'} }
+        return { years: years, data: data}
     }
 
     ngOnInit(): void {
+        if ( this.mapPowerService.AllSolarInstallations.length>0) {
+            this.redraw(this.mapPowerService.AllSolarInstallations)
+        }
     }
 
     yearChanged(e: any) {
@@ -98,10 +70,48 @@ export class SolarInstallationsComponent extends ComponentBase {
     }
 
     onChartInit(e: any) {
-
+        this.chartInstance = e;
+        if ( this.mapPowerService.AllSolarInstallations.length>0 ) {
+            this.redraw(this.mapPowerService.AllSolarInstallations)
+        }
     }
 
+    redraw(solarInstallations: SolarInstallation[]) {
+        if (this.chartInstance !== undefined) {
+            this.chartOptions = this.genEChartOptions(solarInstallations)
+            this.chartInstance.setOption(this.chartOptions)
+        }
+    }
 
+    private genEChartOptions(solarInstallations:SolarInstallation[]):EChartsOption {
+
+        let ds = this.genDatasource(solarInstallations)
+        let options:EChartsOption = {
+            xAxis: {
+                type: 'category',
+                name: 'Year',
+                nameLocation: 'middle', nameGap: 25, nameTextStyle: { fontWeight: 'bold'},
+                data: ds.years
+              },
+              animation: false,
+              yAxis: {
+                type: 'value',
+                name: 'Installations',
+                nameLocation: 'middle', nameGap: 55, nameTextStyle: { fontWeight: 'bold'},
+              },
+              grid: { left: 70, right: 20, bottom: 40, top: 40 },
+              series: [
+                {
+                  data: ds.data,
+                  type: 'bar'
+                }
+              ]
+        } 
+        return options;
+    }
+
+    chartInstance: any
+    chartOptions: EChartsOption = {}
     minYear: number 
     maxYear: number 
 
