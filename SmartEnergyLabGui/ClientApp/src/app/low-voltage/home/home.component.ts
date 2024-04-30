@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { DialogService } from 'src/app/dialogs/dialog.service';
+import { MapPowerService } from '../map-power.service';
 
 @Component({
     selector: 'app-home',
@@ -8,7 +9,7 @@ import { DialogService } from 'src/app/dialogs/dialog.service';
     styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-    constructor(private route: ActivatedRoute, private dialogService: DialogService) {
+    constructor(private route: ActivatedRoute, private dialogService: DialogService, public mapPowerService: MapPowerService) {
     }
     ngOnInit() {
         let route = this.route.snapshot

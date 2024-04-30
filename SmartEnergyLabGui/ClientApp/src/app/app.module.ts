@@ -134,6 +134,7 @@ import { MaintenanceOverlayComponent } from './admin/maintenance-overlay/mainten
 import { AdminLogsHomeComponent } from './admin/admin-logs-home/admin-logs-home.component';
 import { NeedsLogonComponent } from './main/main-menu/needs-logon/needs-logon.component';
 import { ResetPasswordComponent } from './users/reset-password/reset-password.component';
+import { SolarInstallationsComponent } from './low-voltage/solar-installations/solar-installations.component';
 
 
 @NgModule({
@@ -223,7 +224,8 @@ import { ResetPasswordComponent } from './users/reset-password/reset-password.co
         MaintenanceOverlayComponent,
         AdminLogsHomeComponent,
         NeedsLogonComponent,
-        ResetPasswordComponent
+        ResetPasswordComponent,
+        SolarInstallationsComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

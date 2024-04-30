@@ -63,6 +63,10 @@ namespace SmartEnergyLabDataApi.Data
         public virtual bool NeedsNudge {get; set;}
 
         [Property(0)]
+        [Formula(1, Content = "( select count(*) from solar_installations si where (si.gridsupplypointid = id))")]
+        public virtual bool NumberOfSolarInstallations {get; set;}
+
+        [Property(0)]
         [Formula(1, Content = "( select count(*) from primary_substations ds where (ds.gridsupplypointid = id) )")] 
         public virtual int NumberOfPrimarySubstations {get; set;}
 

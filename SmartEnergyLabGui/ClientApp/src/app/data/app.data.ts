@@ -22,6 +22,7 @@ export interface GridSupplyPoint {
     nr: string,
     name: string,
     gisData: GISData
+    numberOfSolarInstallations: number
     numberOfPrimarySubstations: number,
     isDummy: boolean,
     needsNudge: boolean

@@ -34,6 +34,11 @@ export class LoadProfilesComponent implements OnInit, OnDestroy {
         this.year = this.mapPowerService.year;
     }
 
+    get chartContainerHeight():string {
+        let offset = this.mapPowerService.HasSolarInstallations ? '120px' : '72px'
+        return `calc(100vh - ${offset})`
+    }
+
 
     ngOnDestroy(): void {
         this.subs1.unsubscribe()

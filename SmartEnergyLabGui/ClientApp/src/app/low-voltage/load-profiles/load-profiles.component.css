@@ -1,6 +1,6 @@
 div.chartContainer {
     display: grid;
-    height: calc(100vh - 120px); 
+    /*height: calc(100vh - 120px); */
     grid-auto-flow: rows;
     grid-template-rows: auto 0.333fr 0.333fr 0.333fr;
 }

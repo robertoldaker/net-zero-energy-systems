@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { EventEmitter } from '@angular/core';
-import { DistributionSubstation, GeographicalArea, GridSupplyPoint, LoadProfileSource, PrimarySubstation, SubstationClassification, SubstationLoadProfile, SubstationSearchResult, VehicleChargingStation } from '../data/app.data';
+import { DistributionSubstation, GeographicalArea, GridSupplyPoint, LoadProfileSource, PrimarySubstation, SolarInstallation, SubstationClassification, SubstationLoadProfile, SubstationSearchResult, VehicleChargingStation } from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { MapDataService } from './map-data.service';
 
@@ -50,6 +50,10 @@ export class MapPowerService {
     NumberOfEVs: number | undefined
     NumberOfHPs: number | undefined
 
+    HasSolarInstallations: boolean = false
+    SolarInstallationsYear: number = 2024
+    SolarInstallations:SolarInstallation[] = []
+
     private loadProfileSources:LoadProfileSource[] = [LoadProfileSource.LV_Spreadsheet,LoadProfileSource.EV_Pred,LoadProfileSource.HP_Pred]
     public year:number;
 
@@ -71,6 +75,9 @@ export class MapPowerService {
                 this.classificationLoaded(classifications)
             })
         } 
+        //
+        this.loadSolarInstallations()
+        //
         this.fireObjectSelectedEvent()
     }
 
@@ -145,11 +152,43 @@ export class MapPowerService {
                     })    
                 })
             })
+            this.HasSolarInstallations = gsp.numberOfSolarInstallations > 0
         } else {
             this.PrimarySubstations = []
             this.PrimarySubstationsLoaded.emit([])
+            this.HasSolarInstallations = false
         }
+        //
+        this.loadSolarInstallations()
+        //
         this.fireObjectSelectedEvent()
+    }
+
+    private loadSolarInstallations() {
+        this.SolarInstallations = []
+        if ( this.SelectedGridSupplyPoint ) {
+            this.DataClientService.GetSolarInstallationsByGridSupplyPoint(this.SelectedGridSupplyPoint.id,this.SolarInstallationsYear,(solarInstallations)=>{
+                this.SolarInstallations = solarInstallations
+                this.SolarInstallationsLoaded.emit(this.SolarInstallations)
+            })    
+        } else if ( this.SelectedPrimarySubstation ) {
+            this.DataClientService.GetSolarInstallationsByPrimarySubstation(this.SelectedPrimarySubstation.id,this.SolarInstallationsYear,(solarInstallations)=>{
+                this.SolarInstallations = solarInstallations
+                this.SolarInstallationsLoaded.emit(this.SolarInstallations)
+            })    
+        } else if ( this.SelectedDistributionSubstation ) {
+            this.DataClientService.GetSolarInstallationsByDistributionSubstation(this.SelectedDistributionSubstation.id,this.SolarInstallationsYear,(solarInstallations)=>{
+                this.SolarInstallations = solarInstallations
+                this.SolarInstallationsLoaded.emit(this.SolarInstallations)
+            })    
+        } else {
+            this.SolarInstallationsLoaded.emit(this.SolarInstallations)
+        }
+    }
+
+    setSolarInstallationYear( year: number) {
+        this.SolarInstallationsYear = year
+        this.loadSolarInstallations()
     }
 
     setSelectedPrimarySubstation(pss: PrimarySubstation | undefined, onDistLoaded: (()=>void) | null = null) {
@@ -180,6 +219,9 @@ export class MapPowerService {
             this.DistributionSubstations = []
             this.DistributionSubstationsLoaded.emit([])
         }
+        //
+        this.loadSolarInstallations()
+        //
         this.fireObjectSelectedEvent()
 
     }
@@ -394,5 +436,6 @@ export class MapPowerService {
     LoadProfilesLoaded = new EventEmitter<LoadProfileSource>()
     ClassificationsLoaded = new EventEmitter<SubstationClassification[] | undefined>()
     LoadProfileSourceChanged = new EventEmitter()
+    SolarInstallationsLoaded = new EventEmitter<SolarInstallation[]>()
     
 }
