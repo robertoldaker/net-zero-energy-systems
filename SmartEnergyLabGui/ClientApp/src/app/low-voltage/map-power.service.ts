@@ -52,7 +52,9 @@ export class MapPowerService {
 
     HasSolarInstallations: boolean = false
     SolarInstallationsYear: number = 2024
+    LatestSolarInstallationsYear: number = 2024
     SolarInstallations:SolarInstallation[] = []
+    AllSolarInstallations:SolarInstallation[] = []
 
     private loadProfileSources:LoadProfileSource[] = [LoadProfileSource.LV_Spreadsheet,LoadProfileSource.EV_Pred,LoadProfileSource.HP_Pred]
     public year:number;
@@ -169,17 +171,29 @@ export class MapPowerService {
         if ( this.SelectedGridSupplyPoint ) {
             this.DataClientService.GetSolarInstallationsByGridSupplyPoint(this.SelectedGridSupplyPoint.id,this.SolarInstallationsYear,(solarInstallations)=>{
                 this.SolarInstallations = solarInstallations
-                this.SolarInstallationsLoaded.emit(this.SolarInstallations)
+                this.SolarInstallationsLoaded.emit(solarInstallations)
+            })    
+            this.DataClientService.GetSolarInstallationsByGridSupplyPoint(this.SelectedGridSupplyPoint.id,this.LatestSolarInstallationsYear,(solarInstallations)=>{
+                this.AllSolarInstallations = solarInstallations
+                this.AllSolarInstallationsLoaded.emit(solarInstallations)
             })    
         } else if ( this.SelectedPrimarySubstation ) {
             this.DataClientService.GetSolarInstallationsByPrimarySubstation(this.SelectedPrimarySubstation.id,this.SolarInstallationsYear,(solarInstallations)=>{
                 this.SolarInstallations = solarInstallations
-                this.SolarInstallationsLoaded.emit(this.SolarInstallations)
+                this.SolarInstallationsLoaded.emit(solarInstallations)
+            })    
+            this.DataClientService.GetSolarInstallationsByPrimarySubstation(this.SelectedPrimarySubstation.id,this.LatestSolarInstallationsYear,(solarInstallations)=>{
+                this.AllSolarInstallations = solarInstallations
+                this.AllSolarInstallationsLoaded.emit(solarInstallations)
             })    
         } else if ( this.SelectedDistributionSubstation ) {
             this.DataClientService.GetSolarInstallationsByDistributionSubstation(this.SelectedDistributionSubstation.id,this.SolarInstallationsYear,(solarInstallations)=>{
                 this.SolarInstallations = solarInstallations
                 this.SolarInstallationsLoaded.emit(this.SolarInstallations)
+            })    
+            this.DataClientService.GetSolarInstallationsByDistributionSubstation(this.SelectedDistributionSubstation.id,this.LatestSolarInstallationsYear,(solarInstallations)=>{
+                this.AllSolarInstallations = solarInstallations
+                this.AllSolarInstallationsLoaded.emit(solarInstallations)
             })    
         } else {
             this.SolarInstallationsLoaded.emit(this.SolarInstallations)
@@ -437,5 +451,6 @@ export class MapPowerService {
     ClassificationsLoaded = new EventEmitter<SubstationClassification[] | undefined>()
     LoadProfileSourceChanged = new EventEmitter()
     SolarInstallationsLoaded = new EventEmitter<SolarInstallation[]>()
+    AllSolarInstallationsLoaded = new EventEmitter<SolarInstallation[]>()
     
 }
