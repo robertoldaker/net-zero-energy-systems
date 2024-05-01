@@ -7,6 +7,7 @@ using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Loadflow;
 using SmartEnergyLabDataApi.Elsi;
 using static SmartEnergyLabDataApi.Models.ElsiReference;
+using System.Text.Json;
 
 namespace SmartEnergyLabDataApi.Controllers
 {
@@ -189,6 +190,68 @@ namespace SmartEnergyLabDataApi.Controllers
         }
     
         [HttpGet]
+        [Route("DownloadResultsAsJson")]
+        public IActionResult DownloadResultsAsJson(int datasetId, ElsiScenario scenario) {
+            using( var da = new DataAccess() ) {
+                var dataset = da.Elsi.GetDataVersion(datasetId);
+                if (dataset!=null) {
+                    var ers = da.Elsi.GetResults(datasetId, scenario);
+                    var edrs = new List<ElsiDayResult>();
+                    foreach( var er in ers) {
+                        var erStr = System.Text.Encoding.UTF8.GetString(er.Data);
+                        var edr = JsonSerializer.Deserialize<ElsiDayResult>(erStr,new JsonSerializerOptions() {
+                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                        });
+                        if ( edr!=null ){
+                            edrs.Add(edr);
+                        }
+                    }
+                    var json=JsonSerializer.Serialize(edrs,new JsonSerializerOptions() {
+                            WriteIndented = true,
+                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                        });                    
+                    var ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
+                    var fsr = new FileStreamResult(ms, "application/json");
+                    fsr.FileDownloadName = $"Elsi results [{dataset.Name}].json";
+                    return fsr;
+                } else {
+                    throw new Exception($"Cannot find dataset with id=[{datasetId}]");
+                }
+            }
+        }
+
+        [HttpGet]
+        [Route("DownloadResultsAsCsv")]
+        public IActionResult DownloadResultsAsCsv(int datasetId, ElsiScenario scenario) {
+            using( var da = new DataAccess() ) {
+                var dataset = da.Elsi.GetDataVersion(datasetId);
+                if (dataset!=null) {
+                    var ers = da.Elsi.GetResults(datasetId, scenario);
+                    var edrs = new List<ElsiDayResult>();
+                    foreach( var er in ers) {
+                        var erStr = System.Text.Encoding.UTF8.GetString(er.Data);
+                        var edr = JsonSerializer.Deserialize<ElsiDayResult>(erStr,new JsonSerializerOptions() {
+                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                        });
+                        if ( edr!=null ){
+                            edrs.Add(edr);
+                        }
+                    }
+                    var json=JsonSerializer.Serialize(edrs,new JsonSerializerOptions() {
+                            WriteIndented = true,
+                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                        });                    
+                    var ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
+                    var fsr = new FileStreamResult(ms, "application/json");
+                    fsr.FileDownloadName = $"Elsi results [{dataset.Name}].json";
+                    return fsr;
+                } else {
+                    throw new Exception($"Cannot find dataset with id=[{datasetId}]");
+                }
+            }
+        }
+
+        [HttpGet]
         [Route("ResultCount")]
         public int ResultCount(int datasetId) {
             using( var da = new DataAccess() ) {
@@ -254,6 +317,7 @@ namespace SmartEnergyLabDataApi.Controllers
             return m.Run(day,tol,phase);
         }
         
+    
 
     }
 }

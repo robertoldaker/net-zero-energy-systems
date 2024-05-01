@@ -19,7 +19,7 @@
             <!-- dont allow Default dataset to be edited or deleted-->
             <ng-container *ngIf="service.dataset?.parent" >
                 <mat-icon class="iconLink" (click)="editDataset()" [title]="'Edit dataset'">edit</mat-icon>
-                <mat-icon class="iconLink" (click)="deleteDataset()" [title]="'Edit dataset'">delete_forever</mat-icon>    
+                <mat-icon class="iconLink" (click)="deleteDataset()" [title]="'Delete dataset'">delete_forever</mat-icon>    
             </ng-container>
         </td>
     <tr>

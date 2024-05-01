@@ -153,7 +153,13 @@ public static class Program
                 using (var sr = new StreamReader(dbHostFilename))
                 {
                     // Read the stream as a string, and write the string to the console.
-                    host=sr.ReadToEnd();
+                    string line;
+                    while( (line = sr.ReadLine())!=null) {
+                        if ( !line.StartsWith("#")) {
+                            host=line;
+                            break;
+                        }
+                    }
                 }
             }
         #endif

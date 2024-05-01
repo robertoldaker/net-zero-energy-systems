@@ -1,9 +1,11 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Day, ElsiDayResult } from 'src/app/data/app.data';
 import { ElsiDataService } from '../elsi-data.service';
 import { ElsiDayControlComponent } from './elsi-day-control/elsi-day-control.component';
 import { ElsiRowExpanderComponent, ElsiRowExpanderSize } from './elsi-row-expander/elsi-row-expander.component';
+import { DialogService } from 'src/app/dialogs/dialog.service';
+import { ShowMessageService } from 'src/app/main/show-message/show-message.service';
 
 @Component({
     selector: 'app-elsi-outputs',
@@ -14,7 +16,7 @@ export class ElsiOutputsComponent implements OnInit, OnDestroy {
 
     private subs:Subscription[] 
     
-    constructor(public service: ElsiDataService) {
+    constructor(public service: ElsiDataService, private messageService: ShowMessageService, @Inject('DATA_URL') private baseUrl: string) {
         this.subs = []
         //
         this.dayControl = null
@@ -102,5 +104,23 @@ export class ElsiOutputsComponent implements OnInit, OnDestroy {
 
     public get ElsiRowExpanderSize() {
         return ElsiRowExpanderSize; 
+    }
+
+    public downloadAsJson() {
+        if ( this.service.dataset) {
+            let datasetId = this.service.dataset.id
+            let scenario = this.service.scenario
+            window.location.href = `${this.baseUrl}/Elsi/DownloadResultsAsJson?datasetId=${datasetId}&scenario=${scenario}`
+            this.messageService.showMessageWithTimeout('Download started ...')
+        }
+    }
+
+    public downloadAsCsv() {
+        if ( this.service.dataset) {
+            let datasetId = this.service.dataset.id
+            let scenario = this.service.scenario
+            window.location.href = `${this.baseUrl}/Elsi/DownloadResultsAsCsv?datasetId=${datasetId}&scenario=${scenario}`
+            this.messageService.showMessageWithTimeout('Download started ...')
+        }        
     }
 }

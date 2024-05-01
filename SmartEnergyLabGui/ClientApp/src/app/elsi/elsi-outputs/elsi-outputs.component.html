@@ -1,4 +1,4 @@
-<div class="parent">
+<div class="parent">    
     <table class="main">
         <thead class="main">
             <tr class="row1">
@@ -6,7 +6,22 @@
                     <app-elsi-day-control (valueChanged)="dayChanged($event)"></app-elsi-day-control>
                 </th>
                 <ng-container *ngIf="d!==null">
-                    <th colspan="5" class="sticky day right borderRight"><b>{{getDate(d.day)}} </b><span>&nbsp;[Day {{d.day}},{{service.elsiScenarioInfo.get(d.scenario)}},&nbsp;{{d.season}}]</span></th>
+                    <th colspan="5" class="sticky day right borderRight">
+                        <b>{{getDate(d.day)}} </b><span>&nbsp;[Day {{d.day}},{{service.elsiScenarioInfo.get(d.scenario)}},&nbsp;{{d.season}}]</span>
+                        <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="More options">
+                            <mat-icon>more_vert</mat-icon>
+                        </button>
+                        <mat-menu #menu="matMenu">
+                            <button mat-menu-item (click)="downloadAsJson()">
+                                <mat-icon>cloud_download</mat-icon>
+                                <span>Download as json</span>
+                            </button>
+                            <button mat-menu-item (click)="downloadAsCsv()">
+                                <mat-icon>cloud_download</mat-icon>
+                                <span>Download as CSV</span>
+                            </button>
+                        </mat-menu>
+                    </th>
                 </ng-container>
                <td></td> 
             </tr>
@@ -299,7 +314,7 @@
                 </tbody>
             </ng-container>
             <!-- Balance mechanism phase -->
-            <tbody elsiRowExpander [title1]="'Balance mechanisms phase'" [size]="ElsiRowExpanderSize.Large" #balanceMechanismsExpander class="oddBalanceMechanism">
+            <tbody elsiRowExpander [title1]="'Balance Mechanism Implied Actions'" [size]="ElsiRowExpanderSize.Large" #balanceMechanismsExpander class="oddBalanceMechanism">
             </tbody>
             <ng-container *ngIf="isBalanceMechanismsExpanded()">
                 <ng-container *ngFor="let mi of d.balanceMechanism.marketInfo; index as i">
@@ -338,5 +353,5 @@
                 </ng-container>
             </ng-container>
         </ng-container>
-    </table>
+    </table>    
 </div>

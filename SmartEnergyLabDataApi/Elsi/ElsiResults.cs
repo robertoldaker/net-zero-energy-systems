@@ -22,6 +22,12 @@ namespace SmartEnergyLabDataApi.Elsi
         public List<ElsiDayResult> DayResults { get; private set; }
     }
 
+    public class ElsiDayResultEx {
+        public ElsiDayResultEx() {
+
+        }
+    }
+
     public class ElsiDayResult
     {
         ModelManager _mm;
@@ -30,9 +36,17 @@ namespace SmartEnergyLabDataApi.Elsi
         {
             _mm = mm;
             _data = _mm.Data;
+            Day = _data.Day;
+            Year = _data.Year;
+            Season = _data.Season;
+            Scenario = _data.Scenario;
 
             // Period results
             createPeriodResults();
+        }
+
+        public ElsiDayResult() {
+
         }
 
         public void CreateAvailabilityResults()
@@ -372,41 +386,25 @@ namespace SmartEnergyLabDataApi.Elsi
             return result;
         }
 
-        public int Day { 
-            get {
-                return _data.Day;
-            }
-        }
+        public int Day { get; set;}
 
-        public int Year { 
-            get {
-                return _data.Year;
-            }
-        }
+        public int Year {  get; set; }
 
-        public string Season { 
-            get {
-                return _data.Season;
-            }
-        }
+        public string Season { get; set; }
 
-        public ElsiScenario Scenario {
-            get {
-                return _data.Scenario;
-            }
-        }
+        public ElsiScenario Scenario { get; set; }
 
-        public List<PeriodResult> PeriodResults { get; private set; }
+        public List<PeriodResult> PeriodResults { get; set; }
 
-        public AvailabilityResults Availability { get; private set; }
+        public AvailabilityResults Availability { get; set; }
 
-        public MarketResults Market { get; private set; }
+        public MarketResults Market { get; set; }
 
-        public BalanceResults Balance { get; private set; }
+        public BalanceResults Balance { get; set; }
 
-        public BalanceMechanismResults BalanceMechanism { get; private set; }
+        public BalanceMechanismResults BalanceMechanism { get; set; }
 
-        public MismatchResults Mismatches {get; private set;}
+        public MismatchResults Mismatches {get; set;}
 
         public class AvailabilityResults
         {
@@ -419,13 +417,17 @@ namespace SmartEnergyLabDataApi.Elsi
                 LinkResults = edr.createLinkResults(ModelConsts.d_avail);
             }
 
-            public List<DemandResult> DemandResults { get; private set; }
+            public AvailabilityResults() {
 
-            public List<GeneratorResult> GeneratorResults { get; private set; }
+            }
 
-            public List<StoreResult> StoreResults { get; private set; }
+            public List<DemandResult> DemandResults { get; set; }
 
-            public List<LinkResult> LinkResults { get; private set; }
+            public List<GeneratorResult> GeneratorResults { get; set; }
+
+            public List<StoreResult> StoreResults { get; set; }
+
+            public List<LinkResult> LinkResults { get; set; }
         }
 
         public class MarketResults
@@ -441,14 +443,19 @@ namespace SmartEnergyLabDataApi.Elsi
                 ZoneEmissionRates = edr.createZoneEmissionsRates();
                 MiscData = edr.createMiscData();
             }
-            public List<GeneratorResult> GeneratorResults { get; private set; }
-            public List<StoreResult> StoreResults { get; private set; }
-            public List<LinkResult> LinkResults { get; private set; }
-            public List<MarginalPrice> MarginalPrices { get; private set; }
-            public List<StorePrice> StorePrices { get; private set; }
-            public List<LinkPrice> LinkPrices { get; private set; }
-            public List<ZoneEmissionsRate> ZoneEmissionRates { get; private set; }
-            public MiscData MiscData { get; private set; }
+
+            public MarketResults() {
+
+            }
+
+            public List<GeneratorResult> GeneratorResults { get; set; }
+            public List<StoreResult> StoreResults { get; set; }
+            public List<LinkResult> LinkResults { get; set; }
+            public List<MarginalPrice> MarginalPrices { get; set; }
+            public List<StorePrice> StorePrices { get; set; }
+            public List<LinkPrice> LinkPrices { get; set; }
+            public List<ZoneEmissionsRate> ZoneEmissionRates { get; set; }
+            public MiscData MiscData { get; set; }
         }
 
         public class BalanceResults : MarketResults {
@@ -456,7 +463,11 @@ namespace SmartEnergyLabDataApi.Elsi
                 ProductionCostDiffs = edr.createProductionCostDiffs();
             }
 
-            public ProductionCostDiffs ProductionCostDiffs {get; private set;}
+            public BalanceResults() {
+
+            }
+
+            public ProductionCostDiffs ProductionCostDiffs {get; set;}
         }
 
         public class PeriodResult
@@ -480,6 +491,11 @@ namespace SmartEnergyLabDataApi.Elsi
                 Zone = zone;
                 Demands = new double[numPeriods];
             }
+
+            public DemandResult() {
+
+            }
+
             public ElsiMainZone Zone { get; set; }
             public string ZoneName
             {
@@ -500,6 +516,11 @@ namespace SmartEnergyLabDataApi.Elsi
                 Zone = zone;
                 GenType = genType;
             }
+
+            public GeneratorResult() {
+
+            }
+
             public ElsiMainZone Zone { get; set; }
 
             public string ZoneName
@@ -529,6 +550,10 @@ namespace SmartEnergyLabDataApi.Elsi
                 Mode = mode;
             }
 
+            public StoreResult() {
+
+            }
+
             public ElsiStorageMode Mode { get; set; }
 
             public string ModeName
@@ -550,10 +575,15 @@ namespace SmartEnergyLabDataApi.Elsi
                 From = new LinkEndResult(numPeriods, fromZone);
                 To = new LinkEndResult(numPeriods, toZone);
             }
+
+            public LinkResult() {
+
+            }
+            
             public string Name { get; set; }
 
-            public LinkEndResult From { get; private set; }
-            public LinkEndResult To { get; private set; }
+            public LinkEndResult From { get; set; }
+            public LinkEndResult To { get; set; }
 
         }
 
@@ -565,6 +595,11 @@ namespace SmartEnergyLabDataApi.Elsi
                 Capacities = new double[numPeriods];
                 Zone = zone;
             }
+
+            public LinkEndResult() {
+
+            }
+
             public ElsiMainZone Zone { get; set; }
 
             public string ZoneName
@@ -586,6 +621,11 @@ namespace SmartEnergyLabDataApi.Elsi
                 Zone = zone;
                 Prices = new double[numPeriods];
             }
+
+            public MarginalPrice() {
+
+            }
+
             public ElsiMainZone Zone { get; set; }
             public string ZoneName
             {
@@ -605,6 +645,11 @@ namespace SmartEnergyLabDataApi.Elsi
                 GenType = genType;
                 Mode = mode;
             }
+
+            public StorePrice() {
+
+            }
+
             public ElsiGenType GenType {get; set;}
             public string GenTypeName {
                 get {
@@ -631,6 +676,11 @@ namespace SmartEnergyLabDataApi.Elsi
                 From = new MarginalPrice(numPeriods, from);
                 To = new MarginalPrice(numPeriods, to);
             }
+
+            public LinkPrice() {
+
+            }
+
             public string Name { get; set; }
             public MarginalPrice From {get; set;}
             public MarginalPrice To {get; set;}
@@ -642,6 +692,11 @@ namespace SmartEnergyLabDataApi.Elsi
                 Zone = zone;
                 Rates = new double[numPeriods];
             }
+
+            public ZoneEmissionsRate() {
+
+            }
+
             public ElsiMainZone Zone { get; set; }
             public string ZoneName {
                 get {
@@ -657,6 +712,11 @@ namespace SmartEnergyLabDataApi.Elsi
                 Iters = new int[numPeriods];
                 ProductionCosts = new double[numPeriods];
             }
+
+            public MiscData() {
+
+            }
+
             public int[] Iters { get; set; }
             public double[] ProductionCosts { get; set; }
             public double DayError { get; set; }
@@ -665,6 +725,10 @@ namespace SmartEnergyLabDataApi.Elsi
         public class ProductionCostDiffs {
             public ProductionCostDiffs(int numPeriods)  {
                 Diffs = new double[numPeriods];
+            }
+
+            public ProductionCostDiffs() {
+
             }
 
             public double[] Diffs {get; set;}
@@ -690,6 +754,10 @@ namespace SmartEnergyLabDataApi.Elsi
                     // links
                     this.addLinkInfo(mktInfo);
                 }
+
+            }
+
+            public BalanceMechanismResults() {
 
             }
 
@@ -841,10 +909,15 @@ namespace SmartEnergyLabDataApi.Elsi
                 Total = new double[numPeriods];
                 Info = new List<BalanceMechanismInfo>();
             }
-            public string MarketName {get; private set;}
-            public List<BalanceMechanismInfo> Info {get; private set;}
-            public double[] LossChange {get; private set;}
-            public double[] Total {get; private set;}
+
+            public BalanceMechanismMarketInfo() {
+
+            }
+
+            public string MarketName {get; set;}
+            public List<BalanceMechanismInfo> Info {get; set;}
+            public double[] LossChange {get; set;}
+            public double[] Total {get; set;}
         }
 
         public class BalanceMechanismInfo {
@@ -868,6 +941,10 @@ namespace SmartEnergyLabDataApi.Elsi
                 Type = ElsiBalanceMechanismInfoType.Link;
             }
 
+            public BalanceMechanismInfo() {
+
+            }
+
             public ElsiMainZone Zone { get; set; }
 
             public string ZoneName
@@ -883,13 +960,13 @@ namespace SmartEnergyLabDataApi.Elsi
                     return Type.ToString();
                 }
             }
-            public ElsiStorageMode StorageMode {get; private set;}
+            public ElsiStorageMode StorageMode {get; set;}
             public string StorageModeName {
                 get {
                     return StorageMode.ToString();
                 }
             }
-            public ElsiGenType GenType { get; private set; }
+            public ElsiGenType GenType { get; set; }
             public string GenTypeName
             {
                 get
@@ -898,7 +975,7 @@ namespace SmartEnergyLabDataApi.Elsi
                 }
             }
 
-            public string LinkName { get; private set;}
+            public string LinkName { get; set;}
             public double[] BOA { get; set; }
             public double[] Costs { get; set; }
 
@@ -954,8 +1031,13 @@ namespace SmartEnergyLabDataApi.Elsi
                     Balance[i]=mm;                    
                 }
             }
-            public double[] Market {get; private set;}
-            public double[] Balance {get; private set;}
+
+            public MismatchResults() {
+
+            }
+            
+            public double[] Market {get; set;}
+            public double[] Balance {get; set;}
         }
 
     }
