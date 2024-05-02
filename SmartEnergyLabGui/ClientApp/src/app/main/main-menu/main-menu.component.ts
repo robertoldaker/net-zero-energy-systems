@@ -28,4 +28,10 @@ export class MainMenuComponent implements OnInit {
         }
     }
 
+    solarInstallations() {
+        // done this way since lowVoltage/home component only reads initial route -
+        // needs to detect changes to a route to enable loading without the complete refresh as done below
+        window.location.href = `/solarInstallations`
+    }
+
 }
