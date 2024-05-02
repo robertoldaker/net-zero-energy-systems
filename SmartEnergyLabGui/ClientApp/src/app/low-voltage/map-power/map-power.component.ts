@@ -263,7 +263,7 @@ export class MapPowerComponent extends ComponentBase implements OnInit, AfterVie
                     lng: si.gisData.longitude,
                 },
                 opacity: 1,
-                zIndex: 5
+                zIndex: 6
             }, 
             id: si.id
         }
