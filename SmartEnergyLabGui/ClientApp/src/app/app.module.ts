@@ -237,6 +237,7 @@ import { SolarInstallationsComponent } from './low-voltage/solar-installations/s
             { path: 'bathLV',   redirectTo: '/lowVoltage', pathMatch: 'full' }, // redirect to `first-component`
             { path: 'lowVoltage', component: HomeComponent},
             { path: 'ResetPassword', component: HomeComponent},
+            { path: 'solarInstallations', component: HomeComponent},
             { path: 'loadflow', component: LoadflowHomeComponent},
             { path: 'elsi', component: ElsiHomeComponent},
             { path: 'classificationTool', component: ClassificationToolComponent},

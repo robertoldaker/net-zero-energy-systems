@@ -22,7 +22,6 @@ export class ElsiDataService extends ServiceBase {
         private userService: UserService) {
 
             super()
-            console.log('ElsiDataService contructor')
             this.scenario = ElsiScenario.SteadyProgression
             this.setSavedScenario()
             this.dataVersions = []

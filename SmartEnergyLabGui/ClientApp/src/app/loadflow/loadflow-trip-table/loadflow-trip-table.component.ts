@@ -22,7 +22,6 @@ export class LoadflowTripTableComponent implements OnInit, AfterViewInit, OnDest
         this.subs1 = splitService.SplitChange.subscribe( (splitData)=> {
             let clientWidth = splitData.left + 45
             this.parentWidth = `calc(100vw - ${clientWidth}px)`;
-            console.log(this.parentWidth)
         })
     }
     ngOnDestroy(): void {

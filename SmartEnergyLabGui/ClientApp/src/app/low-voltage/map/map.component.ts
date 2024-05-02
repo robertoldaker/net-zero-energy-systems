@@ -97,13 +97,9 @@ export class MapComponent extends ComponentBase implements OnInit, AfterViewInit
     } 
     
     zoomChanged() {
-        //??console.log(`zoomChanged ${this.map?.googleMap?.getZoom()}`)
     }
 
     centerChanged(e: any) {
-        //??console.log(e)
-        //??console.log('centerChanged')
-        //??console.log(this.center)
     }
 
     panToBounds(bounds: google.maps.LatLngBounds) {

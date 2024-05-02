@@ -26,7 +26,6 @@ export class RegisterUserComponent extends DialogBase implements OnInit {
 
     save() {
         let v = this.form.value
-        console.log(v)
         this.service.SaveNewUser(this.form.value,(resp)=>{
                 this.dialogRef.close()
                 this.messageService.showMessageWithTimeout("Registration successfull! Please logon using the logon button")

@@ -31,7 +31,6 @@ export class EVDemandSignalRService implements signalR.ILogger {
         //?? disabled for time being to prevent spurious error message about CORS from clogging up the console when the Ev Demand service is not running
         return;
         try {
-            console.log('start')
             this.hubConnection.start()
                 .then(()=> {
                     this.isConnected = true;

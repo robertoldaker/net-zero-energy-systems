@@ -25,15 +25,12 @@ export class ElsiHomeComponent implements OnInit {
     }
 
     splitEnd(e: any) {
-        console.log('split end')
         this.updateSplitData()
     }
 
     updateSplitData() {
         let lw = this.leftView?.nativeElement.clientWidth
         let rw = this.rightView?.nativeElement.clientWidth
-        console.log(lw)
-        console.log(rw);
         this.splitService.updateSplitData(lw,rw)
     }
 

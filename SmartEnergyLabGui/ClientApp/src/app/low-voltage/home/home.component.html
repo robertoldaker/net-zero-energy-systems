@@ -6,7 +6,7 @@
                 <app-map></app-map>
             </as-split-area>
             <as-split-area  [size]="30">
-                <mat-tab-group *ngIf="mapPowerService.HasSolarInstallations" animationDuration="0ms" [preserveContent]="false" style="height: 100%">
+                <mat-tab-group *ngIf="mapPowerService.HasSolarInstallations" animationDuration="0ms" [preserveContent]="true" style="height: 100%" (selectedTabChange)="onTabChange($event)" [selectedIndex]="tabIndex">
                     <mat-tab label="Load profiles"  style="height: 100%">
                         <app-load-profiles></app-load-profiles>
                     </mat-tab>

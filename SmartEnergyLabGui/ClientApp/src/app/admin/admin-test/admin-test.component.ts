@@ -20,13 +20,11 @@ export class AdminTestComponent extends ComponentBase implements OnInit, AfterVi
 
     ngAfterViewInit(): void {
         if ( this.map ) {
-            console.log('reading data');
             if ( this.key ) {
                 this.map?.controls[google.maps.ControlPosition.TOP_LEFT].push(this.key.nativeElement);
             }
             let map = this.map;
             this.map.data.loadGeoJson('/assets/geojson/Substations.geojson', {}, (df)=>{
-                console.log('read data substations')
                 if ( df ) {
                     for( let i=0;i<df.length;i++) {
                         let title = df[i].getProperty("Substation");
@@ -36,13 +34,11 @@ export class AdminTestComponent extends ComponentBase implements OnInit, AfterVi
             });
             //
             this.map.data.loadGeoJson('/assets/geojson/ohl.geojson', {}, (df)=>{
-                console.log('read data ohl')
             });
             //
             map.data.addListener('click', function(e: any) {
                 map.data.overrideStyle(e.feature, {fillColor: 'red'});
                 let ss = e.feature.getProperty("Substation")
-                console.log(ss)
              })
         }
     }
@@ -69,7 +65,6 @@ export class AdminTestComponent extends ComponentBase implements OnInit, AfterVi
     }
 
     zoomChanged() {
-        console.log(`${this.map?.googleMap?.getZoom()}`)
     }
 
     centerChanged() {

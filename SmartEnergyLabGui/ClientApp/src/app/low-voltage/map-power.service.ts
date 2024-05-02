@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { EventEmitter } from '@angular/core';
-import { DistributionSubstation, GeographicalArea, GridSupplyPoint, LoadProfileSource, PrimarySubstation, SolarInstallation, SubstationClassification, SubstationLoadProfile, SubstationSearchResult, VehicleChargingStation } from '../data/app.data';
+import { DistributionSubstation, GISData, GeographicalArea, GridSupplyPoint, LoadProfileSource, PrimarySubstation, SolarInstallation, SubstationClassification, SubstationLoadProfile, SubstationSearchResult, VehicleChargingStation } from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { MapDataService } from './map-data.service';
 
@@ -50,6 +50,7 @@ export class MapPowerService {
     NumberOfEVs: number | undefined
     NumberOfHPs: number | undefined
 
+    SolarInstallationsMode: boolean = false
     HasSolarInstallations: boolean = false
     SolarInstallationsYear: number = 2024
     LatestSolarInstallationsYear: number = 2024
@@ -299,9 +300,7 @@ export class MapPowerService {
                         this.setSelectedGridSupplyPoint(gsp, ()=>{
                             this._setSelectedDistributionSubstationById(id,parentId)
                         });    
-                    } else {
-                        console.log(`Grid supply point with id=[${pss.gspId}], not found!`)
-                    }
+                    } 
                 })
             }
         }
@@ -439,11 +438,28 @@ export class MapPowerService {
         return this.LoadProfileMap.get(source)
     }
 
+    gspMarkersReady() {
+        this.GridSupplyPointsMarkersReady.emit()
+    }
+
+    setZoom(zoom: number) {
+        this.ZoomChanged.emit(zoom)
+    }
+
+    setPanTo(gisData: GISData, zoom: number) {
+        this.PanToChanged.emit({ gisData: gisData, zoom: zoom})
+    }
+
+    setSolarInstallationsMode( mode: boolean) {
+        this.SolarInstallationsMode = mode
+        this.SolarInstallationsModeChanged.emit(mode)
+    }
 
     loadProfileSource: LoadProfileSource 
 
     ObjectSelected = new EventEmitter()
     GridSupplyPointsLoaded = new EventEmitter<GridSupplyPoint[] | undefined>()
+    GridSupplyPointsMarkersReady = new EventEmitter()
     PrimarySubstationsLoaded = new EventEmitter<PrimarySubstation[] | undefined>()
     DistributionSubstationsLoaded = new EventEmitter<DistributionSubstation[] | undefined>()
     VehicleChargingStationsLoaded = new EventEmitter<VehicleChargingStation[] | undefined>()
@@ -452,5 +468,7 @@ export class MapPowerService {
     LoadProfileSourceChanged = new EventEmitter()
     SolarInstallationsLoaded = new EventEmitter<SolarInstallation[]>()
     AllSolarInstallationsLoaded = new EventEmitter<SolarInstallation[]>()
-    
+    SolarInstallationsModeChanged = new EventEmitter<boolean>();
+    ZoomChanged = new EventEmitter<number>()
+    PanToChanged = new EventEmitter<{gisData: GISData, zoom: number}>()
 }

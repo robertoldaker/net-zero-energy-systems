@@ -287,13 +287,11 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     }
 
     mapClick(e: google.maps.MapMouseEvent) {
-        console.log(`mapClick lat=${e.latLng?.lat()}, lng=${e.latLng?.lng()}`)
         this.loadflowDataService.clearMapSelection();
     }
 
     zoomChanged() {
         let curZoom = this.map?.googleMap?.getZoom()
-        console.log(`zoom changed ${curZoom}`)
     }
 
     panToBounds(bounds: google.maps.LatLngBounds) {

@@ -34,6 +34,7 @@ export class LoadProfileComponent implements OnInit {
         this.chartOptions = this.getChartOptions()
         if ( this.chartInstance!=undefined ) {
            this.chartInstance.setOption(this.chartOptions)
+           this.chartInstance.resize()
         }
     }
 

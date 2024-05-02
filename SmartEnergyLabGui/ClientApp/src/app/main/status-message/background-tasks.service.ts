@@ -11,7 +11,6 @@ export class BackgroundTasksService {
     constructor(private signalrService:SignalRService, private dataClientService: DataClientService) {
         signalrService.hubConnection.on('BackgroundTaskUpdate', (data) => {
             this.taskState = data;
-            console.log(this.taskState)
         });    
     }
 

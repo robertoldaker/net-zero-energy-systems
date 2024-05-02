@@ -43,7 +43,6 @@ export class AdminDataComponent extends ComponentBase {
     refresh() {
         this.dataService.DataModel((dm)=>{
             this.model = dm;
-            console.log(dm);
             this.tableData = new MatTableDataSource(this.model.rows)
             this.tableData.sortingDataAccessor = this.sortDataAccessor
             this.tableData.sort = this.sort
@@ -52,7 +51,6 @@ export class AdminDataComponent extends ComponentBase {
 
     backupDb() {
         this.dataService.BackupDb((result)=>{
-            console.log(result)
         })
     }
 
@@ -63,7 +61,6 @@ export class AdminDataComponent extends ComponentBase {
     performCleanup() {
         this.inCleanup = true;
         this.dataService.PerformCleanup( (result)=>{
-            console.log(result)
             this.inCleanup = false;
             this.refresh()
         });

@@ -17,8 +17,6 @@ export class LoadflowDataNodesComponent implements OnInit, OnDestroy, AfterViewI
     constructor(private dataService: LoadflowDataService) {
         this.table = null
         this.sort = null
-        console.log('loadflow nodes')
-        console.log(dataService.networkData.nodes.length);
         this.nodes =  this.createDataSource(dataService.networkData.nodes);
         this.displayedColumns = ['code','zone','demand','generation','ext','mismatch']
         this.subs1 = dataService.NetworkDataLoaded.subscribe( (results) => {

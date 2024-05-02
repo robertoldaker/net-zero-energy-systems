@@ -31,7 +31,6 @@ export class MatInputEditorComponent implements OnInit {
             this.input.nativeElement.value = this.editValue
             let value = this.editValue
             if ( value===this.value) {
-                console.log(`Ignoring unchanged value [${value}] [${this.value}]`);
                 return;
             }
             let valueDouble = parseFloat(value)
@@ -48,7 +47,6 @@ export class MatInputEditorComponent implements OnInit {
 
     cancel(e: Event) {
         e.stopPropagation()
-        console.log('cancel')
         if ( this.input) {
             this.input.nativeElement.blur()
         }

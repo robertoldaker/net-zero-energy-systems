@@ -38,7 +38,6 @@ export class DistInfoWindowComponent implements OnInit {
     runEVDemandTool() {
         if ( this.evDemandService.status.isReady && this.mapPowerService.SelectedDistributionSubstation) {
             let id = this.mapPowerService.SelectedDistributionSubstation.id;
-            console.log(id)
             this.dataClientService.RunEvDemandDistributionSubstation(id)
         }
     }

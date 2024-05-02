@@ -19,7 +19,6 @@ export class MainService {
             this.serverVersionData = resp.versionData
         })
         signalRService.hubConnection.on('MaintenanceMode',(data) => {
-            console.log(`MaintenanceMode ${data}`)
             this.maintenanceMode = data
         })
          

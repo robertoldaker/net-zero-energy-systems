@@ -1,6 +1,6 @@
-import { AfterViewInit, Component, Input, OnInit, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, Input, OnInit, ViewChild, ViewChildren } from '@angular/core';
 import { GoogleMap, MapInfoWindow, MapMarker } from '@angular/google-maps';
-import { DistributionSubstation, GISBoundary, GISData, GridSupplyPoint, PrimarySubstation } from '../../data/app.data';
+import { DistributionSubstation, GISBoundary, GISData, GridSupplyPoint, PrimarySubstation, SolarInstallation } from '../../data/app.data';
 import { MapMarkerComponent } from '../map-marker/map-marker.component';
 import { MapDataService } from '../map-data.service';
 import { MapPowerService } from '../map-power.service';
@@ -8,17 +8,23 @@ import { ComponentBase } from 'src/app/utils/component-base';
 import { MapComponent } from '../map/map.component';
 import { DataClientService } from 'src/app/data/data-client.service';
 
+interface MarkerOption {   
+    options: google.maps.MarkerOptions, 
+    id:number 
+}
+
 @Component({
     selector: 'app-map-power',
     templateUrl: './map-power.component.html',
     styleUrls: ['./map-power.component.css']
 })
 
-export class MapPowerComponent extends ComponentBase implements OnInit {
+export class MapPowerComponent extends ComponentBase implements OnInit, AfterViewChecked {
 
     @ViewChildren('primaryMarkers', { read: MapMarker }) primaryMapMarkers: MapMarker[] | undefined
     @ViewChildren('gspMarkers', { read: MapMarker }) gspMapMarkers: MapMarker[] | undefined
     @ViewChildren('distMarkers', { read: MapMarker }) distMapMarkers: MapMarker[] | undefined
+    @ViewChildren('solarMarkers', { read: MapMarker }) solarMapMarkers: MapMarker[] | undefined
     @ViewChild('gspInfoWindow', { read: MapInfoWindow }) gspInfoWindow: MapInfoWindow | undefined;
     @ViewChild('primaryInfoWindow', { read: MapInfoWindow }) primaryInfoWindow: MapInfoWindow | undefined;
     @ViewChild('distInfoWindow', { read: MapInfoWindow }) distInfoWindow: MapInfoWindow | undefined;
@@ -38,6 +44,10 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
             // add new ones            
             this.addDistributionMarkers()
         }))
+        this.addSub(this.mapPowerService.SolarInstallationsLoaded.subscribe(()=>{
+            // add new ones    
+            this.addSolarMarkers()
+        }))
         this.addSub(this.mapPowerService.ObjectSelected.subscribe(()=>{
             if ( this.mapPowerService.SelectedPrimarySubstation ) {
                 this.showPrimarySelected(this.mapPowerService.SelectedPrimarySubstation);
@@ -46,7 +56,22 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
             } else if ( this.mapPowerService.SelectedGridSupplyPoint ) {
                 this.showGspSelected(this.mapPowerService.SelectedGridSupplyPoint);
             }
-        }))        
+        }))     
+        this.addSub(this.mapPowerService.ZoomChanged.subscribe((zoom)=>{
+            this.mapComponent.zoomTo(zoom)
+        }))
+        this.addSub(this.mapPowerService.PanToChanged.subscribe((d)=>{
+            this.mapComponent.panTo(d.gisData,d.zoom)
+        }))
+    }
+
+    // use this to tell mapPowerService that gsp markers are available and safe to select a gsp
+    private signalGspMarkersReady: boolean = false
+    ngAfterViewChecked(): void {
+        if ( this.signalGspMarkersReady ) {
+            this.mapPowerService.gspMarkersReady()
+            this.signalGspMarkersReady = false
+        }
     }
 
     ngOnInit(): void {
@@ -108,7 +133,6 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
             }
         })
         let b={ east: minLng, west: maxLng, north: maxLat, south: minLat};
-        console.log(b)
         return new google.maps.LatLngBounds(b)
     }
     */
@@ -116,14 +140,17 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
 
     selectedMarker: MapMarker | null = null
 
-    gspMarkerOptions: { options: google.maps.MarkerOptions, id:number }[]=[]
+    gspMarkerOptions: MarkerOption[]=[]
     addGridSupplyPointMarkers() {
-        this.gspMarkerOptions = []
+        let markerOptions:MarkerOption[] = []
         this.mapPowerService.GridSupplyPoints.forEach(gsp => {
-            this.addGridSupplyPointMarker(gsp)
+            let mo = this.getGSPMarkerOption(gsp)
+            markerOptions.push(mo)
         })
+        this.gspMarkerOptions = markerOptions
+        this.signalGspMarkersReady = true
     }
-    addGridSupplyPointMarker(gsp: GridSupplyPoint) {
+    getGSPMarkerOption(gsp: GridSupplyPoint) {
         let anchorOffset = gsp.needsNudge ? 0 : 25;
         let icon = {
             url: "/assets/images/grid-supply-point.png", // url
@@ -132,7 +159,7 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
             anchor: new google.maps.Point(anchorOffset, 50) // anchor
         };
 
-        this.gspMarkerOptions.push({ 
+        return { 
             options: { 
                 icon: icon,
                 position: {
@@ -144,17 +171,19 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
                 zIndex: 15
             }, 
             id: gsp.id
-        } )
+        }
     }
 
-    primaryMarkerOptions: { options: google.maps.MarkerOptions, id:number }[]=[]
+    primaryMarkerOptions: MarkerOption[]=[]
     addPrimaryMarkers() {
-        this.primaryMarkerOptions = []
+        let markerOptions:MarkerOption[] = []
         this.mapPowerService.PrimarySubstations.forEach(pss => {
-            this.addPrimaryMarker(pss)
+            let mo = this.getPrimaryMarkerOption(pss)
+            markerOptions.push(mo)
         })
+        this.primaryMarkerOptions = markerOptions;
     }
-    addPrimaryMarker(pss: PrimarySubstation) {
+    getPrimaryMarkerOption(pss: PrimarySubstation): MarkerOption {
         let icon = {
             url: "/assets/images/primary-substation.png", // url
             scaledSize: new google.maps.Size(40, 40), // scaled size
@@ -162,7 +191,7 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
             anchor: new google.maps.Point(20, 40) // anchor
         };
 
-        this.primaryMarkerOptions.push({ 
+        return { 
             options: { 
                 icon: icon,
                 position: {
@@ -174,24 +203,27 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
                 zIndex: 10
             }, 
             id: pss.id
-        } )
+        }
     }
 
-    distMarkerOptions: { options: google.maps.MarkerOptions, id: number }[]=[]
+    distMarkerOptions: MarkerOption[]=[]
     addDistributionMarkers() {
+        let markerOptions:MarkerOption[] = []
         this.mapPowerService.DistributionSubstations.forEach(dss => {
-            this.addDistributionMarker(dss);
+            let mo = this.getDistributionMarkerOption(dss);
+            markerOptions.push(mo)
         })
+        this.distMarkerOptions = markerOptions;
     }
 
-    addDistributionMarker(dss: DistributionSubstation) {
+    getDistributionMarkerOption(dss: DistributionSubstation):MarkerOption {
         var icon = {
             url: "/assets/images/distribution-substation.png", // url
             scaledSize: new google.maps.Size(30, 30), // scaled size
             origin: new google.maps.Point(0, 0), // origin
             anchor: new google.maps.Point(15, 30) // anchor
         };
-        this.distMarkerOptions.push({ 
+        return { 
             options: { 
                 icon: icon,
                 position: {
@@ -203,7 +235,38 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
                 zIndex: 5
             }, 
             id: dss.id
-        } )
+        }
+    }
+
+    solarMarkerOptions: MarkerOption[]=[]
+    addSolarMarkers() {
+        let markerOptions:MarkerOption[] = []
+        this.mapPowerService.SolarInstallations.forEach(si => {
+            let mo = this.getSolarMarkerOption(si);
+            markerOptions.push(mo)
+        })
+        this.solarMarkerOptions = markerOptions
+    }
+
+    getSolarMarkerOption(si: SolarInstallation): MarkerOption {
+        var icon = {
+            url: "/assets/images/solar-installation.png", // url
+            scaledSize: new google.maps.Size(16, 16), // scaled size
+            origin: new google.maps.Point(0, 0), // origin
+            anchor: new google.maps.Point(8, 8) // anchor
+        };
+        return { 
+            options: { 
+                icon: icon,
+                position: {
+                    lat: si.gisData.latitude,
+                    lng: si.gisData.longitude,
+                },
+                opacity: 1,
+                zIndex: 5
+            }, 
+            id: si.id
+        }
     }
 
     getMarkerId(mapMarker: MapMarker):number {
@@ -263,13 +326,12 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
         this.clearSelection()
         this.removePrimaryMarkers()
         this.removeDistributionMarkers()
+        this.removeSolarMarkers()
         //
-        //let bounds = this.getBounds(selectedGsp.gisData)
-        //console.log(bounds)
         this.mapComponent.panTo(selectedGsp.gisData, 10)
         
         //
-        if ( this.gspMapMarkers) {
+        if ( this.gspMapMarkers && this.gspMapMarkers.length>0) {
             let mapMarker = this.getMapMarker(this.gspMapMarkers,selectedGsp.id)
             if ( mapMarker!=undefined) {
                 mapMarker.marker?.setOpacity(1)
@@ -280,13 +342,14 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
                 this.getBoundaryPoints(selectedGsp.gisData, (boundaries: google.maps.LatLngLiteral[][]) =>{
                     this.gspBoundaries = boundaries
                 })
-            }    
-        }
+            } 
+        } 
     }
 
     showPrimarySelected(selectedPrimary: PrimarySubstation) {
-        this.clearSelection();
-        this.removeDistributionMarkers();
+        this.clearSelection()
+        this.removeDistributionMarkers()
+        this.removeSolarMarkers()
         this.mapComponent.panTo(selectedPrimary.gisData, 12)
         if ( this.primaryMapMarkers) {
             let mapMarker = this.getMapMarker(this.primaryMapMarkers,selectedPrimary.id)
@@ -335,11 +398,23 @@ export class MapPowerComponent extends ComponentBase implements OnInit {
         this.primaryMarkerOptions=[];
     }
 
+    removeSolarMarkers() {
+        // remove existing ones from map
+        this.solarMarkerOptions=[];
+    }
+
     get canShowDistMarkers():boolean {
         return this.mapComponent.currentZoom > 11;
     }
 
     get canShowPrimaryMarkers():boolean {
         return this.mapComponent.currentZoom > 8;
+    }
+    get canShowSolarMarkers():boolean {
+        return this.mapPowerService.SolarInstallationsMode;
+    }
+
+    markerOptionTrackByFcn(index: number, mo: MarkerOption):any {
+        return mo.id
     }
 }

@@ -25,7 +25,6 @@ export class CellEditorComponent implements OnInit {
 
     onBlur() {
         this.hasFocus = false;
-        console.log('blur')
         if ( this.input ) {
             this.editValue = this.input.nativeElement.value
             this.input.nativeElement.value = this.value            
@@ -33,12 +32,10 @@ export class CellEditorComponent implements OnInit {
     }
 
     mouseDown() {
-        console.log(`mouseDown [${this.hasFocus}]`)
         this.hadFocus = this.hasFocus;
     }
 
     cancel(e: Event) {
-        console.log(`cancel ${this.hadFocus}`)
         if ( !this.hadFocus) {
             return
         }
@@ -52,14 +49,12 @@ export class CellEditorComponent implements OnInit {
     input: ElementRef | undefined;
 
     save(e: Event) {
-        console.log(`save ${this.hadFocus}`)
         if ( !this.hadFocus) {
             return
         }
         e.stopPropagation()
         let value = this.editValue
         if ( value===this.value ) {
-            console.log('ignoring same value')
             return;
         }
         let valueDouble = parseFloat(value)

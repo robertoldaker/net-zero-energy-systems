@@ -37,7 +37,6 @@ export class LoadflowDataComponent implements OnInit, OnDestroy {
     showMap:boolean = true;
 
     toggleMap() {
-        console.log('toggleMap')
         this.showMap = !this.showMap;
     }
 

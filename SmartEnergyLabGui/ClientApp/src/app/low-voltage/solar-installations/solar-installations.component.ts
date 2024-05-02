@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { MapPowerService } from '../map-power.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { EChartsOption } from 'echarts';
@@ -10,16 +10,16 @@ import { DataClientService } from 'src/app/data/data-client.service';
     templateUrl: './solar-installations.component.html',
     styleUrls: ['./solar-installations.component.css']
 })
-export class SolarInstallationsComponent extends ComponentBase implements OnInit {
+export class SolarInstallationsComponent extends ComponentBase {
 
     constructor(private mapPowerService: MapPowerService) { 
         super()
         this.minYear = 2011
         this.maxYear = 2024        
-        this.addSub(mapPowerService.AllSolarInstallationsLoaded.subscribe((solarInstallations)=>{
-            console.log(`solar installations loaded [${solarInstallations.length}]`)
-            this.redraw(solarInstallations)
-        }))        
+        this.addSub(mapPowerService.AllSolarInstallationsLoaded.subscribe(()=>{
+            this.setChartOptions()
+            this.redraw()
+        }))
     }
 
     private genDatasource( sis: SolarInstallation[]): { years: string[], data: number[] } {
@@ -50,15 +50,7 @@ export class SolarInstallationsComponent extends ComponentBase implements OnInit
         return { years: years, data: data}
     }
 
-    ngOnInit(): void {
-        if ( this.mapPowerService.AllSolarInstallations.length>0) {
-            this.redraw(this.mapPowerService.AllSolarInstallations)
-        }
-    }
-
     yearChanged(e: any) {
-        console.log('year changed')
-        console.log(e.value)
     }
 
     yearInput(e: any) {
@@ -71,16 +63,18 @@ export class SolarInstallationsComponent extends ComponentBase implements OnInit
 
     onChartInit(e: any) {
         this.chartInstance = e;
-        if ( this.mapPowerService.AllSolarInstallations.length>0 ) {
-            this.redraw(this.mapPowerService.AllSolarInstallations)
+        this.setChartOptions()
+        this.redraw()
+    }
+
+    redraw() {
+        if (this.chartInstance !== undefined) {
+            this.chartInstance.resize()
         }
     }
 
-    redraw(solarInstallations: SolarInstallation[]) {
-        if (this.chartInstance !== undefined) {
-            this.chartOptions = this.genEChartOptions(solarInstallations)
-            this.chartInstance.setOption(this.chartOptions)
-        }
+    private setChartOptions() {
+        this.chartOptions = this.genEChartOptions(this.mapPowerService.AllSolarInstallations)
     }
 
     private genEChartOptions(solarInstallations:SolarInstallation[]):EChartsOption {
@@ -96,7 +90,7 @@ export class SolarInstallationsComponent extends ComponentBase implements OnInit
               animation: false,
               yAxis: {
                 type: 'value',
-                name: 'Installations',
+                name: 'Solar installations',
                 nameLocation: 'middle', nameGap: 55, nameTextStyle: { fontWeight: 'bold'},
               },
               grid: { left: 70, right: 20, bottom: 40, top: 40 },

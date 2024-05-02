@@ -74,8 +74,6 @@ export class LoadflowDialogComponent implements OnInit, OnDestroy {
     
     tripSelected(e: any) {
         let trip = this.trips.find( m=>m.text==e.value);
-        console.log(`trip selected`)
-        console.log(trip)
     }
 
     currentTrip: string
