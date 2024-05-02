@@ -5,6 +5,8 @@ import { MapPowerService } from '../map-power.service';
 import { SolarInstallationsComponent } from '../solar-installations/solar-installations.component';
 import { LoadProfilesComponent } from '../load-profiles/load-profiles.component';
 import { ComponentBase } from 'src/app/utils/component-base';
+import { GISData } from 'src/app/data/app.data';
+import { LogOnComponent } from 'src/app/users/log-on/log-on.component';
 
 @Component({
     selector: 'app-home',
@@ -35,8 +37,11 @@ export class HomeComponent extends ComponentBase implements OnInit {
                     if ( gsp ) {
                         this.mapPowerService.setSolarInstallationsMode(true);
                         this.mapPowerService.setSelectedGridSupplyPoint(gsp)
-                        let gisData = gsp.gisData;
-                        gisData.latitude-=0.05;
+                        let gisData: GISData = {
+                            id: 0,
+                            latitude: gsp.gisData.latitude - 0.05,
+                            longitude: gsp.gisData.longitude
+                        }
                         this.mapPowerService.setPanTo(gisData,12);
                     }    
                 },0)
