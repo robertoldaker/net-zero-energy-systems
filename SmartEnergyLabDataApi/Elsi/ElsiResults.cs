@@ -899,7 +899,7 @@ namespace SmartEnergyLabDataApi.Elsi
                 }
             }
 
-            public List<BalanceMechanismMarketInfo> MarketInfo {get; private set;}
+            public List<BalanceMechanismMarketInfo> MarketInfo {get; set;}
         }
 
         public class BalanceMechanismMarketInfo {

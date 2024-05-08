@@ -195,17 +195,7 @@ namespace SmartEnergyLabDataApi.Controllers
             using( var da = new DataAccess() ) {
                 var dataset = da.Elsi.GetDataVersion(datasetId);
                 if (dataset!=null) {
-                    var ers = da.Elsi.GetResults(datasetId, scenario);
-                    var edrs = new List<ElsiDayResult>();
-                    foreach( var er in ers) {
-                        var erStr = System.Text.Encoding.UTF8.GetString(er.Data);
-                        var edr = JsonSerializer.Deserialize<ElsiDayResult>(erStr,new JsonSerializerOptions() {
-                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                        });
-                        if ( edr!=null ){
-                            edrs.Add(edr);
-                        }
-                    }
+                    var edrs = da.Elsi.GetElsiDayResults(datasetId, scenario);
                     var json=JsonSerializer.Serialize(edrs,new JsonSerializerOptions() {
                             WriteIndented = true,
                             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -226,24 +216,12 @@ namespace SmartEnergyLabDataApi.Controllers
             using( var da = new DataAccess() ) {
                 var dataset = da.Elsi.GetDataVersion(datasetId);
                 if (dataset!=null) {
-                    var ers = da.Elsi.GetResults(datasetId, scenario);
-                    var edrs = new List<ElsiDayResult>();
-                    foreach( var er in ers) {
-                        var erStr = System.Text.Encoding.UTF8.GetString(er.Data);
-                        var edr = JsonSerializer.Deserialize<ElsiDayResult>(erStr,new JsonSerializerOptions() {
-                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                        });
-                        if ( edr!=null ){
-                            edrs.Add(edr);
-                        }
-                    }
-                    var json=JsonSerializer.Serialize(edrs,new JsonSerializerOptions() {
-                            WriteIndented = true,
-                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                        });                    
-                    var ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
+                    //
+                    var m = new ElsiCsvWriter(da);
+                    var ms = m.WriteToMemoryStream(datasetId,ElsiScenario.SteadyProgression);
+                    //                    
                     var fsr = new FileStreamResult(ms, "application/json");
-                    fsr.FileDownloadName = $"Elsi results [{dataset.Name}].json";
+                    fsr.FileDownloadName = $"Elsi results [{dataset.Name}].csv";
                     return fsr;
                 } else {
                     throw new Exception($"Cannot find dataset with id=[{datasetId}]");

@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.Json;
 using HaloSoft.DataAccess;
 using NHibernate;
 using NHibernate.Criterion;
@@ -42,10 +43,18 @@ namespace SmartEnergyLabDataApi.Data
             return data;
         }
 
-        public IList<T> GetData<T>(int versionId, Func<T,string> keyFcn) where T: class{
+        public IList<T> GetData<T>(int versionId, Func<T,string> keyFcn, System.Linq.Expressions.Expression<Func<T,object>>? orderByFcn=null, bool asc=true) where T: class{
             //
-            var data = Session.QueryOver<T>().List();
+            var q = Session.QueryOver<T>();
+            if ( orderByFcn!=null ) {
+                if ( asc ) {
+                    q = q.OrderBy(orderByFcn).Asc;
+                } else {
+                    q = q.OrderBy(orderByFcn).Desc;
+                }
+            }
             // apply all user edits
+            var data = q.List();
             applyUserEdits<T>(data, versionId, keyFcn);
             return data;
         }
@@ -294,6 +303,14 @@ namespace SmartEnergyLabDataApi.Data
                 OrderBy(m=>m.Day).Asc.List();
         }
 
+        public IList<ElsiResult> GetResultsWithData(int datasetId, ElsiScenario scenario) {
+            return Session.QueryOver<ElsiResult>().
+                Fetch(SelectMode.FetchLazyProperties,m=>m).
+                Where(m=>m.Dataset.Id == datasetId).
+                And(m=>m.Scenario == scenario).
+                OrderBy(m=>m.Day).Asc.List();
+        }
+
         public int GetResultCount(int datasetId) {
             return Session.QueryOver<ElsiResult>().
                 Where(m=>m.Dataset.Id == datasetId).
@@ -302,6 +319,21 @@ namespace SmartEnergyLabDataApi.Data
 
         public ElsiResult GetResult(int id) {
             return Session.QueryOver<ElsiResult>().Where(m=>m.Id == id).Take(1).SingleOrDefault();
+        }
+
+        public List<ElsiDayResult> GetElsiDayResults( int datasetId, ElsiScenario scenario) {
+            var ers = GetResultsWithData(datasetId, scenario);
+            var edrs = new List<ElsiDayResult>();
+            foreach( var er in ers) {
+                var erStr = System.Text.Encoding.UTF8.GetString(er.Data);
+                var edr = JsonSerializer.Deserialize<ElsiDayResult>(erStr,new JsonSerializerOptions() {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+                if ( edr!=null ){
+                    edrs.Add(edr);
+                }
+            }
+            return edrs;
         }
         #endregion
 
