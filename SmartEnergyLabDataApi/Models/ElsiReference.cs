@@ -36,7 +36,24 @@ public class ElsiReference {
         }
     }
 
+    private string[] _phases = {"All", "Availabilities","Market","Balance","Balance mechanism"};
+
     public ElsiErrors Run(int day, double tol, string phase) {
+        //
+        if ( phase == "A") {
+            phase = "Availabilities";
+        } else if ( phase == "M") {
+            phase = "Market";
+        } else if ( phase == "B") {
+            phase = "Balance";
+        } else if ( phase == "BM") {
+            phase = "Balance mechanism";
+        }
+        //
+        if ( !_phases.Contains(phase)) {
+            throw new Exception($"Unrecognised phase [{phase}]");
+        }
+        //
         if ( File.Exists(getFilename())) {
             var m = new ElsiXlsmReader();
             var refResults = m.Load(getFilename());
@@ -70,7 +87,7 @@ public class ElsiReference {
 
 
         // Market phase
-        phase = "Market phase";
+        phase = "Market";
         errors.AddGeneratorErrors(phase,dayResult.Market.GeneratorResults, refResults.MarketPhase);
         errors.AddStoreErrors(phase,dayResult.Market.StoreResults, refResults.MarketPhase);
         errors.AddLinkErrors(phase,dayResult.Market.LinkResults, refResults.MarketPhase);
@@ -81,7 +98,7 @@ public class ElsiReference {
         errors.AddMiscErrors(phase,dayResult.Market.MiscData, refResults.MarketPhase);
 
         // Balance phase
-        phase = "Balance phase";
+        phase = "Balance";
         errors.AddGeneratorErrors(phase,dayResult.Balance.GeneratorResults, refResults.BalancePhase);
         errors.AddStoreErrors(phase,dayResult.Balance.StoreResults, refResults.BalancePhase);
         errors.AddLinkErrors(phase,dayResult.Balance.LinkResults, refResults.BalancePhase);

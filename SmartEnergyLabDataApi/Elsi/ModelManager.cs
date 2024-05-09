@@ -447,6 +447,7 @@ using SmartEnergyLabDataApi.Common;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Loadflow;
 using SmartEnergyLabDataApi.Models;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 
@@ -727,7 +728,7 @@ namespace SmartEnergyLabDataApi.Elsi
                     zonemo[j].PosDetails(pos, ref mnm, ref pr, ref sz);
                     smp[j,1] = pr;
                     //
-                    //Console.WriteLine($"Period {p.Period}, zone {znm} Marginal {mnm} SMP {smp[j,0]} LMP {smp[j,1]}");
+                    Debug.Print($"Period {p.Period}, zone {znm} Marginal {mnm} SMP {smp[j,0]} LMP {smp[j,1]}");
                     j++;
                 }
 
@@ -739,7 +740,7 @@ namespace SmartEnergyLabDataApi.Elsi
 
                 #if DEBUG
                 for(j=0; j<smp.GetLength(0);j++) {
-                    PrintFile.PrintVars("i", i, "j", j, "smp0", smp[j, 0], "smp1", smp[j, 1]);
+                    //PrintFile.PrintVars("i", i, "j", j, "smp0", smp[j, 0], "smp1", smp[j, 1]);
                 }
                 #endif
 

@@ -60,10 +60,17 @@ namespace SmartEnergyLabDataApi.Controllers
                 var mm = new ModelManager(data,log); 
                 #if DEBUG 
                     if ( printFile  ) {
-                        PrintFile.Init();
+                        string fn = Path.Combine(AppFolders.Instance.Temp,"ElsiDebug.txt");
+                        PrintFile.Init(fn);
                     }
                 #endif
                 var results = mm.RunDay(day);
+                #if DEBUG 
+                    if ( printFile  ) {
+                        PrintFile.Close();
+                    }
+                #endif
+            
                 return results;
             }
         }
@@ -287,7 +294,7 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         /// <param name="day">Day number to use (1-365)</param>
         /// <param name="tol">Tolerance to use for absolute error</param>
-        /// <param name="phase">Only consider this phase of the analysis (phases are "Availabilities", "Market phase", "Balance phase" and "Balance mechanism")</param>
+        /// <param name="phase">Only consider this phase of the analysis (phases are "(A)vailabilities", "(M)arket phase", "(B)alance phase" and "(B)alance (M)echanism")</param>
         [HttpGet]
         [Route("Reference/Run")]
         public ElsiErrors Run(int day=1, double tol=1e-6, string phase="All") {

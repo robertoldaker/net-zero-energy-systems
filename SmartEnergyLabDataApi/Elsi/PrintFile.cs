@@ -1,8 +1,9 @@
+using System.Diagnostics;
+
 public class PrintFile {
     private static FileStream _fs;
     private static StreamWriter _ts;
-    public static void Init() {
-        var fn = "C:\\Users\\rolda\\Projects\\SmartEnergyLab\\Smart-Energy-Lab-Data-Api\\ElsiDebugCSharp.txt";
+    public static void Init(string fn) {
         if ( _fs!=null) {
             _fs.Close();
         }
@@ -10,6 +11,12 @@ public class PrintFile {
         _ts = new StreamWriter(_fs);
         _ts.AutoFlush = true;        
         PrintVars("C#");
+    }
+
+    public static void Close() {
+        if ( _fs!=null) {
+            _fs.Close();
+        }
     }
 
     public static void PrintVars(params object[] vars) {
@@ -20,22 +27,24 @@ public class PrintFile {
             return;
         }
         int i=0;
+        var msg = "";
         foreach( var v in vars) {
             if ( v is double) {
-                _ts.Write($"{v:n8} ");
+                msg+=$"{v:n8} ";
             } else if ( v is int) {
-                _ts.Write($"{v} ");
+                msg+=$"{v} ";
             } else {
-                _ts.Write($"{v}");
+                msg+=$"{v}";
                 if ( i%2 == 0 && vars.Length>1 ) {
-                    _ts.Write("=");
+                    msg+="=";
                 } else {
-                    _ts.Write(" ");
+                    msg+=" ";
                 }
             }
             i++;
         }
-        _ts.WriteLine();        
+        _ts.WriteLine(msg);
+        Debug.Print(msg);
     }
 
     public static void NewLine() {
