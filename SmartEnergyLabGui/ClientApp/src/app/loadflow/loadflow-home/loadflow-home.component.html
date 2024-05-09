@@ -12,5 +12,9 @@
             </as-split-area>
         </as-split>
     </div>
+    <div *ngIf="!this.user">
+        <div *ngIf="this.userInfoValid" class="noUser">Please <span class="link" (click)="logon()">logon</span> or <span class="link" (click)="register()">register</span> to use GB Electricity Market Simulator
+        </div>
+    </div>
 </div>
 <app-maintenance-overlay></app-maintenance-overlay>

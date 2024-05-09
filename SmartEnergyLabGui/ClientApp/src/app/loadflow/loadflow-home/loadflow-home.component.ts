@@ -1,5 +1,7 @@
 import { AfterContentInit, AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { LoadflowSplitService } from '../loadflow-split.service';
+import { UserService } from 'src/app/users/user.service';
+import { DialogService } from 'src/app/dialogs/dialog.service';
 
 @Component({
     selector: 'app-loadflow-home',
@@ -8,7 +10,7 @@ import { LoadflowSplitService } from '../loadflow-split.service';
 })
 export class LoadflowHomeComponent implements OnInit, AfterViewInit{
 
-    constructor(private splitService: LoadflowSplitService) {
+    constructor(private splitService: LoadflowSplitService, private userService: UserService, private dialogService:DialogService) {
 
     }
     ngAfterViewInit(): void {
@@ -34,5 +36,22 @@ export class LoadflowHomeComponent implements OnInit, AfterViewInit{
         let rw = this.rightView?.nativeElement.clientWidth
         this.splitService.updateSplitData(lw,rw)
     }
+
+    get user() {
+        return this.userService.user
+    }
+
+    get userInfoValid() {
+        return this.userService.userInfoValid
+    }
+
+    logon() {
+        this.dialogService.showLogonDialog()
+    }
+
+    register() {
+        this.dialogService.showRegisterUserDialog()
+    }
+
 
 }
