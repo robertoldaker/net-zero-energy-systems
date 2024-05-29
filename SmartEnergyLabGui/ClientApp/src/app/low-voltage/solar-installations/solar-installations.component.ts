@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
 import { MapPowerService } from '../map-power.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { EChartsOption } from 'echarts';
@@ -12,7 +12,10 @@ import { DataClientService } from 'src/app/data/data-client.service';
 })
 export class SolarInstallationsComponent extends ComponentBase {
 
-    constructor(private mapPowerService: MapPowerService) { 
+    constructor(
+        private mapPowerService: MapPowerService,
+        @Inject('DATA_URL') private baseUrl: string
+    ) { 
         super()
         this.minYear = 2011
         this.maxYear = 2024        
@@ -102,6 +105,10 @@ export class SolarInstallationsComponent extends ComponentBase {
               ]
         } 
         return options;
+    }
+
+    downloadAsCsv() {
+        window.open(`${this.baseUrl}/documents/CityofBath_PV_Point_Locations.csv`)
     }
 
     chartInstance: any

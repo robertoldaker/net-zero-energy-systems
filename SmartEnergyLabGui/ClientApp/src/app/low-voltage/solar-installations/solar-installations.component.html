@@ -1,4 +1,10 @@
 <div class="sliderContainer">
+    <div class="buttons">
+        <button mat-raised-button color="primary" (click)="downloadAsCsv()">
+            Download as csv
+            <mat-icon>arrow_downward</mat-icon>
+        </button>
+    </div>
     <div>Year: <b>{{year}}</b></div>
     <mat-slider color="primary" class="slider" discrete [value]="year" [max]="maxYear" [min]="minYear" [step]="1" (change)="yearChanged($event)" (input)="yearInput($event)" >
     </mat-slider> 

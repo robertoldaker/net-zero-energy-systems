@@ -5,3 +5,8 @@
 div.sliderContainer {
     padding: 20px;
 }
+
+div.buttons {
+    text-align: right;
+    margin-bottom: 1rem;
+}

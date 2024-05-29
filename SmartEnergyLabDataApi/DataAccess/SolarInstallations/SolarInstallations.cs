@@ -25,6 +25,13 @@ public class SolarInstallations : DataSet {
         return q.Take(1).SingleOrDefault();
     }
 
+    public SolarInstallation GetSolarInstallation(int year, DistributionSubstation dss) {
+        var q = Session.QueryOver<SolarInstallation>().
+            Where( m=>m.Year == year).
+            And( m=>m.DistributionSubstation == dss);
+        return q.Take(1).SingleOrDefault();
+    }
+
     public IList<SolarInstallation> GetSolarInstallationsByGridSupplyPoint(int gspId, int year) {
         var q = Session.QueryOver<SolarInstallation>().
             Where( m=>m.GridSupplyPoint.Id == gspId).

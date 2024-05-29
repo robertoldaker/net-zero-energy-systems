@@ -37,23 +37,28 @@ public class SolarInstallationLoader {
                     var lng = feature.geometry.coordinates[0];
                     var lat = feature.geometry.coordinates[1];
                     //
-                    var folderPath = feature.properties.FolderPath;
-                    var cpnts= folderPath.Split("/");
-                    var substationName = cpnts[cpnts.Length-1];
+                    //var folderPath = feature.properties.FolderPath;
+                    //var cpnts= folderPath.Split("/");
+                    //var substationName = cpnts[cpnts.Length-1];
+                    int dssId = feature.properties.DS_Number!=null ? (int) feature.properties.DS_Number:0;
+                    var dssName = feature.properties.DS;
+                    var dss = da.Substations.GetDistributionSubstation(ImportSource.NationalGridDistributionOpenData,dssId.ToString(),null,dssName);
                     //
-                    var si = da.SolarInstallations.GetSolarInstallation(year, lat,lng);
-                    if ( si==null ) {                        
-                        var dss = da.Substations.GetDistributionSubstation(gsp,substationName);
-                        //
-                        if ( dss==null) {
-                            numIgnored++;
-                            Logger.Instance.LogInfoEvent($"Could not find dist substation [{substationName}]");
-                            continue;                        
+                    if ( dss!=null ) {
+                        var si = da.SolarInstallations.GetSolarInstallation(year, dss);
+                        if ( si==null ) {                        
+                            //
+                            si = new SolarInstallation(year, dss, lat, lng);
+                            toAdd.Add(si);
+                            numNew++;
+                        } else {
+                            si.GISData.Latitude = lat;
+                            si.GISData.Longitude = lng;
                         }
-                        si = new SolarInstallation(year, dss, lat, lng);
-                        toAdd.Add(si);
-                        numNew++;
-                    }                     
+                    } else {
+                        numIgnored++;
+                        Logger.Instance.LogInfoEvent($"Could not find dist substation [{dssName}] [{dssId}]");
+                    }
                 }
                 // Add new ones to db
                 foreach( var si in toAdd) {
@@ -87,6 +92,8 @@ public class SolarInstallationLoader {
     public class Props {
         public string Name {get; set;}
         public string FolderPath {get; set;}
+        public string DS {get; set;}
+        public int? DS_Number {get; set;}
 
     }
 
