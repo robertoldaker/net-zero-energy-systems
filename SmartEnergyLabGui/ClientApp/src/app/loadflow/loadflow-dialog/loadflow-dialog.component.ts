@@ -1,7 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Boundary, BoundaryFlowResult, BoundaryTrip, LoadflowResults } from '../../data/app.data';
+import { Boundary, BoundaryFlowResult, BoundaryTrip, Dataset, DatasetType, LoadflowResults } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
+import { ComponentBase } from 'src/app/utils/component-base';
 
 @Component({
     selector: 'app-loadflow-dialog',
@@ -9,23 +10,21 @@ import { LoadflowDataService } from '../loadflow-data-service.service';
     styleUrls: ['./loadflow-dialog.component.css']
 })
 
-export class LoadflowDialogComponent implements OnInit, OnDestroy {
+export class LoadflowDialogComponent extends ComponentBase {
 
-    private subs1: Subscription
-    private subs2: Subscription
-    private subs3: Subscription
     constructor(private dataService: LoadflowDataService) { 
+        super()
         this.boundaries = dataService.boundaries;
         this.trips = []
         this.boundaryName=""        
         this.selectedTrip=""
         this.currentTrip="";
         this.percent = 0;
-        this.flowResult = { genInside: 0, genOutside:0, demInside: 0, demOutside: 0, ia: 0 }
-        this.subs1 = dataService.BoundariesLoaded.subscribe((results=>{
+        this.flowResult = this.clearFlowResult;
+        this.addSub(dataService.BoundariesLoaded.subscribe((results=>{
             this.boundaries = results;
-        }))
-        this.subs2 = dataService.ResultsLoaded.subscribe((results)=>{
+        })))
+        this.addSub(dataService.ResultsLoaded.subscribe((results)=>{
             if ( results.boundaryTrips ) {
                 this.selectedTrip = "";
                 this.trips = results.boundaryTrips.trips                
@@ -33,19 +32,14 @@ export class LoadflowDialogComponent implements OnInit, OnDestroy {
             if ( results.boundaryFlowResult ) {
                 this.flowResult = results.boundaryFlowResult;
             }
-        })
-        this.subs3 = dataService.AllTripsProgress.subscribe((data)=>{
+        }))
+        this.addSub(dataService.AllTripsProgress.subscribe((data)=>{
             this.currentTrip = data.trip.text;
             this.percent = data.percent; 
-        });
-    }
-    ngOnDestroy(): void {
-        this.subs1.unsubscribe();
-        this.subs2.unsubscribe();
-        this.subs3.unsubscribe();
-    }
-
-    ngOnInit(): void {
+        }))
+        this.addSub(dataService.NetworkDataLoaded.subscribe((results)=>{
+            this.flowResult = this.clearFlowResult
+        }))
     }
 
     runBaseLoadflow() {
@@ -76,6 +70,14 @@ export class LoadflowDialogComponent implements OnInit, OnDestroy {
         let trip = this.trips.find( m=>m.text==e.value);
     }
 
+    onDatasetSelected(dataset: Dataset) {
+        this.dataService.setDataset(dataset)
+    }
+
+    get isRootDataset():boolean {
+        return this.dataService.dataset.parent == null
+    }
+
     currentTrip: string
     percent: number
     selectedTrip: string
@@ -83,5 +85,7 @@ export class LoadflowDialogComponent implements OnInit, OnDestroy {
     boundaryName: string
     trips: BoundaryTrip[]
     flowResult: BoundaryFlowResult
+    clearFlowResult: BoundaryFlowResult = { genInside: 0, genOutside:0, demInside: 0, demOutside: 0, ia: 0 }
+    datasetTypes = DatasetType
 
 }

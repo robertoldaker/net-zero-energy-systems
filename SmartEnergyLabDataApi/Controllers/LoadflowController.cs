@@ -44,19 +44,6 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
-        /// Gets a list of branches - these are connections between nodes
-        /// </summary>
-        /// <value></value>
-        [HttpGet]
-        [Route("Branches")]
-        public IList<Branch> Branches()
-        {
-            using( var da = new DataAccess()) {
-                return da.Loadflow.GetBranches();
-            }
-        }
-
-        /// <summary>
         /// Returns a list of boundaries that have been defined
         /// </summary>
         /// <returns>List of boundaries</returns>
@@ -64,7 +51,12 @@ namespace SmartEnergyLabDataApi.Controllers
         [Route("Boundaries")]
         public IList<Data.Boundary> Boundaries() {
             using ( var da = new DataAccess() ) {
-                return da.Loadflow.GetBoundaries();
+                var name = "GB network";
+                var dataset = da.Datasets.GetDataset(DatasetType.Loadflow,name);
+                if ( dataset==null ) {
+                    throw new Exception($"Cannot find dataset [{name}]");
+                }
+                return da.Loadflow.GetBoundaries(dataset);
             }
         }
 
@@ -74,9 +66,9 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("RunBaseLoadflow")]
-        public LoadflowResults RunBaseLoadflow()
+        public LoadflowResults RunBaseLoadflow(int datasetId)
         {
-            using( var lf = new Loadflow.Loadflow() ) {
+            using( var lf = new Loadflow.Loadflow(datasetId) ) {
                 lf.RunBaseCase("Auto");
                 return new LoadflowResults(lf);
             }
@@ -85,16 +77,17 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Runs a multi-branch trip scenario with tripped branches defined by a list of their link names
         /// </summary>
+        /// <param name="datasetId">Id of dataset to use</param>
         /// <param name="linkNames">List of link names of branches to trip</param>
         /// <returns></returns>
         [HttpPost]
         [Route("RunTripLoadflow")]
-        public LoadflowResults RunTripLoadflow(List<string> linkNames) {
+        public LoadflowResults RunTripLoadflow(int datasetId,List<string> linkNames) {
             //??
             if ( linkNames==null ) {
                 linkNames = new List<string>() { "ABH4A4:EXET40:A833"};
             }
-            using( var lf = new Loadflow.Loadflow() ) {
+            using( var lf = new Loadflow.Loadflow(datasetId) ) {
                 lf.RunTrip(linkNames);
                 return new LoadflowResults(lf);
             }
@@ -148,11 +141,12 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Gets loadflow network data
         /// </summary>
-        /// <returns></returns>
+        /// <param name="datasetId">Id of dataset</param>
+        /// /// <returns></returns>
         [HttpGet]
         [Route("NetworkData")]
-        public LoadflowNetworkData NetworkData() {
-            using( var lf = new Loadflow.Loadflow() ) {
+        public LoadflowNetworkData NetworkData(int datasetId) {
+            using( var lf = new Loadflow.Loadflow(datasetId) ) {
                 lf.NetCheck();
                 return new LoadflowNetworkData(lf);
             }
@@ -172,27 +166,32 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Setup boundary data prior to trip analysis
         /// </summary>
+        /// <param name="datasetId">Dataset id to use</param>
         /// <param name="boundaryName">Name of boundary</param>
         /// <returns></returns>
         [HttpPost]
         [Route("SetBound")]
-        public LoadflowResults SetBound(string boundaryName) {
-            using( var lf = new Loadflow.Loadflow() ) {
+        public LoadflowResults SetBound(int datasetId, string boundaryName) {
+            using( var lf = new Loadflow.Loadflow(datasetId) ) {
                 var bfr = lf.Boundary.SetBound(boundaryName);
-                return new LoadflowResults(lf,bfr,lf.Boundary.BoundaryTrips);
+                var lfr = new LoadflowResults(lf,bfr,lf.Boundary.BoundaryTrips);
+                //?? No saving yet as waiting for new version to be implemented
+                //?? lfr.Save();
+                return lfr;
             }
         }
-        
+
         /// <summary>
         /// Run all boundary trips.
         /// </summary>
+        /// <param name="datasetId">Dataset id to use</param>
         /// <param name="boundaryName">Name of boundary</param>
         /// <param name="connectionId">SignalR connection id to receive progress messages</param>
         /// <returns></returns>
         [HttpPost]
         [Route("RunAllBoundaryTrips")]
-        public LoadflowResults RunAllBoundaryTrips(string boundaryName, string? connectionId=null) {
-            using( var lf = new Loadflow.Loadflow() ) {
+        public LoadflowResults RunAllBoundaryTrips(int datasetId, string boundaryName, string? connectionId=null) {
+            using( var lf = new Loadflow.Loadflow(datasetId) ) {
                 if ( connectionId!=null ) {
                     lf.Boundary.AllTripsProgress+=(t,p)=>{                    
                         _hubContext.Clients.Client(connectionId).SendAsync("Loadflow_AllTripsProgress",new {trip=t,percent=p});
@@ -209,13 +208,14 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Run a single boundary trip
         /// </summary>
+        /// <param name="datasetId">Dataset id to use</param>
         /// <param name="boundaryName">Name of boundary</param>
         /// <param name="tripName">Name of trip</param>
         /// <returns></returns>
         [HttpPost]
         [Route("RunBoundaryTrip")]
-        public LoadflowResults RunBoundTrip(string boundaryName,string tripName) {
-            using( var lf = new Loadflow.Loadflow() ) {
+        public LoadflowResults RunBoundTrip(int datasetId, string boundaryName,string tripName) {
+            using( var lf = new Loadflow.Loadflow(datasetId) ) {
                 var bfr = lf.Boundary.RunBoundaryTrip(boundaryName, tripName);
                 return new LoadflowResults(lf, bfr);
             }

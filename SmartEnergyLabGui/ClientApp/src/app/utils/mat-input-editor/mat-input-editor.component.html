@@ -1,15 +1,15 @@
 <mat-form-field appearance="fill" [color]="'primary'" >
     <mat-label>{{label}}</mat-label>
-    <input matInput class="editable" [ngClass]="{'existing': data.userEdit}" type="text" [value]="value" 
+    <input matInput class="editable" [ngClass]="{'existing': data?.userEdit}" type="text" [value]="value" 
     (change)="onChange($event)" [readonly]="readOnly" (focus)="onFocus()" (blur)="onBlur()" #input/>
-    <div *ngIf="!readOnly && data.userEdit" class="delete button" (click)="delete($event)" >
+    <div *ngIf="!readOnly && data?.userEdit" class="delete button" (click)="delete($event)" >
         <mat-icon title="Delete edit" [inline]="true">cancel</mat-icon>
     </div>
     <div class="editButtons">
-        <div class="cancel button" [ngClass]="{'hide': !hasFocus}" (click)="cancel($event)" >
+        <div class="cancel button" [ngClass]="{'hide': !hasFocus || readOnly}" (click)="cancel($event)" >
             <mat-icon title="Cancel edit" [inline]="true">close</mat-icon>
         </div>    
-        <div class="save button" [ngClass]="{'hide': !hasFocus}" (click)="save($event)">
+        <div class="save button" [ngClass]="{'hide': !hasFocus || readOnly}" (click)="save($event)">
             <mat-icon title="Save edit" [inline]="true">done</mat-icon>
         </div>        
     </div>

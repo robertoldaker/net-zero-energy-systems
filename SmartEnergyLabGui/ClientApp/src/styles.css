@@ -228,3 +228,8 @@ div.nodeName {
     font-size: 0.8em; 
     color: grey
 }
+
+/* sortable and editable mat-table */
+.mat-row:hover {
+    background-color: #ddd;
+}

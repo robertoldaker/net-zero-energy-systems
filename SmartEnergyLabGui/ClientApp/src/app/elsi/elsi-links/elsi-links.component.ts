@@ -1,60 +1,47 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
-import { MatSort } from '@angular/material/sort';
+import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { ElsiLink, TableInfo } from 'src/app/data/app.data';
-import { CellEditorData, ICellEditorDataDict } from 'src/app/utils/cell-editor/cell-editor.component';
+import { DatasetData, ElsiLink} from 'src/app/data/app.data';
+import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/utils/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { ElsiDataService } from '../elsi-data.service';
+import { ElsiGenCapacityTable } from '../elsi-gen-capacities/elsi-gen-capacities.component';
 
 @Component({
     selector: 'app-elsi-links',
     templateUrl: './elsi-links.component.html',
     styleUrls: ['./elsi-links.component.css']
 })
-export class ElsiLinksComponent extends ComponentBase implements OnInit, AfterViewInit {
+export class ElsiLinksComponent extends ComponentBase {
 
     constructor(public service: ElsiDataService) {
         super()
         this.sort = null
-        this.displayedColumns = []
+        this.displayedColumns = ['name','fromZoneStr','toZoneStr','capacity','revCap','loss','market','itf','itt','btf','btt']
         if ( this.service.datasetInfo) {
-            this.tableData = this.createDataSource(this.service.datasetInfo.linkInfo)
-        } else {
-            this.tableData = this.createDataSource({data:[],userEdits: [], tableName: '' })
-        }
+            this.createDataSource(this.service.datasetInfo.linkInfo)
+        } 
         this.addSub( this.service.DatasetInfoChange.subscribe( (ds) => {
-            this.tableData = this.createDataSource(ds.linkInfo)
+            this.createDataSource(ds.linkInfo)
         }))
     }
-    ngAfterViewInit(): void {
-        if ( this.tableData ) {
-            this.tableData.sort = this.sort;
-        }
-    }
 
-    ngOnInit(): void {
-    }
+    private createDataSource(datasetData?: DatasetData<ElsiLink>) {
 
-    private createDataSource(tableInfo: TableInfo<ElsiLink>):MatTableDataSource<ICellEditorDataDict> {
-        if ( this.displayedColumns.length === 0) {
-            //?? Can't guarantee order to need to spell out explicitly
-            //??let colNames = tableInfo.data.length>0 ? Object.getOwnPropertyNames(tableInfo.data[0]) : []
-            //??this.displayedColumns = colNames.filter(m=>m!=="id" && m!=="fromZone" && m!=="toZone");
-            this.displayedColumns = ['name','fromZoneStr','toZoneStr','capacity','revCap','loss','market','itf','itt','btf','btt']
+        if ( datasetData ) {
+            this.datasetData = datasetData
         }
-        let versionId: number = this.service.dataset ? this.service.dataset.id : 0
-        let cellData = CellEditorData.GetCellDataObjects<ElsiLink>(tableInfo,(item)=>item.name, versionId)
-        let td = new MatTableDataSource(cellData)
-        td.sortingDataAccessor =this.sortDataAccessor
-        if ( this.sort ) {
-            td.sort = this.sort
+        if ( this.datasetData) {
+            let cellData = this.dataFilter.GetCellDataObjects<ElsiLink>(this.service.dataset,this.datasetData,(item)=>item.name)
+            this.tableData = new MatTableDataSource(cellData)    
         }
-        return td
     }
     
 
+    dataFilter: DataFilter = new DataFilter(20)
+    datasetData?: DatasetData<ElsiLink>
     displayedColumns: string[]
-    tableData: MatTableDataSource<any>
+    tableData: MatTableDataSource<any> = new MatTableDataSource()
     @ViewChild(MatSort) sort: MatSort | null;
 
 
@@ -62,12 +49,13 @@ export class ElsiLinksComponent extends ComponentBase implements OnInit, AfterVi
         return item.id
     }
 
-    sortDataAccessor(data:ICellEditorDataDict, headerId: string) : number | string {
-        return data[headerId].value;
+    filterTable(e: DataFilter) {
+        this.createDataSource()
     }
 
-    get isReadOnly() {
-        return this.service.isReadOnly
+    sortTable(e:Sort) {
+        this.dataFilter.sort = e
+        this.createDataSource()
     }
 
 }

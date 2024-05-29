@@ -111,9 +111,9 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <param name="datasetName">Name of dataset</param>
         [HttpGet]
         [Route("PrintInput")]
-        public string PrintInput(int day, ElsiScenario scenario, string datasetName="Default") {
+        public string PrintInput(int day, ElsiScenario scenario, string datasetName="GB network") {
             using ( var da = new DataAccess() ) {
-                var dataVersion = da.Elsi.GetDataVersion(this.GetUserId(),datasetName);
+                var dataVersion = da.Datasets.GetDataset(DatasetType.Elsi,this.GetUserId(),datasetName);
                 if ( dataVersion!=null ) {
                     var dataset = new DatasetInfo(da,dataVersion.Id);
                     var data = new ElsiData(da, dataset, scenario);
@@ -124,58 +124,6 @@ namespace SmartEnergyLabDataApi.Controllers
                 } else {
                     throw new Exception($"Cannot find dataset with name [{datasetName}]");
                 }
-            }
-        }
-
-        /// <summary>
-        /// Get list of ElsiDataVersions for the current user
-        /// </summary>
-        [HttpGet]
-        [Route("DataVersions")]
-        public IList<ElsiDataVersion> DataVersions() {
-            using ( var da = new DataAccess() ) {
-                return da.Elsi.GetDataVersions(this.GetUserId());
-            }
-        }
-
-        /// <summary>
-        /// Creates a new ElsiDataVersion for the current user
-        /// </summary>
-        [HttpPost]
-        [Route("NewDataVersion")]
-        public IActionResult NewDataVersion([FromBody] NewElsiDataVersion dv) {
-            using( var m = new NewElsiDataVersionModel(this, dv)) {
-                if ( !m.Save() ) {
-                    return this.ModelErrors(m.Errors);
-                }
-                // return the id of the new object created
-                return Ok(m.Id.ToString());
-            }
-        }
-
-        /// <summary>
-        /// Saves changes to an existing ElsiDataVersion for the current user
-        /// </summary>
-        [HttpPost]
-        [Route("SaveDataVersion")]
-        public IActionResult SaveDataVersion([FromBody] ElsiDataVersion dv) {
-            using( var m = new EditElsiDataVersionModel(this, dv)) {
-                if ( !m.Save() ) {
-                    return this.ModelErrors(m.Errors);
-                }
-                return Ok();
-            }
-        }
-
-        /// <summary>
-        /// Deletes an existing ElsiDataVersion for the current user
-        /// </summary>
-        [HttpPost]
-        [Route("DeleteDataVersion")]
-        public IActionResult DeleteDataVersion([FromBody] int id) {
-            using( var m = new EditElsiDataVersionModel(this, id)) {
-                m.Delete();
-                return Ok();
             }
         }
 
@@ -200,7 +148,7 @@ namespace SmartEnergyLabDataApi.Controllers
         [Route("DownloadResultsAsJson")]
         public IActionResult DownloadResultsAsJson(int datasetId, ElsiScenario scenario) {
             using( var da = new DataAccess() ) {
-                var dataset = da.Elsi.GetDataVersion(datasetId);
+                var dataset = da.Datasets.GetDataset(datasetId);
                 if (dataset!=null) {
                     var edrs = da.Elsi.GetElsiDayResults(datasetId, scenario);
                     var json=JsonSerializer.Serialize(edrs,new JsonSerializerOptions() {
@@ -221,7 +169,7 @@ namespace SmartEnergyLabDataApi.Controllers
         [Route("DownloadResultsAsCsv")]
         public IActionResult DownloadResultsAsCsv(int datasetId, ElsiScenario scenario) {
             using( var da = new DataAccess() ) {
-                var dataset = da.Elsi.GetDataVersion(datasetId);
+                var dataset = da.Datasets.GetDataset(datasetId);
                 if (dataset!=null) {
                     //
                     var m = new ElsiCsvWriter(da);
@@ -237,15 +185,6 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         [HttpGet]
-        [Route("ResultCount")]
-        public int ResultCount(int datasetId) {
-            using( var da = new DataAccess() ) {
-                var count = da.Elsi.GetResultCount(datasetId);
-                return count;
-            }
-        }
-
-        [HttpGet]
         [Route("DayResult")]
         public string DayResult(int elsiResultId) {
             using( var da = new DataAccess() ) {
@@ -256,26 +195,6 @@ namespace SmartEnergyLabDataApi.Controllers
                 }
                 return json;
             }
-        }
-
-        [HttpPost]
-        [Route("SaveUserEdit")]
-        public IActionResult SaveUserEdit([FromBody] ElsiUserEdit userEdit) {
-            using( var da = new DataAccess() ) {
-                da.Elsi.SaveUserEdit(userEdit);
-                da.CommitChanges();
-            }
-            return Ok();
-        }
-
-        [HttpPost]
-        [Route("DeleteUserEdit")]
-        public IActionResult DeleteUserEdit([FromBody] int id) {
-            using( var da = new DataAccess() ) {
-                da.Elsi.DeleteUserEdit(id);
-                da.CommitChanges();
-            }
-            return Ok();
         }
 
         /// <summary>

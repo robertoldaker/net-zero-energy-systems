@@ -1,5 +1,8 @@
 <div style="height: calc(100vh - 200px); overflow-y: scroll; padding-right: 1rem">
-    <table style="width: 100%;" #table mat-table [dataSource]="tableData" [trackBy]="getId" matSort>
+
+    <app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)"></app-table-paginator>
+
+    <table style="width: 100%;" #table mat-table [dataSource]="tableData" [trackBy]="getId" matSort matSortDisableClear (matSortChange)="sortTable($event)">
 
         <!-- Type Column -->
         <ng-container matColumnDef="typeStr">
@@ -11,7 +14,7 @@
         <ng-container matColumnDef="efficiency">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Eff (%)</th>
             <td mat-cell *matCellDef="let element">
-                <app-cell-editor [data]="element.efficiency" [scalingFac]="100" [decimalPlaces]="0" [readOnly]="isReadOnly"></app-cell-editor>
+                <app-cell-editor [data]="element.efficiency" [scalingFac]="100" [decimalPlaces]="0"></app-cell-editor>
             </td>
         </ng-container>
 
@@ -19,7 +22,7 @@
         <ng-container matColumnDef="emissionsRate">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">CO2 kg/GJ</th>
             <td mat-cell *matCellDef="let element">
-                <app-cell-editor [data]="element.emissionsRate" [readOnly]="isReadOnly"></app-cell-editor>
+                <app-cell-editor [data]="element.emissionsRate"></app-cell-editor>
             </td>
         </ng-container>
 
@@ -27,7 +30,7 @@
         <ng-container matColumnDef="forcedDays">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Forced days</th>
             <td mat-cell *matCellDef="let element">
-                <app-cell-editor [data]="element.forcedDays" [decimalPlaces]="2" [readOnly]="isReadOnly"></app-cell-editor>
+                <app-cell-editor [data]="element.forcedDays" [decimalPlaces]="2"></app-cell-editor>
             </td>
         </ng-container>
 
@@ -35,7 +38,7 @@
         <ng-container matColumnDef="plannedDays">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Planned days</th>
             <td mat-cell *matCellDef="let element">
-                <app-cell-editor [data]="element.plannedDays" [readOnly]="isReadOnly"></app-cell-editor>
+                <app-cell-editor [data]="element.plannedDays"></app-cell-editor>
             </td>
         </ng-container>
 
@@ -43,7 +46,7 @@
         <ng-container matColumnDef="maintenanceCost">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">O&M Euro/MWh</th>
             <td mat-cell *matCellDef="let element">
-                <app-cell-editor [data]="element.maintenanceCost" [decimalPlaces]="1" [readOnly]="isReadOnly"></app-cell-editor>
+                <app-cell-editor [data]="element.maintenanceCost" [decimalPlaces]="1"></app-cell-editor>
             </td>
         </ng-container>
 
@@ -51,7 +54,7 @@
         <ng-container matColumnDef="fuelCost">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Fuel Euro/GJ</th>
             <td mat-cell *matCellDef="let element">
-                <app-cell-editor [data]="element.fuelCost" [decimalPlaces]="2" [readOnly]="isReadOnly"></app-cell-editor>
+                <app-cell-editor [data]="element.fuelCost" [decimalPlaces]="2"></app-cell-editor>
             </td>
         </ng-container>
 
@@ -59,7 +62,7 @@
         <ng-container matColumnDef="warmStart">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Warm start Gj/MW</th>
             <td mat-cell *matCellDef="let element">
-                <app-cell-editor [data]="element.warmStart" [readOnly]="isReadOnly"></app-cell-editor>
+                <app-cell-editor [data]="element.warmStart"></app-cell-editor>
             </td>
         </ng-container>
 
@@ -67,7 +70,7 @@
         <ng-container matColumnDef="wearAndTearStart">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Wear Euro/MW</th>
             <td mat-cell *matCellDef="let element">
-                <app-cell-editor [data]="element.wearAndTearStart" [readOnly]="isReadOnly"></app-cell-editor>
+                <app-cell-editor [data]="element.wearAndTearStart"></app-cell-editor>
             </td>
         </ng-container>
 
@@ -75,7 +78,7 @@
         <ng-container matColumnDef="endurance">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Endurance</th>
             <td mat-cell *matCellDef="let element">
-                <app-cell-editor [data]="element.endurance" [readOnly]="isReadOnly"></app-cell-editor>
+                <app-cell-editor [data]="element.endurance"></app-cell-editor>
             </td>
         </ng-container>
 

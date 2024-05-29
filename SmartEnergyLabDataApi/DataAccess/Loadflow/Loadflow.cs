@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -28,6 +29,13 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
+        public IList<T> GetRawData<T>(System.Linq.Expressions.Expression<Func<T,bool>> whereFcn) where T: class{
+            //
+            var q = Session.QueryOver<T>().Where(whereFcn);
+
+            return q.List();
+        }
+
         #region Nodes
         public void Add(Node obj)
         {
@@ -41,9 +49,11 @@ namespace SmartEnergyLabDataApi.Data
         public Node GetNode(string code) {
             return Session.QueryOver<Node>().Where( m=>m.Code == code).Take(1).SingleOrDefault();
         }
-        public IList<Node> GetNodes() {
+        public IList<Node> GetNodes(Dataset dataset) {
             return Session.QueryOver<Node>().
+            Where( m=>m.Dataset==dataset).
             Fetch(SelectMode.Fetch, m=>m.Zone).
+
             OrderBy(m=>m.Id).Asc.
             List();
         }
@@ -67,8 +77,11 @@ namespace SmartEnergyLabDataApi.Data
         public Zone GetZone(string code) {
             return Session.QueryOver<Zone>().Where( m=>m.Code == code).Take(1).SingleOrDefault();
         }        
-        public IList<Zone> GetZones() {
-            return Session.QueryOver<Zone>().OrderBy(m=>m.Id).Asc.List();
+        public IList<Zone> GetZones(Dataset dataset) {
+            return Session.QueryOver<Zone>().
+            Where( m=>m.Dataset == dataset).
+            OrderBy(m=>m.Id).Asc.
+            List();
         }        
         #endregion
 
@@ -84,8 +97,11 @@ namespace SmartEnergyLabDataApi.Data
         public Boundary GetBoundary(string code) {
             return Session.QueryOver<Boundary>().Where( m=>m.Code == code).Take(1).SingleOrDefault();
         }
-        public IList<Boundary> GetBoundaries() {
-            return Session.QueryOver<Boundary>().OrderBy(m=>m.Id).Asc.List();
+        public IList<Boundary> GetBoundaries(Dataset dataset) {
+            return Session.QueryOver<Boundary>().
+                Where( m=>m.Dataset == dataset).
+                OrderBy(m=>m.Id).Asc.
+                List();
         }
         #endregion
 
@@ -99,8 +115,11 @@ namespace SmartEnergyLabDataApi.Data
             Session.Delete(obj);
         }
 
-        public IList<BoundaryZone> GetBoundaryZones() {
-            return Session.QueryOver<BoundaryZone>().OrderBy(m=>m.Id).Asc.List();
+        public IList<BoundaryZone> GetBoundaryZones(Dataset dataset) {
+            return Session.QueryOver<BoundaryZone>().
+                Where( m=>m.Dataset == dataset).
+                OrderBy(m=>m.Id).Asc.
+                List();
         }
 
         public IList<BoundaryZone> GetBoundaryZones(int boundaryId) {
@@ -122,8 +141,9 @@ namespace SmartEnergyLabDataApi.Data
         public Branch GetBranch(string code) {
             return Session.QueryOver<Branch>().Where( m=>m.Code == code).Take(1).SingleOrDefault();
         }
-        public IList<Branch> GetBranches() {
+        public IList<Branch> GetBranches(Dataset dataset) {
             return Session.QueryOver<Branch>().
+                Where( m=>m.Dataset == dataset).
                 Fetch(SelectMode.Fetch,m=>m.Node1).
                 Fetch(SelectMode.Fetch,m=>m.Node2).
                 OrderBy(m=>m.Id).Asc.
@@ -140,8 +160,11 @@ namespace SmartEnergyLabDataApi.Data
         {
             Session.Delete(obj);
         }
-        public IList<Ctrl> GetCtrls() {
-            return Session.QueryOver<Ctrl>().OrderBy(m=>m.Id).Asc.List();
+        public IList<Ctrl> GetCtrls(Dataset dataset) {
+            return Session.QueryOver<Ctrl>().
+                Where( m=>m.Dataset == dataset).
+                OrderBy(m=>m.Id).
+                Asc.List();
         }
         #endregion
 
@@ -248,5 +271,24 @@ namespace SmartEnergyLabDataApi.Data
                 Where( m=>location1.Id!=location2.Id).List();
             return branches;
         }
+
+        public int GetResultCount(int datasetId) {
+            //?? needs implementing
+            return 0;
+        }
+
+        #region LoadflowResults
+        public void Add( LoadflowResult lfr) {
+            Session.Save(lfr);
+        }
+        
+        public void Delete( LoadflowResult lfr) {
+            Session.Delete(lfr);
+        }
+
+        public LoadflowResult GetLoadflowResult(int datasetId) {
+            return Session.QueryOver<LoadflowResult>().Where( m=>m.Dataset.Id == datasetId).Take(1).SingleOrDefault();
+        }
+        #endregion
     }
 }

@@ -1,6 +1,6 @@
 <div style="display: grid; grid-auto-flow: row; height: 100vh; max-height: 100vh; grid-template-rows: auto 1fr;">
     <app-loadflow-header title="Transmission Boundary Capability Calculator"></app-loadflow-header>
-    <div>
+    <div *ngIf="this.user">
         <as-split direction="horizontal" (dragStart)="splitStart()" (dragEnd)="splitEnd($event)" [unit]="'pixel'">
             <as-split-area [size]="450" #leftDiv>
                 <app-loadflow-dialog></app-loadflow-dialog>

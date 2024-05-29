@@ -1,0 +1,23 @@
+<div class="outerContainer">
+    <div class="search">
+        <button class="search" mat-icon-button aria-label="Search" disabled>
+            <mat-icon>search</mat-icon>
+        </button>
+        <input class="searchInput" type="text" placeholder="Search for row" [(ngModel)]="dataFilter.searchStr" (keyup)="filter($event)"/>
+        <button class="search clear" mat-icon-button aria-label="Search" (click)="clear()" title="Clear search">
+            <mat-icon [inline]="true">close</mat-icon>
+        </button>
+        <mat-checkbox [(ngModel)]="dataFilter.onlyEditedRows"
+                      (ngModelChange)="filter($event)">
+                      <span class="checkboxLabel">Only edited rows</span>
+        </mat-checkbox>
+    </div>
+    <mat-paginator 
+    [length]="dataFilter.dataLength"
+    [pageSize]="dataFilter.take" 
+    (page)="page($event)" 
+    [showFirstLastButtons]="true"
+    [hidePageSize]="true"
+    aria-label="Select page">
+    </mat-paginator>
+</div>

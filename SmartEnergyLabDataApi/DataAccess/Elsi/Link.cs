@@ -1,9 +1,10 @@
+using System.Text.Json.Serialization;
 using NHibernate.Mapping.Attributes;
 
 namespace SmartEnergyLabDataApi.Data
 {
     [Class(0, Table = "elsi_links")]
-    public class Link
+    public class Link : IDataset, IId
     {
         public Link()
         {
@@ -103,6 +104,10 @@ namespace SmartEnergyLabDataApi.Data
         /// <value></value>
         [Property()]
         public virtual double BTT {get; set;}
+
+        [JsonIgnore()]
+        [ManyToOne(Column = "DatasetId", Cascade = "none")]
+        public virtual Dataset Dataset { get; set; }
 
     }
 }

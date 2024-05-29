@@ -1,6 +1,6 @@
 <app-dialog-header [dialogRef]="dialogRef">{{title}}</app-dialog-header>
 <div mat-dialog-content id="content">
-    <div *ngIf="isNew" id="header"><b>Parent: </b><span>{{dataService.dataset?.name}}</span></div>
+    <div *ngIf="isNew" id="header"><b>Parent: </b><span>{{this.data.parent.name}}</span></div>
     <form [formGroup]="form">
         <div>
             <mat-form-field>

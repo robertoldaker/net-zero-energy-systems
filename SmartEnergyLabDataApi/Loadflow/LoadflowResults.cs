@@ -1,33 +1,58 @@
 using System.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Xml.Linq;
+using Org.BouncyCastle.Crypto.Signers;
+using SmartEnergyLabDataApi.Data;
 using static SmartEnergyLabDataApi.Loadflow.BoundaryTrips;
 
 namespace SmartEnergyLabDataApi.Loadflow
 {
     public class LoadflowResults {
         public LoadflowResults(Loadflow lf, BoundaryFlowResult? bfr=null, BoundaryTrips? bts=null) {
+
+            Dataset = lf.Dataset;
+            // stage results
             StageResults = lf.StageResults;
             // Nodes
-            Nodes = lf.Nodes.Objs;
+            Nodes = lf.Nodes.DatasetData;
             // Branches
-            Branches = lf.Branches.Objs;
+            Branches = lf.Branches.DatasetData;
             // Controls
-            Ctrls = lf.Ctrls.Objs;
+            Ctrls = lf.Ctrls.DatasetData;
             
             BoundaryFlowResult = bfr;
             BoundaryTrips = bts;
+
         }
 
+        public Dataset Dataset {get; set;}
         public StageResults StageResults {get; private set;}
-
-        public IList<NodeWrapper> Nodes {get; private set;}
-        public IList<BranchWrapper> Branches {get; private set;}        
-        public IList<CtrlWrapper> Ctrls {get; private set;}
+        public DatasetData<Node> Nodes {get; private set;}
+        public DatasetData<Branch> Branches {get; private set;}        
+        public DatasetData<Ctrl> Ctrls {get; private set;}
 
         public BoundaryFlowResult? BoundaryFlowResult {get; private set;}
         public BoundaryTrips? BoundaryTrips {get; private set;}
 
         public List<AllTripsResult> SingleTrips {get; set;}
         public List<AllTripsResult> DoubleTrips {get; set;}
+
+        public void Save() {
+            using( var da = new DataAccess() ) {
+                string json = JsonSerializer.Serialize(this,new JsonSerializerOptions() {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });                
+                var lfr = da.Loadflow.GetLoadflowResult(Dataset.Id);
+                if ( lfr==null ) {
+                    lfr = new LoadflowResult(Dataset);
+                    da.Loadflow.Add(lfr);
+                }
+                lfr.Data = Encoding.UTF8.GetBytes(json);
+                da.CommitChanges();
+            }
+        }
 
     }
 
@@ -91,4 +116,6 @@ namespace SmartEnergyLabDataApi.Loadflow
         public IList<CtrlResult> Ctrls {get; set;}
 
     }
+
+
 }

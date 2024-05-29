@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using NHibernate.Mapping.Attributes;
 
 namespace SmartEnergyLabDataApi.Data
@@ -61,7 +62,7 @@ namespace SmartEnergyLabDataApi.Data
                             }
 
     [Class(0, Table = "elsi_gen_parameters")]
-    public class GenParameter
+    public class GenParameter : IDataset, IId
     {
 
         public GenParameter()
@@ -151,6 +152,11 @@ namespace SmartEnergyLabDataApi.Data
         /// <value></value>
         [Property()]
         public virtual double? Endurance {get; set;}
+
+        [JsonIgnore()]
+        [ManyToOne(Column = "DatasetId", Cascade = "none")]
+        public virtual Dataset Dataset { get; set; }
+
 
     }    
 }

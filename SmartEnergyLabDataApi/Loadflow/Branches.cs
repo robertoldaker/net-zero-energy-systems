@@ -1,21 +1,25 @@
+using System.ComponentModel;
 using System.Text.Json.Serialization;
+using NHibernate;
 using SmartEnergyLabDataApi.Data;
 
 namespace SmartEnergyLabDataApi.Loadflow
 {
 
     public class Branches : DataStore<BranchWrapper> {
-        public Branches(IList<Branch> bs, Nodes nodes) {
-            foreach( var b in bs) {
-                var key = getLineName(b);
+        public Branches(DataAccess da, int datasetId, Nodes nodes) {
+            var q = da.Session.QueryOver<Branch>();
+            q = q.Fetch(SelectMode.Fetch,m=>m.Node1);
+            var di = new DatasetData<Branch>(da,datasetId,m=>m.LineName,q);            
+            foreach( var b in di.Data) {
+                var key = b.LineName;
                 var objWrapper = new BranchWrapper(b,nodes);
                 base.add(key,objWrapper);
             }
-        }
+            DatasetData = di;
 
-        private string getLineName(Branch b) {
-            return b.LineName;
         }
+        public DatasetData<Branch> DatasetData {get; private set;}
 
         public bool IsDisconnected(Nodes nodes) {
             var snet = new int[nodes.Count];
@@ -80,19 +84,48 @@ namespace SmartEnergyLabDataApi.Loadflow
         // Node 2 order position (bn2)
         public int Node2Index {get; set;}
 
-        // outaged (bout)
-        public bool Outaged {get; set;}
-
         // Control associated with branch (bctrl)
         [JsonIgnore()]
         public CtrlWrapper Ctrl {get; set;}
 
+        // outaged (bout)
+        public bool Outaged {
+                get {
+                    return Obj.Outaged;
+                }
+                set {
+                    Obj.Outaged = value;
+                }
+        }
+
         // Intact planned flow (ipflow)
-        public double? PowerFlow {get; set;}
+        public double? PowerFlow {
+            get {
+                return Obj.PowerFlow;
+            }
+            set {
+                Obj.PowerFlow = value;
+            }
+        }
 
         // Boundary flow
-        public double? BFlow {get; set;}
+        public double? BFlow {
+            get {
+                return Obj.BFlow;
+            }
+            set {
+                Obj.BFlow = value;
+            }
+        }
 
-        public double? FreePower {get; set;}
+        // Free power
+        public double? FreePower {
+            get {
+                return Obj.FreePower;
+            }
+            set {
+                Obj.FreePower = value;
+            }
+        }
     }
 }

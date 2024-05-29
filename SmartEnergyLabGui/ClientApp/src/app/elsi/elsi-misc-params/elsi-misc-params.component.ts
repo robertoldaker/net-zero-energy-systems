@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ElsiMiscParams, TableInfo } from 'src/app/data/app.data';
-import { CellEditorData, ICellEditorDataDict } from 'src/app/utils/cell-editor/cell-editor.component';
+import { DatasetData, ElsiMiscParams } from 'src/app/data/app.data';
+import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/utils/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { ElsiDataService } from '../elsi-data.service';
 
@@ -27,23 +27,21 @@ export class ElsiMiscParamsComponent extends ComponentBase implements OnInit {
 
     }
 
-    private createCellDataObjects(tableInfo: TableInfo<ElsiMiscParams>):ICellEditorDataDict {
-        let versionId: number = this.service.dataset ? this.service.dataset.id : 0
-        let cellData = CellEditorData.GetCellDataObjects<ElsiMiscParams>(tableInfo,(item)=>"KEY", versionId)  
+    private createCellDataObjects(datasetData: DatasetData<ElsiMiscParams>):ICellEditorDataDict {
+        let cellData = this.dataFilter.GetCellDataObjects<ElsiMiscParams>(this.service.dataset,datasetData,(item)=>"KEY")  
         return cellData[0]
     }
 
     cellData: ICellEditorDataDict
+    dataFilter: DataFilter = new DataFilter(1)
 
-    getCellData(key: string):CellEditorData {
+    getCellData(key: string):CellEditorData | undefined {
         if ( this.cellData && this.cellData[key]) {
             return this.cellData[key];
         } else {
-            return new CellEditorData();
+            return undefined;
         }
     }
     
-    get isReadOnly() {
-        return this.service.isReadOnly
-    }
 }
+

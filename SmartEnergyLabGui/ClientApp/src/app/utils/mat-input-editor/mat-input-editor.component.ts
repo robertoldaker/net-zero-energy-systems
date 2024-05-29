@@ -1,7 +1,8 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { DataClientService } from 'src/app/data/data-client.service';
-import { ElsiDataService } from 'src/app/elsi/elsi-data.service';
 import { CellEditorData } from '../cell-editor/cell-editor.component';
+import { DialogService } from 'src/app/dialogs/dialog.service';
+import { DatasetsService } from 'src/app/datasets/datasets.service';
 
 @Component({
     selector: 'app-mat-input-editor',
@@ -10,7 +11,7 @@ import { CellEditorData } from '../cell-editor/cell-editor.component';
 })
 export class MatInputEditorComponent implements OnInit {
 
-    constructor(private dataService: ElsiDataService) {
+    constructor(private datasetsService: DatasetsService) {
     }
 
     onFocus() {
@@ -27,8 +28,7 @@ export class MatInputEditorComponent implements OnInit {
 
     save(e: Event) {
         e.stopPropagation()
-        if ( this.input ) {
-            this.input.nativeElement.value = this.editValue
+        if ( this.input && this.data ) {
             let value = this.editValue
             if ( value===this.value) {
                 return;
@@ -37,12 +37,14 @@ export class MatInputEditorComponent implements OnInit {
             if ( this.scalingFac && !isNaN(valueDouble)) {
                 value = (valueDouble / this.scalingFac).toString()
             }
-            let userEdit = this.data.getUserEdit(value);
-            this.dataService.addUserEdit(userEdit);
+            //            
+            this.datasetsService.saveUserEditWithPrompt(value, this.data, (resp)=>{
+                this.onEdited.emit(this.data)
+            });
             if ( this.input ) {
                 this.input.nativeElement.blur()
-            }
-    }
+            }    
+        }
     }
 
     cancel(e: Event) {
@@ -60,8 +62,10 @@ export class MatInputEditorComponent implements OnInit {
 
     delete(e: Event) {
         e.stopPropagation()
-        if ( this.data.userEdit) {
-            this.dataService.removeUserEdit(this.data.userEdit.id);
+        if ( this.data ) {
+            this.datasetsService.removeUserEditWithPrompt(this.data,(resp)=>{
+                this.onEdited.emit(this.data)
+            });    
         }
     }
 
@@ -75,7 +79,7 @@ export class MatInputEditorComponent implements OnInit {
     label: string = ""
 
     @Input()
-    data: CellEditorData = new CellEditorData()
+    data: CellEditorData | undefined
 
     @Input()
     scalingFac: number | undefined
@@ -83,11 +87,15 @@ export class MatInputEditorComponent implements OnInit {
     @Input()
     decimalPlaces: number | undefined
 
-    @Input()
-    readOnly: boolean | undefined
+    get readOnly(): boolean {
+        return this.data ? this.data.dataset.parent==null : true
+    }
+
+    @Output()
+    onEdited: EventEmitter<CellEditorData> = new EventEmitter<CellEditorData>()
 
     get value():any {
-        let value = this.data.value
+        let value = this.data?.value
         if ( typeof value == "number" ) {
             if ( this.scalingFac ) {
                 value=value*this.scalingFac

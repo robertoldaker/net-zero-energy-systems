@@ -1,20 +1,21 @@
 using System.Linq;
+using SmartEnergyLabDataApi.Data;
 
 namespace SmartEnergyLabDataApi.Loadflow
 {
     public class LoadflowNetworkData {
         public LoadflowNetworkData(Loadflow lf) {
             // Nodes
-            Nodes = lf.Nodes.Objs;
+            Nodes = lf.Nodes.DatasetData;
             // Branches
-            Branches = lf.Branches.Objs;
+            Branches = lf.Branches.DatasetData;
             // Controls
-            Ctrls = lf.Ctrls.Objs;
+            Ctrls = lf.Ctrls.DatasetData;
         }
 
-        public IList<NodeWrapper> Nodes {get; private set;}
-        public IList<BranchWrapper> Branches {get; private set;}        
-        public IList<CtrlWrapper> Ctrls {get; private set;}
+        public DatasetData<Node> Nodes {get; private set;}
+        public DatasetData<Branch> Branches {get; private set;}        
+        public DatasetData<Ctrl> Ctrls {get; private set;}
 
     }
 }

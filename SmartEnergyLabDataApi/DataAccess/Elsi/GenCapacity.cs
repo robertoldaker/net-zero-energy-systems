@@ -1,10 +1,11 @@
+using System.Text.Json.Serialization;
 using NHibernate.Mapping.Attributes;
 
 namespace SmartEnergyLabDataApi.Data
 {
 
     [Class(0, Table = "elsi_gen_capacities")]
-    public class GenCapacity
+    public class GenCapacity : IDataset
     {
         public GenCapacity()
         {
@@ -96,6 +97,11 @@ namespace SmartEnergyLabDataApi.Data
         /// <value></value>
         [Property()]
         public virtual int? OrderIndex {get; set;}
+
+        [JsonIgnore()]
+        [ManyToOne(Column = "DatasetId", Cascade = "none")]
+        public virtual Dataset Dataset { get; set; }
+
 
     }
 }

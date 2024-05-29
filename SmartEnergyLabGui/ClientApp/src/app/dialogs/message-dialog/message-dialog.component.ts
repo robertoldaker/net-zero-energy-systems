@@ -1,6 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { ElsiDatasetDialogComponent } from 'src/app/elsi/elsi-dataset-dialog/elsi-dataset-dialog.component';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { DialogFooterButtonsEnum } from '../dialog-footer/dialog-footer.component';
 
 @Component({
@@ -10,7 +9,8 @@ import { DialogFooterButtonsEnum } from '../dialog-footer/dialog-footer.componen
 })
 export class MessageDialogComponent implements OnInit {
 
-    constructor(public dialogRef: MatDialogRef<ElsiDatasetDialogComponent>, 
+    constructor( 
+        public dialogRef: MatDialogRef<MessageDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data:(MessageDialog)) { 
     }
 

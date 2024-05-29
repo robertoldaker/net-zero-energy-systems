@@ -8,6 +8,7 @@ namespace SmartEnergyLabDataApi.Loadflow
 
         // Data from the database - nodes, branches and controls
         private DataAccess _da;
+        private Dataset _dataset;
         private Nodes _nodes;
         private double[] _btfr;
         private Branches _branches;
@@ -34,8 +35,12 @@ namespace SmartEnergyLabDataApi.Loadflow
         public const double OVRLD = -0.05;
 
 
-        public Loadflow() {
+        public Loadflow(int datasetId) {
             _da = new DataAccess();
+            _dataset = _da.Datasets.GetDataset(datasetId);
+            if ( _dataset == null) {
+                throw new Exception($"Cannot find dataset with id=[{datasetId}]");
+            }
             _stageResults = new StageResults();
             bo = new Boundary(this);
         }
@@ -43,6 +48,12 @@ namespace SmartEnergyLabDataApi.Loadflow
         public void Dispose()
         {
             _da.Dispose();
+        }
+
+        public Dataset Dataset {
+            get {
+                return _dataset;
+            }
         }
 
         public StageResults StageResults {
@@ -107,23 +118,23 @@ namespace SmartEnergyLabDataApi.Loadflow
             try {
                 sr = _stageResults.NewStage("Link to nodes table");
                 // create nodes wrapper
-                var dbNodes = _da.Loadflow.GetNodes();
-                _nodes = new Nodes(dbNodes);
+                _nodes = new Nodes(_da,_dataset.Id);
                 _stageResults.StageResult( sr, StageResultEnum.Pass, $"Count {_nodes.Count}");
 
                 // create branches wrapper
                 sr = _stageResults.NewStage("Link to branches table");
-                var dbBranches = _da.Loadflow.GetBranches();
-                _branches = new Branches(dbBranches,_nodes);
+                _branches = new Branches(_da,_dataset.Id,_nodes);
                 _stageResults.StageResult( sr, StageResultEnum.Pass, $"Count {_branches.Count}");
                 sr = _stageResults.NewStage("Link to branches table");
 
                 // create ctrl wrapper
                 sr = _stageResults.NewStage("Link to controls table");
-                var dbCtrls = _da.Loadflow.GetCtrls();
-                _ctrls = new Ctrls(dbCtrls,_branches);
+                _ctrls = new Ctrls(_da,_dataset.Id,_branches);
                 _stageResults.StageResult( sr, StageResultEnum.Pass, $"Count {_ctrls.Count}");
-                //                
+                // If we have selected the root dataset then just return
+                if ( _dataset.Parent == null )                 {
+                    return false;
+                }
 
             } catch ( Exception e) {
                 if ( sr!=null ) {

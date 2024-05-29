@@ -1,10 +1,11 @@
+using System.Text.Json.Serialization;
 using NHibernate.Mapping.Attributes;
 
 namespace SmartEnergyLabDataApi.Data
 {
 
     [Class(0, Table = "loadflow_boundary_zones")]
-    public class BoundaryZone
+    public class BoundaryZone : IId, IDataset
     {
         public BoundaryZone()
         {
@@ -28,5 +29,10 @@ namespace SmartEnergyLabDataApi.Data
 
         [ManyToOne(Column = "ZoneId", Cascade = "none")]
         public virtual Zone Zone { get; set; }
+        
+        [JsonIgnore()]
+        [ManyToOne(Column = "DatasetId", Cascade = "none")]
+        public virtual Dataset Dataset { get; set; }
+
     }
 }

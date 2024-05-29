@@ -2,6 +2,7 @@
 using HaloSoft.EventLogger;
 using NHibernate;
 using NHibernate.Dialect.Schema;
+using NHibernate.Util;
 
 namespace SmartEnergyLabDataApi.Data
 {
@@ -95,6 +96,9 @@ namespace SmartEnergyLabDataApi.Data
             if ( oldVersion<8) {
                 script.updateLoadProfiles();
             }
+            if ( oldVersion<9) {
+                script.createDefaultDatasets();
+            }
         }
 
         public static void RunStartup() {
@@ -103,6 +107,106 @@ namespace SmartEnergyLabDataApi.Data
             script.createIndexes();
             script.createDefaultDNOs();
             script.createDefaultGeographicalAreas();
+        }
+
+        private void createDefaultDatasets() {
+            //
+            using( var da = new DataAccess() ) {
+                var rootDs = da.Datasets.GetRootDataset(DatasetType.Elsi);
+                if ( rootDs == null ) {
+                    rootDs = new Dataset() {
+                        Name = "Empty",
+                        Type = DatasetType.Elsi
+                    };
+                    da.Datasets.Add(rootDs);
+                }
+
+                var name = "GB network";
+                var ds = da.Datasets.GetDataset(DatasetType.Elsi,name);
+                if ( ds==null ) {
+                    ds = new Dataset() {
+                        Name = name,
+                        Type = DatasetType.Elsi,
+                        Parent = rootDs
+                    };
+                    da.Datasets.Add(ds);
+                    // Gen Capacities
+                    var genCapacities = da.Elsi.GetRawData<GenCapacity>(m=>m.Dataset==null);
+                    foreach( var gc in genCapacities) {
+                        gc.Dataset = ds;
+                    }
+                    // Gen Parameters
+                    var genParameters = da.Elsi.GetRawData<GenParameter>(m=>m.Dataset==null);
+                    foreach( var gp in genParameters) {
+                        gp.Dataset = ds;
+                    }
+                    // Links
+                    var links = da.Elsi.GetRawData<Link>(m=>m.Dataset==null);
+                    foreach( var l in links) {
+                        l.Dataset = ds;
+                    }
+                    // Misc params
+                    var miscParams = da.Elsi.GetRawData<MiscParams>(m=>m.Dataset==null);
+                    foreach( var mp in miscParams) {
+                        mp.Dataset = ds;
+                    }
+                    // Peak demands
+                    var peakDemands = da.Elsi.GetRawData<PeakDemand>(m=>m.Dataset==null);
+                    foreach( var pd in peakDemands) {
+                        pd.Dataset = ds;
+                    }                    
+                }
+                rootDs = da.Datasets.GetRootDataset(DatasetType.Loadflow);
+                if ( rootDs==null ) {
+                    rootDs = new Dataset() {
+                        Name = "Empty",
+                        Type = DatasetType.Loadflow
+                    };
+                    //
+                    da.Datasets.Add(rootDs);
+                }
+                ds = da.Datasets.GetDataset(DatasetType.Loadflow,name);
+                if ( ds==null ) {
+                    ds = new Dataset() {
+                        Name = name,
+                        Type = DatasetType.Loadflow,
+                        Parent = rootDs
+                    };
+                    da.Datasets.Add(ds);
+                    // Boundaries
+                    var boundaries = da.Loadflow.GetRawData<Boundary>(m=>m.Dataset==null);
+                    foreach( var b in boundaries) {
+                        b.Dataset = ds;
+                    }
+                    // Boundary zone
+                    var boundaryZones = da.Loadflow.GetRawData<BoundaryZone>(m=>m.Dataset==null);
+                    foreach( var bz in boundaryZones) {
+                        bz.Dataset = ds;
+                    }
+                    // Branches
+                    var branches = da.Loadflow.GetRawData<Branch>(m=>m.Dataset==null);
+                    foreach( var b in branches) {
+                        b.Dataset = ds;
+                    }
+                    // Ctrls
+                    var ctrls = da.Loadflow.GetRawData<Ctrl>(m=>m.Dataset==null);
+                    foreach( var c in ctrls) {
+                        c.Dataset = ds;
+                    }
+                    // Nodes
+                    var nodes = da.Loadflow.GetRawData<Node>(m=>m.Dataset==null);
+                    foreach( var n in nodes) {
+                        n.Dataset = ds;
+                    }
+                    // Zones
+                    var zones = da.Loadflow.GetRawData<Zone>(m=>m.Dataset==null);
+                    foreach( var z in zones) {
+                        z.Dataset = ds;
+                    }
+                }
+                //
+                da.CommitChanges();
+            }
         }
 
         private void createIndexes() {

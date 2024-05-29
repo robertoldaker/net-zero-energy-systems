@@ -1,11 +1,16 @@
 using System.Text.Json.Serialization;
+using NHibernate;
 using SmartEnergyLabDataApi.Data;
 
 namespace SmartEnergyLabDataApi.Loadflow
 {
      public class Ctrls : DataStore<CtrlWrapper> {
-        public Ctrls(IList<Ctrl> cs, Branches branches)  {
-            foreach( var c in cs) {
+        public Ctrls(DataAccess da, int datasetId, Branches branches)  {
+            var q = da.Session.QueryOver<Ctrl>();
+            q = q.Fetch(SelectMode.Fetch,m=>m.Node1);
+            q = q.Fetch(SelectMode.Fetch,m=>m.Node2);            
+            var di = new DatasetData<Ctrl>(da,datasetId,m=>getLineName(m),q);            
+            foreach( var c in di.Data) {
                 var key = getLineName(c);
                 var branchWrapper = branches.get(key);
                 var branch = branchWrapper;
@@ -13,7 +18,11 @@ namespace SmartEnergyLabDataApi.Loadflow
                 branch.Ctrl = ctrl;
                 base.add(key,ctrl);
             }
+
+            DatasetData = di;
+
         }
+        public DatasetData<Ctrl> DatasetData {get; private set;}
 
         private string getLineName(Ctrl b) {
             return $"{b.Node1.Code}-{b.Node2.Code}:{b.Code}";
@@ -54,7 +63,14 @@ namespace SmartEnergyLabDataApi.Loadflow
         public double[]? CVang {get; set;} 
         
         // Control set point (csp)
-        public double? SetPoint {get; set;}
+        public double? SetPoint {
+            get {
+                return Obj.SetPoint;
+            }
+            set {
+                Obj.SetPoint = value;
+            }
+        }
 
     }
 }

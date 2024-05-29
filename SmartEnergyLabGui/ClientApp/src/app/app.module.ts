@@ -30,6 +30,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; 
 import { MatDatepickerModule } from '@angular/material/datepicker'; 
 import { MAT_DATE_LOCALE, MatNativeDateModule } from '@angular/material/core';
+import {MatPaginatorModule} from '@angular/material/paginator'; 
 
 // google maps
 import { GoogleMapsModule } from '@angular/google-maps'
@@ -105,7 +106,6 @@ import { HttpRequestInterceptor } from './data/HttpRequestInterceptor';
 import { ChangePasswordComponent } from './users/change-password/change-password.component';
 import { ElsiDemandsComponent } from './elsi/elsi-demands/elsi-demands.component';
 import { ElsiGenerationComponent } from './elsi/elsi-generation/elsi-generation.component';
-import { ElsiDatasetDialogComponent } from './elsi/elsi-dataset-dialog/elsi-dataset-dialog.component';
 import { MessageDialogComponent } from './dialogs/message-dialog/message-dialog.component';
 import { ElsiGenParametersComponent } from './elsi/elsi-gen-parameters/elsi-gen-parameters.component';
 import { ElsiGenCapacitiesComponent } from './elsi/elsi-gen-capacities/elsi-gen-capacities.component';
@@ -135,6 +135,9 @@ import { AdminLogsHomeComponent } from './admin/admin-logs-home/admin-logs-home.
 import { NeedsLogonComponent } from './main/main-menu/needs-logon/needs-logon.component';
 import { ResetPasswordComponent } from './users/reset-password/reset-password.component';
 import { SolarInstallationsComponent } from './low-voltage/solar-installations/solar-installations.component';
+import { DatasetSelectorComponent } from './datasets/dataset-selector/dataset-selector.component';
+import { DatasetDialogComponent } from './datasets/dataset-dialog/dataset-dialog.component';
+import { TablePaginatorComponent } from './utils/table-paginator/table-paginator.component';
 
 
 @NgModule({
@@ -198,7 +201,6 @@ import { SolarInstallationsComponent } from './low-voltage/solar-installations/s
         ChangePasswordComponent,
         ElsiDemandsComponent,
         ElsiGenerationComponent,
-        ElsiDatasetDialogComponent,
         MessageDialogComponent,
         ElsiGenParametersComponent,
         ElsiGenCapacitiesComponent,
@@ -225,7 +227,10 @@ import { SolarInstallationsComponent } from './low-voltage/solar-installations/s
         AdminLogsHomeComponent,
         NeedsLogonComponent,
         ResetPasswordComponent,
-        SolarInstallationsComponent
+        SolarInstallationsComponent,
+        DatasetSelectorComponent,
+        DatasetDialogComponent,
+        TablePaginatorComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -282,7 +287,8 @@ import { SolarInstallationsComponent } from './low-voltage/solar-installations/s
         }),
         MatProgressSpinnerModule,
         MatDatepickerModule,
-        MatNativeDateModule
+        MatNativeDateModule,
+        MatPaginatorModule
     ],
     providers: [
         // Http Interceptor(s) -  adds with Client Credentials

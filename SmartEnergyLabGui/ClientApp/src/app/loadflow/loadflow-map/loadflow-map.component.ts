@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, OnInit, QueryList, ViewChild, Vie
 import { GoogleMap, MapInfoWindow, MapMarker, MapPolyline } from '@angular/google-maps';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { LoadflowDataService, SelectedMapItem } from '../loadflow-data-service.service';
-import { Node, GridSubstation, NodeWrapper, Branch, CtrlWrapper, LoadflowCtrlType, LoadflowLocation, LoadflowLink, GISData, BoundaryTrips, BoundaryTrip, BoundaryTripType } from 'src/app/data/app.data';
+import { LoadflowLocation, LoadflowLink, BoundaryTrip, BoundaryTripType } from 'src/app/data/app.data';
 import { MapOptions } from 'src/app/utils/map-options';
 
 @Component({

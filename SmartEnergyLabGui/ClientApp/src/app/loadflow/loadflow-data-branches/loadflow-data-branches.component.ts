@@ -1,83 +1,56 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { MatSort } from '@angular/material/sort';
+import { Component } from '@angular/core';
+import { Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Subscription } from 'rxjs';
-import { BranchWrapper } from '../../data/app.data';
+import { Branch, DatasetData } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
+import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/utils/cell-editor/cell-editor.component';
+import { ComponentBase } from 'src/app/utils/component-base';
 
 @Component({
   selector: 'app-loadflow-data-branches',
   templateUrl: './loadflow-data-branches.component.html',
   styleUrls: ['./loadflow-data-branches.component.css']
 })
-export class LoadflowDataBranchesComponent implements OnInit, OnDestroy, AfterViewInit {
+export class LoadflowDataBranchesComponent extends ComponentBase {
 
-    private subs1:Subscription
-    private subs2:Subscription
     constructor(private dataService: LoadflowDataService) {
-        this.sort = null;
-        this.branches = this.createDataSource(dataService.networkData.branches)
-        this.displayedColumns = ['code','node1','node2','region','x','cap','linkType','freePower','powerFlow']
-        this.subs1 = dataService.NetworkDataLoaded.subscribe( (results) => {
-            this.branches = this.createDataSource(results.branches)
-        })
-        this.subs2 = dataService.ResultsLoaded.subscribe( (results) => {
-            this.branches = this.createDataSource(results.branches)
-        })
+        super()
+        this.createDataSource(dataService.networkData.branches)
+        this.displayedColumns = ['code','node1Code','node2Code','region','x','cap','linkType','freePower','powerFlow']
+        this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
+            this.createDataSource(results.branches)
+        }))
+        this.addSub(dataService.ResultsLoaded.subscribe( (results) => {
+            this.createDataSource(results.branches)
+        }))
     }
 
-    private createDataSource(items: BranchWrapper[]): MatTableDataSource<BranchWrapper> {
-        let branches = new MatTableDataSource(items)
-        branches.sortingDataAccessor = this.sortDataAccessor
-        branches.sort = this.sort
-        return branches
+    private createDataSource(datasetData?: DatasetData<Branch>): void {
+        if ( datasetData ) {
+            this.datasetData = datasetData
+        }
+        if ( this.datasetData) {
+            let cellData = this.dataFilter.GetCellDataObjects(this.dataService.dataset,this.datasetData,(item)=>item.lineName)
+            this.branches = new MatTableDataSource(cellData)            
+        }
     }
 
-    ngAfterViewInit(): void {
-        if ( this.branches ) {
-            this.branches.sort = this.sort;
-        }        
-    }
-    ngOnDestroy(): void {
-        this.subs1.unsubscribe()
-        this.subs2.unsubscribe()
-    }
-
-    ngOnInit(): void {
-
-    }
-
-    branches: MatTableDataSource<BranchWrapper>
+    datasetData?: DatasetData<Branch>
+    dataFilter: DataFilter = new DataFilter(20) 
+    branches: MatTableDataSource<any> = new MatTableDataSource()
     displayedColumns: string[]
 
-    getBranchId(index: number, item: BranchWrapper) {
-        return item.obj.id;
+    getBranchId(index: number, item: Branch) {
+        return item.id;
     }
 
-    @ViewChild(MatSort) sort: MatSort | null;
+    sortTable(e:Sort) {
+        this.dataFilter.sort = e
+        this.createDataSource()
+    }
 
-    sortDataAccessor(data:BranchWrapper, headerId: string) : number | string {
-        if ( headerId == 'code') {
-            return data.obj.code
-        } else if ( headerId == 'node1') {
-            return data.obj.node1Code
-        } else if ( headerId == 'node2') {
-            return data.obj.node2Code
-        } else if ( headerId == 'region' ) {
-            return data.obj.region
-        } else if ( headerId == 'x') {
-            return data.obj.x
-        } else if ( headerId == 'cap') {
-            return data.obj.cap
-        } else if ( headerId == 'linkType') {
-            return data.obj.linkType
-        } else if ( headerId == 'freePower') {
-            return data.freePower ? data.freePower : 0
-        } else if ( headerId == 'powerFlow') {
-            return data.powerFlow ? data.powerFlow : 0
-        } else {
-            return ''
-        }
+    filterTable(e: DataFilter) {
+        this.createDataSource()
     }
 
 }

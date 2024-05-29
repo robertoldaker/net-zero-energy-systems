@@ -1,10 +1,15 @@
 <div style="padding: 1rem">
     <table style="width: 100%">
         <tr>
+            <td colspan="2">
+                <app-dataset-selector [datasetType]="datasetTypes.Loadflow" (onSelected)="onDatasetSelected($event)"></app-dataset-selector>
+            </td>
+        </tr>
+        <tr>
             <td style="vertical-align: top; width:50%; height:50%">
                 <mat-form-field appearance="fill" [color]="'primary'">
                     <mat-label>Boundary</mat-label>
-                    <mat-select (selectionChange)="setBound()" [(ngModel)]="boundaryName">
+                    <mat-select (selectionChange)="setBound()" [(ngModel)]="boundaryName" [disabled]="isRootDataset">
                         <mat-option *ngFor="let b of boundaries" [value]="b.code">{{b.code}}</mat-option>
                     </mat-select>
                 </mat-form-field>
@@ -12,7 +17,7 @@
             <td style="vertical-align: top;" rowspan="2">
                 <mat-form-field appearance="fill" [color]="'primary'">
                     <mat-label>Trip</mat-label>
-                    <mat-select [(ngModel)]="selectedTrip" (selectionChange)="tripSelected($event)">
+                    <mat-select [(ngModel)]="selectedTrip" (selectionChange)="tripSelected($event)" [disabled]="isRootDataset">
                         <mat-option *ngFor="let t of trips" [value]="t.text">
                             <span>{{t.text}}</span>
                             <div style="display: inline-block; font-size: 0.7em; margin-left: 5px">                                
@@ -48,9 +53,9 @@
         <tr>
             <td colspan="2">
                 <div style="padding-top: 1rem">
-                    <button mat-stroked-button (click)="runBaseLoadflow()">Base</button>
-                    <button mat-stroked-button style="margin-left: 3rem" (click)="runSingleTrip()" [disabled]="!this.selectedTrip || !this.boundaryName">Single trip</button>
-                    <button mat-stroked-button style="margin-left: 3rem" (click)="runAllTrips()" [disabled]="!this.boundaryName">All trips</button>
+                    <button mat-stroked-button (click)="runBaseLoadflow()" [disabled]="isRootDataset">Base</button>
+                    <button mat-stroked-button style="margin-left: 3rem" (click)="runSingleTrip()" [disabled]="this.isRootDataset || !this.selectedTrip || !this.boundaryName">Single trip</button>
+                    <button mat-stroked-button style="margin-left: 3rem" (click)="runAllTrips()" [disabled]="this.isRootDataset || !this.boundaryName">All trips</button>
                 </div>
             </td>
         </tr>

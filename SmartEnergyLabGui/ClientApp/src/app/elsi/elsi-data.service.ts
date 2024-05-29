@@ -1,6 +1,6 @@
 import { EventEmitter, Injectable, OnDestroy } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
-import { DatasetInfo, ElsiDataVersion, ElsiDayResult, ElsiProgress, ElsiResult, ElsiScenario, ElsiUserEdit } from '../data/app.data';
+import { Dataset, DatasetType, ElsiDatasetInfo, ElsiProgress, ElsiResult, ElsiScenario, UserEdit } from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { DialogService } from '../dialogs/dialog.service';
 import { MessageDialogIcon } from '../dialogs/message-dialog/message-dialog.component';
@@ -21,28 +21,22 @@ export class ElsiDataService extends ServiceBase {
         private dialogService: DialogService,
         private userService: UserService) {
 
-            super()
-            this.scenario = ElsiScenario.SteadyProgression
-            this.setSavedScenario()
-            this.dataVersions = []
-            this.inRun = false
-            this.elsiProgress = { numComplete: 0, numToDo: 0, percentComplete: 0 }
-            this.signalRService.hubConnection.on('Elsi_Progress', (e) => {
-                this.elsiProgress = e
-                this.inRun = (e.numComplete<e.numToDo)
-                this.Progress.emit(e);
-                if (!this.inRun) {
-                    this.loadResults();
-                }
-            })
-            this.signalRService.hubConnection.on('Elsi_Log', (data) => {
-                this.LogMessageAvailable.emit(data);
-            })
-            this.loadDataVersions(0);
-            //
-            this.addSub(this.userService.LogonEvent.subscribe((user)=>{
-                this.loadDataVersions(0);
-            }));
+        super()
+        this.scenario = ElsiScenario.SteadyProgression
+        this.setSavedScenario()
+        this.inRun = false
+        this.elsiProgress = { numComplete: 0, numToDo: 0, percentComplete: 0 }
+        this.signalRService.hubConnection.on('Elsi_Progress', (e) => {
+            this.elsiProgress = e
+            this.inRun = (e.numComplete<e.numToDo)
+            this.Progress.emit(e);
+            if (!this.inRun) {
+                this.loadResults();
+            }
+        })
+        this.signalRService.hubConnection.on('Elsi_Log', (data) => {
+            this.LogMessageAvailable.emit(data);
+        })
        //
     }
 
@@ -73,39 +67,10 @@ export class ElsiDataService extends ServiceBase {
         this.cookieService.set('ElsiScenario', scenario.toString());
         this.loadResults();
     }
-    dataset: ElsiDataVersion | undefined
-    dataVersions: ElsiDataVersion[]    
-    setDataset(datasetId: number) {
-        this.dataset = this.dataVersions.find(m=>m.id == datasetId);
-        if ( !this.dataset && this.dataVersions.length>0) {
-            this.dataset = this.dataVersions[0]
-            datasetId = this.dataset.id;
-        }
-        this.cookieService.set('ElsiDatasetId', datasetId.toString());
-        //
+    dataset: Dataset = {id: 0, type: DatasetType.Elsi, name: '', parent: null, isReadOnly: true}
+    setDataset(dataset: Dataset) {
+        this.dataset = dataset
         this.loadDataset();
-    }
-    deleteDataset(dataset: ElsiDataVersion, onDelete: ()=>void) {
-        this.dataClientService.DeleteElsiDataVersion(dataset.id,()=>{
-            this.dataset = undefined
-            this.loadDataVersions(0)
-            onDelete()
-        });      
-    }
-
-    loadDataVersions(id: number) {
-        this.dataClientService.ElsiDataVersions((data)=>{
-            this.dataVersions = data
-            if ( id==0 ) {
-                let savedDatasetStr = this.cookieService.get('ElsiDatasetId');
-                let savedDatasetId = savedDatasetStr ? parseInt(savedDatasetStr) : NaN
-                if ( !isNaN(savedDatasetId) ) {
-                    id = savedDatasetId;
-                } 
-            }
-            this.setDataset(id)
-            this.DatasetsChange.emit(this.dataVersions);
-        })
     }
 
     loadDataset() {
@@ -131,20 +96,16 @@ export class ElsiDataService extends ServiceBase {
     private inRun: boolean
     private elsiProgress: ElsiProgress
     get canRun():boolean {
-        return this.signalRService.isConnected && !this.inRun
-    }
-    get isReadOnly():boolean {
-        return !this.dataset?.parent || this.inRun;
+        return this.dataset.parent!=null && this.signalRService.isConnected && !this.inRun
     }
 
     // Elsi scenarios
     elsiScenarioInfo = new ElsiScenarioInfo()
 
-    datasetInfo: DatasetInfo | undefined
+    datasetInfo: ElsiDatasetInfo | undefined
     results: ElsiResult[] | undefined
 
-
-    addUserEdit(userEdit: ElsiUserEdit) {
+    addUserEdit(userEdit: UserEdit) {
         if ( this.dataset) {
             this.dataClientService.ElsiResultCount(this.dataset.id,(count)=>{
                 if ( count>0 && this.dataset) {
@@ -162,7 +123,7 @@ export class ElsiDataService extends ServiceBase {
         }        
     }
 
-    private saveUserEdit(userEdit: ElsiUserEdit) {
+    private saveUserEdit(userEdit: UserEdit) {
         this.dataClientService.SaveElsiUserEdit(userEdit, ()=>{
             this.loadDataset()
         })
@@ -187,7 +148,7 @@ export class ElsiDataService extends ServiceBase {
     }
 
     private deleteUserEdit(userEditId: number) {
-        this.dataClientService.DeleteUserEdit(userEditId, ()=>{
+        this.dataClientService.DeleteElsiUserEdit(userEditId, ()=>{
             this.loadDataset()
         })
     }
@@ -195,8 +156,7 @@ export class ElsiDataService extends ServiceBase {
     Progress:EventEmitter<ElsiProgress> = new EventEmitter<ElsiProgress>()
     LogMessageAvailable:EventEmitter<string> = new EventEmitter<string>()
     RunStart:EventEmitter<any> = new EventEmitter<any>()
-    DatasetsChange:EventEmitter<ElsiDataVersion[]> = new EventEmitter<ElsiDataVersion[]>()
-    DatasetInfoChange:EventEmitter<DatasetInfo> = new EventEmitter<DatasetInfo>()
+    DatasetInfoChange:EventEmitter<ElsiDatasetInfo> = new EventEmitter<ElsiDatasetInfo>()
     ResultsChange:EventEmitter<ElsiResult[]> = new EventEmitter<ElsiResult[]>()
 
 }

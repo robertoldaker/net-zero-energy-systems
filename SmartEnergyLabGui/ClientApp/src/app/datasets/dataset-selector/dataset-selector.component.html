@@ -1,0 +1,20 @@
+<mat-form-field appearance="fill" [color]="'primary'">
+    <mat-label>Dataset</mat-label>
+    <mat-select [value]="dataset?.id" (valueChange)="setDataset($event)">
+        <mat-select-trigger>
+            {{dataset?.name}}
+        </mat-select-trigger>
+        <mat-option *ngFor="let ds of datasetInfo" [value]="ds.dataset.id">
+            <span *ngIf="ds.indent==0">{{ds.dataset.name}}</span>    
+            <ng-container *ngIf="ds.indent>0">
+                <mat-icon class="datasetIcon" [ngStyle]="{'margin-right': '0px', 'margin-left': ds.indent +'rem'}">subdirectory_arrow_right</mat-icon><span>{{ds.dataset.name}}</span>
+            </ng-container>
+        </mat-option>
+    </mat-select>
+</mat-form-field>
+<mat-icon class="iconLink" (click)="addDataset()" [title]="'Add a new dataset'">add</mat-icon>
+<!-- dont allow Default dataset to be edited or deleted-->
+<ng-container *ngIf="dataset?.parent" >
+    <mat-icon class="iconLink" (click)="editDataset()" [title]="'Edit dataset'">edit</mat-icon>
+    <mat-icon class="iconLink" (click)="deleteDataset()" [title]="'Delete dataset'">delete_forever</mat-icon>    
+</ng-container>

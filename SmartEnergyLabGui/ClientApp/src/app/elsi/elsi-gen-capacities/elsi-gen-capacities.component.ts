@@ -1,10 +1,11 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
-import { MatSort } from '@angular/material/sort';
+import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { ElsiGenCapacity, ElsiProfile, ElsiScenario, TableInfo } from 'src/app/data/app.data';
-import { CellEditorData, ICellEditorDataDict } from 'src/app/utils/cell-editor/cell-editor.component';
+import { Dataset, DatasetData, ElsiGenCapacity, ElsiProfile, ElsiScenario} from 'src/app/data/app.data';
+import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/utils/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { ElsiDataService } from '../elsi-data.service';
+import { MATERIAL_SANITY_CHECKS } from '@angular/material/core';
 
 @Component({
     selector: 'app-elsi-gen-capacities',
@@ -12,65 +13,35 @@ import { ElsiDataService } from '../elsi-data.service';
     styleUrls: ['./elsi-gen-capacities.component.css']
 })
 
-export class ElsiGenCapacitiesComponent extends ComponentBase implements OnInit, AfterViewInit {
+export class ElsiGenCapacitiesComponent extends ComponentBase {
 
     constructor(public service: ElsiDataService) {
         super()
-        this.sort = null
         this.displayedColumns = ['zoneStr','genTypeStr','profileStr','communityRenewables','twoDegrees','steadyProgression','consumerEvolution']
         if (this.service.datasetInfo) {
-            this.tableData = this.createDataSource(this.service.datasetInfo.genCapacityInfo)
-        } else {
-            this.tableData = this.createDataSource({ data: [], userEdits: [], tableName: '' })
-        }
+            this.createDataSource(this.service.datasetInfo.genCapacityInfo)
+        } 
         this.addSub(this.service.DatasetInfoChange.subscribe((ds) => {
-            this.tableData = this.createDataSource(ds.genCapacityInfo)
+            this.createDataSource(ds.genCapacityInfo)
         }))
 
     }
-    ngAfterViewInit(): void {
-        if ( this.tableData ) {
-            this.tableData.sort = this.sort;
+
+    private createDataSource(datasetData?: DatasetData<ElsiGenCapacity>) {
+        if ( datasetData ) {
+            let items = this.getTableArray(datasetData.data);
+            this.datasetData = { data: items, tableName: datasetData.tableName, userEdits: datasetData.userEdits}
         }
-    }
-
-    ngOnInit(): void {
-    }
-
-    private createDataSource(tableInfo: TableInfo<ElsiGenCapacity>):MatTableDataSource<ICellEditorDataDict> {
-        let versionId: number = this.service.dataset ? this.service.dataset.id : 0
-        let cellData = this.getCellDataObjects(tableInfo, versionId)
-        let td = new MatTableDataSource(cellData)
-        td.sortingDataAccessor =this.sortDataAccessor
-        if ( this.sort ) {
-            td.sort = this.sort
+        if ( this.datasetData) {
+            let cellData = this.dataFilter.GetCellDataObjects<ElsiGenCapacityTable>(
+                this.service.dataset,
+                this.datasetData,
+                (item,col)=>item.getKey(col),
+                (col)=>ElsiGenCapacityTable.getCol(col)
+            )
+            this.tableData = new MatTableDataSource(cellData)    
         }
-        return td
-    }
-
-    private getCellDataObjects(tableInfo: TableInfo<ElsiGenCapacity>, versionId: number):ICellEditorDataDict[] {
-        let cellData:ICellEditorDataDict[] = []
-        let items = this.getTableArray(tableInfo.data);
-
-        let columnNames = items.length>0 ? Object.getOwnPropertyNames(items[0]) : [];
-
-        items.forEach( item=>{
-            let data:any = item
-            let cellObj:any = {}
-            columnNames.forEach(col=>{
-                let cd = new CellEditorData()
-                cd.key = item.getKey(col)
-                cd.columnName = item.getCol(col)
-                cd.tableName = tableInfo.tableName
-                cd.value = data[col]
-                cd.versionId = versionId
-                cellObj[col] = cd
-                // Find existing userEdit
-                cd.userEdit = tableInfo.userEdits.find(m=>m.columnName==cd.columnName && m.key==cd.key)
-            })
-            cellData.push(cellObj)
-        })
-        return cellData
+        return 
     }
 
     private getTableArray(items: ElsiGenCapacity[]): ElsiGenCapacityTable[] {
@@ -93,23 +64,25 @@ export class ElsiGenCapacitiesComponent extends ComponentBase implements OnInit,
     }
 
 
+    dataFilter: DataFilter = new DataFilter(20)
+    datasetData?: DatasetData<ElsiGenCapacityTable>
     displayedColumns: string[]
-    tableData: MatTableDataSource<any>
-    @ViewChild(MatSort) sort: MatSort | null;
-
+    tableData: MatTableDataSource<any> = new MatTableDataSource()
 
     getId(index: number, item: ElsiGenCapacityTable) {
         return item.name
     }
 
-    sortDataAccessor(data:ICellEditorDataDict, headerId: string) : number | string {
-        return data[headerId].value;
+
+    filterTable(e: DataFilter) {
+        this.createDataSource()
     }
 
-    get isReadOnly() {
-        // this will be the default dataset
-        return this.service.isReadOnly
+    sortTable(e:Sort) {
+        this.dataFilter.sort = e
+        this.createDataSource()
     }
+
 }
 
 export class ElsiGenCapacityTable {
@@ -151,7 +124,7 @@ export class ElsiGenCapacityTable {
             return this.name
         }
     }
-    getCol(col: string):string {
+    static getCol(col: string):string {
         let defaultName = 'capacity';
         if (col == 'communityRenewables') {
             return defaultName;

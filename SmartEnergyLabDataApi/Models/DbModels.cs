@@ -53,50 +53,49 @@ namespace SmartEnergyLabDataApi.Models
         }
     }
 
-
-    public class EditElsiDataVersionModel : DbModel
+    public class EditDatasetModel : DbModel
     {
-        private ElsiDataVersion _obj;
-        public EditElsiDataVersionModel(ControllerBase c, ElsiDataVersion obj) : base(c)
+        private Dataset _obj;
+        public EditDatasetModel(ControllerBase c, Dataset obj) : base(c)
         {
             _obj = obj;
         }
 
-        public EditElsiDataVersionModel(ControllerBase c, int id) : base(c)
+        public EditDatasetModel(ControllerBase c, int id) : base(c)
         {
-            _obj = _da.Elsi.GetDataVersion(id);
+            _obj = _da.Datasets.GetDataset(id);
         }
 
         protected override void checkModel()
         {
             var userId = _c.GetUserId();
-            if ( _da.Elsi.GetDataVersion(_obj.Name,userId,_obj.Id)!=null) {
+            if ( _da.Datasets.GetDataset(_obj.Type,_obj.Name,userId,_obj.Id)!=null) {
                 this.addError("name","A dataset with this version already exists");
             }
         }
 
         protected override void beforeSave()
         {
-            ElsiDataVersion newObj;
-            newObj = _da.Elsi.GetDataVersion(_obj.Id);
+            Dataset newObj;
+            newObj = _da.Datasets.GetDataset(_obj.Id);
             newObj.Name = _obj.Name;
         }
 
         public void Delete() {
             // Don;t allow deleting of root object
             if (_obj!=null && _obj.Parent!=null ) {
-                _da.Elsi.Delete(_obj);
+                _da.Datasets.Delete(_obj);
                 _da.CommitChanges();
             }
         }
     }
 
-    public class NewElsiDataVersion {
+    public class NewDataset {
         public string Name {get; set;}
         public int ParentId {get; set;}
     }
 
-    public class EditElsiDataVersion {
+    public class EditDataset {
         public string Name {get; set;}
         public int Id {get; set;}
         
@@ -105,10 +104,10 @@ namespace SmartEnergyLabDataApi.Models
         public User user {get; set;}
     }
 
-    public class NewElsiDataVersionModel : DbModel
+    public class NewDatasetModel : DbModel
     {
-        private NewElsiDataVersion _obj;
-        public NewElsiDataVersionModel(ControllerBase c, NewElsiDataVersion obj) : base(c)
+        private NewDataset _obj;
+        public NewDatasetModel(ControllerBase c, NewDataset obj) : base(c)
         {
             _obj = obj;
         }
@@ -116,26 +115,30 @@ namespace SmartEnergyLabDataApi.Models
         protected override void checkModel()
         {
             var userId = _c.GetUserId();
-            if ( _da.Elsi.GetDataVersion(_obj.Name,userId,0)!=null) {
+            var parentObj = _da.Datasets.GetDataset(_obj.ParentId);
+            if ( parentObj == null ) {
+                this.addError("","Unexpected error - parent object is null");
+            } else if (_da.Datasets.GetDataset(parentObj.Type,_obj.Name,userId,0)!=null) {
                 this.addError("name","A dataset with this name already exists");
             }
         }
 
         protected override void beforeSave()
         {
-            ElsiDataVersion newObj;
+            Dataset newObj;
             var user = _da.Users.GetUser(_c.GetUserId());
-            newObj = new ElsiDataVersion();
-            var parentObj = _da.Elsi.GetDataVersion(_obj.ParentId);
+            newObj = new Dataset();
+            var parentObj = _da.Datasets.GetDataset(_obj.ParentId);
             newObj.Parent = parentObj;
             newObj.User = user;
-            _da.Elsi.Add(newObj);
+            _da.Datasets.Add(newObj);
             newObj.Name = _obj.Name;
+            newObj.Type = parentObj.Type;
             Id = newObj.Id;
         }
 
         public int Id {get; private set;}
-
-
     }
+
+
 }

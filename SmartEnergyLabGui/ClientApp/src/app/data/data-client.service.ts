@@ -1,8 +1,11 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiDataVersion, NewElsiDataVersion, ElsiGenParameter, ElsiGenCapacity, ElsiUserEdit, DatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword, SolarInstallation } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
+import { DialogService } from '../dialogs/dialog.service';
+import { MessageDialogIcon } from '../dialogs/message-dialog/message-dialog.component';
+import { DialogFooterButtonsEnum } from '../dialogs/dialog-footer/dialog-footer.component';
 
 @Injectable({
     providedIn: 'root',
@@ -263,8 +266,8 @@ export class DataClientService implements ILogs {
     /**
      *  Loadflow 
      */
-    GetNetworkData( onLoad: (networkData: NetworkData)=> void | undefined) {
-        this.http.get<NetworkData>(this.baseUrl + `/Loadflow/NetworkData`).subscribe( result => {
+    GetNetworkData( datasetId: number, onLoad: (networkData: NetworkData)=> void | undefined) {
+        this.http.get<NetworkData>(this.baseUrl + `/Loadflow/NetworkData?datasetId=${datasetId}`).subscribe( result => {
             if ( onLoad ) {
                 onLoad(result)
             }
@@ -287,9 +290,9 @@ export class DataClientService implements ILogs {
         }, error => this.logErrorMessage(error));        
     }
 
-    RunBaseLoadflow( onLoad: (results: LoadflowResults)=> void | undefined) {
+    RunBaseLoadflow( datasetId: number,onLoad: (results: LoadflowResults)=> void | undefined) {
         this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/Loadflow/RunBaseLoadflow`,{}).subscribe( result => {
+        this.http.post<LoadflowResults>(this.baseUrl + `/Loadflow/RunBaseLoadflow?datasetId=${datasetId}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
                 onLoad(result)
@@ -297,9 +300,9 @@ export class DataClientService implements ILogs {
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
     }
 
-    SetBound( boundaryName:string, onLoad: (results: LoadflowResults)=> void | undefined) {
+    SetBound( datasetId: number, boundaryName:string, onLoad: (results: LoadflowResults)=> void | undefined) {
         this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/Loadflow/SetBound?boundaryName=${boundaryName}`,{}).subscribe( result => {
+        this.http.post<LoadflowResults>(this.baseUrl + `/Loadflow/SetBound?datasetId=${datasetId}&boundaryName=${boundaryName}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
                 onLoad(result)
@@ -307,9 +310,9 @@ export class DataClientService implements ILogs {
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
     }
 
-    RunBoundaryTrip( boundaryName: string, tripName: string, onLoad: (results: LoadflowResults)=> void | undefined) {
+    RunBoundaryTrip( datasetId: number, boundaryName: string, tripName: string, onLoad: (results: LoadflowResults)=> void | undefined) {
         this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/Loadflow/RunBoundaryTrip?boundaryName=${boundaryName}&tripName=${tripName}`,{}).subscribe( result => {
+        this.http.post<LoadflowResults>(this.baseUrl + `/Loadflow/RunBoundaryTrip?datasetId=${datasetId}&boundaryName=${boundaryName}&tripName=${tripName}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
                 onLoad(result)
@@ -317,15 +320,50 @@ export class DataClientService implements ILogs {
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
     }
 
-    RunAllBoundaryTrips( boundaryName: string,  onLoad: (results: LoadflowResults)=> void | undefined) {
+    RunAllBoundaryTrips( datasetId: number, boundaryName: string,  onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/Loadflow/RunAllBoundaryTrips?boundaryName=${boundaryName}&connectionId=${connectionId}`,{}).subscribe( result => {
+        this.http.post<LoadflowResults>(this.baseUrl + `/Loadflow/RunAllBoundaryTrips?datasetId=${datasetId}&boundaryName=${boundaryName}&connectionId=${connectionId}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
                 onLoad(result)
             }
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
+    }
+
+    /**
+     * Datasets
+     */
+    Datasets(type: DatasetType, onLoad: (results: Dataset[])=> void | undefined) {
+        this.getRequest<Dataset[]>(
+            `/Datasets/Datasets?type=${type}`,
+            onLoad);
+    }
+
+    NewDataset(data: NewDataset, onOk: (resp: string)=> void | undefined, onError: (error: any)=>void | undefined) {
+        this.postDialogRequest<NewDataset>('/Datasets/New', data, onOk, onError);
+    }
+
+    SaveDataset(data: Dataset, onOk: (resp: string)=> void | undefined, onError: (error: any)=>void | undefined) {
+        this.postDialogRequest<Dataset>('/Datasets/Save', data, onOk, onError);
+    }
+
+    DeleteDataset(id: number, onLoad: (resp: string)=> void | undefined) {
+        this.postRequest<number>('/Datasets/Delete', id, onLoad);
+    }
+
+    SaveUserEdit(userEdit: UserEdit, onSave: (resp: string)=>void) {
+        this.postRequest('/Datasets/SaveUserEdit',userEdit,onSave);
+    }
+
+    DeleteUserEdit(id: number, onOk: (resp: string)=>void) {
+        this.postRequest('/Datasets/DeleteUserEdit',id, onOk);
+    }
+
+    GetDatasetResultCount(datasetId: number, onLoad: (results: number)=> void | undefined) {
+        this.getRequest<number>(
+            `/Datasets/ResultCount?datasetId=${datasetId}`,
+            onLoad);
     }
 
     /**
@@ -349,24 +387,6 @@ export class DataClientService implements ILogs {
 
     }
 
-    ElsiDataVersions(onLoad: (results: ElsiDataVersion[])=> void | undefined) {
-        this.getRequest<ElsiDataVersion[]>(
-            `/Elsi/DataVersions`,
-            onLoad);
-    }
-
-    NewElsiDataVersion(data: NewElsiDataVersion, onOk: (resp: string)=> void | undefined, onError: (error: any)=>void | undefined) {
-        this.postDialogRequest<NewElsiDataVersion>('/Elsi/NewDataVersion', data, onOk, onError);
-    }
-
-    SaveElsiDataVersion(data: ElsiDataVersion, onOk: (resp: string)=> void | undefined, onError: (error: any)=>void | undefined) {
-        this.postDialogRequest<ElsiDataVersion>('/Elsi/SaveDataVersion', data, onOk, onError);
-    }
-
-    DeleteElsiDataVersion(id: number, onLoad: (resp: string)=> void | undefined) {
-        this.postRequest<number>('/Elsi/DeleteDataVersion', id, onLoad);
-    }
-
     ElsiGenParameters(versionId: number, onLoad: (results: ElsiGenParameter[])=> void | undefined) {
         this.getRequest<ElsiGenParameter[]>(
             `/Elsi/GenParameters?versionId=${versionId}`,
@@ -379,17 +399,17 @@ export class DataClientService implements ILogs {
             onLoad);
     }
 
-    ElsiDatasetInfo(versionId: number, onLoad: (results: DatasetInfo)=> void | undefined) {
-        this.getRequestWithMessage<DatasetInfo>('Loading ...',
+    ElsiDatasetInfo(versionId: number, onLoad: (results: ElsiDatasetInfo)=> void | undefined) {
+        this.getRequestWithMessage<ElsiDatasetInfo>('Loading ...',
             `/Elsi/DatasetInfo?versionId=${versionId}`,
             onLoad);
     }
 
-    SaveElsiUserEdit(userEdit: ElsiUserEdit, onSave: (resp: string)=>void|undefined) {
+    SaveElsiUserEdit(userEdit: UserEdit, onSave: (resp: string)=>void|undefined) {
         this.postRequest('/Elsi/SaveUserEdit',userEdit,onSave);
     }
 
-    DeleteUserEdit(id: number, onOk: (resp: string)=>void|undefined) {
+    DeleteElsiUserEdit(id: number, onOk: (resp: string)=>void|undefined) {
         this.postRequest('/Elsi/DeleteUserEdit',id, onOk);
     }
 

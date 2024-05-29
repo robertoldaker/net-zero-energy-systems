@@ -1,9 +1,10 @@
 .editable:hover {
-    border: 1px solid grey
+    border: 1px solid grey;
 }
 
 .editable {
     width: 4rem;
+    border-radius: 3px;
     border: none;
     text-align: right;
     border: 1px solid transparent;

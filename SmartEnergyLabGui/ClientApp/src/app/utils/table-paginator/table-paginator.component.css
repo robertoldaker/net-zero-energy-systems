@@ -1,0 +1,43 @@
+div.outerContainer {
+    display: grid; 
+    grid-auto-flow: column;  
+}
+
+div.search {
+    white-space: nowrap;
+    align-self: center;
+    justify-self: flex-start;
+}
+
+input[type=text].searchInput {
+    color: #333;
+    border:#aaa solid 1px;
+    background: #fff;
+    margin: 0px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 15px;
+    padding-right: 13px;
+    outline: none;
+    border-radius: 5px;
+    width: 300px;
+}
+
+span.checkboxLabel {
+    color: #666;
+}
+input[type=text].searchInput::placeholder {
+    color: #666
+}
+
+button.search {
+    color: #999;
+}
+
+button.clear {
+    position:relative;
+    left: -40px;
+    font-size: 20px;
+}
+
+

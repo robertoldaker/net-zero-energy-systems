@@ -953,7 +953,7 @@ namespace SmartEnergyLabDataApi.Elsi
         }
 
         private void saveResults(DataAccess da, ElsiDayResult results) {
-            var dataset = da.Elsi.GetDataVersion(_datasetId);
+            var dataset = da.Datasets.GetDataset(_datasetId);
             if ( dataset!=null ) {
 
                 string json = JsonSerializer.Serialize(results,new JsonSerializerOptions() {

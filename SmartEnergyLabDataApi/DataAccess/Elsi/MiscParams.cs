@@ -1,10 +1,11 @@
+using System.Text.Json.Serialization;
 using NHibernate.Mapping.Attributes;
 
 namespace SmartEnergyLabDataApi.Data
 {
 
     [Class(0, Table = "elsi_misc_params")]
-    public class MiscParams
+    public class MiscParams : IDataset, IId
     {
         public MiscParams()
         {
@@ -29,6 +30,11 @@ namespace SmartEnergyLabDataApi.Data
 
         [Property()]
         public virtual double GBPConv {get; set;}
+
+        [JsonIgnore()]
+        [ManyToOne(Column = "DatasetId", Cascade = "none")]
+        public virtual Dataset Dataset { get; set; }
+
 
     }
 }

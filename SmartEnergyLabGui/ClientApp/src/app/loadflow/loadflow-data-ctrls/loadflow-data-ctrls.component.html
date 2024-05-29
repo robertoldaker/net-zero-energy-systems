@@ -1,59 +1,67 @@
 <div style="overflow: auto; height: calc(100vh - 170px)">
 
-    <table style="width: 100%;" mat-table [dataSource]="ctrls" [trackBy]="getCtrlId" matSort>
+    <app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)"></app-table-paginator>
+
+    <table style="width: 100%;" mat-table [dataSource]="ctrls" [trackBy]="getCtrlId" matSort  matSortDisableClear (matSortChange)="sortTable($event)">
     
         <!-- code -->
         <ng-container matColumnDef="code">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Ctrl</th>
-          <td mat-cell *matCellDef="let element">{{element.obj.code}}</td>
+          <td mat-cell *matCellDef="let element">{{element.code.value}}</td>
         </ng-container>
     
         <!-- node1 -->
-        <ng-container matColumnDef="node1">
+        <ng-container matColumnDef="node1Code">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Node 1</th>
           <td mat-cell *matCellDef="let element">
-            <div>{{element.obj.node1Code}}</div>
-            <div *ngIf="element.obj.node1Name" class="nodeName">({{element.obj.node1Name}})</div>
+            <div>{{element.node1Code.value}}</div>
+            <div *ngIf="element.node1Name.value" class="nodeName">({{element.node1Name.value}})</div>
           </td>
         </ng-container>
     
         <!-- node2 -->
-        <ng-container matColumnDef="node2">
+        <ng-container matColumnDef="node2Code">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Node 2</th>
           <td mat-cell *matCellDef="let element">
-            <div>{{element.obj.node2Code}}</div>
-            <div *ngIf="element.obj.node2Name" class="nodeName">({{element.obj.node2Name}})</div>
+            <div>{{element.node2Code.value}}</div>
+            <div *ngIf="element.node2Name.value" class="nodeName">({{element.node2Name.value}})</div>
           </td>
         </ng-container>
     
         <!-- type -->
         <ng-container matColumnDef="type">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
-            <td mat-cell *matCellDef="let element">{{getTypeStr(element.obj.type)}}</td>
+            <td mat-cell *matCellDef="let element">{{getTypeStr(element.type.value)}}</td>
         </ng-container>
     
         <!-- min Ctrl -->
         <ng-container matColumnDef="minCtrl">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Min Ctrl</th>
-            <td mat-cell *matCellDef="let element">{{element.obj.minCtrl.toFixed(2)}}</td>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.minCtrl" [decimalPlaces]="2"></app-cell-editor>
+            </td>
         </ng-container>
             
         <!-- max ctrl -->
         <ng-container matColumnDef="maxCtrl">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Max Ctrl</th>
-            <td mat-cell *matCellDef="let element">{{element.obj.maxCtrl.toFixed(2)}}</td>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.maxCtrl" [decimalPlaces]="2"></app-cell-editor>
+            </td>
         </ng-container>
             
         <!-- cost -->
         <ng-container matColumnDef="cost">
             <th mat-header-cell *matHeaderCellDef mat-sort-header  arrowPosition="before">Cost</th>
-            <td mat-cell *matCellDef="let element">{{element.obj.cost.toFixed(1)}}</td>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.cost" [decimalPlaces]="1"></app-cell-editor>
+            </td>
         </ng-container>
 
         <!-- set point -->
         <ng-container matColumnDef="setPoint">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Set point</th>
-            <td mat-cell *matCellDef="let element">{{element.setPoint?.toFixed(2)}}</td>
+            <td mat-cell *matCellDef="let element">{{element.setPoint?.value?.toFixed(2)}}</td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>

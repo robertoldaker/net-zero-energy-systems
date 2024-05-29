@@ -53,11 +53,19 @@ public class LoadflowReference {
             var loadflowErrors = new LoadflowErrors(showAllErrors);
             var m = new LoadflowXlsmReader();
             m.LoadResults(getBaseFilename());
-            using( var lf = new Loadflow.Loadflow() ) {
+            Dataset ds;
+            using( var da = new DataAccess() ) {
+                var name = "GB network";
+                ds = da.Datasets.GetDataset(DatasetType.Loadflow,name);
+                if ( ds==null) {
+                    throw new Exception($"Cannot find dataset [{name}]");
+                }
+            }
+            using( var lf = new Loadflow.Loadflow(ds.Id) ) {
                 lf.RunBaseCase("Auto");
                 var lfr = new LoadflowResults(lf);
                 // nodes
-                foreach( var nw in lfr.Nodes) {
+                foreach( var nw in lf.Nodes.Objs) {
                     if ( m.NodeResults.TryGetValue(nw.Obj.Code, out LoadflowXlsmReader.NodeResult nr)) {
                         loadflowErrors.AddNodeResult(nw.Obj.Code,nw,nr);
                     } else {
@@ -65,7 +73,7 @@ public class LoadflowReference {
                     }
                 }
                 // branches
-                foreach( var bw in lfr.Branches ) {
+                foreach( var bw in lf.Branches.Objs ) {
                     if ( m.BranchResults.TryGetValue(bw.LineName, out LoadflowXlsmReader.BranchResult br)) {
                         loadflowErrors.AddBranchResult(bw.LineName,bw,br);
                     } else {
@@ -73,7 +81,7 @@ public class LoadflowReference {
                     }
                 }
                 // controls
-                foreach( var cw in lfr.Ctrls ) {
+                foreach( var cw in lf.Ctrls.Objs ) {
                     if ( m.CtrlResults.TryGetValue(cw.Obj.Code, out LoadflowXlsmReader.CtrlResult cr)) {
                         loadflowErrors.AddCtrlResult(cw.Obj.Code,cw,cr);
                     } else {
@@ -97,7 +105,15 @@ public class LoadflowReference {
             var m = new LoadflowXlsmReader();
             m.LoadResults(getB8Filename(),"B8");
             var boundaryName="B8";
-            using( var lf = new Loadflow.Loadflow() ) {
+            Dataset ds;
+            using( var da = new DataAccess() ) {
+                var name = "GB network";
+                ds = da.Datasets.GetDataset(DatasetType.Loadflow,name);
+                if ( ds==null) {
+                    throw new Exception($"Cannot find dataset [{name}]");
+                }
+            }
+            using( var lf = new Loadflow.Loadflow(ds.Id) ) {
                 var bfr=lf.Boundary.RunAllBoundaryTrips(boundaryName, out List<AllTripsResult> singleTrips, out List<AllTripsResult> dualTrips);
                 var lfr = new LoadflowResults(lf,bfr);
                 // Single trips

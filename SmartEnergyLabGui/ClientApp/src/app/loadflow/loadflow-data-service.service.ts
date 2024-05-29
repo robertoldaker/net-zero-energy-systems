@@ -1,7 +1,8 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { Boundary, GridSubstation, LoadflowLink, LoadflowLocation, LoadflowResults, LocationData, NetworkData, Node, NodeWrapper } from '../data/app.data';
+import { Boundary, Dataset, DatasetType, GridSubstation, LoadflowLink, LoadflowLocation, LoadflowResults, LocationData, NetworkData, Node, NodeWrapper } from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
+import { ShowMessageService } from '../main/show-message/show-message.service';
 
 type NodeDict = {
     [code: string]:Node
@@ -15,23 +16,11 @@ export type SelectedMapItem = {location: LoadflowLocation | null, link: Loadflow
 
 export class LoadflowDataService {
 
-    constructor(private dataClientService: DataClientService, private signalRService: SignalRService) { 
+    constructor(private dataClientService: DataClientService, private signalRService: SignalRService, private messageService: ShowMessageService) { 
         this.gridSubstations = [];
         this.boundaries = [];
-        this.networkData = { nodes: [], branches: [], ctrls: [] }
+        this.networkData = { nodes: { tableName: '',data:[], userEdits: [] }, branches: { tableName: '',data:[], userEdits: [] }, ctrls: { tableName: '',data:[], userEdits: [] } }
         this.locationData = { locations: [], links: []}
-        dataClientService.GetBoundaries((results)=>{
-            this.boundaries = results;
-            this.BoundariesLoaded.emit(results);
-        });
-        dataClientService.GetNetworkData( (results)=>{
-            this.networkData = results;
-            this.NetworkDataLoaded.emit(results);
-        })
-        dataClientService.GetLocationData( (results)=>{
-            this.locationData = results;
-            this.LocationDataLoaded.emit(results);
-        })
         this.signalRService.hubConnection.on('Loadflow_AllTripsProgress', (data) => {
             this.AllTripsProgress.emit(data);
         })
@@ -39,17 +28,50 @@ export class LoadflowDataService {
         this.selectedMapItem = null
     }
 
+    dataset: Dataset = {id: 0, type: DatasetType.Loadflow, name: '', parent: null, isReadOnly: true}
     boundaries: Boundary[]
     gridSubstations: GridSubstation[]
     networkData: NetworkData
     locationData: LocationData
     loadFlowResults: LoadflowResults | undefined
     boundaryName: string | undefined
+    inRun: boolean = false
 
     selectedMapItem: SelectedMapItem | null
 
+    setDataset(dataset: Dataset) {
+        this.dataset = dataset;
+        //
+        this.loadDataset();
+    }
+
+    private loadDataset() {
+        this.dataClientService.GetBoundaries((results)=>{
+            this.boundaries = results;
+            this.BoundariesLoaded.emit(results);
+        });
+        this.loadNetworkData(false);
+        this.dataClientService.GetLocationData( (results)=>{
+            this.locationData = results;
+            this.LocationDataLoaded.emit(results);
+        })
+    }
+
+    public loadNetworkData(withMessage: boolean) {
+        if ( withMessage ) {
+            this.messageService.showMessage('Loading ...')
+        }
+        this.dataClientService.GetNetworkData( this.dataset.id, (results)=>{
+            this.networkData = results
+            this.messageService.clearMessage()
+            this.NetworkDataLoaded.emit(results);
+        })
+    }
+
     setBound(boundaryName: string) {
-        this.dataClientService.SetBound(boundaryName, (results) =>{
+        this.inRun = true;
+        this.dataClientService.SetBound(this.dataset.id, boundaryName, (results) =>{
+            this.inRun = false;
             this.boundaryName = boundaryName
             this.loadFlowResults = results
             this.ResultsLoaded.emit(results)
@@ -57,21 +79,27 @@ export class LoadflowDataService {
     }
 
     runBaseLoadflow() {
-        this.dataClientService.RunBaseLoadflow( (results) => {
+        this.inRun = true;
+        this.dataClientService.RunBaseLoadflow( this.dataset.id, (results) => {
+            this.inRun = false;
             this.loadFlowResults = results;
             this.ResultsLoaded.emit(results);
         });
     }
 
     runBoundaryTrip(boundaryName:string, tripName: string) {
-        this.dataClientService.RunBoundaryTrip( boundaryName, tripName, (results) => {
+        this.inRun = true;
+        this.dataClientService.RunBoundaryTrip( this.dataset.id, boundaryName, tripName, (results) => {
+            this.inRun = false;
             this.loadFlowResults = results;
             this.ResultsLoaded.emit(results);
         });
     }
 
     runAllBoundaryTrips(boundaryName:string) {
-        this.dataClientService.RunAllBoundaryTrips( boundaryName, (results) => {
+        this.inRun = true;
+        this.dataClientService.RunAllBoundaryTrips( this.dataset.id, boundaryName, (results) => {
+            this.inRun = false;
             this.loadFlowResults = results;
             this.ResultsLoaded.emit(results);
         });

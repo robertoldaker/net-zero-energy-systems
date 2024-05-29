@@ -24,7 +24,12 @@ namespace SmartEnergyLabDataApi.Models
 
                 var gridSubstations = da.NationalGrid.GetGridSubstations();
                 var gridSubstationLocations = da.NationalGrid.GetGridSubstationLocations();
-                var nodes = da.Loadflow.GetNodes();
+                var name = "GB network";
+                var dataset = da.Datasets.GetDataset(DatasetType.Loadflow,name);
+                if ( dataset == null ) {
+                    throw new Exception($"Cannot find dataset [{name}]");
+                }
+                var nodes = da.Loadflow.GetNodes(dataset);
 
                 //
                 int nFound=0;

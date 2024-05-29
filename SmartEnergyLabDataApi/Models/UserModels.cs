@@ -60,11 +60,6 @@ namespace SmartEnergyLabDataApi.Models
             user.SetPassword(_newUser.Password);
             user.Enabled = true;
             _da.Users.Add(user);
-            // also add an Elsi data version
-            var dv = new ElsiDataVersion();
-            dv.User = user;
-            dv.Name = "Default";
-            _da.Elsi.Add(dv);
         }
     }
 

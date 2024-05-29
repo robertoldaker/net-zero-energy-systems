@@ -10,13 +10,13 @@ import { RegisterUserComponent } from '../users/register-user/register-user.comp
 import { DataClientService } from '../data/data-client.service';
 import { MapDataService } from '../low-voltage/map-data.service';
 import { ChangePasswordComponent } from '../users/change-password/change-password.component';
-import { ElsiDatasetDialogComponent } from '../elsi/elsi-dataset-dialog/elsi-dataset-dialog.component';
-import { ElsiDataVersion } from '../data/app.data';
+import { Dataset } from '../data/app.data';
 import { MessageDialog, MessageDialogComponent } from './message-dialog/message-dialog.component';
 import { AboutElsiDialogComponent } from '../elsi/about-elsi-dialog/about-elsi-dialog.component';
 import { ElsiHelpDialogComponent } from '../elsi/elsi-help-dialog/elsi-help-dialog.component';
 import { NeedsLogonComponent } from '../main/main-menu/needs-logon/needs-logon.component';
 import { ResetPasswordComponent } from '../users/reset-password/reset-password.component';
+import { DatasetDialogComponent } from '../datasets/dataset-dialog/dataset-dialog.component';
 
 @Injectable({
     providedIn: 'root'
@@ -74,10 +74,13 @@ export class DialogService {
         let dialogRef = this.dialog.open(ResetPasswordComponent, options)
     }
 
-    showElsiDatasetDialog(data: ElsiDataVersion | null) {
+    showDatasetDialog(dataset: Dataset | null, parent: Dataset | null, onOk: (datasetId: number)=>void) {
         let options = Object.assign({},this.defaultOptions)
-        options.data = data
-        let dialogRef = this.dialog.open(ElsiDatasetDialogComponent, options)
+        options.data = { dataset: dataset, parent: parent}
+        let dialogRef = this.dialog.open(DatasetDialogComponent, options)
+        dialogRef.afterClosed().subscribe((datasetId)=>{
+            onOk(datasetId);
+        });
     }
 
     showMessageDialog(data: MessageDialog | null, onOk: ()=>void) {

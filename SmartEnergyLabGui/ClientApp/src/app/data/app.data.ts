@@ -253,9 +253,9 @@ export interface EVDemandStatus {
 
 export interface LoadflowResults {
     stageResults: StageResults,
-    nodes: NodeWrapper[],
-    branches: BranchWrapper[],
-    ctrls: CtrlWrapper[],
+    nodes: DatasetData<Node>,
+    branches: DatasetData<Branch>,
+    ctrls: DatasetData<Ctrl>,
     boundaryFlowResult: BoundaryFlowResult,
     boundaryTrips: BoundaryTrips,
     singleTrips: AllTripResult[],
@@ -338,19 +338,12 @@ export interface Node {
     ext: boolean
     zone: Zone
     gisData: GISData | undefined
-}
-
-export interface BranchWrapper {
-    obj: Branch
-    lineName: string
-    outaged: boolean
-    powerFlow: number | null
-    bFlow: number
-    freePower: number | null
+    mismatch: number | undefined
 }
 
 export interface Branch {
     id: number
+    lineName: string
     region: string
     code: string
     r: number
@@ -364,13 +357,10 @@ export interface Branch {
     node2Name: string
     node1: Node
     node2: Node
-}
-
-export interface CtrlWrapper {
-    obj: Ctrl
-    branch: BranchWrapper
-    injMax: number
-    setPoint: number | null
+    outaged: boolean
+    powerFlow: number | null
+    bFlow: number
+    freePower: number | null
 }
 
 export enum LoadflowCtrlType {  QB=0,  // Quad booster
@@ -390,6 +380,7 @@ export interface Ctrl {
     node2Name: string
     node1: Node
     node2: Node
+    setPoint: number | null
 }
 
 export interface Zone {
@@ -398,9 +389,9 @@ export interface Zone {
 }
 
 export interface NetworkData {
-    nodes: NodeWrapper[]
-    branches: BranchWrapper[]
-    ctrls: CtrlWrapper[]
+    nodes: DatasetData<Node>
+    branches: DatasetData<Branch>
+    ctrls: DatasetData<Ctrl>
 }
 
 export interface LocationData {
@@ -459,6 +450,41 @@ export enum ModificationTypeEnum  {Enhancement, Bug}
      type: ModificationTypeEnum,
      description: string
  }
+
+ /**
+  * Datasets
+  */
+ export enum DatasetType {Elsi,Loadflow}
+
+ export interface Dataset {
+    id: number,
+    name: string,
+    type: DatasetType,
+    parent: Dataset | null
+    isReadOnly: boolean
+}
+
+
+
+export interface NewDataset {
+    name: string,
+    parentId: number
+}
+
+export interface UserEdit {
+    id: number,
+    key: string,
+    tableName: string,
+    columnName: string,
+    value: string
+    newDatasetId: number
+}
+
+export interface DatasetData<T> {
+    tableName: string
+    data: T[]
+    userEdits: UserEdit[]
+}
 
  /**
   * Elsi
@@ -630,11 +656,6 @@ export interface ElsiDataVersion {
     parent: ElsiDataVersion
 }
 
-export interface NewElsiDataVersion {
-    name: string,
-    parentId: number
-}
-
 export interface ElsiGenParameter {
     id: number,
     type: ElsiGenType,
@@ -666,26 +687,12 @@ export interface ElsiGenCapacity {
     orderIndex: number | null,
 }
 
-export interface ElsiUserEdit {
-    id: number,
-    key: string,
-    tableName: string,
-    columnName: string,
-    value: string
-}
-
-export interface DatasetInfo {
-    genParameterInfo: TableInfo<ElsiGenParameter>
-    genCapacityInfo: TableInfo<ElsiGenCapacity>
-    peakDemandInfo: TableInfo<ElsiPeakDemand>
-    miscParamsInfo: TableInfo<ElsiMiscParams>
-    linkInfo: TableInfo<ElsiLink>
-}
-
-export interface TableInfo<T> {
-    tableName: string
-    data: T[]
-    userEdits: ElsiUserEdit[]
+export interface ElsiDatasetInfo {
+    genParameterInfo: DatasetData<ElsiGenParameter>
+    genCapacityInfo: DatasetData<ElsiGenCapacity>
+    peakDemandInfo: DatasetData<ElsiPeakDemand>
+    miscParamsInfo: DatasetData<ElsiMiscParams>
+    linkInfo: DatasetData<ElsiLink>
 }
 
 export interface ElsiPeakDemand {

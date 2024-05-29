@@ -5,7 +5,7 @@ namespace SmartEnergyLabDataApi.Data
 {
 
     [Class(0, Table = "loadflow_nodes")]
-    public class Node
+    public class Node : IId, IDataset
     {
         public Node()
         {
@@ -34,6 +34,10 @@ namespace SmartEnergyLabDataApi.Data
         public virtual double Generation {
             get {
                 return Generation_A;
+            }
+
+            set {
+                Generation_A = value;
             }
         }
 
@@ -70,6 +74,13 @@ namespace SmartEnergyLabDataApi.Data
         /// </summary>
         [ManyToOne(Column = "locationId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
         public virtual GridSubstationLocation Location { get; set; }
+
+        [JsonIgnore()]
+        [ManyToOne(Column = "DatasetId", Cascade = "none")]
+        public virtual Dataset Dataset { get; set; }
+
+        public virtual double? Mismatch {get; set;}
+
 
     }
 }

@@ -9,7 +9,7 @@ namespace SmartEnergyLabDataApi.Data
                                                             }
 
     [Class(0, Table = "loadflow_ctrls")]
-    public class Ctrl
+    public class Ctrl : IId, IDataset
     {
         public Ctrl()
         {
@@ -49,6 +49,10 @@ namespace SmartEnergyLabDataApi.Data
         [ManyToOne(Column = "Node2Id", Cascade = "none")]
         public virtual Node Node2 {get; set;}
 
+        [JsonIgnore()]
+        [ManyToOne(Column = "DatasetId", Cascade = "none")]
+        public virtual Dataset Dataset { get; set; }
+
         public virtual string Node1Code {
             get {
                 return Node1.Code;
@@ -72,6 +76,10 @@ namespace SmartEnergyLabDataApi.Data
                 return Node2.Name;
             }
         }
+
+        // Control set point (csp)
+        public virtual double? SetPoint {get; set;}
+
 
     }
 }

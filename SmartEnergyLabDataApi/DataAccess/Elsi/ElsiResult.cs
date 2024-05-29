@@ -23,9 +23,14 @@ namespace SmartEnergyLabDataApi.Data
         [Property(Type="BinaryBlob", Lazy=true)]
         public virtual byte[] Data {get; set;}
 
+        //??
+        //[JsonIgnore()]
+        //[ManyToOne(Column = "DatasetId", Cascade = "none")]
+        //public virtual ElsiDataVersion Dataset {get; set;}
+        
         [JsonIgnore()]
-        [ManyToOne(Column = "DatasetId", Cascade = "none")]
-        public virtual ElsiDataVersion Dataset {get; set;}
+        [ManyToOne(Column = "NewDatasetId", Cascade = "none")]
+        public virtual Dataset Dataset {get; set;}
         
     }
 }

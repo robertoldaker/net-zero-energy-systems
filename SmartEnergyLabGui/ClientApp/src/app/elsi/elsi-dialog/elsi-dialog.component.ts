@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ElsiDataVersion } from 'src/app/data/app.data';
+import { Dataset, DatasetType, ElsiDataVersion } from 'src/app/data/app.data';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { MessageDialogIcon } from 'src/app/dialogs/message-dialog/message-dialog.component';
 import { ShowMessageService } from 'src/app/main/show-message/show-message.service';
@@ -24,17 +24,12 @@ export class ElsiDialogComponent extends ComponentBase implements OnInit {
         this.progressText = "";
         this.numDaysDone = 0;
         this.numDaysToDo = 0;
-        this.datasets = [];
 
         //
         this.addSub(this.service.Progress.subscribe((e)=>{
             this.numDaysDone++;
             this.percentComplete = 100*this.numDaysDone/this.numDaysToDo;
             this.progressText=this.getProgressText();
-        }))
-        //
-        this.addSub(this.service.DatasetsChange.subscribe((dataVersions)=>{
-            this.setDatasets(dataVersions)
         }))
 
     }
@@ -48,6 +43,7 @@ export class ElsiDialogComponent extends ComponentBase implements OnInit {
     date: Date
     startDate: Date
     endDate: Date
+    datasetTypes = DatasetType
 
     ngOnInit(): void {
     }
@@ -97,51 +93,8 @@ export class ElsiDialogComponent extends ComponentBase implements OnInit {
         return this.service.canRun;
     }
 
-    addDataset() {
-        this.dialogService.showElsiDatasetDialog(null)
+    onDatasetSelected(dataset: Dataset) {
+        this.service.setDataset(dataset)
     }
-
-    editDataset() {
-        if ( this.service.dataset ) {
-            this.dialogService.showElsiDatasetDialog(this.service.dataset)
-        }
-    }
-
-    deleteDataset() {
-        if ( this.service.dataset) {
-            this.dialogService.showMessageDialog({
-                message: `Are you sure you wish to delete the dataset <b>${this.service.dataset.name}</b>?`,
-                icon: MessageDialogIcon.Info,
-                buttons: DialogFooterButtonsEnum.OKCancel
-                }, ()=>{
-                    if ( this.service.dataset) {
-                        this.service.deleteDataset(this.service.dataset, ()=>{
-                            this.messageService.showMessageWithTimeout("Dataset successfully deleted")
-                        })
-                    }
-                })
-        }
-    }
-
-    datasets:DatasetInfo[]
-
-    private setDatasets(dataVersions: ElsiDataVersion[]) {
-        let datasets:DatasetInfo[] = []
-        let parent = this.service.dataVersions.find(m=>!m.parent);
-        if ( parent) {
-            addChildren(parent,0)
-        }
-        function addChildren(parent:ElsiDataVersion, indent: number):ElsiDataVersion[] {
-            datasets.push({indent: indent,dataset: parent})
-            let children = dataVersions.filter(m=>m.parent?.id===parent?.id)
-            children.forEach(m=>addChildren(m, indent+1))
-            return children
-        }
-        this.datasets = datasets;
-    }    
-}
-
-export interface DatasetInfo {
-    indent: number
-    dataset: ElsiDataVersion
+  
 }

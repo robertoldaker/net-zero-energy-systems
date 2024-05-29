@@ -2,9 +2,14 @@
     text-align: right;
 }
 
+.mat-column-code {
+    min-width: 200px;
+    width: 25%;    
+}
+
 .mat-column-generation {
     text-align: right;
-    padding-right: 1rem;
+    padding-right: 3rem;
 }
 
 .mat-column-mismatch {

@@ -5,7 +5,7 @@ namespace SmartEnergyLabDataApi.Data
 {
 
     [Class(0, Table = "loadflow_branches")]
-    public class Branch
+    public class Branch : IId, IDataset
     {
         public Branch()
         {
@@ -48,6 +48,11 @@ namespace SmartEnergyLabDataApi.Data
         [ManyToOne(Column = "Node2Id", Cascade = "none")]
         public virtual Node Node2 {get; set;}
 
+        [JsonIgnore()]
+        [ManyToOne(Column = "DatasetId", Cascade = "none")]
+        public virtual Dataset Dataset { get; set; }
+
+
         public virtual string LineName {
             get {
                 return $"{Node1.Code}-{Node2.Code}:{Code}";
@@ -76,5 +81,17 @@ namespace SmartEnergyLabDataApi.Data
                 return Node2.Name;
             }
         }
+
+        // outaged (bout)
+        public virtual bool Outaged {get; set;}
+
+        // Intact planned flow (ipflow)
+        public virtual double? PowerFlow {get; set;}
+
+        // Boundary flow
+        public virtual double? BFlow {get; set;}
+
+        public virtual double? FreePower {get; set;}
+
     }
 }

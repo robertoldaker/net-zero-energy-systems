@@ -1,8 +1,8 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
-import { MatSort } from '@angular/material/sort';
+import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { ElsiPeakDemand, ElsiScenario, TableInfo } from 'src/app/data/app.data';
-import { CellEditorData, ICellEditorDataDict } from 'src/app/utils/cell-editor/cell-editor.component';
+import { Dataset, DatasetData, ElsiPeakDemand, ElsiScenario } from 'src/app/data/app.data';
+import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/utils/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { ElsiDataService } from '../elsi-data.service';
 
@@ -11,45 +11,39 @@ import { ElsiDataService } from '../elsi-data.service';
     templateUrl: './elsi-demands.component.html',
     styleUrls: ['./elsi-demands.component.css']
 })
-export class ElsiDemandsComponent extends ComponentBase implements OnInit, AfterViewInit {
+export class ElsiDemandsComponent extends ComponentBase {
 
     constructor(public service: ElsiDataService) {
         super()
-        this.sort = null
         this.displayedColumns = ['zoneStr', 'profileStr', 'communityRenewables', 'twoDegrees', 'steadyProgression', 'consumerEvolution']
         if (this.service.datasetInfo) {
-            this.tableData = this.createDataSource(this.service.datasetInfo.peakDemandInfo)
-        } else {
-            this.tableData = this.createDataSource({ data: [], userEdits: [], tableName: '' })
-        }
+            this.createDataSource(this.service.datasetInfo.peakDemandInfo)
+        } 
         this.addSub(this.service.DatasetInfoChange.subscribe((ds) => {
-            this.tableData = this.createDataSource(ds.peakDemandInfo)
+            this.createDataSource(ds.peakDemandInfo)
         }))
     }
-    ngAfterViewInit(): void {
-        if (this.tableData) {
-            this.tableData.sort = this.sort;
+
+    private createDataSource(datasetData?: DatasetData<ElsiPeakDemand>) {
+        if ( datasetData ) {
+            let data = datasetData.data.filter(m=>m.mainZoneStr);
+            let items = this.getTableArray(data);
+            this.datasetData = { data: items, tableName: datasetData.tableName, userEdits: datasetData.userEdits}
+        }
+        if ( this.datasetData) {
+            let cellData = this.dataFilter.GetCellDataObjects<ElsiPeakDemandTable>(
+                this.service.dataset,
+                this.datasetData,
+                (item,col)=>item.getKey(col),
+                (col)=>ElsiPeakDemandTable.getCol(col)
+            )
+            this.tableData = new MatTableDataSource(cellData)    
         }
     }
 
-    ngOnInit(): void {
-
-    }
-
-    private createDataSource(tableInfo: TableInfo<ElsiPeakDemand>):MatTableDataSource<ICellEditorDataDict> {
-        let versionId: number = this.service.dataset ? this.service.dataset.id : 0
-        let cellData = this.getCellDataObjects(tableInfo, versionId)
-        let td = new MatTableDataSource(cellData)
-        td.sortingDataAccessor =this.sortDataAccessor
-        if ( this.sort ) {
-            td.sort = this.sort
-        }
-        return td
-    }
-
-    private getCellDataObjects(tableInfo: TableInfo<ElsiPeakDemand>, versionId: number):ICellEditorDataDict[] {
+    private getCellDataObjects(datasetData: DatasetData<ElsiPeakDemand>, dataset: Dataset):ICellEditorDataDict[] {
         let cellData:ICellEditorDataDict[] = []
-        let data = tableInfo.data.filter(m=>m.mainZoneStr);
+        let data = datasetData.data.filter(m=>m.mainZoneStr);
         let items = this.getTableArray(data);
 
         let columnNames = items.length>0 ? Object.getOwnPropertyNames(items[0]) : [];
@@ -58,15 +52,14 @@ export class ElsiDemandsComponent extends ComponentBase implements OnInit, After
             let data:any = item
             let cellObj:any = {}
             columnNames.forEach(col=>{
-                let cd = new CellEditorData()
+                let cd = new CellEditorData(dataset)
                 cd.key = item.getKey(col)
-                cd.columnName = item.getCol(col)
-                cd.tableName = tableInfo.tableName
+                //cd.columnName = item.getCol(col)
+                cd.tableName = datasetData.tableName
                 cd.value = data[col]
-                cd.versionId = versionId
                 cellObj[col] = cd
                 // Find existing userEdit
-                cd.userEdit = tableInfo.userEdits.find(m=>m.columnName==cd.columnName && m.key==cd.key)
+                cd.userEdit = datasetData.userEdits.find(m=>m.columnName==cd.columnName && m.key==cd.key)
             })
             cellData.push(cellObj)
         })
@@ -92,27 +85,23 @@ export class ElsiDemandsComponent extends ComponentBase implements OnInit, After
         return tableArray;
     }
 
-
-
+    dataFilter: DataFilter = new DataFilter(20)
+    datasetData?: DatasetData<ElsiPeakDemandTable>
     displayedColumns: string[]
-    tableData: MatTableDataSource<any>
-    @ViewChild(MatSort) sort: MatSort | null;
-
+    tableData: MatTableDataSource<any> = new MatTableDataSource()
 
     getId(index: number, item: ElsiPeakDemandTable) {
         return item.zoneStr
     }
 
-    sortDataAccessor(data: ICellEditorDataDict, headerId: string): number | string {
-        return data[headerId].value;
+    filterTable(e: DataFilter) {
+        this.createDataSource()
     }
 
-    get isReadOnly() {
-        // 
-        return this.service.isReadOnly
+    sortTable(e:Sort) {
+        this.dataFilter.sort = e
+        this.createDataSource()
     }
-
-
 }
 
 
@@ -151,7 +140,7 @@ export class ElsiPeakDemandTable {
             return this.zoneStr
         }
     }
-    getCol(col: string):string {
+    static getCol(col: string):string {
         let defaultName = 'peak';
         if (col == 'communityRenewables') {
             return defaultName;
