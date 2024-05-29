@@ -1,6 +1,6 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { DataClientService } from 'src/app/data/data-client.service';
-import { CellEditorData } from '../cell-editor/cell-editor.component';
+import { CellEditorData } from '../../datasets/cell-editor/cell-editor.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { DatasetsService } from 'src/app/datasets/datasets.service';
 

@@ -109,9 +109,9 @@ import { ElsiGenerationComponent } from './elsi/elsi-generation/elsi-generation.
 import { MessageDialogComponent } from './dialogs/message-dialog/message-dialog.component';
 import { ElsiGenParametersComponent } from './elsi/elsi-gen-parameters/elsi-gen-parameters.component';
 import { ElsiGenCapacitiesComponent } from './elsi/elsi-gen-capacities/elsi-gen-capacities.component';
-import { CellEditorComponent } from './utils/cell-editor/cell-editor.component';
+import { CellEditorComponent } from './datasets/cell-editor/cell-editor.component';
 import { ElsiMiscParamsComponent } from './elsi/elsi-misc-params/elsi-misc-params.component';
-import { MatInputEditorComponent } from './utils/mat-input-editor/mat-input-editor.component';
+import { MatInputEditorComponent } from './datasets/mat-input-editor/mat-input-editor.component';
 import { ElsiLinksComponent } from './elsi/elsi-links/elsi-links.component';
 import { AboutElsiDialogComponent } from './elsi/about-elsi-dialog/about-elsi-dialog.component';
 import { ElsiHelpDialogComponent } from './elsi/elsi-help-dialog/elsi-help-dialog.component';
@@ -137,7 +137,7 @@ import { ResetPasswordComponent } from './users/reset-password/reset-password.co
 import { SolarInstallationsComponent } from './low-voltage/solar-installations/solar-installations.component';
 import { DatasetSelectorComponent } from './datasets/dataset-selector/dataset-selector.component';
 import { DatasetDialogComponent } from './datasets/dataset-dialog/dataset-dialog.component';
-import { TablePaginatorComponent } from './utils/table-paginator/table-paginator.component';
+import { TablePaginatorComponent } from './datasets/table-paginator/table-paginator.component';
 
 
 @NgModule({

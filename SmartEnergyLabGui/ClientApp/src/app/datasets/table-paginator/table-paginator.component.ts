@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
-import { DataFilter } from '../cell-editor/cell-editor.component';
+import { DataFilter } from '../../datasets/cell-editor/cell-editor.component';
 
 @Component({
     selector: 'app-table-paginator',

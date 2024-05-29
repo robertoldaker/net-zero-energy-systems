@@ -3,7 +3,7 @@ import { DialogService } from "../dialogs/dialog.service";
 import { DataClientService } from "../data/data-client.service";
 import { ElsiDataService } from "../elsi/elsi-data.service";
 import { LoadflowDataService } from "../loadflow/loadflow-data-service.service";
-import { CellEditorData } from "../utils/cell-editor/cell-editor.component";
+import { CellEditorData } from "./cell-editor/cell-editor.component";
 import { MessageDialogIcon } from "../dialogs/message-dialog/message-dialog.component";
 import { DialogFooterButtonsEnum } from "../dialogs/dialog-footer/dialog-footer.component";
 import { DatasetType } from "../data/app.data";
