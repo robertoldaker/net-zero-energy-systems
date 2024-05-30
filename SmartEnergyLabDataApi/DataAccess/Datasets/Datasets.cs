@@ -220,20 +220,14 @@ public class Datasets : DataSet
         return Session.Get<Dataset>(id);
     }
 
-    public Dataset GetDataset(DatasetType type, string name, int userId, int id) {
+
+    public Dataset GetDataset(DatasetType type, string name, int userId, int parentId, int id) {
         return Session.QueryOver<Dataset>().
-            Where(m=>m.Name.IsLike(name)).
+            Where(m=>m.Name.IsInsensitiveLike(name)).
             And(m=>m.Type ==type).
             And(m=>m.Id!=id).
-            And(m=>m.User.Id==userId).
-            Take(1).SingleOrDefault();
-    }
-
-    public Dataset GetDataset(DatasetType type, string name, int userId) {
-        return Session.QueryOver<Dataset>().
-            Where(m=>m.Name.IsLike(name)).
-            And(m=>m.Type ==type).
-            And(m=>m.User.Id==userId).
+            And(m=>m.User.Id==userId || m.User==null).
+            And(m=>m.Parent.Id == parentId).
             Take(1).SingleOrDefault();
     }
 

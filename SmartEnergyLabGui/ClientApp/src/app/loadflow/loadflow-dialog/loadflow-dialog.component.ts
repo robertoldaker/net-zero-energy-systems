@@ -74,10 +74,6 @@ export class LoadflowDialogComponent extends ComponentBase {
         this.dataService.setDataset(dataset)
     }
 
-    get isRootDataset():boolean {
-        return this.dataService.dataset.parent == null
-    }
-
     currentTrip: string
     percent: number
     selectedTrip: string

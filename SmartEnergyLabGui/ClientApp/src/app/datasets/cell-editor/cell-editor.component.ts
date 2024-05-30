@@ -263,6 +263,14 @@ export class DataFilter {
                         } else {
                             result = data2 - data1;
                         }
+                    } else if (typeof(data1) === 'boolean' && typeof(data2) === 'boolean') {
+                        if ( data1 === data2) {
+                            result = 0;
+                        } else if ( sort.direction == 'asc') {
+                            result = data1 && !data2 ? 1:-1;
+                        } else {
+                            result = data1 && !data2 ? -1:1;
+                        }
                     }
                 }
     

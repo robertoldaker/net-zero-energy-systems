@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Node, DatasetData, NodeWrapper } from '../../data/app.data';
+import { Node, DatasetData } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
 import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
@@ -16,7 +16,7 @@ export class LoadflowDataNodesComponent extends ComponentBase {
     constructor(private dataService: LoadflowDataService) {
         super();
         this.createDataSource(this.dataService.networkData.nodes);
-        this.displayedColumns = ['code','zone','demand','generation','ext','mismatch']
+        this.displayedColumns = ['code','zoneName','demand','generation','ext','mismatch']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.createDataSource(results.nodes);
         }))

@@ -23,17 +23,33 @@
     width: 10%;
 }
 
+.mat-column-x {
+    min-width: 140px;
+    width: 10%;
+}
+
 .mat-column-cap {
+    min-width: 140px;
+    width: 10%;
     text-align: right;
     padding-right: 4rem;
 }
 
+.mat-column-linkType {
+    min-width: 170px;
+    width: 12%;
+}
+
 .mat-column-freePower {
+    min-width: 140px;
+    width: 10%;
     text-align: right;
     font-style: italic;
 }
 
 .mat-column-powerFlow {
+    min-width: 140px;
+    width: 10%;
     text-align: right;
     font-style: italic;
 }

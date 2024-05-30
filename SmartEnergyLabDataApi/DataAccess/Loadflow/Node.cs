@@ -79,6 +79,12 @@ namespace SmartEnergyLabDataApi.Data
         [ManyToOne(Column = "DatasetId", Cascade = "none")]
         public virtual Dataset Dataset { get; set; }
 
+        public virtual string ZoneName {
+            get {
+                return Zone?.Code;
+            }
+        }
+
         public virtual double? Mismatch {get; set;}
 
 

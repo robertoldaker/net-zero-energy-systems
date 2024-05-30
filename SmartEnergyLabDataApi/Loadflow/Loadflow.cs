@@ -111,6 +111,7 @@ namespace SmartEnergyLabDataApi.Loadflow
                 return _btfr;
             }
         }
+        
 
         public bool NetCheck() {
 
@@ -131,8 +132,8 @@ namespace SmartEnergyLabDataApi.Loadflow
                 sr = _stageResults.NewStage("Link to controls table");
                 _ctrls = new Ctrls(_da,_dataset.Id,_branches);
                 _stageResults.StageResult( sr, StageResultEnum.Pass, $"Count {_ctrls.Count}");
-                // If we have selected the root dataset then just return
-                if ( _dataset.Parent == null )                 {
+                // No nodes or branches then return
+                if ( _nodes.Count==0 || _branches.Count==0 )                 {
                     return false;
                 }
 
@@ -663,6 +664,7 @@ namespace SmartEnergyLabDataApi.Loadflow
                 _stageResults.StageResult(sr,StageResultEnum.Pass,"");
             } else {
                 _stageResults.StageResult(sr,StageResultEnum.Fail,"Base network not valid");
+                return;
             }
             CVang cva = GetCVang();
             //
@@ -725,7 +727,7 @@ End Sub
                 _stageResults.StageResult(sr, StageResultEnum.Fail, "Base network not valid");
                 return;
             } else {
-                _stageResults.StageResult(sr, StageResultEnum.Pass, "");
+                _stageResults.StageResult(sr, StageResultEnum.Pass, "");                
             }
 
             sr = _stageResults.NewStage("Setup trip");

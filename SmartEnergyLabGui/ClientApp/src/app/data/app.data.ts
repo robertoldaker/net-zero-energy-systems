@@ -324,11 +324,6 @@ export interface BoundaryFlowResult {
     ia: number
 }
 
-export interface NodeWrapper {
-    obj: Node
-    mismatch: number | null
-}
-
 export interface Node {
     id: number
     code: string
@@ -337,6 +332,7 @@ export interface Node {
     generation: number
     ext: boolean
     zone: Zone
+    zoneName: string
     gisData: GISData | undefined
     mismatch: number | undefined
 }

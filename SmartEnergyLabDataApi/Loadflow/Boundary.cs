@@ -334,9 +334,12 @@ namespace SmartEnergyLabDataApi.Loadflow
             double r;
 
             //
-            var bfr = SetBound(boundaryName);
             singleTrips = new List<AllTripsResult>();
             doubleTrips = new List<AllTripsResult>();
+            var bfr = SetBound(boundaryName);
+            if ( bfr==null ) {
+                return null;
+            }
 
             //
             var sw = new Stopwatch();
