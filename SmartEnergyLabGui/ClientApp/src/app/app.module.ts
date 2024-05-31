@@ -138,6 +138,8 @@ import { SolarInstallationsComponent } from './low-voltage/solar-installations/s
 import { DatasetSelectorComponent } from './datasets/dataset-selector/dataset-selector.component';
 import { DatasetDialogComponent } from './datasets/dataset-dialog/dataset-dialog.component';
 import { TablePaginatorComponent } from './datasets/table-paginator/table-paginator.component';
+import { LoadflowDataBoundariesComponent } from './loadflow/loadflow-data-boundaries/loadflow-data-boundaries.component';
+import { LoadflowDataZonesComponent } from './loadflow/loadflow-data-zones/loadflow-data-zones.component';
 
 
 @NgModule({
@@ -230,7 +232,9 @@ import { TablePaginatorComponent } from './datasets/table-paginator/table-pagina
         SolarInstallationsComponent,
         DatasetSelectorComponent,
         DatasetDialogComponent,
-        TablePaginatorComponent
+        TablePaginatorComponent,
+        LoadflowDataBoundariesComponent,
+        LoadflowDataZonesComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

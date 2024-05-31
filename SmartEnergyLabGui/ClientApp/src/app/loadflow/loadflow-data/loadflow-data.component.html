@@ -13,6 +13,12 @@
     <mat-tab label="Controls">
         <app-loadflow-data-ctrls></app-loadflow-data-ctrls>
     </mat-tab>
+    <mat-tab label="Boundaries">
+        <app-loadflow-data-boundaries></app-loadflow-data-boundaries>
+    </mat-tab>
+    <mat-tab label="Zones">
+        <app-loadflow-data-zones></app-loadflow-data-zones>
+    </mat-tab>
     <mat-tab *ngIf="showAllTripResults" label="All trip results" >
         <app-loadflow-trip-results></app-loadflow-trip-results>
     </mat-tab>

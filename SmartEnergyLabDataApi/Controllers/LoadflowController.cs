@@ -6,6 +6,7 @@ using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Loadflow;
 using static SmartEnergyLabDataApi.Models.LoadflowReference;
+using Org.BouncyCastle.Crypto.Signers;
 
 namespace SmartEnergyLabDataApi.Controllers
 {
@@ -49,14 +50,20 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <returns>List of boundaries</returns>
         [HttpGet]
         [Route("Boundaries")]
-        public IList<Data.Boundary> Boundaries() {
+        public DatasetData<Data.Boundary> Boundaries(int datasetId) {
             using ( var da = new DataAccess() ) {
-                var name = "GB network";
-                var dataset = da.Datasets.GetDataset(DatasetType.Loadflow,name);
-                if ( dataset==null ) {
-                    throw new Exception($"Cannot find dataset [{name}]");
+                var q = da.Session.QueryOver<Data.Boundary>();
+                var ds = new DatasetData<Data.Boundary>(da, datasetId,m=>m.Id.ToString(),q);
+                // add zones they belong to
+                var boundDict = da.Loadflow.GetBoundaryZoneDict(ds.Data);
+                foreach( var b in ds.Data) {
+                    if ( boundDict.ContainsKey(b) ) {
+                        b.Zones = boundDict[b];
+                    } else {
+                        b.Zones = new List<Zone>();
+                    }
                 }
-                return da.Loadflow.GetBoundaries(dataset);
+                return ds;
             }
         }
 
@@ -155,11 +162,12 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Gets loadflow location data
         /// </summary>
+        /// <param name="datasetId">Id of dataset</param>
         /// <returns></returns>
         [HttpGet]
         [Route("LocationData")]
-        public LoadflowLocationData LocationData() {
-            var m = new LoadflowLocationData();
+        public LoadflowLocationData LocationData(int datasetId) {
+            var m = new LoadflowLocationData(datasetId);
             return m;
         }
 

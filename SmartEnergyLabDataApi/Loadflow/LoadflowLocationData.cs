@@ -5,11 +5,11 @@ using SmartEnergyLabDataApi.Data;
 namespace SmartEnergyLabDataApi.Loadflow
 {
     public class LoadflowLocationData {
-        public LoadflowLocationData() {
+        public LoadflowLocationData(int datasetId) {
             using( var da = new DataAccess()) {
                 // Locations
                 var locDict = new Dictionary<GridSubstationLocation,LoadflowLocation>();
-                var nodes = da.Loadflow.GetNodesWithLocations();
+                var nodes = da.Loadflow.GetNodesWithLocations(datasetId);
                 // ids of locations that have ctrls
                 var qbIds = da.NationalGrid.GetGridSubstationLocationsForLoadflowCtrls();
                 foreach(var node in nodes) {
@@ -26,7 +26,7 @@ namespace SmartEnergyLabDataApi.Loadflow
                 Locations = locDict.Values.ToList();
 
                 // Links
-                var visibleBranches = da.Loadflow.GetVisibleBranches();
+                var visibleBranches = da.Loadflow.GetVisibleBranches(datasetId);
                 var linkDict = new Dictionary<string,LoadflowLink>();
                 foreach( var b in visibleBranches) {
                     var key1 = $"{b.Node1.Location.Id}:{b.Node2.Location.Id}";

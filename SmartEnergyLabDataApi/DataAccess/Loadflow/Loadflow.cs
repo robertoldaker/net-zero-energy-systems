@@ -58,8 +58,13 @@ namespace SmartEnergyLabDataApi.Data
             List();
         }
 
-        public IList<Node> GetNodesWithLocations() {
-            var nodes = Session.QueryOver<Node>().Fetch(SelectMode.Fetch, m=>m.Zone).Where(m=>m.Location!=null).List();
+        public IList<Node> GetNodesWithLocations(int datasetId) {
+            var datasetIds = this.DataAccess.Datasets.GetAllDatasetIds(datasetId);
+            var nodes = Session.QueryOver<Node>().
+                Where( m=>m.Dataset.Id.IsIn(datasetIds) ).
+                Fetch(SelectMode.Fetch, m=>m.Zone).
+                Where(m=>m.Location!=null).
+                List();
             return nodes;
         }    
 
@@ -127,6 +132,22 @@ namespace SmartEnergyLabDataApi.Data
             Where(m=>m.Boundary.Id == boundaryId).
             OrderBy(m=>m.Id).Asc.List();
         }
+
+        public Dictionary<Boundary,List<Zone>> GetBoundaryZoneDict(IList<Boundary> boundaries) {
+            var boundaryIds = boundaries.Select(m=>m.Id).ToArray();
+            var bzs =  Session.QueryOver<BoundaryZone>().
+                Fetch(SelectMode.Fetch,m=>m.Boundary).
+                Fetch(SelectMode.Fetch,m=>m.Zone).
+                Where(m=>m.Boundary.Id.IsIn(boundaryIds)).
+                OrderBy(m=>m.Id).Asc.
+                List();
+
+            var dict = bzs.
+                GroupBy(x => x.Boundary,x=>x.Zone).
+                ToDictionary(x => x.Key, x => x.ToList());
+            return dict;
+        }
+
         #endregion
         
         #region Branch
@@ -259,7 +280,8 @@ namespace SmartEnergyLabDataApi.Data
             return fsr;
         }
 
-        public IList<Branch> GetVisibleBranches() {
+        public IList<Branch> GetVisibleBranches(int datasetId) {
+            var datasetIds = this.DataAccess.Datasets.GetAllDatasetIds(datasetId);
             Node node1=null, node2=null;
             GridSubstationLocation location1=null, location2=null;
             var branches = Session.QueryOver<Branch>().
@@ -267,8 +289,10 @@ namespace SmartEnergyLabDataApi.Data
                 Left.JoinAlias(m=>m.Node2,()=>node2).
                 Left.JoinAlias(()=>node1.Location,()=>location1).
                 Left.JoinAlias(()=>node2.Location,()=>location2).
+                Where(m=>m.Dataset.Id.IsIn(datasetIds)).
                 Where( m=>!m.LinkType.IsInsensitiveLike("Transformer")).
-                Where( m=>location1.Id!=location2.Id).List();
+                Where( m=>location1.Id!=location2.Id).
+                List();
             return branches;
         }
 

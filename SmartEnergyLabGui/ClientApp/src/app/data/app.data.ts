@@ -264,7 +264,8 @@ export interface LoadflowResults {
 
 export interface Boundary {
     id: number,
-    code: string
+    code: string,
+    zones: Zone[]
 }
 
 export enum BoundaryTripType { Single = 0, Double = 1}
@@ -388,6 +389,8 @@ export interface NetworkData {
     nodes: DatasetData<Node>
     branches: DatasetData<Branch>
     ctrls: DatasetData<Ctrl>
+    boundaries: DatasetData<Boundary>
+    zones: DatasetData<Zone>
 }
 
 export interface LocationData {

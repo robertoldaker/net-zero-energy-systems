@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { Boundary, Dataset, DatasetType, GridSubstation, LoadflowLink, LoadflowLocation, LoadflowResults, LocationData, NetworkData, Node } from '../data/app.data';
+import { Boundary, Dataset, DatasetData, DatasetType, GridSubstation, LoadflowLink, LoadflowLocation, LoadflowResults, LocationData, NetworkData, Node } from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { ShowMessageService } from '../main/show-message/show-message.service';
@@ -18,8 +18,13 @@ export class LoadflowDataService {
 
     constructor(private dataClientService: DataClientService, private signalRService: SignalRService, private messageService: ShowMessageService) { 
         this.gridSubstations = [];
-        this.boundaries = [];
-        this.networkData = { nodes: { tableName: '',data:[], userEdits: [] }, branches: { tableName: '',data:[], userEdits: [] }, ctrls: { tableName: '',data:[], userEdits: [] } }
+        this.networkData = { 
+            nodes: { tableName: '',data:[], userEdits: [] }, 
+            branches: { tableName: '',data:[], userEdits: [] }, 
+            ctrls: { tableName: '',data:[], userEdits: [] },
+            boundaries: { tableName: '',data:[], userEdits: [] },
+            zones: { tableName: '',data:[], userEdits: [] } 
+        }
         this.locationData = { locations: [], links: []}
         this.signalRService.hubConnection.on('Loadflow_AllTripsProgress', (data) => {
             this.AllTripsProgress.emit(data);
@@ -29,7 +34,6 @@ export class LoadflowDataService {
     }
 
     dataset: Dataset = {id: 0, type: DatasetType.Loadflow, name: '', parent: null, isReadOnly: true}
-    boundaries: Boundary[]
     gridSubstations: GridSubstation[]
     networkData: NetworkData
     locationData: LocationData
@@ -46,12 +50,9 @@ export class LoadflowDataService {
     }
 
     private loadDataset() {
-        this.dataClientService.GetBoundaries((results)=>{
-            this.boundaries = results;
-            this.BoundariesLoaded.emit(results);
-        });
         this.loadNetworkData(false);
-        this.dataClientService.GetLocationData( (results)=>{
+        this.dataClientService.GetLocationData(this.dataset.id, (results)=>{
+            console.log(`location data ${results.locations.length}`)
             this.locationData = results;
             this.LocationDataLoaded.emit(results);
         })
@@ -126,7 +127,6 @@ export class LoadflowDataService {
         this.ObjectSelected.emit(this.selectedMapItem)
     }
 
-    BoundariesLoaded:EventEmitter<Boundary[]> = new EventEmitter<Boundary[]>()
     ResultsLoaded:EventEmitter<LoadflowResults> = new EventEmitter<LoadflowResults>()
     NetworkDataLoaded:EventEmitter<NetworkData> = new EventEmitter<NetworkData>()
     LocationDataLoaded:EventEmitter<LocationData> = new EventEmitter<LocationData>()

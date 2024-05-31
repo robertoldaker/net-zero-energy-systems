@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType, DatasetData } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { DialogService } from '../dialogs/dialog.service';
@@ -274,16 +274,16 @@ export class DataClientService implements ILogs {
         }, error => this.logErrorMessage(error));        
     }
 
-    GetLocationData( onLoad: (locationData: LocationData)=> void | undefined) {
-        this.http.get<LocationData>(this.baseUrl + `/Loadflow/LocationData`).subscribe( result => {
+    GetLocationData( datasetId: number, onLoad: (locationData: LocationData)=> void | undefined) {
+        this.http.get<LocationData>(this.baseUrl + `/Loadflow/LocationData?datasetId=${datasetId}`).subscribe( result => {
             if ( onLoad ) {
                 onLoad(result)
             }
         }, error => this.logErrorMessage(error));        
     }
 
-    GetBoundaries( onLoad: (boundaries: Boundary[])=> void | undefined) {
-        this.http.get<Boundary[]>(this.baseUrl + `/Loadflow/Boundaries`).subscribe( result => {
+    GetBoundaries( datasetId: number, onLoad: (boundaryData: DatasetData<Boundary>)=> void | undefined) {
+        this.http.get<DatasetData<Boundary>>(this.baseUrl + `/Loadflow/Boundaries?datasetId=${datasetId}`).subscribe( result => {
             if ( onLoad ) {
                 onLoad(result)
             }

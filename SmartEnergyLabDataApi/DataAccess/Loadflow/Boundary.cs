@@ -25,5 +25,7 @@ namespace SmartEnergyLabDataApi.Data
         [JsonIgnore()]
         [ManyToOne(Column = "DatasetId", Cascade = "none")]
         public virtual Dataset Dataset { get; set; }
+
+        public virtual IList<Zone> Zones {get; set;}
     }
 }

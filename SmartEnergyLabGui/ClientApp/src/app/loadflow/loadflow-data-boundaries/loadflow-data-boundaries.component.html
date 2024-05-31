@@ -1,0 +1,28 @@
+<div style="overflow: auto; height: calc(100vh - 170px)">
+
+    <app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)"></app-table-paginator>
+    
+    <table style="width: 500px;" #table mat-table [dataSource]="nodes" [trackBy]="getNodeId" matSort matSortDisableClear (matSortChange)="sortTable($event)">
+
+        <!-- Code Column -->
+        <ng-container matColumnDef="code">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Code</th>
+            <td mat-cell *matCellDef="let element">
+                <div>{{element.code.value}}</div>
+            </td>
+        </ng-container>
+
+        <!-- Zones Column -->
+        <ng-container matColumnDef="zone">
+            <th mat-header-cell *matHeaderCellDef>Zones</th>
+            <td mat-cell *matCellDef="let element">
+                <span *ngFor="let z of element.zones.value; let i = index">{{z.code}}<span *ngIf="i!==element.zones.value.length-1">, </span></span>
+            </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true">
+        
+        </tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+</div>

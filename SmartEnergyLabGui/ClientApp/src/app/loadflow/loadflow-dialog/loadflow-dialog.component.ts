@@ -14,15 +14,15 @@ export class LoadflowDialogComponent extends ComponentBase {
 
     constructor(private dataService: LoadflowDataService) { 
         super()
-        this.boundaries = dataService.boundaries;
+        this.boundaries = dataService.networkData.boundaries.data;
         this.trips = []
         this.boundaryName=""        
         this.selectedTrip=""
         this.currentTrip="";
         this.percent = 0;
         this.flowResult = this.clearFlowResult;
-        this.addSub(dataService.BoundariesLoaded.subscribe((results=>{
-            this.boundaries = results;
+        this.addSub(dataService.NetworkDataLoaded.subscribe((results=>{
+            this.boundaries = results.boundaries.data;
         })))
         this.addSub(dataService.ResultsLoaded.subscribe((results)=>{
             if ( results.boundaryTrips ) {
