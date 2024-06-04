@@ -44,7 +44,7 @@
                     <mat-icon *ngIf="!isShowCarbon"></mat-icon>
                     <span>Show Carbon (gCo2 per h)</span>
                 </button>
-                <button mat-menu-item (click)="showCost()">
+                <button mat-menu-item (click)="showCost()" [disabled]="'true'">
                     <mat-icon *ngIf="isShowCost">check</mat-icon>
                     <mat-icon *ngIf="!isShowCost"></mat-icon>
                     <span>Show Cost (p per h)</span>
