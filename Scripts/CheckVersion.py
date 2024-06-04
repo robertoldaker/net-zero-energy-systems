@@ -40,15 +40,16 @@ class GitUtils:
                     if line == b'':
                         break
                     lineIndex+=1
-            if line.startswith('Untracked files:'):
-                gitState = GitState.NEEDS_ADD
-                while lineIndex<len(lines):
-                    line = lines[lineIndex].decode()
-                    if line.startswith('\t'):
-                        filesToAdd.append(line)
-                    if line == b'':
-                        break
-                    lineIndex+=1
+            # not doing this for now
+            #if line.startswith('Untracked files:'):
+            #    gitState = GitState.NEEDS_ADD
+            #    while lineIndex<len(lines):
+            #        line = lines[lineIndex].decode()
+            #        if line.startswith('\t'):
+            #            filesToAdd.append(line)
+            #        if line == b'':
+            #            break
+            #        lineIndex+=1
             lineIndex+=1
         return (gitState,filesToCommit,filesToAdd)
     
