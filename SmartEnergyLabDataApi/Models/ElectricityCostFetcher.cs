@@ -39,6 +39,7 @@ namespace SmartEnergyLabDataApi.Models
             if ( data == null) {
                 throw new Exception("Problem deserializing Carbon intensity response");
             }
+            
             return toElectricityCost(data.data, startDate);
         }
 

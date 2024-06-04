@@ -64,13 +64,21 @@ namespace SmartEnergyLabDataApi.Data
                 }
             }
             if( carbonFetcher!=null) {
-                foreach( var lp in list) {
-                    lp.AddCarbonData(carbonFetcher);
+                try {
+                    foreach( var lp in list) {
+                        lp.AddCarbonData(carbonFetcher);
+                    }
+                } catch( Exception e) {
+                    Logger.Instance.LogErrorEvent($"Problem fetching carbon data [{e.Message}]");
                 }
             }
             if( costFetcher!=null) {
-                foreach( var lp in list) {
-                    lp.AddCostData(costFetcher);
+                try {
+                    foreach( var lp in list) {
+                        lp.AddCostData(costFetcher);
+                    }
+                } catch( Exception e) {
+                    Logger.Instance.LogErrorEvent($"Problem fetching electricity cost data [{e.Message}]");
                 }
             }
 
@@ -368,6 +376,8 @@ namespace SmartEnergyLabDataApi.Data
             int dataOffset = (dlp.Source == LoadProfileSource.LV_Spreadsheet) ? 2 : 3;
             // Create a set of load profiles for each Day/month combination
             List<SubstationLoadProfile> list = new List<SubstationLoadProfile>();
+            bool costError = false;
+            bool carbonError = false;
             foreach( var obj in objs) {
                 var objArray = (object[]) obj;
                 var lp = new SubstationLoadProfile();
@@ -387,11 +397,21 @@ namespace SmartEnergyLabDataApi.Data
                 for(int i=0;i<dataLength;i++) {                    
                     lp.Data[i] = objArray[i+dataOffset]!=null ? (double) objArray[i+dataOffset] : 0;
                 }
-                if ( carbonFetcher!=null ) {
-                    lp.AddCarbonData(carbonFetcher);
+                if ( carbonFetcher!=null && !carbonError) {
+                    try {
+                        lp.AddCarbonData(carbonFetcher);
+                    } catch( Exception e) {
+                        Logger.Instance.LogErrorEvent($"Problem finding carbon data: [{e.Message}]");
+                        carbonError = true;
+                    }
                 }
-                if ( costFetcher!=null ) {
-                    lp.AddCostData(costFetcher);
+                if ( costFetcher!=null && !costError) {
+                    try {
+                        lp.AddCostData(costFetcher);
+                    } catch( Exception e) {
+                        Logger.Instance.LogErrorEvent($"Problem finding electricity costs: [{e.Message}]");
+                        costError = true;
+                    }
                 }
                 list.Add(lp);
             }
