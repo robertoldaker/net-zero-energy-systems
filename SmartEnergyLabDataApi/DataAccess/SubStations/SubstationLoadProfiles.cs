@@ -74,9 +74,10 @@ namespace SmartEnergyLabDataApi.Data
             }
             if( costFetcher!=null) {
                 try {
-                    foreach( var lp in list) {
-                        lp.AddCostData(costFetcher);
-                    }
+                    //?? url not working so diabling for time being
+                    //foreach( var lp in list) {
+                    //    lp.AddCostData(costFetcher);
+                    //}
                 } catch( Exception e) {
                     Logger.Instance.LogErrorEvent($"Problem fetching electricity cost data [{e.Message}]");
                 }
@@ -406,12 +407,13 @@ namespace SmartEnergyLabDataApi.Data
                     }
                 }
                 if ( costFetcher!=null && !costError) {
-                    try {
-                        lp.AddCostData(costFetcher);
-                    } catch( Exception e) {
-                        Logger.Instance.LogErrorEvent($"Problem finding electricity costs: [{e.Message}]");
-                        costError = true;
-                    }
+                    //?? Cost fetcher url not working so diabling for time being
+                    //?try {
+                    //??    lp.AddCostData(costFetcher);
+                    //??} catch( Exception e) {
+                    //??    Logger.Instance.LogErrorEvent($"Problem finding electricity costs: [{e.Message}]");
+                    //??    costError = true;
+                    //??}
                 }
                 list.Add(lp);
             }
