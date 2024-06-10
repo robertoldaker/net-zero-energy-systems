@@ -5,6 +5,7 @@ import { Node, DatasetData } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
 import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
+import { DialogService } from 'src/app/dialogs/dialog.service';
 
 @Component({
     selector: 'app-loadflow-data-nodes',
@@ -13,7 +14,7 @@ import { ComponentBase } from 'src/app/utils/component-base';
 })
 export class LoadflowDataNodesComponent extends ComponentBase {
 
-    constructor(private dataService: LoadflowDataService) {
+    constructor(private dataService: LoadflowDataService, private dialogService: DialogService) {
         super();
         this.createDataSource(this.dataService.networkData.nodes);
         this.displayedColumns = ['code','zoneName','demand','generation','ext','mismatch']
@@ -32,7 +33,7 @@ export class LoadflowDataNodesComponent extends ComponentBase {
             this.datasetData = datasetData;
         }
         if ( this.datasetData ) {
-            let cellData = this.dataFilter.GetCellDataObjects(this.dataService.dataset,this.datasetData,(item)=>item.code)
+            let cellData = this.dataFilter.GetCellDataObjects(this.dataService.dataset,this.datasetData,(item)=>item.id.toString())
             this.nodes = new MatTableDataSource(cellData)        
         } 
     }
@@ -53,6 +54,15 @@ export class LoadflowDataNodesComponent extends ComponentBase {
 
     filterTable(e: DataFilter) {
         this.createDataSource()
+    }
+
+    edit( e: ICellEditorDataDict) {
+        let node = this.dataService.networkData.nodes.data.find(m=>m.id===e.id.value)
+        if ( node ) {
+            this.dialogService.showLoadflowNodeDialog(node);
+        } else {
+            throw new Error(`Cannot find node with id=[${e.id.value}]`)
+        }
     }
 
 }

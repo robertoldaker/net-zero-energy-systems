@@ -208,6 +208,10 @@ span.link.dialog {
     color: grey;
 }
 
+.iconLink:hover {
+    color: black;
+}
+
 /* shared headers */
 span.mode {
     margin-left: 2em;

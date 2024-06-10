@@ -328,7 +328,9 @@ export interface BoundaryFlowResult {
 export interface Node {
     id: number
     code: string
+    voltage: number
     name: string
+    location: GridLoadflowLocation
     demand: number
     generation: number
     ext: boolean
@@ -396,6 +398,13 @@ export interface NetworkData {
 export interface LocationData {
     locations: LoadflowLocation[]
     links: LoadflowLink[]
+}
+
+export interface GridLoadflowLocation {
+    id: number
+    name: string
+    reference: string
+    gisData: GISData
 }
 
 export interface LoadflowLocation {

@@ -1,0 +1,24 @@
+<app-dialog-header [dialogRef]="dialogRef">{{title}}</app-dialog-header>
+<div mat-dialog-content id="content">
+    <form [formGroup]="form">
+        <div>
+            <mat-form-field appearance="fill" [color]="'primary'">
+                <mat-label>4-letter Code</mat-label>
+                <input matInput placeholder="Enter Code" formControlName="code"  [type]="'text'" >
+                <mat-error>{{getError('name')}}</mat-error>    
+            </mat-form-field>    
+        </div>
+        <div>
+            <mat-form-field appearance="fill" [color]="'primary'">
+                <mat-label>Voltage</mat-label>             
+                <mat-select [value]="data.voltage">
+                    <mat-option *ngFor="let v of voltages" [value]="v">
+                        <span>{{v}}</span>    
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+    </form>
+</div>
+<app-dialog-footer [dialogRef]="dialogRef" (onOk)="save()"></app-dialog-footer>
+

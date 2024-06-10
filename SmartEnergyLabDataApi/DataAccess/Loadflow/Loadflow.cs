@@ -53,7 +53,6 @@ namespace SmartEnergyLabDataApi.Data
             return Session.QueryOver<Node>().
             Where( m=>m.Dataset==dataset).
             Fetch(SelectMode.Fetch, m=>m.Zone).
-
             OrderBy(m=>m.Id).Asc.
             List();
         }

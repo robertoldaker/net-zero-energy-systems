@@ -10,13 +10,14 @@ import { RegisterUserComponent } from '../users/register-user/register-user.comp
 import { DataClientService } from '../data/data-client.service';
 import { MapDataService } from '../low-voltage/map-data.service';
 import { ChangePasswordComponent } from '../users/change-password/change-password.component';
-import { Dataset } from '../data/app.data';
+import { Dataset, Node } from '../data/app.data';
 import { MessageDialog, MessageDialogComponent } from './message-dialog/message-dialog.component';
 import { AboutElsiDialogComponent } from '../elsi/about-elsi-dialog/about-elsi-dialog.component';
 import { ElsiHelpDialogComponent } from '../elsi/elsi-help-dialog/elsi-help-dialog.component';
 import { NeedsLogonComponent } from '../main/main-menu/needs-logon/needs-logon.component';
 import { ResetPasswordComponent } from '../users/reset-password/reset-password.component';
 import { DatasetDialogComponent } from '../datasets/dataset-dialog/dataset-dialog.component';
+import { LoadflowNodeDialogComponent } from '../loadflow/loadflow-node-dialog/loadflow-node-dialog.component';
 
 @Injectable({
     providedIn: 'root'
@@ -104,5 +105,11 @@ export class DialogService {
 
     showElsiHelpDialog() {
         let dialogRef = this.dialog.open(ElsiHelpDialogComponent, this.defaultOptions)
+    }
+
+    showLoadflowNodeDialog(node: Node) {
+        let options = Object.assign({},this.defaultOptions)
+        options.data = node
+        let diaglogRef = this.dialog.open(LoadflowNodeDialogComponent, options)
     }
 }

@@ -140,6 +140,7 @@ import { DatasetDialogComponent } from './datasets/dataset-dialog/dataset-dialog
 import { TablePaginatorComponent } from './datasets/table-paginator/table-paginator.component';
 import { LoadflowDataBoundariesComponent } from './loadflow/loadflow-data-boundaries/loadflow-data-boundaries.component';
 import { LoadflowDataZonesComponent } from './loadflow/loadflow-data-zones/loadflow-data-zones.component';
+import { LoadflowNodeDialogComponent } from './loadflow/loadflow-node-dialog/loadflow-node-dialog.component';
 
 
 @NgModule({
@@ -234,7 +235,8 @@ import { LoadflowDataZonesComponent } from './loadflow/loadflow-data-zones/loadf
         DatasetDialogComponent,
         TablePaginatorComponent,
         LoadflowDataBoundariesComponent,
-        LoadflowDataZonesComponent
+        LoadflowDataZonesComponent,
+        LoadflowNodeDialogComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
