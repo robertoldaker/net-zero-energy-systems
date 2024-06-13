@@ -25,9 +25,9 @@ public class LoadflowETYSLoader
     }
 
     public void Load() {
-        //??string fn = saveAppendix(APPENDIX_B_URL);
-        //??loadAppendixB(fn);
-        string fn = saveAppendix(APPENDIX_G_URL);
+        string fn = saveAppendix(APPENDIX_B_URL);
+        loadAppendixB(fn);
+        fn = saveAppendix(APPENDIX_G_URL);
         loadAppendixG(fn);
     }
 
