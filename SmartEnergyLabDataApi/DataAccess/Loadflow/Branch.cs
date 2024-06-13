@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.ObjectPool;
 using NHibernate.Mapping.Attributes;
 
 namespace SmartEnergyLabDataApi.Data
@@ -32,10 +33,28 @@ namespace SmartEnergyLabDataApi.Data
         public virtual double X {get; set;}
 
         [Property()]
+        public virtual double? B {get; set;}
+
+        [Property()]
         public virtual double OHL {get; set;}
 
         [Property()]
+        public virtual double CableLength {get; set;}
+
+        [Property()]
         public virtual double Cap {get; set;}
+
+        [Property()]
+        public virtual double WinterCap {get; set;}
+
+        [Property()]
+        public virtual double SpringCap {get; set;}
+
+        [Property()]
+        public virtual double SummerCap {get; set;}
+
+        [Property()]
+        public virtual double AutumnCap {get; set;}
 
         [Property()]
         public virtual string LinkType {get; set;}
@@ -55,7 +74,8 @@ namespace SmartEnergyLabDataApi.Data
 
         public virtual string LineName {
             get {
-                return $"{Node1.Code}-{Node2.Code}:{Code}";
+                var code = string.IsNullOrEmpty(Code) ? Id.ToString() : Code;
+                return $"{Node1.Code}-{Node2.Code}:{code}";
             }
         }
 

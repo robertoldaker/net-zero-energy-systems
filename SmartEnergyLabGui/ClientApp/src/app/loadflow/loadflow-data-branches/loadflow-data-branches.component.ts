@@ -30,7 +30,7 @@ export class LoadflowDataBranchesComponent extends ComponentBase {
             this.datasetData = datasetData
         }
         if ( this.datasetData) {
-            let cellData = this.dataFilter.GetCellDataObjects(this.dataService.dataset,this.datasetData,(item)=>item.lineName)
+            let cellData = this.dataFilter.GetCellDataObjects(this.dataService.dataset,this.datasetData,(item)=>item.id.toString())
             this.branches = new MatTableDataSource(cellData)            
         }
     }

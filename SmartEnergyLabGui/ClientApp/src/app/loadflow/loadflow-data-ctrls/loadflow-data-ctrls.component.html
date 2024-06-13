@@ -1,6 +1,6 @@
-<div style="overflow: auto; height: calc(100vh - 170px)">
+<app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)"></app-table-paginator>
 
-    <app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)"></app-table-paginator>
+<div style="overflow: auto; height: calc(100vh - 170px)">
 
     <table style="width: 100%;" mat-table [dataSource]="ctrls" [trackBy]="getCtrlId" matSort  matSortDisableClear (matSortChange)="sortTable($event)">
     

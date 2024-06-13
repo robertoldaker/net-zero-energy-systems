@@ -269,5 +269,16 @@ namespace SmartEnergyLabDataApi.Controllers
             var m=new LoadflowReference();
             return m.RunB8(showAllErrors);
         }
+
+        /// <summary>
+        /// Load data from ESO ETYS
+        /// </summary>
+        [HttpPost]
+        [Route("Load/ETYS")]
+        public void LoadETYS() {
+            var m=new LoadflowETYSLoader();
+            m.Load();
+        }
+
     }
 }

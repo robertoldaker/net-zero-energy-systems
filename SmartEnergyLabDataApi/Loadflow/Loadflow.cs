@@ -150,7 +150,8 @@ namespace SmartEnergyLabDataApi.Loadflow
             if ( _branches.IsDisconnected(_nodes) ) {
                 var msg = $"Disconnected network detected";
                 _stageResults.StageResult( sr, StageResultEnum.Fail, msg);
-                throw new Exception(msg);
+                //??throw new Exception(msg);
+                return false;
             } else {
                 _stageResults.StageResult( sr, StageResultEnum.Pass, "");
             }
