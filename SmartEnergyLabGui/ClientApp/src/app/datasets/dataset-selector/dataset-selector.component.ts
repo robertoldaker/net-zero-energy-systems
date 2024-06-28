@@ -6,6 +6,7 @@ import { DialogFooterButtonsEnum } from 'src/app/dialogs/dialog-footer/dialog-fo
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { MessageDialogIcon } from 'src/app/dialogs/message-dialog/message-dialog.component';
 import { ShowMessageService } from 'src/app/main/show-message/show-message.service';
+import { UserService } from 'src/app/users/user.service';
 
 @Component({
     selector: 'app-dataset-selector',
@@ -17,7 +18,8 @@ export class DatasetSelectorComponent implements OnInit {
     constructor(private dataClientService: DataClientService, 
         private cookieService: CookieService,
         private dialogService: DialogService,
-        private messageService: ShowMessageService
+        private messageService: ShowMessageService,
+        public userService: UserService
         ) { 
         
     }

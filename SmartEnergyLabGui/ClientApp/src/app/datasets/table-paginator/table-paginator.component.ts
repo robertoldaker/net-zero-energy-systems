@@ -51,6 +51,11 @@ export class TablePaginatorComponent implements OnInit {
 
     raiseFilterEvent() {
         this.onFilter.emit(this.dataFilter)
-    }   
+    } 
+
+    firstPage() {
+        this.paginator?.firstPage()
+    }
+    
 }
 

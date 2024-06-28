@@ -249,7 +249,13 @@ export class DataFilter {
             if ( this.sort ) {
                 let sort = this.sort
                 let data1 = item1[sort.active]
+                if ( data1===undefined || data1===null) {
+                    data1=''
+                }
                 let data2 = item2[sort.active]
+                if ( data2===undefined || data2===null) {
+                    data2=''
+                }
                 if ( data1!==undefined && data2!==undefined) {
                     if (typeof(data1) === 'string' && typeof(data2) === 'string') {
                         if ( sort.direction == 'asc') {
@@ -286,4 +292,5 @@ export class DataFilter {
     searchStr: string = ''
     onlyEditedRows: boolean=false
     sort: Sort | undefined
+    resetPage: boolean = false
 }

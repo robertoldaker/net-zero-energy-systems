@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Branch, DatasetData } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
 import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
+import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
 
 @Component({
   selector: 'app-loadflow-data-branches',
@@ -35,6 +36,8 @@ export class LoadflowDataBranchesComponent extends ComponentBase {
         }
     }
 
+    @ViewChild(TablePaginatorComponent)
+    tablePaginator: TablePaginatorComponent | undefined    
     datasetData?: DatasetData<Branch>
     dataFilter: DataFilter = new DataFilter(20) 
     branches: MatTableDataSource<any> = new MatTableDataSource()
@@ -47,6 +50,7 @@ export class LoadflowDataBranchesComponent extends ComponentBase {
     sortTable(e:Sort) {
         this.dataFilter.sort = e
         this.createDataSource()
+        this.tablePaginator?.firstPage()
     }
 
     filterTable(e: DataFilter) {

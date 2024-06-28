@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Node, DatasetData } from '../../data/app.data';
@@ -6,6 +6,8 @@ import { LoadflowDataService } from '../loadflow-data-service.service';
 import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { DialogService } from 'src/app/dialogs/dialog.service';
+import { MatPaginator } from '@angular/material/paginator';
+import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
 
 @Component({
     selector: 'app-loadflow-data-nodes',
@@ -43,13 +45,18 @@ export class LoadflowDataNodesComponent extends ComponentBase {
     nodes: MatTableDataSource<any> = new MatTableDataSource()
     displayedColumns: string[]
 
+    @ViewChild(TablePaginatorComponent)
+    tablePaginator: TablePaginatorComponent | undefined
+
     getNodeId(index: number, item: Node) {
         return item.id;
     }
 
     sortTable(e:Sort) {
         this.dataFilter.sort = e
+        this.dataFilter.skip = 0
         this.createDataSource()
+        this.tablePaginator?.firstPage()
     }
 
     filterTable(e: DataFilter) {

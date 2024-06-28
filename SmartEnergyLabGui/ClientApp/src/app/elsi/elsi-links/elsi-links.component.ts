@@ -6,6 +6,7 @@ import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/dataset
 import { ComponentBase } from 'src/app/utils/component-base';
 import { ElsiDataService } from '../elsi-data.service';
 import { ElsiGenCapacityTable } from '../elsi-gen-capacities/elsi-gen-capacities.component';
+import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
 
 @Component({
     selector: 'app-elsi-links',
@@ -38,6 +39,8 @@ export class ElsiLinksComponent extends ComponentBase {
     }
     
 
+    @ViewChild(TablePaginatorComponent)
+    tablePaginator: TablePaginatorComponent | undefined    
     dataFilter: DataFilter = new DataFilter(20)
     datasetData?: DatasetData<ElsiLink>
     displayedColumns: string[]
@@ -56,6 +59,7 @@ export class ElsiLinksComponent extends ComponentBase {
     sortTable(e:Sort) {
         this.dataFilter.sort = e
         this.createDataSource()
+        this.tablePaginator?.firstPage()
     }
 
 }

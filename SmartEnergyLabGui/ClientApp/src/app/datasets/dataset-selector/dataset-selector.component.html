@@ -14,7 +14,7 @@
 </mat-form-field>
 <mat-icon class="iconLink" (click)="addDataset()" [title]="'Add a new dataset'">add</mat-icon>
 <!-- dont allow Default dataset to be edited or deleted-->
-<ng-container *ngIf="!dataset?.isReadOnly" >
+<ng-container *ngIf="!dataset?.isReadOnly || userService.isAdmin" >
     <mat-icon class="iconLink" (click)="editDataset()" [title]="'Edit dataset'">edit</mat-icon>
     <mat-icon class="iconLink" (click)="deleteDataset()" [title]="'Delete dataset'">delete_forever</mat-icon>    
 </ng-container>

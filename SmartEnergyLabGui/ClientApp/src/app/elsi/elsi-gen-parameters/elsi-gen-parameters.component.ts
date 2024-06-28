@@ -5,6 +5,7 @@ import { DatasetData, ElsiGenParameter} from 'src/app/data/app.data';
 import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { ElsiDataService } from '../elsi-data.service';
+import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
 
 @Component({
     selector: 'app-elsi-gen-parameters',
@@ -36,6 +37,8 @@ export class ElsiGenParametersComponent extends ComponentBase {
         }
     }
     
+    @ViewChild(TablePaginatorComponent)
+    tablePaginator: TablePaginatorComponent | undefined    
     dataFilter: DataFilter = new DataFilter(20)
     datasetData?: DatasetData<ElsiGenParameter>
     tableData: MatTableDataSource<any> = new MatTableDataSource()
@@ -52,6 +55,7 @@ export class ElsiGenParametersComponent extends ComponentBase {
     sortTable(e:Sort) {
         this.dataFilter.sort = e
         this.createDataSource()
+        this.tablePaginator?.firstPage()
     }
 
 }

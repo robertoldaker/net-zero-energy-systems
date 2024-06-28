@@ -5,6 +5,7 @@ import { Ctrl, DatasetData, LoadflowCtrlType } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
 import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
+import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
 
 @Component({
     selector: 'app-loadflow-data-ctrls',
@@ -29,6 +30,8 @@ export class LoadflowDataCtrlsComponent extends ComponentBase {
         return LoadflowCtrlType[type];
     }
 
+    @ViewChild(TablePaginatorComponent)
+    tablePaginator: TablePaginatorComponent | undefined    
     datasetData?: DatasetData<Ctrl>
     dataFilter: DataFilter = new DataFilter(20) 
     ctrls: MatTableDataSource<any> = new MatTableDataSource()
@@ -51,6 +54,7 @@ export class LoadflowDataCtrlsComponent extends ComponentBase {
     sortTable(e:Sort) {
         this.dataFilter.sort = e
         this.createDataSource()
+        this.tablePaginator?.firstPage()
     }
 
     filterTable(e: DataFilter) {
