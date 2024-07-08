@@ -77,6 +77,14 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
+        public virtual string LineName {
+            get {
+                var code = string.IsNullOrEmpty(Code) ? Id.ToString() : Code;
+                return $"{Node1.Code}-{Node2.Code}:{code}";
+            }
+        }
+
+
         // Control set point (csp)
         public virtual double? SetPoint {get; set;}
 

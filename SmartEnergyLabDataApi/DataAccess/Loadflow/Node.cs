@@ -70,7 +70,7 @@ namespace SmartEnergyLabDataApi.Data
         /// <summary>
         /// location of node
         /// </summary>
-        [ManyToOne(Column = "locationId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
+        [ManyToOne(Column = "locationId", Cascade = "none", Fetch = FetchMode.Join)]
         public virtual GridSubstationLocation Location { get; set; }
 
         [JsonIgnore()]
@@ -83,7 +83,7 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
-        public virtual double? Mismatch {get; set;}
+        public virtual double? Mismatch {get; set;}        
 
 
     }

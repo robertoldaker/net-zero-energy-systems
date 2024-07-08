@@ -17,6 +17,12 @@ namespace SmartEnergyLabDataApi.Models
             {"6",66}
         };
 
+        public static Dictionary<string,int> NodeVoltageDict {
+            get {
+                return _nodeVoltageDict;
+            }
+        }
+
         public void Run() {
 
             // Download json file unless we are developing

@@ -9,9 +9,9 @@ namespace SmartEnergyLabDataApi.Loadflow
             var q = da.Session.QueryOver<Ctrl>();
             q = q.Fetch(SelectMode.Fetch,m=>m.Node1);
             q = q.Fetch(SelectMode.Fetch,m=>m.Node2);            
-            var di = new DatasetData<Ctrl>(da,datasetId,m=>getLineName(m),q);            
+            var di = new DatasetData<Ctrl>(da,datasetId,m=>m.LineName,q);            
             foreach( var c in di.Data) {
-                var key = getLineName(c);
+                var key = c.LineName;
                 var branchWrapper = branches.get(key);
                 var branch = branchWrapper;
                 var ctrl = new CtrlWrapper(c, branch);
@@ -23,10 +23,6 @@ namespace SmartEnergyLabDataApi.Loadflow
 
         }
         public DatasetData<Ctrl> DatasetData {get; private set;}
-
-        private string getLineName(Ctrl b) {
-            return $"{b.Node1.Code}-{b.Node2.Code}:{b.Code}";
-        }
 
         // Base
         public double[]? BaseCVang {get; set; }

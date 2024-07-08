@@ -244,7 +244,8 @@ import { LoadflowNodeDialogComponent } from './loadflow/loadflow-node-dialog/loa
         FormsModule,
         ReactiveFormsModule,
         RouterModule.forRoot([
-            { path: '',   redirectTo: '/lowVoltage', pathMatch: 'full' }, // redirect to `first-component`
+            //??{ path: '',   redirectTo: '/lowVoltage', pathMatch: 'full' }, // redirect to `first-component`
+            { path: '',   redirectTo: '/loadflow', pathMatch: 'full' }, // redirect to `first-component`
             { path: 'bathLV',   redirectTo: '/lowVoltage', pathMatch: 'full' }, // redirect to `first-component`
             { path: 'lowVoltage', component: HomeComponent},
             { path: 'ResetPassword', component: HomeComponent},

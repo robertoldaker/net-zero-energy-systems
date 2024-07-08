@@ -68,7 +68,8 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         mapTypeControl: false,
         fullscreenControl: false,
         streetViewControl: false,
-        scaleControl: true
+        scaleControl: true,
+        gestureHandling: 'greedy'
     }
 
     curZoom: number | undefined = 0

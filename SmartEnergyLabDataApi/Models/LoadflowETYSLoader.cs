@@ -1,8 +1,10 @@
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using ExcelDataReader;
 using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
+using NHibernate.Util;
 using NLog.LayoutRenderers;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
@@ -25,10 +27,81 @@ public class LoadflowETYSLoader
     }
 
     public void Load() {
-        string fn = saveAppendix(APPENDIX_B_URL);
-        loadAppendixB(fn);
-        fn = saveAppendix(APPENDIX_G_URL);
-        loadAppendixG(fn);
+        string fnB = saveAppendix(APPENDIX_B_URL);
+        loadAppendixB(fnB);
+        string fnG = saveAppendix(APPENDIX_G_URL);
+        loadAppendixG(fnG);
+        //??checkNodeNames(fnB, fnG);
+        updateNodeLocations();
+    }
+
+    public void updateNodeLocations() {
+        using( var da = new DataAccess() ) {
+            var gridSubstationLocations = da.NationalGrid.GetGridSubstationLocations();
+            var dataset = getDataset(da,BASE_YEAR);
+            var nodes = da.Loadflow.GetNodes(dataset);
+
+            //
+            nodes = nodes.Where( m=>m.Location==null).ToList();
+
+            //
+            int nFound=0;
+            foreach( var node in nodes) {
+                // Lookup grid locations based on first 4 chars of code
+                var locCode = node.Code.Substring(0,4);
+                // these are nodes at other end of inter connectors
+                if ( node.Ext ) {
+                    locCode+="X";
+                }
+
+                // see if the location exists
+                var loc = gridSubstationLocations.Where(m=>m.Reference==locCode).FirstOrDefault();
+                if ( loc==null)  {
+                    Logger.Instance.LogWarningEvent($"Could not find location for node [{node.Code}]");
+                } else {
+                    nFound++;
+                    node.Location = loc;
+                }
+            }
+
+            Logger.Instance.LogInfoEvent($"Found [{nFound}] locations for [{nodes.Count}] nodes with missing locations");
+
+
+            // update links
+            da.CommitChanges();                        
+        }
+    }
+
+    private void checkNodeNames(string fnB, string fnG) {
+        // Appendix G
+        // get list of node demands 
+        var nodeDemands = loadNodeDemands(fnG);
+        // extract node names
+        var gNodeNames = nodeDemands.Select(m=>m.Node).ToList();
+
+        // Appendix B
+        var transCircuits = loadHighVoltageCircuits(fnB);
+        var bNodeNames = getNodeNames(transCircuits);
+
+        // compare
+        var numNodes = gNodeNames.Count;
+        var found = 0;
+        var found4 = 0;
+        foreach( var node in gNodeNames) {
+            var node4 = node.Substring(0,4);
+            if ( bNodeNames.Any(m=>string.Compare(m,node,true)==0) ) {
+                found++;
+            } else {
+                var find4 = bNodeNames.FindAll(m=>string.Compare(m.Substring(0,4),node4,true)==0);
+                if ( find4.Count>0 ) {
+                    found4++;
+                } else {
+                    Logger.Instance.LogInfoEvent($"Appendix G node not found in appendix B [{node}]");
+                }
+            }
+        }
+
+        Logger.Instance.LogInfoEvent($"Num nodes in appendix G={numNodes}, found whole in appendix B={found}, found 4-char={found4}");
     }
 
     private void loadAppendixG(string fn) {
@@ -80,8 +153,10 @@ public class LoadflowETYSLoader
                 var dNodes = findDemandNodes(nodeDemand.Node,nodes,branches);
                 if ( dNodes.Count==0 ) {
                     numNotFound++;
-                    Logger.Instance.LogInfoEvent($"Cannot find any GSP nodes for nodeDemand [{nodeDemand.Node}]");
+                    Logger.Instance.LogInfoEvent($"Cannot find any nodes to assign nodeDemand [{nodeDemand.Node}]");
                     continue;
+                } else if ( dNodes.Count>1 ) {
+                    //??Logger.Instance.LogInfoEvent($"Multiple nodes found to assign nodeDemand [{nodeDemand.Node}], dividing demand , count=[{dNodes.Count}]");
                 }
                 // if multiple nodes to assign demand then add equally
                 var demand = nodeDemand.DemandDict[2023]/((double) dNodes.Count);
@@ -98,6 +173,18 @@ public class LoadflowETYSLoader
     }
 
     private IList<Node> findDemandNodes(string name, IList<Node> nodes, IList<Branch> branches) {
+        // look for node matching first 4 chars plus voltage index
+        if ( name.Length<5 ) {
+            Logger.Instance.LogInfoEvent($"Name not long enough [{name}]");
+            return new List<Node>();
+        } else {
+            var shortName = name.Substring(0, 5);
+            var ns = nodes.Where(m => m.Code.StartsWith(shortName)).ToList();
+            return ns;
+        }
+    }
+
+    private IList<Node> _findDemandNodes(string name, IList<Node> nodes, IList<Branch> branches) {
         var lengths = new int[] {name.Length,6,5,4};
         var dNodesDict = new Dictionary<Node,Boolean>();
         foreach (var len in lengths)
@@ -223,10 +310,175 @@ public class LoadflowETYSLoader
     }
 
     private void loadAppendixB(string fn) {
-        var transCircuits = loadAllCircuits(fn);
+        var transCircuits = loadHighVoltageCircuits(fn);
         var nodeNames = getNodeNames(transCircuits);
+        //
         updateNodes(nodeNames);
         updateBranches(transCircuits);
+        updateCtrls(transCircuits);
+    }
+
+    private void updateCtrls(List<Circuit> transCircuits) {
+        using( var da = new DataAccess() ) {
+
+            // Add Quad boosters
+            addQuadBoosters(da);
+
+            // Add HVDC controlss
+            addHVDCCtrls(da);
+            //
+            da.CommitChanges();
+        }
+    }
+
+    private void addHVDCCtrls(DataAccess da) {
+        // get original ctrls and branches from spreadsheet
+        var ssDataset = getSpreadsheetDataset(da);
+        var ssCtrls = da.Loadflow.GetCtrls(ssDataset);
+        var ssBranches = da.Loadflow.GetBranches(ssDataset);
+
+        // get current ones
+        var dataset = getDataset(da, BASE_YEAR);
+        var existingBranches = da.Loadflow.GetBranches(dataset);
+        var existingCtrls = da.Loadflow.GetCtrls(dataset);
+        var existingNodes = da.Loadflow.GetNodes(dataset);
+        var existingZones = da.Loadflow.GetZones(dataset);
+
+        // HVDC controls
+        var ssCtrlsHVDC = ssCtrls.Where( m=>m.Type == LoadflowCtrlType.HVDC).ToList();
+        foreach ( var ssC in ssCtrlsHVDC ) {
+            // associated branch
+            var ssB = ssBranches.Where( m=>m.LineName == ssC.LineName).FirstOrDefault();
+            if ( ssB!=null ) {
+                var ctrl = existingCtrls.Where(m=>m.Code==ssC.Code).FirstOrDefault();
+                var branch = existingBranches.Where(m=>m.Code==ssB.Code).FirstOrDefault();
+                Node node1=null,node2=null;
+                if ( ctrl ==null ) {
+                    node1  = getCtrlNode(da,existingNodes,existingZones,ssC.Node1,dataset);
+                    if ( node1==null ) {
+                        Logger.Instance.LogInfoEvent($"Could not find node [{ssC.Node1.Code}]");
+                        continue;
+                    }
+                    node2  = getCtrlNode(da,existingNodes,existingZones,ssC.Node2,dataset);
+                    if ( node2==null) {
+                        Logger.Instance.LogInfoEvent($"Could not find node [{ssC.Node2.Code}]");
+                        continue;
+                    }
+                    ctrl = new Ctrl() {
+                        Node1 = node1,
+                        Node2 = node2,
+                        Code = ssC.Code,
+                        Type = ssC.Type,
+                        MinCtrl = ssC.MinCtrl,
+                        MaxCtrl = ssC.MaxCtrl,
+                        Cost = ssC.Cost,
+                        Dataset = dataset,
+                    };
+                    da.Loadflow.Add(ctrl);
+                    Logger.Instance.LogInfoEvent($"Adding Ctrl [{ctrl.LineName}]");
+                    if ( branch == null ) {
+                        branch = new Branch() {
+                            Node1 = node1,
+                            Node2 = node2,
+                            Code = ssB.Code,
+                            LinkType = ssB.LinkType,
+                            B = ssB.B,
+                            X = ssB.X,
+                            Cap = ssB.Cap,
+                            CableLength = ssB.CableLength,
+                            OHL = ssB.OHL,                            
+                            Dataset = dataset,
+                        };
+                        da.Loadflow.Add(branch);
+                        Logger.Instance.LogInfoEvent($"Adding branch [{branch.LineName}]");
+                    }
+                }
+            } else {
+                Logger.Instance.LogInfoEvent($"Cannot find branch for Ctrl [{ssC.LineName}]");
+            }
+        }
+    }
+
+    private Node getCtrlNode(DataAccess da, IList<Node> existingNodes,  IList<Zone> existingZones, Node n, Dataset  ds) {
+        Node node;
+        // Try full name
+        node = existingNodes.Where( m=>m.Code == n.Code).FirstOrDefault();
+        if ( node!=null ) {
+            return node;
+        }
+        // if is a dummy one to support HVDC links then create
+        if ( n.Code[5] == 'X') {
+            node = new Node() {
+                Code = n.Code,
+                Dataset = ds,
+                Voltage = n.Voltage,
+                Ext = n.Ext,
+                Zone = existingZones.Where(m=>m.Code == n.Zone.Code).FirstOrDefault()
+            };
+            da.Loadflow.Add(node);
+            existingNodes.Add(node);
+            Logger.Instance.LogInfoEvent($"Adding HVDC node [{node.Code}]");
+            return node;
+        }
+        // Just first 5 chars (location code + voltage)
+        node = existingNodes.Where(m=>m.Code.Substring(0,5) == n.Code.Substring(0,5)).FirstOrDefault();
+        return node;
+    }
+
+    private void addQuadBoosters(DataAccess da) {
+        // get current ones
+        var dataset = getDataset(da, BASE_YEAR);
+        var existingBranches = da.Loadflow.GetBranches(dataset);
+        // this is a transformer between 2 nodes that have the same voltage
+        var ctrlBranches=existingBranches.Where( m=>
+            m.Node1.Code.Substring(0,5)==m.Node2.Code.Substring(0,5) && 
+            m.LinkType == "Transformer");
+        foreach( var b in ctrlBranches) {
+            //??Logger.Instance.LogInfoEvent($"QB Ctrl branch?=[{b.Node1.Code}] [{b.Node2.Code}]");
+        }
+        //
+        var existingCtrls = da.Loadflow.GetCtrls(dataset);
+        existingCtrls = existingCtrls.Where(m=>m.Type==LoadflowCtrlType.QB).ToList();
+        // add any that do not exist
+        int index = 1;
+        foreach( var b in ctrlBranches) {
+            var ctrls = existingCtrls.Where( 
+                m=>m.Node1.Code == b.Node1.Code &&
+                    m.Node2.Code == b.Node2.Code).ToList();
+            if ( ctrls.Count==0 )  {
+                var voltage=b.Node1.Code[4];
+                var ctrl = new Ctrl() {
+                    Code = $"Q{index++}",
+                    //
+                    Node1 = b.Node1,
+                    Node2 = b.Node2,
+                    //
+                    MinCtrl = (voltage == '4') ? -0.2 : -0.15,
+                    MaxCtrl = (voltage == '4') ?  0.2 :  0.15,
+                    //
+                    Type = LoadflowCtrlType.QB,                        
+                    Cost = 10.0,
+                    //
+                    Dataset = dataset,
+                };
+                // Make the codes the same so we can locate the branch
+                b.Code = ctrl.Code;
+                //
+                da.Loadflow.Add(ctrl);
+                Logger.Instance.LogInfoEvent($"Adding ctrl=[{ctrl.Code} [{ctrl.Node1.Code}] [{ctrl.Node2.Code}]");
+            }
+        }
+
+        // remove any that had been created but now should not exists
+        foreach( var c in existingCtrls) {
+            var branches = ctrlBranches.Where( 
+                m=>(m.Node1.Code == c.Node1.Code) &&
+                   (m.Node2.Code == c.Node2.Code)).ToList();
+            if ( branches.Count==0) {
+                da.Loadflow.Delete(c);
+                Logger.Instance.LogInfoEvent($"Removing ctrl=[{c.LineName}] ??");
+            }
+        }
     }
 
     private void repairNodes() {
@@ -264,6 +516,7 @@ public class LoadflowETYSLoader
                         Code = nodeName,
                         Dataset = dataset
                     };
+                    existingNode.SetVoltage();
                     da.Loadflow.Add(existingNode);
                     numAdded++;
                 }
@@ -418,7 +671,7 @@ public class LoadflowETYSLoader
         return dict.Keys.ToList();
     }
 
-    private List<Circuit> loadAllCircuits(string fn) {
+    private List<Circuit> loadHighVoltageCircuits(string fn) {
         var transCircuits = new List<Circuit>();
         using (var stream = new FileStream(fn,FileMode.Open)) {
             using (var reader = ExcelReaderFactory.CreateReader(stream)) {
@@ -451,7 +704,10 @@ public class LoadflowETYSLoader
         reader.Read();
         //
         while( reader.Read() ) {
-            list.Add(new Circuit(type, reader, owner));
+            var circuit = new Circuit(type, reader, owner);
+            if ( circuit.IsHighVoltage) {
+                list.Add(circuit);
+            }
         }
     }
 
@@ -560,6 +816,18 @@ public class LoadflowETYSLoader
         public double SummerRating {get; set;}
         public double AutumnRating {get; set;}
         public string Owner {get; set;}
+
+        public bool IsHighVoltage {
+            get {
+                return isNodeHighVoltage(Node1) && isNodeHighVoltage(Node2);
+            }
+        }
+
+        private static bool isNodeHighVoltage(string name) {
+            var voltageIndex = name[4];
+            var indeces = new char[]{'1','2','4'};
+            return indeces.Contains(voltageIndex);
+        }
     }
 
     private class NodeDemand {
