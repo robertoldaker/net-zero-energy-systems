@@ -19,7 +19,7 @@ export class LoadflowDataNodesComponent extends ComponentBase {
     constructor(private dataService: LoadflowDataService, private dialogService: DialogService) {
         super();
         this.createDataSource(this.dataService.networkData.nodes);
-        this.displayedColumns = ['code','zoneName','demand','generation','ext','mismatch']
+        this.displayedColumns = ['code','voltage','zoneName','demand','generation','ext','mismatch']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.createDataSource(results.nodes);
         }))

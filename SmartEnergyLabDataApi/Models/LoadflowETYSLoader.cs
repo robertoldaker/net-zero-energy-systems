@@ -4,11 +4,14 @@ using System.Text.Json;
 using ExcelDataReader;
 using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
+using NHibernate.Linq;
 using NHibernate.Util;
 using NLog.LayoutRenderers;
+using Org.BouncyCastle.Asn1.Mozilla;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Models;
+using static SmartEnergyLabDataApi.Models.GoogleMapsGISFinder;
 
 namespace SmartEnergyLabDataApi.Loadflow;
 public class LoadflowETYSLoader
@@ -20,6 +23,8 @@ public class LoadflowETYSLoader
     private string APPENDIX_G_URL = "https://www.nationalgrideso.com/document/294506/download";
     private string DATASET_BASE_NAME = "GB network";
     private int BASE_YEAR = 2023;
+
+    private GoogleMapsGISFinder _gisFinder = new GoogleMapsGISFinder();
     
     public LoadflowETYSLoader()
     {
@@ -28,24 +33,62 @@ public class LoadflowETYSLoader
 
     public void Load() {
         string fnB = saveAppendix(APPENDIX_B_URL);
-        loadAppendixB(fnB);
+        loadAppendixB(fnB, out var codesDict);
         string fnG = saveAppendix(APPENDIX_G_URL);
         loadAppendixG(fnG);
-        //??checkNodeNames(fnB, fnG);
-        updateNodeLocations();
+        // repeat until we are not setting any more zones
+        while ( updateNodeZones() ) {
+
+        }
+        updateNodeZones();
+        updateNodeLocations(codesDict);
     }
 
-    public void updateNodeLocations() {
+    private bool updateNodeZones() {
+        bool result = false;
+        using( var da = new DataAccess() ) {
+
+            var dataset = getDataset(da,BASE_YEAR);
+            var nodes = da.Loadflow.GetNodes(dataset);
+            var branches = da.Loadflow.GetBranches(dataset);
+            var nodesNoZones = nodes.Where(m=>m.Zone==null).ToList();
+            //
+            Logger.Instance.LogInfoEvent($"Number of nodes no zones = [{nodesNoZones.Count}]");
+            //
+            foreach( var node in nodesNoZones) {
+                // get node2 zones
+                var nodeZones = branches.Where( m=>m.Node1==node && m.Node2.Zone!=null).Select(m=>m.Node2.Zone).Distinct().ToList<Zone>();
+                // get node1 zones
+                var node1Zones = branches.Where( m=>m.Node2==node && m.Node1.Zone!=null).Select(m=>m.Node1.Zone).Distinct().ToList<Zone>();
+                nodeZones.AddRange(node1Zones);
+                //
+                if ( nodeZones.Count==1) {
+                    node.Zone = nodeZones[0];
+                    result = true;
+                    Logger.Instance.LogInfoEvent($"Node=[{node.Code}] [{node.Zone.Code}]");
+                } else if ( nodeZones.Count>1) {
+                    Logger.Instance.LogInfoEvent($"Node=[{node.Code}] count=[{nodeZones.Count}]");
+                }
+            }
+            //
+            da.CommitChanges();
+        }
+        return result;
+    }
+
+    private void updateNodeLocations(Dictionary<string,SubstationCode> codesDict) {
         using( var da = new DataAccess() ) {
             var gridSubstationLocations = da.NationalGrid.GetGridSubstationLocations();
             var dataset = getDataset(da,BASE_YEAR);
             var nodes = da.Loadflow.GetNodes(dataset);
 
+            var blackList=new string[] {"SANX","GART","FENW","CHAS","CLYN","BEIW","GLGL","WHHO","LOCL"};
             //
             nodes = nodes.Where( m=>m.Location==null).ToList();
 
             //
             int nFound=0;
+            var notFoundDict = new Dictionary<string,bool>();
             foreach( var node in nodes) {
                 // Lookup grid locations based on first 4 chars of code
                 var locCode = node.Code.Substring(0,4);
@@ -57,9 +100,22 @@ public class LoadflowETYSLoader
                 // see if the location exists
                 var loc = gridSubstationLocations.Where(m=>m.Reference==locCode).FirstOrDefault();
                 if ( loc==null)  {
-                    Logger.Instance.LogWarningEvent($"Could not find location for node [{node.Code}]");
+                    // check we havn't checked before and the blacklist doesn't contain it
+                    if ( codesDict.ContainsKey(locCode) && !notFoundDict.ContainsKey(locCode) && !blackList.Contains(locCode) ) {
+                        var substationCode = codesDict[locCode];
+                        loc = googleMapsLookup(da, substationCode);
+                        if ( loc == null ) {
+                            Logger.Instance.LogWarningEvent($"Could not find location for node [{locCode}] [{substationCode.Name}]");
+                            notFoundDict.Add(locCode,true);
+                        } else {
+                            gridSubstationLocations.Add(loc);
+                            nFound++;
+                        }
+                    } 
                 } else {
                     nFound++;
+                }
+                if ( loc!=null ) {
                     node.Location = loc;
                 }
             }
@@ -70,6 +126,54 @@ public class LoadflowETYSLoader
             // update links
             da.CommitChanges();                        
         }
+    }
+
+    private GridSubstationLocation googleMapsLookup(DataAccess da, SubstationCode substationCode) {
+
+        // append substation to get google maps to search for substation site
+        var substationLookup = substationCode.Name;
+        // add substation if not there and not the offshore entries
+        if ( substationCode.Owner != SubstationOwner.OFTO && !substationLookup.EndsWith("substation",StringComparison.OrdinalIgnoreCase)) {
+            substationLookup+=" substation";
+        }
+        // add scotland if located in scotland
+        if ( substationCode.Owner == SubstationOwner.SHET || substationCode.Owner == SubstationOwner.SPT) {
+            substationLookup+=", scotland";
+        } else if (substationCode.Owner == SubstationOwner.NGET) {
+            substationLookup+=", england, wales";
+        }
+        TextSearch textSearch;
+        //
+        try {
+            textSearch = _gisFinder.TextSearchNew(substationLookup);
+        } catch( Exception e) {
+            Logger.Instance.LogErrorEvent(e.Message);
+            return null;
+        }
+        if ( textSearch?.places?.Count>0) {            
+            var placeName = textSearch.places[0].displayName.text;
+            if ( isLocInPlaceName(substationCode.Name,placeName) ) {
+                var loc = GridSubstationLocation.Create(substationCode.Code, GridSubstationLocationSource.GoogleMaps);
+                loc.Name = substationCode.Name;
+                loc.GISData.Latitude = textSearch.places[0].location.latitude;
+                loc.GISData.Longitude = textSearch.places[0].location.longitude;
+                da.NationalGrid.Add(loc);
+                Logger.Instance.LogInfoEvent($"Found location for substation [{substationCode.Code}] [{substationCode.Name}] [{placeName}]");
+                return loc;
+            } else {
+                Logger.Instance.LogInfoEvent($"Could not find location in place name [{substationCode.Name}] [{placeName}]");
+                return null;
+            }
+        } else {
+            return null;
+        }
+
+    }
+
+    private bool isLocInPlaceName(string name, string placeName) {
+        // just see if the first word is anywhere in the place name
+        var cpnts = name.Split(" ");
+        return placeName.Contains(cpnts[0],StringComparison.OrdinalIgnoreCase);
     }
 
     private void checkNodeNames(string fnB, string fnG) {
@@ -309,13 +413,61 @@ public class LoadflowETYSLoader
         return fn;
     }
 
-    private void loadAppendixB(string fn) {
+    private void loadAppendixB(string fn, out Dictionary<string,SubstationCode> codesDict) {
+        codesDict = loadSubstationCodes(fn);
         var transCircuits = loadHighVoltageCircuits(fn);
         var nodeNames = getNodeNames(transCircuits);
         //
         updateNodes(nodeNames);
         updateBranches(transCircuits);
         updateCtrls(transCircuits);
+    }
+
+    private enum SubstationOwner {SHET,SPT,NGET,OFTO}
+    private class SubstationCode {
+        public SubstationCode( string code, string name, SubstationOwner owner) {
+            Code = code;
+            Name = name;
+            Owner = owner;
+        }
+        public string Code {get; set;}
+        public string Name {get; set;}
+        public SubstationOwner Owner {get; set;}
+    }
+
+    private Dictionary<string,SubstationCode> loadSubstationCodes(string fn) {
+        var codesDict = new Dictionary<string,SubstationCode>();
+        using (var stream = new FileStream(fn,FileMode.Open)) {
+            using (var reader = ExcelReaderFactory.CreateReader(stream)) {
+                // transmission circuits
+                gotoSheet(reader,"B-1-1a");
+                loadCodesDict(codesDict, reader,SubstationOwner.SHET);
+                gotoSheet(reader,"B-1-1b");
+                loadCodesDict(codesDict, reader,SubstationOwner.SPT);
+                gotoSheet(reader,"B-1-1c");
+                loadCodesDict(codesDict, reader,SubstationOwner.NGET);
+                gotoSheet(reader,"B-1-1d");
+                loadCodesDict(codesDict, reader,SubstationOwner.OFTO);
+            }
+        }
+        return codesDict;
+    }
+
+    private void loadCodesDict(Dictionary<string,SubstationCode> codesDict, IExcelDataReader reader, SubstationOwner owner) {
+        // Skip first 2 rows
+        reader.Read();
+        reader.Read();
+        //
+        while( reader.Read() ) {
+            var code = reader.GetString(0);
+            if ( code == null ) {
+                break;
+            }
+            var name = reader.GetString(1);
+            if ( !codesDict.ContainsKey(code)) {
+                codesDict.Add(code,new SubstationCode(code,name,owner));
+            }
+        }
     }
 
     private void updateCtrls(List<Circuit> transCircuits) {

@@ -13,6 +13,12 @@
             </td>
         </ng-container>
 
+        <!-- Voltage Column -->
+        <ng-container matColumnDef="voltage">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Voltage</th>
+            <td mat-cell *matCellDef="let element">{{element.voltage.value}}</td>-->
+        </ng-container>
+
         <!-- Zone Column -->
         <ng-container matColumnDef="zoneName">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Zone</th>

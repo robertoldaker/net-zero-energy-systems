@@ -81,5 +81,18 @@ namespace SmartEnergyLabDataApi.Data
             var locationIds = Session.QueryOver<GridSubstationLocation>(()=>loc).WithSubquery.WhereExists(sq).Select(m=>m.Id).List<int>();
             return locationIds;
         }
+
+        public IList<GridSubstationLocation> GetGridSubstationLocationsBySource(GridSubstationLocationSource source) {
+            //
+            var q = Session.QueryOver<GridSubstationLocation>().Where( m=>m.Source == source);
+            return q.List();
+        }
+
+        public void DeleteLocations(GridSubstationLocationSource source) {
+            var locs = GetGridSubstationLocationsBySource(source);
+            foreach( var loc in locs) {
+                Delete(loc);
+            }
+        }
     }
 }

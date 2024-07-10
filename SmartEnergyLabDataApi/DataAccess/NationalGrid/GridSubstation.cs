@@ -3,6 +3,8 @@ using System.Text.Json.Serialization;
 
 namespace SmartEnergyLabDataApi.Data
 {
+    public enum GridSubstationSource { NGET, SHET, SPT}
+
     [Class(0, Table = "grid_substations")]
     public class GridSubstation
     {
@@ -42,6 +44,14 @@ namespace SmartEnergyLabDataApi.Data
         /// </summary>
         [Property()]
         public virtual string Voltage { get; set; }
+
+        /// <summary>
+        /// Source of GridSubstation
+        /// </summary>
+        /// <value></value>
+        [Property()]
+        [Column(Name = "source",Default = "0")]
+        public virtual GridSubstationSource Source {get; set;}
 
         /// <summary>
         /// GIS data
