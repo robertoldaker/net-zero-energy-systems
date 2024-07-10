@@ -82,7 +82,7 @@ public class LoadflowETYSLoader
             var dataset = getDataset(da,BASE_YEAR);
             var nodes = da.Loadflow.GetNodes(dataset);
 
-            var blackList=new string[] {"SANX","GART","FENW","CHAS","CLYN","BEIW","GLGL","WHHO","LOCL"};
+            var blackList=new string[] {"SANX","GART","FENW","CHAS","CLYN","BEIW","GLGL","WHHO","LOCL","TKNW","TKNO"};
             //
             nodes = nodes.Where( m=>m.Location==null).ToList();
 
