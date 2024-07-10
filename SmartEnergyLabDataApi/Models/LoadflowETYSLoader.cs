@@ -105,7 +105,7 @@ public class LoadflowETYSLoader
                         var substationCode = codesDict[locCode];
                         loc = googleMapsLookup(da, substationCode);
                         if ( loc == null ) {
-                            Logger.Instance.LogWarningEvent($"Could not find location for node [{locCode}] [{substationCode.Name}]");
+                            //??Logger.Instance.LogWarningEvent($"Could not find location for node [{locCode}] [{substationCode.Name}]");
                             notFoundDict.Add(locCode,true);
                         } else {
                             gridSubstationLocations.Add(loc);
