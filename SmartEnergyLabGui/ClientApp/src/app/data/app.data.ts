@@ -822,6 +822,7 @@ export interface GridSubstation {
 /* generic logs */
 export interface ILogs {
     Logs(onComplete: (resp: any)=> void | undefined, onError: (resp:any)=>void): void
+    Clear(onComplete: (resp: any)=> void): void
 }
 
 /* solar installations */

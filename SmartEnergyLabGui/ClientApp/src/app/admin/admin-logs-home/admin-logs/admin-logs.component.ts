@@ -36,6 +36,14 @@ export class AdminLogsComponent implements OnInit {
         }
     }
 
+    clear() {
+        if ( this.logService ) {
+            this.logService.Clear(()=>{
+                this.refresh()
+            })    
+        }
+    }
+
     ngOnInit(): void {
         this.refresh();
     }    

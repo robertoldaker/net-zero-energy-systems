@@ -1,16 +1,35 @@
+using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Web;
 using CommonInterfaces.Models;
 using HaloSoft.EventLogger;
+using Microsoft.AspNetCore.Http.Features;
+using NHibernate.Util;
 using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Loadflow;
 
 namespace SmartEnergyLabDataApi.Models
 {
     public class NationalGridNetworkLoader {
 
+        // NGET urls
         private const string ALL_DATA_URL = "https://www.nationalgrid.com/electricity-transmission/document/81201/download";
+        // SSE urls
+        private readonly UriBuilder _sseSuperGridBuilder = new UriBuilder("https://ssentransmission.opendatasoft.com/api/explore/v2.1/catalog/datasets/substation-site-supergrid/exports/json?lang=en&timezone=GMT");
+        private readonly UriBuilder _sseGridBuilder = new UriBuilder("https://ssentransmission.opendatasoft.com/api/explore/v2.1/catalog/datasets/substation-site-grid/exports/json?lang=en&timezone=GMT");
+        private const string SSE_KEY = "d7abb9519f874dbf5094f63d6daa5e50b2e43977f4ee2a250fed0147";
+        private readonly Dictionary<string,string> _sseSiteAliases = new Dictionary<string, string>() {
+            {"BRIDGE OF DUNN","BRIDGE OF DUN"},
+            {"MILLENNIUM","MILLENNIUM EAST"},
+            {"NANT","NANT (LOCH NANT)"},
+            {"ARDKINGLASS","ARDKINGLAS"},
+            {"SPITTAL SUPER","SPITTAL"},
+            {"STRATHBRORA","STRATH BRORA"}
+        };
 
         private HttpClient _httpClient;
         private object _httpClientLock = new object();
@@ -43,12 +62,141 @@ namespace SmartEnergyLabDataApi.Models
 
 
         public void Load() {
+            // NGET
+            loadNGET();
+            // SHET
+            loadSSE();
+        }
 
+        private void loadSSE() {
+
+            // get list of substation codes from ETYS 
+            var etysLoader = new LoadflowETYSLoader();
+            var substationCodes = etysLoader.LoadSubstationCodes();
+            //
+            var gridItems = getSSEGridItems(_sseGridBuilder);
+            var superGridItems = getSSEGridItems(_sseSuperGridBuilder);
+            gridItems.AddRange(superGridItems);
+
+            int nGridAdded=0;
+            int nLocAdded=0;
+            using( var da = new DataAccess() ) {
+                foreach ( var gridItem in gridItems) {
+                    // look for name in substationCodes that get read from appendix B of ETYS
+                    var name = getGridItemName(gridItem);
+                    var sc = substationCodes.Values.Where( m=>isNameMatch(m,name) && m.Owner == LoadflowETYSLoader.SubstationOwner.SHET).SingleOrDefault();
+                    if ( sc==null) {
+                        Logger.Instance.LogInfoEvent($"Cannot find SSE grid item [{name}]");
+                        continue;
+                    }
+
+                    // Create grid substation if not there already
+                    var gs=da.NationalGrid.GetGridSubstation(sc.Code);
+                    if ( gs==null) {
+                        gs = GridSubstation.Create(sc.Code, GridSubstationSource.SHET);
+                        da.NationalGrid.Add(gs);
+                        nGridAdded++;
+                    }
+                    gs.Name = gridItem.name;
+                    gs.Voltage = getGridItemVoltage(gridItem);
+                    gs.GISData.Latitude = gridItem.geo_point_2d.lat;
+                    gs.GISData.Longitude = gridItem.geo_point_2d.lon;
+
+                    // Grid substation location
+                    var loc = da.NationalGrid.GetGridSubstationLocation(sc.Code);
+                    if ( loc==null ) {
+                        loc = GridSubstationLocation.Create(sc.Code, GridSubstationLocationSource.SHET); 
+                        da.NationalGrid.Add(loc);                       
+                        nLocAdded++;
+                    }
+                    loc.Name = sc.Name;
+                    loc.GISData.Latitude = gridItem.geo_point_2d.lat;
+                    loc.GISData.Longitude = gridItem.geo_point_2d.lon;
+                }
+
+                da.CommitChanges();
+                Logger.Instance.LogInfoEvent($"SSE - [{nGridAdded}] grid substations and [{nLocAdded}] grid locations added");
+            }
+        }
+
+        private string getGridItemName(SSEGridItem gridItem) {
+            var name = gridItem.name.
+                Replace(" SUPERGRID","").
+                Replace(" GRID","").
+                Replace(" POWER STATION","").
+                Replace(" PS","").
+                Replace(" WIND","").
+                Replace(" 400kV","").
+                Replace(" HVDC","");
+            if ( _sseSiteAliases.ContainsKey(name)) {
+                name = _sseSiteAliases[name];
+            }
+            return name;
+        }
+
+        private string getGridItemVoltage(SSEGridItem gridItem) {
+            var voltage = $"{gridItem.operatingv/1000}kV";
+            return voltage;
+        }
+
+
+        private bool isNameMatch(LoadflowETYSLoader.SubstationCode code, string name) {
+            var etysName = code.Name.
+                    Replace(" GRID","").
+                    Replace(" HYDRO","").
+                    Replace(" WIND FARM","").
+                    Replace(" WINDFARM","").
+                    Replace(" WIND","").
+                    Replace(" GSP","").
+                    Replace(" SUBSTATION","").
+                    Replace(" 132/33KV","").
+                    Replace(" (SSE)","");
+            return string.Compare(etysName,name)==0;
+        }
+
+        private List<SSEGridItem> getSSEGridItems(UriBuilder uriBuilder) {
+            var client = getHttpClient();
+            //
+            var query = HttpUtility.ParseQueryString(string.Empty);
+            query["apikey"] = SSE_KEY;
+            uriBuilder.Query = query.ToString();
+            var url = uriBuilder.ToString();
+            //
+            List<SSEGridItem> items;
+            // Download json
+            using (HttpRequestMessage message = getRequestMessage(HttpMethod.Get, url)) {
+                var response = client.SendAsync(message).Result;
+                //
+                if ( response.IsSuccessStatusCode) {
+                    var str = response.Content.ReadAsStringAsync().Result;
+                    items = JsonSerializer.Deserialize<List<SSEGridItem>>(str);
+                } else {
+                    throw new Exception($"Problem obtaining SSE grid items [{response.StatusCode}] [{response.ReasonPhrase}]");
+                }
+            }
+            //
+            return items;
+        }
+
+
+        private class SSEGridItem {
+            public GeoPoint geo_point_2d {get; set;}
+            public string name {get; set;}
+            public int operatingv {get; set;}
+        }
+
+        private class GeoPoint {
+            public double lat {get; set;}
+            public double lon {get; set;}
+        }
+
+
+        private void loadNGET() {
             var client = getHttpClient();
             string substationsGeoJsonFile=null;
             string ohlGeoJsonFile = null;
 
-            // Download json file unless we are developing
+            // Download json
             using (HttpRequestMessage message = getRequestMessage(HttpMethod.Get, ALL_DATA_URL)) {
                 //
                 var response = client.SendAsync(message).Result;
@@ -180,7 +328,7 @@ namespace SmartEnergyLabDataApi.Models
                 foreach( var feature in geoJson.features) {
                     var gs=da.NationalGrid.GetGridSubstation(feature.properties.SUBSTATION);
                     if ( gs==null) {
-                        gs = GridSubstation.Create(feature.properties.SUBSTATION);
+                        gs = GridSubstation.Create(feature.properties.SUBSTATION,GridSubstationSource.NGET);
                         da.NationalGrid.Add(gs);
                     }
                     //

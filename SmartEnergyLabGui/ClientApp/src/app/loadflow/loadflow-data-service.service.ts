@@ -127,6 +127,12 @@ export class LoadflowDataService {
         this.ObjectSelected.emit(this.selectedMapItem)
     }
 
+    public searchLocations(str: string, maxResults: number):LoadflowLocation[]  {
+        let lowerStr = str.toLocaleLowerCase();
+        var searchResults = this.locationData.locations.filter(m=>m.name.toLocaleLowerCase().includes(lowerStr)).slice(0,maxResults)
+        return searchResults;
+    }
+
     ResultsLoaded:EventEmitter<LoadflowResults> = new EventEmitter<LoadflowResults>()
     NetworkDataLoaded:EventEmitter<NetworkData> = new EventEmitter<NetworkData>()
     LocationDataLoaded:EventEmitter<LocationData> = new EventEmitter<LocationData>()
@@ -134,3 +140,4 @@ export class LoadflowDataService {
     ObjectSelected:EventEmitter<SelectedMapItem> = new EventEmitter<SelectedMapItem>()
 
 }
+

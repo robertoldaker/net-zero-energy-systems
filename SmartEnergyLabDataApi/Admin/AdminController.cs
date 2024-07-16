@@ -42,6 +42,17 @@ namespace EnergySystemLabDataApi.SubStations
         }
 
         /// <summary>
+        /// Deletes current system log
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("Logs/Delete")]
+        public void Delete()
+        {
+            AdminModel.Instance.DeleteLogFile();
+        }
+
+        /// <summary>
         /// Returns system info for the server
         /// </summary>
         /// <returns></returns>

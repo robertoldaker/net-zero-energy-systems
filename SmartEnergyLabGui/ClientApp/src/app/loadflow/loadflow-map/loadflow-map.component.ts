@@ -344,6 +344,11 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
     }
 
+    resetZoom() {
+        this.map?.googleMap?.setZoom(this.zoom)
+        this.map?.googleMap?.panTo(this.center)
+    }
+
     boundaryBranches: LoadflowLink[] = []
     boundaryMapPolylines: Map<number,MapPolyline> = new Map()
     selectBoundaryBranches(boundaryTrips: BoundaryTrip[]) {

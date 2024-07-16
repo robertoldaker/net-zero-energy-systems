@@ -141,6 +141,7 @@ import { TablePaginatorComponent } from './datasets/table-paginator/table-pagina
 import { LoadflowDataBoundariesComponent } from './loadflow/loadflow-data-boundaries/loadflow-data-boundaries.component';
 import { LoadflowDataZonesComponent } from './loadflow/loadflow-data-zones/loadflow-data-zones.component';
 import { LoadflowNodeDialogComponent } from './loadflow/loadflow-node-dialog/loadflow-node-dialog.component';
+import { LoadflowMapSearchComponent } from './loadflow/loadflow-map/loadflow-map-search/loadflow-map-search.component';
 
 
 @NgModule({
@@ -236,7 +237,8 @@ import { LoadflowNodeDialogComponent } from './loadflow/loadflow-node-dialog/loa
         TablePaginatorComponent,
         LoadflowDataBoundariesComponent,
         LoadflowDataZonesComponent,
-        LoadflowNodeDialogComponent
+        LoadflowNodeDialogComponent,
+        LoadflowMapSearchComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

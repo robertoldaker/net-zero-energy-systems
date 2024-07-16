@@ -481,6 +481,10 @@ export class DataClientService implements ILogs {
         this.getBasicRequest('/Admin/Logs', onComplete);
     }
 
+    Clear(onComplete: (resp: any)=> void) {
+        this.getBasicRequest('/Admin/Logs/Delete', onComplete);
+    }
+
     CancelBackgroundTask(taskId: number, onComplete: (resp: any)=> void | undefined) {
         this.getBasicRequest(`/Admin/Cancel?taskId=${taskId}`, onComplete)
     }

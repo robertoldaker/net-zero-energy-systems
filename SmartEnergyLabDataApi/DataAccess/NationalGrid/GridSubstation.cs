@@ -13,10 +13,11 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
-        public static GridSubstation Create(string reference) {
+        public static GridSubstation Create(string reference, GridSubstationSource source) {
             var gs = new GridSubstation();
             gs.GISData = new GISData();
             gs.Reference = reference;
+            gs.Source = source;
             return gs;
         }
 

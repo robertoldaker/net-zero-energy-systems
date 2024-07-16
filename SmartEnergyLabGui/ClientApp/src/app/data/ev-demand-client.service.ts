@@ -30,4 +30,8 @@ export class EvDemandClientService {
     Logs(onLoad: (resp: any)=> void | undefined, onError: (resp: string)=>void) {
         this.hsc.GetBasicRequest("/Admin/Logs", onLoad, onError)
     }
+
+    Clear(onLoad: (resp: any)=> void) {
+        this.hsc.GetBasicRequest("/Admin/Logs/Delete", onLoad)
+    }
 }

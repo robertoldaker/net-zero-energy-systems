@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace SmartEnergyLabDataApi.Data
 {
-    public enum GridSubstationLocationSource { NGET, SHET, SPT, GoogleMaps}
+    public enum GridSubstationLocationSource { NGET, SHET, SPT, GoogleMaps, Estimated}
     
     [Class(0, Table = "grid_substation_locations")]
     public class GridSubstationLocation : ILifecycle

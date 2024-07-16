@@ -1,0 +1,22 @@
+<div class="search">
+    <span style="vertical-align: middle;"  title="search">
+        <input [hidden]="!isShown" [ngClass]="{ search: true, withAutoComplete: autoCompleteOpen}" type="text" placeholder="Search for location" [matAutocomplete]="auto" #searchInput [(ngModel)]="searchStr"/>
+        <button *ngIf="!isShown" mat-icon-button aria-label="Search" (click)="showSearch(true)">
+            <mat-icon>search</mat-icon>
+        </button>
+        <button *ngIf="isShown" mat-icon-button aria-label="Search" (click)="showSearch(false)">
+            <mat-icon>close</mat-icon>
+        </button>
+        <mat-autocomplete #auto (optionSelected)="searchOptionSelected($event)" (opened)="autoCompleteOpened()" (closed)="autoCompleteClosed()" [displayWith]="display">
+            <mat-option *ngFor="let option of searchOptions" [value]="option.id">
+                <!--<img class="substationIcon" [src]="getImageSrc(option.type)" />-->
+                <span>{{option.name}}</span>
+            </mat-option>
+        </mat-autocomplete>
+    </span> 
+</div>
+<div class="search button">
+    <button mat-icon-button aria-label="Reset zoom" (click)="resetZoom()">
+        <mat-icon>settings_overscan</mat-icon>
+    </button>
+</div>

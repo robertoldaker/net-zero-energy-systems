@@ -1,5 +1,11 @@
-<button id="refreshButton" mat-raised-button color="primary" (click)="refresh()">
-    <mat-icon>refresh</mat-icon>
-    Refresh
-</button>
+<div id="buttons">
+    <button mat-raised-button color="primary" (click)="clear()" style="margin-right: 0.5rem">
+        <mat-icon>delete_sweep</mat-icon>
+        Clear
+    </button>
+    <button mat-raised-button color="primary" (click)="refresh()">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+    </button>    
+</div>
 <div class="log" style="margin-top: 1rem" #logDiv>{{Logs}}</div>

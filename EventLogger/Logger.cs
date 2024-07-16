@@ -104,6 +104,12 @@ namespace HaloSoft.EventLogger
             m_instance = new Logger(baseDir);
         }
 
+        public void Delete()
+        {
+            File.Delete(m_logFile);
+            LogInfoEvent("Previous log file cleared");
+        }
+
         public void LogEvent(Event eventToLog)
         {
             try {

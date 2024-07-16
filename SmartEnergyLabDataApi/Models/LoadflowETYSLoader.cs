@@ -9,6 +9,7 @@ using NHibernate.Util;
 using NLog.LayoutRenderers;
 using Org.BouncyCastle.Asn1.Mozilla;
 using Org.BouncyCastle.Crypto.Signers;
+using Renci.SshNet.Security;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Models;
 using static SmartEnergyLabDataApi.Models.GoogleMapsGISFinder;
@@ -40,7 +41,7 @@ public class LoadflowETYSLoader
         while ( updateNodeZones() ) {
 
         }
-        updateNodeZones();
+        // set node locations
         updateNodeLocations(codesDict);
     }
 
@@ -57,7 +58,7 @@ public class LoadflowETYSLoader
             //
             foreach( var node in nodesNoZones) {
                 // get node2 zones
-                var nodeZones = branches.Where( m=>m.Node1==node && m.Node2.Zone!=null).Select(m=>m.Node2.Zone).Distinct().ToList<Zone>();
+                var nodeZones = branches.Where( m=>m.Node1==node && m.Node2.Zone!=null).Select(m=>m.Node2.Zone).Distinct().ToList<SmartEnergyLabDataApi.Data.Zone>();
                 // get node1 zones
                 var node1Zones = branches.Where( m=>m.Node2==node && m.Node1.Zone!=null).Select(m=>m.Node1.Zone).Distinct().ToList<Zone>();
                 nodeZones.AddRange(node1Zones);
@@ -81,14 +82,26 @@ public class LoadflowETYSLoader
             var gridSubstationLocations = da.NationalGrid.GetGridSubstationLocations();
             var dataset = getDataset(da,BASE_YEAR);
             var nodes = da.Loadflow.GetNodes(dataset);
+            var branches = da.Loadflow.GetBranches(dataset);
 
             var blackList=new string[] {"SANX","GART","FENW","CHAS","CLYN","BEIW","GLGL","WHHO","LOCL","TKNW","TKNO","ORMO","ORMW"};
+            var codeAliases = new Dictionary<string,string>() {
+                {"COWT","COWB"},
+                {"NORW","NORM"},
+                {"BEDT","BEDD"},
+                {"STYC","STAY"}
+            };
+            var knownLocations = new Dictionary<string,double[]>() {
+                {"CREA",new double[] {58.21040,-4.50244}}, // CREAG RIABHACH WINDFARM
+                {"MILW",new double[] {57.12366,-4.84634}}  // MILLENIUM WIND
+            };
             //
             nodes = nodes.Where( m=>m.Location==null).ToList();
 
             //
             int nFound=0;
             var notFoundDict = new Dictionary<string,bool>();
+            var notFoundCodesDict = new Dictionary<SubstationCode,IList<Node>>();
             foreach( var node in nodes) {
                 // Lookup grid locations based on first 4 chars of code
                 var locCode = node.Code.Substring(0,4);
@@ -97,11 +110,15 @@ public class LoadflowETYSLoader
                     locCode+="X";
                 }
 
+                // see if we need to use an alias to lookup the code
+                if ( codeAliases.ContainsKey(locCode)) {
+                    locCode = codeAliases[locCode];
+                }
                 // see if the location exists
                 var loc = gridSubstationLocations.Where(m=>m.Reference==locCode).FirstOrDefault();
                 if ( loc==null)  {
                     // check we havn't checked before and the blacklist doesn't contain it
-                    if ( codesDict.ContainsKey(locCode) && !notFoundDict.ContainsKey(locCode) && !blackList.Contains(locCode) ) {
+                    /*if ( codesDict.ContainsKey(locCode) && !notFoundDict.ContainsKey(locCode) && !blackList.Contains(locCode) ) {
                         var substationCode = codesDict[locCode];
                         loc = googleMapsLookup(da, substationCode);
                         if ( loc == null ) {
@@ -112,6 +129,18 @@ public class LoadflowETYSLoader
                             nFound++;
                         }
                     } 
+                    */
+                    if ( !node.Ext && codesDict.ContainsKey(locCode)) {
+                        var sc = codesDict[locCode];
+                        if ( sc.Owner == SubstationOwner.NGET || sc.Owner == SubstationOwner.SHET) {
+                            if ( !notFoundCodesDict.ContainsKey(sc) ) {
+                                notFoundCodesDict.Add(sc,new List<Node>());
+                            }
+                            notFoundCodesDict[sc].Add(node);
+                        }
+                    } else {
+                        Logger.Instance.LogInfoEvent($"Cannot find location code in ETYS appendixB [{node.Code}] [{node.Name}]");
+                    }
                 } else {
                     nFound++;
                 }
@@ -122,10 +151,69 @@ public class LoadflowETYSLoader
 
             Logger.Instance.LogInfoEvent($"Found [{nFound}] locations for [{nodes.Count}] nodes with missing locations");
 
+            foreach( var nf in notFoundCodesDict ) {
+                var sc = nf.Key;
+                GridSubstationLocation newLoc = null;
+                if ( knownLocations.ContainsKey(sc.Code)) {
+                    newLoc = GridSubstationLocation.Create(sc.Code,GridSubstationLocationSource.Estimated);
+                    newLoc.Name = sc.Name;
+                    newLoc.GISData.Latitude = knownLocations[sc.Code][0];
+                    newLoc.GISData.Longitude = knownLocations[sc.Code][1];
+                    da.NationalGrid.Add(newLoc);
+                    Logger.Instance.LogInfoEvent($"Added known location for code [{sc.Code}] [{sc.Name}]");
+                } else {
+                    newLoc = addEstimatedLocation(sc, branches, gridSubstationLocations);
+                    if ( newLoc!=null ) {
+                        da.NationalGrid.Add(newLoc);
+                        Logger.Instance.LogInfoEvent($"Added estimated location for code [{sc.Code}] [{sc.Name}]");
+                    } else {
+                        Logger.Instance.LogInfoEvent($"Could not find location for code [{sc.Code}]");
+                    }
+                }
+                if ( newLoc!=null) {
+                    foreach( var node in nf.Value) {
+                        node.Location = newLoc;
+                    }
+                }
+            }
 
             // update links
             da.CommitChanges();                        
         }
+    }
+
+    private GridSubstationLocation addEstimatedLocation(SubstationCode sc,IList<Branch> branches, IList<GridSubstationLocation> gridSubstationLocations) {
+        var code = sc.Code;
+        var name = sc.Name;
+        var connectedNodes = branches.Where(m=>m.Node1.Code.Substring(0,4) == code && m.Node2.Code.Substring(0,4)!=code && m.Node2.Location!=null).Select(m=>m.Node2).ToList();
+        var connected2Nodes = branches.Where(m=>m.Node2.Code.Substring(0,4) == code && m.Node1.Code.Substring(0,4)!=code && m.Node1.Location!=null).Select(m=>m.Node1).ToList();
+        connectedNodes.AddRange(connected2Nodes);
+        //
+        GridSubstationLocation newLoc = null;
+        var connectedCodes = connectedNodes.Select( m=>m.Code.Substring(0,4)).Distinct().ToList();
+        if ( connectedCodes.Count>0) {
+            double lat=0,lng=0;
+            int nLocs=0;
+            foreach( var c in connectedCodes) {
+                var loc = gridSubstationLocations.Where(m=>m.Reference==c).FirstOrDefault();
+                if ( loc!=null){
+                    lat+=loc.GISData.Latitude;
+                    lng+=loc.GISData.Longitude;
+                    nLocs++;
+                }
+            }
+            //
+            if ( lat!=0 && lng!=0) {
+                lat = lat/ (double) nLocs;
+                lng = lng / (double) nLocs;
+                // Add an estimated location
+                newLoc = GridSubstationLocation.Create(code,GridSubstationLocationSource.Estimated);
+                newLoc.GISData.Latitude = lat;
+                newLoc.GISData.Longitude = lng;
+                newLoc.Name = name;
+            }
+        }
+        return newLoc;
     }
 
     private GridSubstationLocation googleMapsLookup(DataAccess da, SubstationCode substationCode) {
@@ -423,8 +511,14 @@ public class LoadflowETYSLoader
         updateCtrls(transCircuits);
     }
 
-    private enum SubstationOwner {SHET,SPT,NGET,OFTO}
-    private class SubstationCode {
+    public Dictionary<string,SubstationCode> LoadSubstationCodes() {
+        string fnB = saveAppendix(APPENDIX_B_URL);
+        var codesDict = loadSubstationCodes(fnB);
+        return codesDict;
+    }
+
+    public enum SubstationOwner {SHET,SPT,NGET,OFTO}
+    public class SubstationCode {
         public SubstationCode( string code, string name, SubstationOwner owner) {
             Code = code;
             Name = name;

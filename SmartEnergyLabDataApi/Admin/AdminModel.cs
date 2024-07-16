@@ -58,6 +58,10 @@ namespace SmartEnergyLabDataApi.Models
             return new LogData();
         }
         
+        public void DeleteLogFile()
+        {
+            Logger.Instance.Delete();
+        }
     }
 
     public class SystemInfo {
