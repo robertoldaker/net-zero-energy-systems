@@ -19,11 +19,11 @@ export class LoadflowDataService {
     constructor(private dataClientService: DataClientService, private signalRService: SignalRService, private messageService: ShowMessageService) { 
         this.gridSubstations = [];
         this.networkData = { 
-            nodes: { tableName: '',data:[], userEdits: [] }, 
-            branches: { tableName: '',data:[], userEdits: [] }, 
-            ctrls: { tableName: '',data:[], userEdits: [] },
-            boundaries: { tableName: '',data:[], userEdits: [] },
-            zones: { tableName: '',data:[], userEdits: [] } 
+            nodes: { tableName: '',data:[], userEdits: [], deletedData: [] }, 
+            branches: { tableName: '',data:[], userEdits: [], deletedData: [] }, 
+            ctrls: { tableName: '',data:[], userEdits: [],deletedData: [] },
+            boundaries: { tableName: '',data:[], userEdits: [],deletedData: [] },
+            zones: { tableName: '',data:[], userEdits: [],deletedData: [] } 
         }
         this.locationData = { locations: [], links: []}
         this.signalRService.hubConnection.on('Loadflow_AllTripsProgress', (data) => {
@@ -125,6 +125,10 @@ export class LoadflowDataService {
     clearMapSelection() {
         this.selectedMapItem = { location: null, link: null} 
         this.ObjectSelected.emit(this.selectedMapItem)
+    }
+
+    reload() {
+        this.loadDataset();
     }
 
     public searchLocations(str: string, maxResults: number):LoadflowLocation[]  {

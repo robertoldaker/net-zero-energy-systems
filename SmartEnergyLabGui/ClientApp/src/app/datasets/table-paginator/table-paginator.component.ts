@@ -1,7 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
-import { DataFilter } from '../../datasets/cell-editor/cell-editor.component';
+import { DataFilter, ICellEditorDataDict } from '../../datasets/cell-editor/cell-editor.component';
+import { DatasetsService } from '../datasets.service';
 
 @Component({
     selector: 'app-table-paginator',
@@ -10,7 +11,7 @@ import { DataFilter } from '../../datasets/cell-editor/cell-editor.component';
 })
 export class TablePaginatorComponent implements OnInit {
 
-    constructor() { 
+    constructor(public datasetsService: DatasetsService) { 
 
     }
 
@@ -22,11 +23,21 @@ export class TablePaginatorComponent implements OnInit {
     @Input()
     dataFilter:DataFilter = new DataFilter(20) 
 
+    @Input()
+    typeName:string = "?"
+
     @Output()
     onFilter: EventEmitter<DataFilter> = new EventEmitter<DataFilter>()
 
+    @Output()
+    onAdd: EventEmitter<any> = new EventEmitter<any>()
+
     @ViewChild(MatPaginator) 
     paginator: MatPaginator | null = null
+
+    get addTitle():string {
+        return `Add a new ${this.typeName}`;
+    }
  
     page(e: PageEvent) {
         this.dataFilter.skip = e.pageIndex*e.pageSize
@@ -51,6 +62,12 @@ export class TablePaginatorComponent implements OnInit {
 
     raiseFilterEvent() {
         this.onFilter.emit(this.dataFilter)
+    } 
+
+    raiseAddEvent() {
+        this.datasetsService.canAdd( ()=>{
+            this.onAdd.emit()
+        });
     } 
 
     firstPage() {

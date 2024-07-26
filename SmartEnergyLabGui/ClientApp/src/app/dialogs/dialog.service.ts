@@ -18,6 +18,7 @@ import { NeedsLogonComponent } from '../main/main-menu/needs-logon/needs-logon.c
 import { ResetPasswordComponent } from '../users/reset-password/reset-password.component';
 import { DatasetDialogComponent } from '../datasets/dataset-dialog/dataset-dialog.component';
 import { LoadflowNodeDialogComponent } from '../loadflow/loadflow-node-dialog/loadflow-node-dialog.component';
+import { ICellEditorDataDict } from '../datasets/cell-editor/cell-editor.component';
 
 @Injectable({
     providedIn: 'root'
@@ -107,9 +108,9 @@ export class DialogService {
         let dialogRef = this.dialog.open(ElsiHelpDialogComponent, this.defaultOptions)
     }
 
-    showLoadflowNodeDialog(node: Node) {
+    showLoadflowNodeDialog(cellObj?: ICellEditorDataDict) {
         let options = Object.assign({},this.defaultOptions)
-        options.data = node
-        let diaglogRef = this.dialog.open(LoadflowNodeDialogComponent, options)
+        options.data = cellObj
+        this.dialog.open(LoadflowNodeDialogComponent, options)
     }
 }

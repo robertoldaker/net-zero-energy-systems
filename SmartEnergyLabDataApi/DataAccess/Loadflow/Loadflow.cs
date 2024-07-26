@@ -49,6 +49,11 @@ namespace SmartEnergyLabDataApi.Data
         public Node GetNode(string code) {
             return Session.QueryOver<Node>().Where( m=>m.Code == code).Take(1).SingleOrDefault();
         }
+
+        public Node GetNode(int id) {
+            return Session.Get<Node>(id);
+        }
+
         public IList<Node> GetNodes(Dataset dataset) {
             return Session.QueryOver<Node>().
             Where( m=>m.Dataset==dataset).
@@ -67,6 +72,13 @@ namespace SmartEnergyLabDataApi.Data
             return nodes;
         }    
 
+        public void SetNodeVoltages(int datasetId) {
+            var nodes = Session.QueryOver<Node>().Where( m=>m.Dataset.Id == datasetId).List();
+            foreach( var node in nodes) {
+                node.SetVoltage();
+            }
+        }    
+
         #endregion
 
         #region Zone
@@ -80,6 +92,9 @@ namespace SmartEnergyLabDataApi.Data
         }
         public Zone GetZone(string code) {
             return Session.QueryOver<Zone>().Where( m=>m.Code == code).Take(1).SingleOrDefault();
+        }        
+        public Zone GetZone(int id) {
+            return Session.Get<Zone>(id);
         }        
         public IList<Zone> GetZones(Dataset dataset) {
             return Session.QueryOver<Zone>().
@@ -296,8 +311,11 @@ namespace SmartEnergyLabDataApi.Data
         }
 
         public int GetResultCount(int datasetId) {
-            //?? needs implementing
-            return 0;
+
+            var dsIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
+            return Session.QueryOver<LoadflowResult>().
+                Where(m=>m.Dataset.Id.IsIn(dsIds)).
+                RowCount();            
         }
 
         #region LoadflowResults

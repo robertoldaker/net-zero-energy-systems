@@ -2,7 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Dataset } from 'src/app/data/app.data';
 import { DataClientService } from 'src/app/data/data-client.service';
-import { DialogBase } from 'src/app/dialogs/diaglog-base';
+import { DialogBase } from 'src/app/dialogs/dialog-base';
 import { ShowMessageService } from 'src/app/main/show-message/show-message.service';
 
 @Component({

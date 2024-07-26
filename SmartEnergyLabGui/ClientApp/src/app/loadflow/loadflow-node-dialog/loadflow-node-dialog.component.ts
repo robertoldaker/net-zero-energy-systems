@@ -1,10 +1,13 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Dataset, Node } from 'src/app/data/app.data';
+import { Dataset, Node, Zone } from 'src/app/data/app.data';
 import { DataClientService } from 'src/app/data/data-client.service';
 import { DatasetDialogComponent } from 'src/app/datasets/dataset-dialog/dataset-dialog.component';
-import { DialogBase } from 'src/app/dialogs/diaglog-base';
+import { DialogBase } from 'src/app/dialogs/dialog-base';
 import { ShowMessageService } from 'src/app/main/show-message/show-message.service';
+import { LoadflowDataService } from '../loadflow-data-service.service';
+import { DatasetsService } from 'src/app/datasets/datasets.service';
+import { ICellEditorDataDict} from 'src/app/datasets/cell-editor/cell-editor.component';
 
 @Component({
     selector: 'app-loadflow-node-dialog',
@@ -14,26 +17,63 @@ import { ShowMessageService } from 'src/app/main/show-message/show-message.servi
 export class LoadflowNodeDialogComponent extends DialogBase implements OnInit {
 
     constructor(public dialogRef: MatDialogRef<DatasetDialogComponent>, 
-        @Inject(MAT_DIALOG_DATA) public data:Node,
-        private service: DataClientService, 
-        private messageService: ShowMessageService
+        @Inject(MAT_DIALOG_DATA) dialogData:ICellEditorDataDict | undefined,
+        private dataService: DataClientService, 
+        private loadflowService: LoadflowDataService,
+        private messageService: ShowMessageService,
+        private datasetsService: DatasetsService
     ) { 
         super()
-        this.title = `Edit node [${data.code}]`
-        let fc = this.addFormControl('code')
-        if ( this.data.code ) {
-            fc.setValue(this.data.code)
+        let fCode = this.addFormControl('code')
+        let fDemand = this.addFormControl('demand')
+        let fGeneration = this.addFormControl('generation')
+        let fZoneId = this.addFormControl('zoneId')
+        let fExt = this.addFormControl('ext')
+        if ( dialogData?._data ) {
+            let data:Node = dialogData._data
+            this.title = `Edit node [${data.code}]`
+            fCode.setValue(data.code)
+            fDemand.setValue(data.demand)
+            fGeneration.setValue(data.generation)
+            fZoneId.setValue(data.zone?.id)
+            fExt.setValue(data.ext)
+        } else {
+            this.title = `Add node`
+            fCode.setValue("")
+            fDemand.setValue(0)
+            fGeneration.setValue(0)
+            fZoneId.setValue("")
+            fExt.setValue(false)
         }
+        this.dialogData = dialogData
+        // disable controls not user-editable
+        if ( this.dialogData && !this.dialogData._isLocalDataset ) {
+            fCode.disable()
+            fZoneId.disable()
+            fExt.disable()
+        }
+        this.zones = loadflowService.networkData.zones.data;
     }
 
     ngOnInit(): void {
     }    
 
     title: string
-    voltages:number[] = [33,66,132,275,400]
+    zones: Zone[] = []
+    zoneId: string | undefined
 
     save() {
-
+        if ( this.datasetsService.currentDataset) {
+            let changedControls = this.getUpdatedControls()
+            let id = this.dialogData?._data ? this.dialogData._data.id : 0
+            this.dataService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: "Node", data: changedControls }, (resp)=>{
+                this.datasetsService.refreshData()
+                this.dialogRef.close();
+            }, (errors)=>{
+                this.fillErrors(errors)
+            })
+            
+        }
     }
 
 }

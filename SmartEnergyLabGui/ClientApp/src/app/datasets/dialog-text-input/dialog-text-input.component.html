@@ -1,0 +1,10 @@
+<div [formGroup] = "dialog.form" [ngClass]="{ disabled: false }">
+    <mat-form-field appearance="fill" [color]="'primary'">
+        <mat-label>{{label}}</mat-label>
+        <input matInput class="editable" [ngClass]="{'existing': hasUserEdit}" [placeholder]="placeholder" [formControlName]="name"  [type]="'text'" [readonly]="false">
+        <div *ngIf="hasUserEdit" class="delete button" (click)="revert()" >
+            <mat-icon title="Revert edit" [inline]="true">cancel</mat-icon>
+        </div>    
+        <mat-error>{{error}}</mat-error>    
+    </mat-form-field>    
+</div>

@@ -139,8 +139,9 @@ namespace SmartEnergyLabDataApi.Data
         }
 
         public int GetResultCount(int datasetId) {
+            var dsIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
             return Session.QueryOver<ElsiResult>().
-                Where(m=>m.Dataset.Id == datasetId).
+                Where(m=>m.Dataset.Id.IsIn(dsIds)).
                 RowCount();
         }
 

@@ -4,6 +4,7 @@ using System.Text.Json;
 using ExcelDataReader;
 using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
+using NHibernate.Hql.Ast.ANTLR.Tree;
 using NHibernate.Linq;
 using NHibernate.Util;
 using NLog.LayoutRenderers;
@@ -17,6 +18,9 @@ using static SmartEnergyLabDataApi.Models.GoogleMapsGISFinder;
 namespace SmartEnergyLabDataApi.Loadflow;
 public class LoadflowETYSLoader
 {
+    public enum LoadOptions {All,OnlyHighVoltageCircuits};
+
+    private LoadOptions _loadOptions;
     private HttpClient _httpClient;
     private object _httpClientLock = new object();
 
@@ -26,10 +30,18 @@ public class LoadflowETYSLoader
     private int BASE_YEAR = 2023;
 
     private GoogleMapsGISFinder _gisFinder = new GoogleMapsGISFinder();
-    
-    public LoadflowETYSLoader()
-    {
 
+    
+    public LoadflowETYSLoader(LoadOptions loadOptions)
+    {
+        _loadOptions = loadOptions;
+    }
+
+    public void FixMissingZones() {
+        // repeat until we are not setting any more zones
+        while ( updateNodeZones() ) {
+
+        }
     }
 
     public void Load() {
@@ -49,26 +61,61 @@ public class LoadflowETYSLoader
         bool result = false;
         using( var da = new DataAccess() ) {
 
+            var knownZonesDict = new Dictionary<string,string>() {
+                {"ALYT","T2"},
+                {"BRCW","T4"},
+                {"DISS","J3"},
+                {"MEDB","Q5"},
+                {"SHUR","E7"},
+                {"MARH","K5"},
+                {"MARV","D4"},
+                {"STOB","L7"},
+                {"SAFO","G6"}
+            };
+
             var dataset = getDataset(da,BASE_YEAR);
             var nodes = da.Loadflow.GetNodes(dataset);
             var branches = da.Loadflow.GetBranches(dataset);
+            var zones = da.Loadflow.GetZones(dataset);
             var nodesNoZones = nodes.Where(m=>m.Zone==null).ToList();
             //
             Logger.Instance.LogInfoEvent($"Number of nodes no zones = [{nodesNoZones.Count}]");
             //
-            foreach( var node in nodesNoZones) {
+            var nodeLocCodes = nodesNoZones.Select(m=>m.Code.Substring(0,4)).Distinct().ToList();
+            //
+            foreach( var locCode in nodeLocCodes) {
                 // get node2 zones
-                var nodeZones = branches.Where( m=>m.Node1==node && m.Node2.Zone!=null).Select(m=>m.Node2.Zone).Distinct().ToList<SmartEnergyLabDataApi.Data.Zone>();
+                var nodeZones = branches.Where( m=>m.Node1.Code.Substring(0,4)==locCode && m.Node2.Zone!=null).Select(m=>m.Node2.Zone).Distinct().ToList<Zone>();
                 // get node1 zones
-                var node1Zones = branches.Where( m=>m.Node2==node && m.Node1.Zone!=null).Select(m=>m.Node1.Zone).Distinct().ToList<Zone>();
+                var node1Zones = branches.Where( m=>m.Node2.Code.Substring(0,4)==locCode && m.Node1.Zone!=null).Select(m=>m.Node1.Zone).Distinct().ToList<Zone>();
                 nodeZones.AddRange(node1Zones);
                 //
-                if ( nodeZones.Count==1) {
-                    node.Zone = nodeZones[0];
-                    result = true;
-                    Logger.Instance.LogInfoEvent($"Node=[{node.Code}] [{node.Zone.Code}]");
+                var nodeZoneCodes = nodeZones.Select(m=>m.Code).Distinct().ToList();
+                //                
+                if ( nodeZoneCodes.Count==1) {
+                    var nodesToSet = nodesNoZones.Where(m=>m.Code.Substring(0,4)==locCode).ToList();
+                    foreach( var node in nodesToSet) {
+                        result = true;
+                        node.Zone = nodeZones[0];
+                        Logger.Instance.LogInfoEvent($"Node=[{node.Code}] [{node.Zone.Code}]");
+                    }
                 } else if ( nodeZones.Count>1) {
-                    Logger.Instance.LogInfoEvent($"Node=[{node.Code}] count=[{nodeZones.Count}]");
+                    if ( knownZonesDict.ContainsKey(locCode) ) {
+                        var zone = zones.Where(m=>m.Code==knownZonesDict[locCode]).FirstOrDefault();
+                        if ( zone!=null) {
+                            var nodesToSet = nodesNoZones.Where(m=>m.Code.Substring(0,4)==locCode).ToList();
+                            foreach( var node in nodesToSet ) {
+                                result = true;
+                                node.Zone = zone;
+                                Logger.Instance.LogInfoEvent($"Node=[{node.Code}] [{node.Zone.Code}]");
+                            }
+                        }
+                    } else {
+                        Logger.Instance.LogInfoEvent($"Node=[{locCode}] count=[{nodeZones.Count}]");
+                        foreach( var z in nodeZones) {
+                            Logger.Instance.LogInfoEvent($"z=[{z.Code}],[{z.Dataset.Name}]");
+                        }
+                    }
                 }
             }
             //
@@ -503,12 +550,100 @@ public class LoadflowETYSLoader
 
     private void loadAppendixB(string fn, out Dictionary<string,SubstationCode> codesDict) {
         codesDict = loadSubstationCodes(fn);
-        var transCircuits = loadHighVoltageCircuits(fn);
+        var transCircuits = loadHighVoltageCircuits(fn);        
         var nodeNames = getNodeNames(transCircuits);
+        //
+        var networks = checkNetwork(transCircuits);
+        if ( networks.Count > 1) {
+            Logger.Instance.LogErrorEvent("Multiple isolated networks found");
+            for( int i=1;i<networks.Count;i++) {
+                string msg="Network: ";
+                foreach( var n in networks[i]) {
+                    msg+=n;
+                    var cir = transCircuits.Where(m=>m.Node1==n || m.Node2==n).FirstOrDefault();
+                    if ( cir!=null) {
+                        msg+=$" ({cir.Owner})";
+                    }
+                    if ( n!=networks[i].Last() ) {
+                        msg+=", ";
+                    }
+                }
+                Logger.Instance.LogErrorEvent(msg);
+            }
+            //
+            throw new Exception("Multiple isolated networks found");
+        }
         //
         updateNodes(nodeNames);
         updateBranches(transCircuits);
         updateCtrls(transCircuits);
+    }
+
+    private List<List<string>> checkNetwork(List<Circuit> transCircuits) {
+        var checker = new NetworkChecker(transCircuits);
+        var result = checker.Check();
+        return result;
+    }
+
+    private class NetworkChecker {
+
+        private Dictionary<string,List<string>> _nodeDict;
+
+        public NetworkChecker(List<Circuit> circuits) {
+            _nodeDict = new Dictionary<string,List<string>>();
+            foreach( var c in circuits) {
+                // Node 1
+                if ( !_nodeDict.ContainsKey(c.Node1)) {
+                    _nodeDict.Add(c.Node1,new List<string>());
+                }
+                _nodeDict[c.Node1].Add(c.Node2);
+                // Node 2
+                if ( !_nodeDict.ContainsKey(c.Node2)) {
+                    _nodeDict.Add(c.Node2,new List<string>());
+                }
+                _nodeDict[c.Node2].Add(c.Node1);
+            }
+        }
+
+        public List<List<string>> Check() {
+            // create a dictionary to store visits to nodes
+            var nodeVisitDict = new Dictionary<string,bool>();
+            foreach( var n in _nodeDict.Keys) {
+                nodeVisitDict.Add(n,false);
+            }
+            //
+            var separateNetworks = new List<List<string>>();
+            //
+            var cont = true;
+            while( cont ) {
+                var ns = nodeVisitDict.Keys.FirstOrDefault();
+                if ( ns!=null) {
+                    visitNode(ns, nodeVisitDict);
+                }
+                //
+                var networkNodes = nodeVisitDict.Where(m=>m.Value).Select(m=>m.Key).ToList();
+                foreach (var n in networkNodes) {
+                    nodeVisitDict.Remove(n);
+                }
+                separateNetworks.Add(networkNodes);
+                //
+                cont = nodeVisitDict.Where(m=>!m.Value).Count()>0;
+            }
+            // Order list of networks be descending size
+            separateNetworks = separateNetworks.OrderByDescending(m=>m.Count).ToList();
+            //
+            return separateNetworks;
+        }
+
+        private void visitNode(string node, Dictionary<string,bool> nodeVisitDict) {
+            nodeVisitDict[node] = true;
+            foreach( var n in _nodeDict[node]) {
+                if ( !nodeVisitDict[n] ) {
+                    visitNode(n,nodeVisitDict);
+                }
+            }
+        }
+
     }
 
     public Dictionary<string,SubstationCode> LoadSubstationCodes() {
@@ -836,7 +971,8 @@ public class LoadflowETYSLoader
     }
 
     private Dataset getDataset(DataAccess da, int year) {
-        var datasetName = $"{DATASET_BASE_NAME} {year}";
+        var ending = _loadOptions == LoadOptions.All ? " (all circuits)" : "";
+        var datasetName = $"{DATASET_BASE_NAME} {year}{ending}";
         var dataset = da.Datasets.GetDataset(DatasetType.Loadflow,datasetName);
         if ( dataset==null) {
             var root = da.Datasets.GetRootDataset(DatasetType.Loadflow);
@@ -951,9 +1087,19 @@ public class LoadflowETYSLoader
         //
         while( reader.Read() ) {
             var circuit = new Circuit(type, reader, owner);
-            if ( circuit.IsHighVoltage) {
+            if ( addCircuit( circuit) ) {
                 list.Add(circuit);
             }
+        }
+    }
+
+    private bool addCircuit(Circuit circuit) {
+        if ( _loadOptions==LoadOptions.All ) {
+            return true;
+        } else if ( _loadOptions==LoadOptions.OnlyHighVoltageCircuits && circuit.IsHighVoltage) {
+            return true;
+        } else {
+            return false;
         }
     }
 

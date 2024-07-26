@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { DataClientService } from 'src/app/data/data-client.service';
-import { DialogBase } from 'src/app/dialogs/diaglog-base';
+import { DialogBase } from 'src/app/dialogs/dialog-base';
 import { ShowMessageService } from 'src/app/main/show-message/show-message.service';
 
 @Component({

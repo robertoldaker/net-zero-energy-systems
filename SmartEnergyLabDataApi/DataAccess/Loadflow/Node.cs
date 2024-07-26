@@ -12,6 +12,11 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
+        public Node(Dataset dataset)
+        {
+            this.Dataset = dataset;
+        }
+        
         /// <summary>
         /// Database identifier
         /// </summary>
@@ -83,7 +88,13 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
-        public virtual double? Mismatch {get; set;}        
+        public virtual double? Mismatch {get; set;}    
+
+        public virtual int DatasetId {
+            get {
+                return this.Dataset.Id;
+            }
+        }    
 
 
     }

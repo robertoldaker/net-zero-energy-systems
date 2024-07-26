@@ -1,0 +1,16 @@
+<div *ngIf="datasetsService.isEditable" class="buttonContainer" [ngClass]="{isLocalEdit: isLocalEdit}">
+    <div *ngIf="!(element && element._isDeleted)">
+        <button class="rowButton" mat-icon-button aria-label="Edit" [title]="'Edit'"  (click)="edit()">
+            <mat-icon [inline]="true">edit</mat-icon>
+        </button>
+        <button class="rowButton" mat-icon-button aria-label="Delete" [title]="'Delete'"  (click)="delete()">
+            <mat-icon [inline]="true">delete_forever</mat-icon>
+        </button>    
+    </div>
+    <div *ngIf="element && element._isDeleted">
+        <button class="rowButton" mat-icon-button aria-label="Delete" [title]="'Undelete'"  (click)="unDelete()">
+            <mat-icon [inline]="true">restore_from_trash</mat-icon>
+        </button>    
+    </div>
+</div>
+

@@ -31,7 +31,13 @@ public class UserEdit
     [Property()]
     public virtual string Value {get; set;}
 
+    [Property()]
+    [Column(Name = "isRowDelete",Default = "false")]
+    public virtual bool IsRowDelete {get; set;}
+
     public virtual int NewDatasetId {get; set; }
+
+    public virtual string PrevValue {get; set; }
 
     [JsonIgnore()]
     [ManyToOne(Column = "DatasetId", Cascade = "none")]

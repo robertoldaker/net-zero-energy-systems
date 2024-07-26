@@ -1,22 +1,28 @@
 <app-dialog-header [dialogRef]="dialogRef">{{title}}</app-dialog-header>
 <div mat-dialog-content id="content">
     <form [formGroup]="form">
-        <div>
-            <mat-form-field appearance="fill" [color]="'primary'">
-                <mat-label>4-letter Code</mat-label>
-                <input matInput placeholder="Enter Code" formControlName="code"  [type]="'text'" >
-                <mat-error>{{getError('name')}}</mat-error>    
-            </mat-form-field>    
-        </div>
-        <div>
-            <mat-form-field appearance="fill" [color]="'primary'">
-                <mat-label>Voltage</mat-label>             
-                <mat-select [value]="data.voltage">
-                    <mat-option *ngFor="let v of voltages" [value]="v">
-                        <span>{{v}}</span>    
+        <div class="row">
+            <div>
+                <app-dialog-text-input [dialog]="dialog" name="code" placeholder="Enter code" label="Code"></app-dialog-text-input>
+            </div>
+            <div>
+                <app-dialog-selector [dialog]="dialog"  name="zoneId" label="Zone">
+                    <mat-option *ngFor="let z of zones" [value]="z.id">
+                        <span>{{z.code}}</span>    
                     </mat-option>
-                </mat-select>
-            </mat-form-field>
+                </app-dialog-selector>                        
+            </div>    
+        </div>
+        <div class="row">
+            <div>
+                <app-dialog-text-input [dialog]="dialog" name="demand" placeholder="Enter demand in MW" label="Demand"></app-dialog-text-input>
+            </div>
+            <div>
+                <app-dialog-text-input [dialog]="dialog" name="generation" placeholder="Enter generation in MW" label="Generation"></app-dialog-text-input>
+            </div>    
+        </div>
+        <div class="row">
+            <app-dialog-checkbox [dialog]="dialog" label="External" name="ext"></app-dialog-checkbox>
         </div>
     </form>
 </div>

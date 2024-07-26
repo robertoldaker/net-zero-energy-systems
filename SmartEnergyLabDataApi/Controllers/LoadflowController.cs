@@ -7,6 +7,7 @@ using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Loadflow;
 using static SmartEnergyLabDataApi.Models.LoadflowReference;
 using Org.BouncyCastle.Crypto.Signers;
+using System.Text.Json;
 
 namespace SmartEnergyLabDataApi.Controllers
 {
@@ -273,11 +274,39 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Load data from ESO ETYS
         /// </summary>
+        /// <param name="loadOptions"> (0-All circuits, 1-only high voltage)</param>
         [HttpPost]
         [Route("Load/ETYS")]
-        public void LoadETYS() {
-            var m=new LoadflowETYSLoader();
+        public void LoadETYS(LoadflowETYSLoader.LoadOptions loadOptions = LoadflowETYSLoader.LoadOptions.OnlyHighVoltageCircuits) {
+            var m=new LoadflowETYSLoader(loadOptions);
             m.Load();
+        }
+
+        /// <summary>
+        /// Fix missing zones
+        /// </summary>
+        [HttpPost]
+        [Route("FixMissingZones")]
+        public void FixMissingZones(LoadflowETYSLoader.LoadOptions loadOptions = LoadflowETYSLoader.LoadOptions.OnlyHighVoltageCircuits) {
+            var m=new LoadflowETYSLoader(loadOptions);
+            m.FixMissingZones();
+        }
+
+        /// <summary>
+        /// Set any missing voltages for loadflow nodes
+        /// </summary>
+        /// <param name="datasetName">Name of dataset</param>
+        [HttpPost]
+        [Route("Nodes/SetVoltages")]
+        public void SetNodeVoltages(string datasetName) {
+            using( var da = new DataAccess()) {
+                var dataset = da.Datasets.GetDataset(DatasetType.Loadflow, datasetName);
+                if ( dataset==null ) {
+                    throw new Exception($"Cannot find loadflow dataset with name [{datasetName}]");
+                }
+                da.Loadflow.SetNodeVoltages(dataset.Id);
+                da.CommitChanges();
+            }
         }
 
     }

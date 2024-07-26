@@ -1,0 +1,19 @@
+.existing {
+    color: green
+}
+
+.button {
+    width: 17px;
+    height: 17px;
+    font-size: 16px;
+    cursor: pointer;
+    float: right;
+}
+
+.delete {
+    color: darkred;
+}
+
+.disabled {
+    opacity: 0.7;
+}

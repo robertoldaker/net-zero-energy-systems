@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { DataClientService } from 'src/app/data/data-client.service';
-import { DialogBase } from 'src/app/dialogs/diaglog-base';
+import { DialogBase } from 'src/app/dialogs/dialog-base';
 import { UserService } from '../user.service';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { MessageDialogIcon } from 'src/app/dialogs/message-dialog/message-dialog.component';

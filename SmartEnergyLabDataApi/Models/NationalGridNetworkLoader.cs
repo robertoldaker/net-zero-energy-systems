@@ -71,7 +71,7 @@ namespace SmartEnergyLabDataApi.Models
         private void loadSSE() {
 
             // get list of substation codes from ETYS 
-            var etysLoader = new LoadflowETYSLoader();
+            var etysLoader = new LoadflowETYSLoader(LoadflowETYSLoader.LoadOptions.OnlyHighVoltageCircuits);
             var substationCodes = etysLoader.LoadSubstationCodes();
             //
             var gridItems = getSSEGridItems(_sseGridBuilder);

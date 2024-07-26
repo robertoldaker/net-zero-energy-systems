@@ -13,6 +13,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -215,6 +216,10 @@ namespace HaloSoft.DataAccess
         {
             var update = new SchemaUpdate(_cfg);
             update.Execute(true, true);
+            // throw an exception of exceptions were generated
+            if ( update.Exceptions.Count>0 ) {
+                throw new Exception(update.Exceptions[0].Message);
+            }
         }
 
     }

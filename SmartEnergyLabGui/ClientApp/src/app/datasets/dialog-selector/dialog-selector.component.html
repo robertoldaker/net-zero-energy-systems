@@ -1,0 +1,9 @@
+<div [formGroup]="dialog.form">
+    <mat-form-field appearance="fill" [color]="'primary'">
+        <mat-label>{{label}}</mat-label>             
+        <mat-select [formControlName]="name">
+            <ng-content></ng-content>
+        </mat-select>
+    </mat-form-field>    
+</div>
+

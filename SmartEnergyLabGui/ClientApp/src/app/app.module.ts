@@ -48,7 +48,7 @@ import { CookieService } from 'ngx-cookie-service';
 // app imports
 import { AppComponent } from './app.component';
 import { ComponentBase } from './utils/component-base'
-import { DialogBase } from './dialogs/diaglog-base'
+import { DialogBase } from './dialogs/dialog-base'
 import { MainHeaderComponent } from './low-voltage/main-header/main-header.component';
 import { HomeComponent } from './low-voltage/home/home.component';
 import { MapComponent } from './low-voltage/map/map.component';
@@ -142,6 +142,11 @@ import { LoadflowDataBoundariesComponent } from './loadflow/loadflow-data-bounda
 import { LoadflowDataZonesComponent } from './loadflow/loadflow-data-zones/loadflow-data-zones.component';
 import { LoadflowNodeDialogComponent } from './loadflow/loadflow-node-dialog/loadflow-node-dialog.component';
 import { LoadflowMapSearchComponent } from './loadflow/loadflow-map/loadflow-map-search/loadflow-map-search.component';
+import { DialogTextInputComponent } from './datasets/dialog-text-input/dialog-text-input.component';
+import { DialogCheckboxComponent } from './datasets/dialog-checkbox/dialog-checkbox.component';
+import { DialogSelectorComponent } from './datasets/dialog-selector/dialog-selector.component';
+import { DialogBaseInput } from './datasets/dialog-base-input';
+import { CellButtonsComponent } from './datasets/cell-buttons/cell-buttons.component';
 
 
 @NgModule({
@@ -238,7 +243,12 @@ import { LoadflowMapSearchComponent } from './loadflow/loadflow-map/loadflow-map
         LoadflowDataBoundariesComponent,
         LoadflowDataZonesComponent,
         LoadflowNodeDialogComponent,
-        LoadflowMapSearchComponent
+        LoadflowMapSearchComponent,
+        DialogTextInputComponent,
+        DialogCheckboxComponent,
+        DialogSelectorComponent,
+        DialogBaseInput,
+        CellButtonsComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

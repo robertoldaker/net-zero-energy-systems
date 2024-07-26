@@ -40,7 +40,7 @@ export class MatInputEditorComponent implements OnInit {
             //            
             this.datasetsService.saveUserEditWithPrompt(value, this.data, (resp)=>{
                 this.onEdited.emit(this.data)
-            });
+            }, (errors)=>{});
             if ( this.input ) {
                 this.input.nativeElement.blur()
             }    

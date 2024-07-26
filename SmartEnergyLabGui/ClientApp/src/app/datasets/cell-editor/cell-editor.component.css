@@ -54,4 +54,20 @@
     cursor:default;
 }
 
+.input {
+    display: inline-block;    
+    position: relative;
+}
+
+.error {
+    position: absolute;
+    right: 0;
+    top: 27px;
+    background: darkred;
+    color: white;
+    border-radius: 4px;
+    padding-left: 4px;
+    padding-right: 4px;
+
+}
 

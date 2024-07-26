@@ -64,24 +64,15 @@ public class DatasetsController : ControllerBase
         }
     }
 
-    [HttpPost]
-    [Route("SaveUserEdit")]
-    public IActionResult SaveUserEdit([FromBody] UserEdit userEdit) {
-        using( var da = new DataAccess() ) {
-            da.Datasets.SaveUserEdit(userEdit);
-            da.CommitChanges();
+    /// <summary>
+    /// Get list of dataset ids that are derived from the given dataset id. The list includes the provided dataset id as the first element.
+    /// </summary>
+    [HttpGet]
+    [Route("DerivedIds")]
+    public int[] DerivedIds(int datasetId) {
+        using ( var da = new DataAccess() ) {
+            return da.Datasets.GetDerivedDatasetIds(datasetId);
         }
-        return Ok();
-    }
-
-    [HttpPost]
-    [Route("DeleteUserEdit")]
-    public IActionResult DeleteUserEdit([FromBody] int id) {
-        using( var da = new DataAccess() ) {
-            da.Datasets.DeleteUserEdit(id);
-            da.CommitChanges();
-        }
-        return Ok();
     }
 
     /// <summary>
@@ -105,4 +96,45 @@ public class DatasetsController : ControllerBase
             }
         }
     }
+
+    /// <summary>
+    /// Edit an item such as a Node, Branch, Ctrl, Zone etc.
+    /// </summary>
+    /// <param name="editItem">data for item to be edited</param>
+    [HttpPost]
+    [Route("EditItem")]
+    public IActionResult EditItem([FromBody] LoadflowEditItem editItem) {
+        using ( var m = new LoadflowEditItemModel(this,editItem)) {
+            if ( m.Save() ) {
+                return Ok();
+            } else {
+                return this.ModelErrors(m.Errors);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Delete an item such as a Node, Branch, Ctrl, Zone etc.
+    /// </summary>
+    /// <param name="editItem">data for item to be deleted</param>
+    [HttpPost]
+    [Route("DeleteItem")]
+    public void DeleteItem([FromBody] LoadflowEditItem editItem) {
+        using ( var m = new LoadflowEditItemModel(this,editItem)) {
+            m.Delete();
+        }
+    }
+
+    /// <summary>
+    /// Undeletes a previous deleted item
+    /// </summary>
+    /// <param name="editItem">data for item to be undeleted</param>
+    [HttpPost]
+    [Route("UnDeleteItem")]
+    public void UnDeleteItem([FromBody] LoadflowEditItem editItem) {
+        using ( var m = new LoadflowEditItemModel(this,editItem)) {
+            m.UnDelete();
+        }
+    }
+
 }

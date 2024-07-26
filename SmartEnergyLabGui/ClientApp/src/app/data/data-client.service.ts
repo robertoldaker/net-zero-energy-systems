@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType, DatasetData } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType, DatasetData, EditItem } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { DialogService } from '../dialogs/dialog.service';
@@ -352,12 +352,17 @@ export class DataClientService implements ILogs {
         this.postRequest<number>('/Datasets/Delete', id, onLoad);
     }
 
-    SaveUserEdit(userEdit: UserEdit, onSave: (resp: string)=>void) {
-        this.postRequest('/Datasets/SaveUserEdit',userEdit,onSave);
+    EditItem(editItem: EditItem, onOk: (resp: string)=> void, onError: (error: any)=>void) {
+        console.log(editItem)
+        this.postDialogRequest<EditItem>('/Datasets/EditItem', editItem, onOk, onError);
     }
 
-    DeleteUserEdit(id: number, onOk: (resp: string)=>void) {
-        this.postRequest('/Datasets/DeleteUserEdit',id, onOk);
+    DeleteItem(editItem: EditItem, onOk: (resp: string)=> void) {
+        this.postRequest<EditItem>('/Datasets/DeleteItem', editItem, onOk);
+    }
+
+    UnDeleteItem(editItem: EditItem, onOk: (resp: string)=> void) {
+        this.postRequest<EditItem>('/Datasets/UnDeleteItem', editItem, onOk);
     }
 
     GetDatasetResultCount(datasetId: number, onLoad: (results: number)=> void | undefined) {
@@ -365,6 +370,7 @@ export class DataClientService implements ILogs {
             `/Datasets/ResultCount?datasetId=${datasetId}`,
             onLoad);
     }
+
 
     /**
      * Elsi
@@ -622,7 +628,7 @@ export class DataClientService implements ILogs {
         })
     }
 
-    private postDialogRequest<T>(url: string, data: T,onOk: (resp: string)=>void | undefined, onError: (error: any)=> void | undefined) {
+    private postDialogRequest<T>(url: string, data: T,onOk: (resp: string)=>void, onError: (error: any)=> void) {
         this.http.post<string>(this.baseUrl + url, data).subscribe(resp => {
             if ( onOk) {
                 onOk(resp);

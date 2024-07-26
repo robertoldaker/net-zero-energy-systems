@@ -8,6 +8,7 @@ import { ComponentBase } from 'src/app/utils/component-base';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { MatPaginator } from '@angular/material/paginator';
 import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
+import { DatasetsService } from 'src/app/datasets/datasets.service';
 
 @Component({
     selector: 'app-loadflow-data-nodes',
@@ -16,15 +17,18 @@ import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-
 })
 export class LoadflowDataNodesComponent extends ComponentBase {
 
-    constructor(private dataService: LoadflowDataService, private dialogService: DialogService) {
+    constructor(
+        private dataService: LoadflowDataService, 
+        private dialogService: DialogService,
+        public datasetsService: DatasetsService ) {
         super();
+        this.dataFilter = new DataFilter(20, { active: 'code', direction: 'asc'})
         this.createDataSource(this.dataService.networkData.nodes);
-        this.displayedColumns = ['code','voltage','zoneName','demand','generation','ext','mismatch']
+        this.displayedColumns = ['buttons','code','voltage','zoneName','demand','generation','ext','mismatch']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.createDataSource(results.nodes);
         }))
         this.addSub( dataService.ResultsLoaded.subscribe( (results) => {
-            console.log('results loaded')
             this.createDataSource(results.nodes);
         }))
     }
@@ -41,7 +45,7 @@ export class LoadflowDataNodesComponent extends ComponentBase {
     }
     
     datasetData?: DatasetData<Node>
-    dataFilter: DataFilter = new DataFilter(20) 
+    dataFilter: DataFilter
     nodes: MatTableDataSource<any> = new MatTableDataSource()
     displayedColumns: string[]
 
@@ -64,12 +68,11 @@ export class LoadflowDataNodesComponent extends ComponentBase {
     }
 
     edit( e: ICellEditorDataDict) {
-        let node = this.dataService.networkData.nodes.data.find(m=>m.id===e.id.value)
-        if ( node ) {
-            this.dialogService.showLoadflowNodeDialog(node);
-        } else {
-            throw new Error(`Cannot find node with id=[${e.id.value}]`)
-        }
+        this.dialogService.showLoadflowNodeDialog(e);
+    }
+
+    add() {
+        this.dialogService.showLoadflowNodeDialog();
     }
 
 }

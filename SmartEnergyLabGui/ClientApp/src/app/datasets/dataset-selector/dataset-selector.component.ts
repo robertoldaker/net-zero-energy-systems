@@ -7,6 +7,7 @@ import { DialogService } from 'src/app/dialogs/dialog.service';
 import { MessageDialogIcon } from 'src/app/dialogs/message-dialog/message-dialog.component';
 import { ShowMessageService } from 'src/app/main/show-message/show-message.service';
 import { UserService } from 'src/app/users/user.service';
+import { DatasetsService } from '../datasets.service';
 
 @Component({
     selector: 'app-dataset-selector',
@@ -19,7 +20,8 @@ export class DatasetSelectorComponent implements OnInit {
         private cookieService: CookieService,
         private dialogService: DialogService,
         private messageService: ShowMessageService,
-        public userService: UserService
+        public userService: UserService,
+        public datasetsService: DatasetsService
         ) { 
         
     }
@@ -69,6 +71,7 @@ export class DatasetSelectorComponent implements OnInit {
         this.cookieService.set(this.getCookieName(), datasetId.toString());
         //
         this.onSelected.emit(this.dataset)
+        this.datasetsService.setDataset(this.dataset)
     }
 
     private setDatasets(datasets: Dataset[]) {

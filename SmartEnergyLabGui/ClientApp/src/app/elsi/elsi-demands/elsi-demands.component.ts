@@ -29,7 +29,7 @@ export class ElsiDemandsComponent extends ComponentBase {
         if ( datasetData ) {
             let data = datasetData.data.filter(m=>m.mainZoneStr);
             let items = this.getTableArray(data);
-            this.datasetData = { data: items, tableName: datasetData.tableName, userEdits: datasetData.userEdits}
+            this.datasetData = { data: items, tableName: datasetData.tableName, userEdits: datasetData.userEdits, deletedData: []}
         }
         if ( this.datasetData) {
             let cellData = this.dataFilter.GetCellDataObjects<ElsiPeakDemandTable>(
@@ -114,6 +114,8 @@ export class ElsiPeakDemandTable {
         this.zoneStr = item.mainZoneStr
         this.profileStr = item.profileStr
     }
+    //?? Needed to get GetCellDataObjects - but needs looking into!
+    id: number = 0
     zoneStr: string
     profileStr: string
     communityRenewables: number | undefined

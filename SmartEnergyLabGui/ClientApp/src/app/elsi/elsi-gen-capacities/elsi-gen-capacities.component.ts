@@ -31,7 +31,7 @@ export class ElsiGenCapacitiesComponent extends ComponentBase {
     private createDataSource(datasetData?: DatasetData<ElsiGenCapacity>) {
         if ( datasetData ) {
             let items = this.getTableArray(datasetData.data);
-            this.datasetData = { data: items, tableName: datasetData.tableName, userEdits: datasetData.userEdits}
+            this.datasetData = { data: items, tableName: datasetData.tableName, userEdits: datasetData.userEdits, deletedData: []}
         }
         if ( this.datasetData) {
             let cellData = this.dataFilter.GetCellDataObjects<ElsiGenCapacityTable>(
@@ -96,6 +96,8 @@ export class ElsiGenCapacityTable {
         this.genTypeStr = item.genTypeStr
         this.profileStr = item.profileStr
     }
+    //?? Needed to get GetCellDataObjects - but needs looking into!
+    id: number = 0
     name: string
     zoneStr: string
     genTypeStr: string

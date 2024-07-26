@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DatasetData, ElsiMiscParams } from 'src/app/data/app.data';
-import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
+import { CellEditorData, DataFilter, ICellEditorDataDict} from 'src/app/datasets/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { ElsiDataService } from '../elsi-data.service';
 
@@ -14,12 +14,12 @@ export class ElsiMiscParamsComponent extends ComponentBase implements OnInit {
     constructor(public service: ElsiDataService) {
         super();
         if ( this.service.datasetInfo) {
-            this.cellData = this.createCellDataObjects(this.service.datasetInfo.miscParamsInfo)
+            this.rowData = this.createCellDataObjects(this.service.datasetInfo.miscParamsInfo)
         } else {
-            this.cellData = this.createCellDataObjects({data:[],userEdits: [], tableName: '' })
+            this.rowData = this.createCellDataObjects({data:[],userEdits: [], tableName: '', deletedData: [] })
         }
         this.addSub( this.service.DatasetInfoChange.subscribe( (ds) => {
-            this.cellData = this.createCellDataObjects(ds.miscParamsInfo)
+            this.rowData = this.createCellDataObjects(ds.miscParamsInfo)
         }))
     }
 
@@ -32,12 +32,12 @@ export class ElsiMiscParamsComponent extends ComponentBase implements OnInit {
         return cellData[0]
     }
 
-    cellData: ICellEditorDataDict
+    rowData: ICellEditorDataDict
     dataFilter: DataFilter = new DataFilter(1)
 
     getCellData(key: string):CellEditorData | undefined {
-        if ( this.cellData && this.cellData[key]) {
-            return this.cellData[key];
+        if ( this.rowData && this.rowData[key]) {
+            return this.rowData[key];
         } else {
             return undefined;
         }

@@ -327,16 +327,16 @@ export interface BoundaryFlowResult {
 
 export interface Node {
     id: number
+    datasetId: number
     code: string
     voltage: number
     name: string
-    location: GridLoadflowLocation
+    location: GridLoadflowLocation | undefined
     demand: number
     generation: number
     ext: boolean
-    zone: Zone
+    zone: Zone | undefined
     zoneName: string
-    gisData: GISData | undefined
     mismatch: number | undefined
 }
 
@@ -464,15 +464,17 @@ export enum ModificationTypeEnum  {Enhancement, Bug}
   */
  export enum DatasetType {Elsi,Loadflow}
 
- export interface Dataset {
+export interface IId {
+    id: number
+}
+
+export interface Dataset {
     id: number,
     name: string,
     type: DatasetType,
     parent: Dataset | null
     isReadOnly: boolean
 }
-
-
 
 export interface NewDataset {
     name: string,
@@ -484,14 +486,23 @@ export interface UserEdit {
     key: string,
     tableName: string,
     columnName: string,
-    value: string
+    value: string,
+    prevValue: string,
     newDatasetId: number
 }
 
 export interface DatasetData<T> {
     tableName: string
     data: T[]
+    deletedData: T[]
     userEdits: UserEdit[]
+}
+
+export interface EditItem {
+    className: string,
+    id: number,
+    datasetId: number,
+    data?: any
 }
 
  /**

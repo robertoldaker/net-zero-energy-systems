@@ -30,7 +30,7 @@ input[type=text].searchInput::placeholder {
     color: #666
 }
 
-button.search {
+button {
     color: #999;
 }
 

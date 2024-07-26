@@ -1,9 +1,16 @@
-<app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)"></app-table-paginator>
+<app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)" (onAdd)="add()" [typeName]="'Node'"></app-table-paginator>
 
 <div style="overflow: auto; height: calc(100vh - 170px)">
     
-    <table style="width: 100%;" #table mat-table [dataSource]="nodes" [trackBy]="getNodeId" matSort matSortDisableClear (matSortChange)="sortTable($event)">
+    <table style="width: 100%;" #table mat-table [dataSource]="nodes" [trackBy]="getNodeId" matSort matSortActive="code" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
 
+        <!-- buttons Column -->
+        <ng-container matColumnDef="buttons">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header ></th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-buttons [element]="element" typeName="Node" (onEdit)="edit($event)"></app-cell-buttons>
+            </td>
+        </ng-container>
         <!-- Code Column -->
         <ng-container matColumnDef="code">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Node</th>
@@ -47,15 +54,6 @@
             <td mat-cell *matCellDef="let element">{{element.ext.value}}</td>
         </ng-container>
 
-        <!-- Ext Column -->
-        <!--<ng-container matColumnDef="buttons">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
-            <td mat-cell *matCellDef="let element">
-                <mat-icon class="iconLink" (click)="edit(element)">edit</mat-icon>
-            </td>
-        </ng-container>
-        -->
-
         <!-- Mismatch  Column -->
         <ng-container matColumnDef="mismatch">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Mismatch</th>
@@ -65,6 +63,6 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true">
         
         </tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{isDeleted: row._isDeleted}"></tr>
     </table>
 </div>

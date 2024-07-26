@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { Sort } from '@angular/material/sort';
-import { Dataset, DatasetData, DatasetType, UserEdit } from 'src/app/data/app.data';
+import { Dataset, DatasetData, DatasetType, IId, UserEdit } from 'src/app/data/app.data';
 import { DatasetsService } from 'src/app/datasets/datasets.service';
 
 @Component({
@@ -22,22 +22,34 @@ export class CellEditorComponent {
         this.hasFocus = true
     }
 
-    onBlur() {
+    onBlur(e: any) {
         this.hasFocus = false;
-        if ( this.input ) {
-            this.editValue = this.input.nativeElement.value
+        if ( this.input) {
             this.input.nativeElement.value = this.value            
+            this.error = ''
         }
     }
 
-    mouseDown() {
-        this.hadFocus = this.hasFocus;
+    keyDown(e: any) {
+        if ( e.keyCode == 13) {
+            this.saveEdit()
+        } else if ( e.keyCode == 27) {
+            this.cancelEdit()
+        }
+    }
+
+    private cancelEdit() {
+        if ( this.input) {
+            this.input.nativeElement.blur()
+        }
+    }
+
+    mouseDown(e: any) {
+        // stops the input losing focus
+        e.preventDefault()
     }
 
     cancel(e: Event) {
-        if ( !this.hadFocus) {
-            return
-        }
         e.stopPropagation()
         if ( this.input) {
             this.input.nativeElement.blur()
@@ -47,26 +59,39 @@ export class CellEditorComponent {
     @ViewChild('input')
     input: ElementRef | undefined;
 
+    error: string = ''
+
     save(e: Event) {
-        if ( !this.hadFocus) {
-            return
-        }
         e.stopPropagation()
-        let value = this.editValue
-        if ( value===this.value ) {
-            return;
+        this.saveEdit()
+    }
+
+    private saveEdit() {
+        if ( this.input ) {
+            let value = this.input.nativeElement.value;
+            if ( value===this.value ) {
+                this.cancelEdit()
+                return;
+            }
+            let valueDouble = parseFloat(value)
+            if ( this.scalingFac && !isNaN(valueDouble)) {
+                value = (valueDouble / this.scalingFac).toString()
+            }
+            this.saveValue(value);    
         }
-        let valueDouble = parseFloat(value)
-        if ( this.scalingFac && !isNaN(valueDouble)) {
-            value = (valueDouble / this.scalingFac).toString()
-        }
-        this.saveValue(value);
     }
 
     private saveValue(value: string) {
         if ( this.data ) {
             this.datasetsService.saveUserEditWithPrompt(value, this.data, (resp)=>{
+                this.error = ''
                 this.onEdited.emit(this.data)
+            }, (error) =>{
+                console.log(error)
+                this.error = error[this.data.columnName]
+                if ( this.input) {
+                    this.input.nativeElement.focus()
+                }        
             })    
         }
     }
@@ -85,9 +110,7 @@ export class CellEditorComponent {
         }
     }
 
-    private editValue: string = ''
     hasFocus: boolean = false
-    private hadFocus: boolean = false;
 
     @Input()
     data: CellEditorData = new CellEditorData({id: 0, name: '',parent: null, type: DatasetType.Elsi, isReadOnly: true})
@@ -99,7 +122,7 @@ export class CellEditorComponent {
     decimalPlaces: number | undefined
 
     get readOnly(): boolean {
-        return this.data.dataset.isReadOnly
+        return this.data.dataset.isReadOnly || this.data.isRowDeleted
     }
 
     @Input()
@@ -123,7 +146,11 @@ export class CellEditorComponent {
 }
 
 export interface ICellEditorDataDict {
-    [index: string]: CellEditorData
+    [index: string]: CellEditorData,
+    _data: any
+    _isDeleted:any
+    _isLocalDataset: any
+    _isLocalEdit:any
 }
 
 export class CellEditorData {
@@ -132,6 +159,7 @@ export class CellEditorData {
         this.tableName = ''
         this.columnName = ''
         this.value = ''
+        this.isRowDeleted = false
         this.dataset = dataset;
     }
     key: string
@@ -139,40 +167,43 @@ export class CellEditorData {
     columnName: string
     dataset: Dataset
     value: number|string
+    isRowDeleted: boolean
     userEdit: UserEdit|undefined
-
-    getUserEdit(value: string):UserEdit {
-        let userEdit = {
-            id: (this.userEdit) ? this.userEdit.id : 0,
-            key: this.key,
-            tableName: this.tableName,
-            columnName: this.columnName,
-            value: value,
-            newDatasetId: this.dataset.id
-        }
-        return userEdit
-    }
-
 }
 
 
 export class DataFilter {
-    constructor(take: number) 
+    constructor(take: number, sort?: Sort) 
     {
         this.take = take;
+        this.sort = sort;
     }
 
-    GetCellDataObjects<T>(dataset: Dataset, datasetData: DatasetData<T>, 
+    GetCellDataObjects<T extends IId>(dataset: Dataset, datasetData: DatasetData<T>, 
             keyFcn: (arg: T, col: string)=>string, 
             colFcn?: (col: string)=>string):ICellEditorDataDict[] {
-        let cellData:ICellEditorDataDict[] = []
-        let items = datasetData.data;
+        let rowData:ICellEditorDataDict[] = []
+        let items:T[] = []
+        let deletedItems:T[]=datasetData.deletedData
+        for(let dd of datasetData.data) {
+            items.push(dd)
+        }
+        // set columns based on the first element
         let columnNames = items.length>0 ? Object.getOwnPropertyNames(items[0]) : [];
+        // this means we have no items so get column names from any deleted items
+        if ( columnNames.length==0 ) {
+            columnNames = deletedItems.length>0 ? Object.getOwnPropertyNames(deletedItems[0]) : [];
+        }
+        // filter by edited items first before always adding deleted items
+        if ( this.onlyEditedRows) {
+            items = this.filterByEdited(dataset, items, columnNames, datasetData,keyFcn,colFcn)
+        }
+        // add in the deleted objects
+        for(let dd of deletedItems) {
+            items.push(dd)
+        }
         if ( this.searchStr ) {
             items = this.filterData(items,columnNames)
-        }
-        if ( this.onlyEditedRows) {
-            items = this.filterByEdited(items, columnNames, datasetData,keyFcn,colFcn)
         }
         if ( this.sort && this.sort.active) {
             this.sortData(items)
@@ -182,7 +213,10 @@ export class DataFilter {
         let take:number = this.take
         for( let i=skip;i<items.length;i++) {
             let data:any = items[i]
-            let cellObj:any = {}
+            let isDeleted:any = deletedItems.find(m=>m.id == data.id)!==undefined
+            let isLocalDataset:any = data.datasetId === dataset.id
+            let isLocalEdit:any = data.datasetId === dataset.id || isDeleted
+            let rowObj:ICellEditorDataDict = {_data: data, _isDeleted: isDeleted, _isLocalEdit: isLocalEdit, _isLocalDataset: isLocalDataset}
             columnNames.forEach(col=>{
                 let cd = new CellEditorData(dataset)
                 cd.key = keyFcn(data,col)
@@ -190,16 +224,20 @@ export class DataFilter {
                 cd.tableName = datasetData.tableName
                 cd.value = data[col]
                 cd.dataset = dataset
-                cellObj[col] = cd
+                cd.isRowDeleted = isDeleted
+                rowObj[col] = cd
                 // Find existing userEdit
-                cd.userEdit = datasetData.userEdits.find(m=>m.columnName==cd.columnName && m.key==cd.key)
+                cd.userEdit = datasetData.userEdits.find(m=>m.columnName.toLowerCase()==cd.columnName.toLowerCase() && m.key==cd.key)
+                if ( cd.userEdit ) {
+                    rowObj._isLocalEdit = true
+                }
             })
-            cellData.push(cellObj)
-            if ( take && cellData.length>=take) {
+            rowData.push(rowObj)
+            if ( take && rowData.length>=take) {
                 break;
             }
         }
-        return cellData
+        return rowData
     }
 
     private filterData(items: any[], columnNames: string[]):any[] {
@@ -223,18 +261,25 @@ export class DataFilter {
         return items;
     }
 
-    private filterByEdited<T>(items: any[], 
+    private filterByEdited<T>(
+        dataset: Dataset,
+        items: any[], 
         columnNames: string[],
         datasetData: DatasetData<T>,
         keyFcn: (arg: T, col: string)=>string,
         colFcn?: (col: string)=>string
-        ):any[] {
+        ):any[] {            
         items = items.filter(item=>{
             let filter = false;
+            let data:any = item
+            let isLocalEdit:any = data.datasetId === dataset.id
+            if ( isLocalEdit ) {
+                return true
+            }
             columnNames.forEach(col=>{
                 let key = keyFcn(item, col)
                 let colName = colFcn ? colFcn(col) : col
-                if ( datasetData.userEdits.find(m=>m.columnName==colName && m.key==key) !== undefined) {
+                if ( datasetData.userEdits.find(m=>m.columnName.toLowerCase()==colName.toLowerCase() && m.key==key) !== undefined) {
                     filter = true
                 }
             })
