@@ -1,15 +1,21 @@
 using System.Text.Json.Serialization;
+using NHibernate.Classic;
 using NHibernate.Mapping.Attributes;
 
 namespace SmartEnergyLabDataApi.Data
 {
 
     [Class(0, Table = "loadflow_zones")]
-    public class Zone : IId, IDataset
+    public class Zone : IId, IDataset, ILifecycle
     {
         public Zone()
         {
 
+        }
+
+        public Zone(Dataset dataset)
+        {
+            Dataset = dataset;
         }
 
         /// <summary>
@@ -25,5 +31,40 @@ namespace SmartEnergyLabDataApi.Data
         [JsonIgnore()]
         [ManyToOne(Column = "DatasetId", Cascade = "none")]
         public virtual Dataset Dataset { get; set; }
+
+        public virtual int DatasetId {
+            get {
+                return Dataset.Id;
+            }
+        }
+
+        public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
+        {
+            //
+            var nds = s.QueryOver<Node>().Where( m=>m.Zone == this).List();
+            foreach( var nd in nds) {
+                nd.Zone = null;
+            }
+            //
+            var bzs = s.QueryOver<BoundaryZone>().Where( m=>m.Zone == this).List();
+            foreach( var bz in bzs) {
+                s.Delete(bz);
+            }
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual void OnLoad(NHibernate.ISession s, object id)
+        {
+        }
+
+        public virtual LifecycleVeto OnSave(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual LifecycleVeto OnUpdate(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
     }
 }

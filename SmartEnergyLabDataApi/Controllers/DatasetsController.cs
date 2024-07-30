@@ -103,8 +103,8 @@ public class DatasetsController : ControllerBase
     /// <param name="editItem">data for item to be edited</param>
     [HttpPost]
     [Route("EditItem")]
-    public IActionResult EditItem([FromBody] LoadflowEditItem editItem) {
-        using ( var m = new LoadflowEditItemModel(this,editItem)) {
+    public IActionResult EditItem([FromBody] EditItem editItem) {
+        using ( var m = new EditItemModel(this,editItem)) {
             if ( m.Save() ) {
                 return Ok();
             } else {
@@ -119,8 +119,8 @@ public class DatasetsController : ControllerBase
     /// <param name="editItem">data for item to be deleted</param>
     [HttpPost]
     [Route("DeleteItem")]
-    public void DeleteItem([FromBody] LoadflowEditItem editItem) {
-        using ( var m = new LoadflowEditItemModel(this,editItem)) {
+    public void DeleteItem([FromBody] EditItem editItem) {
+        using ( var m = new EditItemModel(this,editItem)) {
             m.Delete();
         }
     }
@@ -131,8 +131,8 @@ public class DatasetsController : ControllerBase
     /// <param name="editItem">data for item to be undeleted</param>
     [HttpPost]
     [Route("UnDeleteItem")]
-    public void UnDeleteItem([FromBody] LoadflowEditItem editItem) {
-        using ( var m = new LoadflowEditItemModel(this,editItem)) {
+    public void UnDeleteItem([FromBody] EditItem editItem) {
+        using ( var m = new EditItemModel(this,editItem)) {
             m.UnDelete();
         }
     }

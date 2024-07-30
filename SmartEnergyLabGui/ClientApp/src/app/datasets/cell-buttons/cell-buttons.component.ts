@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { DatasetsService } from '../datasets.service';
 import { ICellEditorDataDict } from '../cell-editor/cell-editor.component';
-import { DialogService } from 'src/app/dialogs/dialog.service';
 
 @Component({
     selector: 'app-cell-buttons',
@@ -27,6 +26,9 @@ export class CellButtonsComponent implements OnInit {
     @Output()
     onEdit: EventEmitter<any> = new EventEmitter<any>()
 
+    @Output()
+    onDelete: EventEmitter<IDeleteItem> = new EventEmitter<IDeleteItem>()
+
     edit() {
         // Check result count and ask user if necessary
         this.datasetsService.canEdit( ()=>{
@@ -39,9 +41,14 @@ export class CellButtonsComponent implements OnInit {
             if ( typeof this.element.id.value !== "number") {
                 throw "unexpected type for id"
             }
-            let id:number = this.element.id.value
-            this.datasetsService.deleteItemWithCheck(id,this.typeName,()=>{
-            })    
+            // see if we can delete the item
+            let e = { element: this.element, canDelete: true }
+            this.onDelete.emit(e);
+            // if so go ahead and delete with further verification
+            if ( e.canDelete) {
+                let id:number = this.element.id.value
+                this.datasetsService.deleteItemWithCheck(id,this.typeName,()=>{})            
+            }
         }
     }
 
@@ -60,4 +67,9 @@ export class CellButtonsComponent implements OnInit {
         return this.element && this.element._isLocalEdit
     }
 
+}
+
+export interface IDeleteItem {
+    element: ICellEditorDataDict,
+    canDelete: boolean
 }

@@ -80,7 +80,7 @@ public class Datasets : DataSet
             out List<T> deletedData) 
             where T: class {
         // this is the dataset plus the heirarchy going back to root
-        var datasetIds = GetAllDatasetIds(datasetId);
+        var datasetIds = GetInheritedDatasetIds(datasetId);
         //
         if ( datasetIds.Length==0) {
             throw new Exception($"No datasets found for datasetId=[{datasetId}]");
@@ -256,7 +256,7 @@ public class Datasets : DataSet
             Take(1).SingleOrDefault();
     }
 
-    public int[] GetAllDatasetIds(int datasetId) {
+    public int[] GetInheritedDatasetIds(int datasetId) {
 
         var q = Session.QueryOver<Dataset>().
             Where(m=>m.Id == datasetId).

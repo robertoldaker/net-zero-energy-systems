@@ -58,8 +58,13 @@ export class MessageDialogComponent implements OnInit {
 }
 
 export enum MessageDialogIcon {Warning,Error,Info}
-export interface MessageDialog {
-    message: string
-    icon: MessageDialogIcon
-    buttons: DialogFooterButtonsEnum
+export class MessageDialog {
+    constructor(msg:string, icon: MessageDialogIcon = MessageDialogIcon.Info, buttons: DialogFooterButtonsEnum=DialogFooterButtonsEnum.Close) {
+        this.message = msg
+        this.icon = icon;
+        this.buttons = buttons
+    }
+    message: string;
+    icon: MessageDialogIcon;
+    buttons: DialogFooterButtonsEnum;
 }

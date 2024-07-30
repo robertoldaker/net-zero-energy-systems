@@ -331,6 +331,12 @@ export class DataClientService implements ILogs {
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
     }
 
+    CanDelete(typeName: string, id: number, onLoad: (resp: string)=> void | undefined) {
+        this.getRequest<string>(
+            `/Loadflow/CanDelete?typeName=${typeName}&id=${id}`,
+            onLoad);
+    }
+
     /**
      * Datasets
      */
@@ -370,7 +376,6 @@ export class DataClientService implements ILogs {
             `/Datasets/ResultCount?datasetId=${datasetId}`,
             onLoad);
     }
-
 
     /**
      * Elsi

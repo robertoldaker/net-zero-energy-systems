@@ -1,0 +1,12 @@
+<app-dialog-header [dialogRef]="dialogRef">{{title}}</app-dialog-header>
+<div mat-dialog-content id="content">
+    <form [formGroup]="form">
+        <div class="row" style="margin-bottom: 2rem">
+            <div>
+                <app-dialog-text-input [dialog]="dialog" name="code" placeholder="Enter code" label="Code"></app-dialog-text-input>
+            </div>
+        </div>
+    </form>
+</div>
+<app-dialog-footer [dialogRef]="dialogRef" (onOk)="save()"></app-dialog-footer>
+

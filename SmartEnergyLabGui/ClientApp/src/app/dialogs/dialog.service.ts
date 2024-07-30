@@ -17,8 +17,11 @@ import { ElsiHelpDialogComponent } from '../elsi/elsi-help-dialog/elsi-help-dial
 import { NeedsLogonComponent } from '../main/main-menu/needs-logon/needs-logon.component';
 import { ResetPasswordComponent } from '../users/reset-password/reset-password.component';
 import { DatasetDialogComponent } from '../datasets/dataset-dialog/dataset-dialog.component';
-import { LoadflowNodeDialogComponent } from '../loadflow/loadflow-node-dialog/loadflow-node-dialog.component';
+import { LoadflowNodeDialogComponent } from '../loadflow/dialogs/loadflow-node-dialog/loadflow-node-dialog.component';
 import { ICellEditorDataDict } from '../datasets/cell-editor/cell-editor.component';
+import { LoadflowZoneDialogComponent } from '../loadflow/dialogs/loadflow-zone-dialog/loadflow-zone-dialog.component';
+import { LoadflowBoundaryDialogComponent } from '../loadflow/dialogs/loadflow-boundary-dialog/loadflow-boundary-dialog.component';
+import { LoadflowBranchDialogComponent } from '../loadflow/dialogs/loadflow-branch-dialog/loadflow-branch-dialog.component';
 
 @Injectable({
     providedIn: 'root'
@@ -85,7 +88,7 @@ export class DialogService {
         });
     }
 
-    showMessageDialog(data: MessageDialog | null, onOk: ()=>void) {
+    showMessageDialog(data: MessageDialog | null, onOk?: ()=>void ) {
         let options = Object.assign({},this.defaultOptions)
         options.data = data
         let dialogRef = this.dialog.open(MessageDialogComponent, options)
@@ -112,5 +115,23 @@ export class DialogService {
         let options = Object.assign({},this.defaultOptions)
         options.data = cellObj
         this.dialog.open(LoadflowNodeDialogComponent, options)
+    }
+
+    showLoadflowZoneDialog(cellObj?: ICellEditorDataDict) {
+        let options = Object.assign({},this.defaultOptions)
+        options.data = cellObj
+        this.dialog.open(LoadflowZoneDialogComponent, options)
+    }
+
+    showLoadflowBoundaryDialog(cellObj?: ICellEditorDataDict) {
+        let options = Object.assign({},this.defaultOptions)
+        options.data = cellObj
+        this.dialog.open(LoadflowBoundaryDialogComponent, options)
+    }
+
+    showLoadflowBranchDialog(cellObj?: ICellEditorDataDict) {
+        let options = Object.assign({},this.defaultOptions)
+        options.data = cellObj
+        this.dialog.open(LoadflowBranchDialogComponent, options)
     }
 }

@@ -1,17 +1,24 @@
 using System.Text.Json.Serialization;
+using MySqlX.XDevAPI;
+using NHibernate.Classic;
 using NHibernate.Mapping.Attributes;
 
 namespace SmartEnergyLabDataApi.Data
 {
 
     [Class(0, Table = "loadflow_boundaries")]
-    public class Boundary : IId, IDataset
+    public class Boundary : IId, IDataset, ILifecycle
     {
         public Boundary()
         {
 
         }
 
+        public Boundary(Dataset dataset)
+        {
+            Dataset = dataset;
+        }
+        
         /// <summary>
         /// Database identifier
         /// </summary>
@@ -27,5 +34,36 @@ namespace SmartEnergyLabDataApi.Data
         public virtual Dataset Dataset { get; set; }
 
         public virtual IList<Zone> Zones {get; set;}
+
+        public virtual int DatasetId {
+            get {
+                return Dataset.Id;
+            }
+        }
+
+        public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
+        {
+            //
+            var bzs = s.QueryOver<BoundaryZone>().Where( m=>m.Boundary == this).List();
+            foreach( var bz in bzs) {
+                s.Delete(bz);
+            }
+            //
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual void OnLoad(NHibernate.ISession s, object id)
+        {
+        }
+
+        public virtual LifecycleVeto OnSave(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual LifecycleVeto OnUpdate(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
     }
 }

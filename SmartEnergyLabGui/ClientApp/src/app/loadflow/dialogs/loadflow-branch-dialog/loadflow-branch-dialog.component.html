@@ -1,0 +1,27 @@
+<app-dialog-header [dialogRef]="dialogRef">{{title}}</app-dialog-header>
+<div mat-dialog-content id="content">
+    <form [formGroup]="form">
+        <div class="row">
+            <div>
+                <app-dialog-text-input [dialog]="dialog" name="code" placeholder="Enter code" label="Code"></app-dialog-text-input>
+            </div>
+        </div>
+        <div class="row">
+            <div>
+                <app-dialog-selector [dialog]="dialog"  name="nodeId1" label="Node 1" [data]="nodes" [displayFcn]="displayNode"></app-dialog-selector>
+            </div>    
+            <div>
+                <app-dialog-selector [dialog]="dialog"  name="nodeId2" label="Node 2" [data]="nodes" [displayFcn]="displayNode"></app-dialog-selector>
+            </div>    
+        </div>
+        <div class="row">
+            <div>
+                <app-dialog-text-input [dialog]="dialog" name="x" placeholder="Enter reactance" label="Reactance (x)"></app-dialog-text-input>
+            </div>
+            <div>
+                <app-dialog-text-input [dialog]="dialog" name="cap" placeholder="Enter capacity in MW" label="Capacity (MW)"></app-dialog-text-input>
+            </div>    
+        </div>
+    </form>
+</div>
+<app-dialog-footer [dialogRef]="dialogRef" (onOk)="save()"></app-dialog-footer>

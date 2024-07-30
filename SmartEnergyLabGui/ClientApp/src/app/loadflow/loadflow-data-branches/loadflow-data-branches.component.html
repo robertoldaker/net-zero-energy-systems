@@ -1,8 +1,16 @@
-<app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)"></app-table-paginator>
+<app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)" (onAdd)="add()" [typeName]="typeName"></app-table-paginator>
 
 <div style="overflow: auto; height: calc(100vh - 170px)">
-    <table style="width: 100%;" mat-table [dataSource]="branches" [trackBy]="getBranchId" matSort matSortDisableClear (matSortChange)="sortTable($event)">
+    <table style="width: 100%;" mat-table [dataSource]="branches" [trackBy]="getBranchId" matSort  matSortActive="code" matSortDirection="asc"  matSortDisableClear (matSortChange)="sortTable($event)">
     
+        <!-- buttons Column -->
+        <ng-container matColumnDef="buttons">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-buttons [element]="element" [typeName]="typeName" (onEdit)="edit($event)"></app-cell-buttons>
+            </td>
+        </ng-container>
+
         <!-- code -->
         <ng-container matColumnDef="code">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Branch</th>
@@ -68,7 +76,7 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{isDeleted: row._isDeleted}"></tr>
     </table>            
 </div>
     

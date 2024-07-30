@@ -1,6 +1,6 @@
 <mat-divider></mat-divider>
 <div *ngIf="buttons==DialogFooterButtons.OKCancel" mat-dialog-actions>
-    <button mat-button mat-raised-button color="primary" (click)="ok()" cdkFocusInitial>Ok</button>
+    <button mat-button mat-raised-button color="primary" (click)="ok()">Ok</button>
     <button mat-button color="primary" (click)="close()">Cancel</button>
 </div>
 <div *ngIf="buttons==DialogFooterButtons.Close" mat-dialog-actions>

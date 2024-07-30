@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -7,7 +8,9 @@ using NHibernate.Hql.Ast.ANTLR.Tree;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Models;
 
-public class LoadflowEditItem {
+namespace SmartEnergyLabDataApi.Data;
+
+public class EditItem {
     public int id {get; set;}
     public string className {get; set;}
     public int datasetId {get; set;}
@@ -15,33 +18,79 @@ public class LoadflowEditItem {
 
 }
 
-public class LoadflowEditItemModel : DbModel {
-    private LoadflowEditItem _editItem;
+public interface IEditItemHandler {
+
+    object GetItem(EditItemModel m);
+
+    void Check(EditItemModel m);
+
+    void Save(EditItemModel m);
+
+    void BeforeUndelete(EditItemModel m);
+}
+
+public class EditItemModel : DbModel {
+    private EditItem _editItem;
     private Dataset _dataset;
+    private IEditItemHandler _handler;
     private object _item;
+
+    private static Dictionary<string,IEditItemHandler> _handlerDict = new Dictionary<string, IEditItemHandler>();
+
+    public static void AddHandler(string className, IEditItemHandler handler) {
+        lock( _handlerDict) {
+            if ( _handlerDict.ContainsKey(className) ) {
+                throw new Exception($"EditItemModel already has a handler for className=[{className}]");
+            }
+            _handlerDict.Add(className,handler);
+        }
+    }
+
+    private IEditItemHandler getHandler(string className) {
+        lock( _handlerDict) {
+            if ( _handlerDict.ContainsKey(className)) {
+                return _handlerDict[className];
+            } else {
+                throw new Exception($"No handler defined for className=[{className}]");
+            }
+        }
+    }
 
     private JsonSerializerOptions _jsonOptions = new JsonSerializerOptions() {
                  PropertyNameCaseInsensitive = true
             };
-    public LoadflowEditItemModel(ControllerBase c, LoadflowEditItem editItem) : base(c) {
+
+    public EditItemModel(ControllerBase c, EditItem editItem) : base(c) {
         _editItem = editItem;
         _dataset = _da.Datasets.GetDataset(editItem.datasetId);
         if ( _dataset==null ) {
             throw new Exception($"Cannot find dataset with id=[{editItem.datasetId}]");
         }
-        setItem();
+        _handler = getHandler(_editItem.className);        
+        _item = _handler.GetItem(this);
     }
 
-    private void setItem() {
-        var className = _editItem.className;
-        var id = _editItem.id;
-        if ( className == "Node") {
-            _item = id>0 ? _da.Loadflow.GetNode(id) : new Node(_dataset);
-        } else {
-            throw new Exception($"Unexpected valus of className [{className}]");
+    public DataAccess Da {
+        get {
+            return _da;
         }
-        if ( _item==null) {
-            throw new Exception($"Could not find item with className [{className}] and id [{id}]");
+    }
+
+    public int ItemId {
+        get {
+            return _editItem.id;
+        }
+    }
+
+    public Dataset Dataset {
+        get {
+            return _dataset;
+        }
+    }
+
+    public object Item {
+        get {
+            return _item;
         }
     }
 
@@ -49,20 +98,14 @@ public class LoadflowEditItemModel : DbModel {
     {
         base.checkModel();
         //
-        if ( _item is Node) {
-            checkNode();
-        } else {
-            throw new Exception($"Unexpected type of item [{_item.GetType().Name}]");
-        }
+        _handler.Check(this);
     }
 
     protected override void beforeSave()
     {
         base.beforeSave();
         if ( IsSourceEdit() ) {
-            if ( _item is Node) {
-                saveNode();
-            }
+            _handler.Save(this);
         } else {
             updateUserEdit();
         }
@@ -102,24 +145,17 @@ public class LoadflowEditItemModel : DbModel {
 
     private void checkNode() {
         // code
-        if ( getString("code",out string code)) {
-            Regex regex = new Regex(@"^[A-Z]{4}\d");
-            var codeMatch = regex.Match(code);        
-            if ( !codeMatch.Success) {
-                this.addError("code","Code must be in form <uppercase-4-letter-code><voltage id><anything>");
-            } 
-        }
-        // demand        
-        checkDouble("demand",0);
-        // generation
-        checkDouble("generation",0);
-        // external
-        checkBoolean("ext");
-        // zone id
-        checkInt("zoneId");
     }
 
-    private bool getString(string name, out string value) {
+    private void checkZone() {
+    }
+
+    private void saveZone() {
+        //
+    }
+
+
+    public bool GetString(string name, out string value) {
         if ( _editItem.data.TryGetValue(name,out object valueObj)) {
             value = valueObj.ToString();
             return true;
@@ -129,8 +165,8 @@ public class LoadflowEditItemModel : DbModel {
         }
     }
 
-    private bool? checkBoolean(string name) {
-        if ( getString(name, out string boolStr)) {
+    public bool? CheckBoolean(string name) {
+        if ( GetString(name, out string boolStr)) {
             if ( bool.TryParse(boolStr, out bool value) ) {
                 return value;
             } else {
@@ -141,8 +177,8 @@ public class LoadflowEditItemModel : DbModel {
         }
     }
 
-    private int? checkInt(string name) {
-        if ( getString(name, out string intStr)) {
+    public int? CheckInt(string name) {
+        if ( GetString(name, out string intStr)) {
             if ( int.TryParse(intStr, out int value) ) {
                 return value;
             } else {
@@ -153,43 +189,8 @@ public class LoadflowEditItemModel : DbModel {
         }
     }
 
-    private void saveNode() {
-        //
-        Node node = (Node) _item;
-        //
-        if ( getString("code",out string code)) {
-            node.Code = code;
-        }
-        // demand        
-        var demand = checkDouble("demand",0);
-        if ( demand!=null ) {
-            node.Demand = (double) demand;
-        }
-        // generation
-        var generation = checkDouble("generation",0);
-        if ( generation!=null ) {
-            node.Generation = (double) generation;            
-        }
-        // external
-        var ext = checkBoolean("ext");
-        if ( ext!=null) {
-            node.Ext = (bool) ext;
-        }        
-        // zone id
-        var zoneId = checkInt("zoneId");
-        if ( zoneId!=null ) {
-            var zone = _da.Loadflow.GetZone((int) zoneId);
-            node.Zone = zone;
-        } 
-
-        //
-        if ( node.Id==0) {
-            _da.Loadflow.Add(node);
-        }
-    }
-
-    private double? checkDouble(string name, double? low=null, double? high=null) {
-        if ( getString(name, out string valueStr)) {
+    public double? CheckDouble(string name, double? low=null, double? high=null) {
+        if ( GetString(name, out string valueStr)) {
             if ( double.TryParse(valueStr, out double value)) {
                 if ( low!=null && value<low) {
                     this.addError(name,$"Must be >= {low}");
@@ -206,11 +207,22 @@ public class LoadflowEditItemModel : DbModel {
         }
     }
 
+    public int[]? GetIntArray(string name) {
+        if ( _editItem.data.TryGetValue(name,out object jsonObj)) {
+            return ((JsonElement) jsonObj).Deserialize<int[]>();
+        } else {
+            return null;
+        }
+    }
+
+    public void AddError(string name, string message) {
+        addError(name, message);
+    }
+
     public void Delete() {
         if ( IsSourceEdit() ) {
-            if ( _item is Node ) {
-                _da.Loadflow.Delete((Node) _item);
-            }
+            // remove item
+            _da.Session.Delete(_item);
             // remove all user edits associated with object
             var userEdits = _da.Datasets.GetUserEdits(_editItem.className,((IId) _item).Id.ToString());
             foreach( var ue in userEdits) {
@@ -230,7 +242,7 @@ public class LoadflowEditItemModel : DbModel {
     }
 
     public void UnDelete() {
-
+        _handler.BeforeUndelete(this);
         var ue = _da.Datasets.GetDeleteUserEdit(_dataset.Id, _editItem.className, _editItem.id.ToString());
         if ( ue!=null ) {
             _da.Datasets.Delete(ue);

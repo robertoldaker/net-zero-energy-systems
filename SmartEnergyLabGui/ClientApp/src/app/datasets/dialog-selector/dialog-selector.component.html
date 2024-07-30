@@ -1,9 +1,12 @@
 <div [formGroup]="dialog.form">
     <mat-form-field appearance="fill" [color]="'primary'">
         <mat-label>{{label}}</mat-label>             
-        <mat-select [formControlName]="name">
-            <ng-content></ng-content>
+        <mat-select [formControlName]="name" [multiple]="multiple">
+            <mat-option *ngFor="let d of data" [value]="valueFcn(d)">
+                <span>{{displayFcn(d)}}</span> 
+            </mat-option>
         </mat-select>
-    </mat-form-field>    
+        <mat-error>{{error}}</mat-error>    
+    </mat-form-field>
 </div>
 

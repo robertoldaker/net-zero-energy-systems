@@ -7,7 +7,7 @@ import { UserEdit } from "../data/app.data";
 @Component({
     selector: 'app-base',
     template: `<p>base works!</p>`,
-    styles: []
+    styleUrls: ['./dialog-base.css']
 })
 export class DialogBase extends ComponentBase {
 

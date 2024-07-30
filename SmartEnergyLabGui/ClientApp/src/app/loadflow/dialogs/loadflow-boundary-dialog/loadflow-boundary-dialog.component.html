@@ -1,0 +1,15 @@
+<app-dialog-header [dialogRef]="dialogRef">{{title}}</app-dialog-header>
+<div mat-dialog-content id="content">
+    <form [formGroup]="form">
+        <div class="row">
+            <div>
+                <app-dialog-text-input [dialog]="dialog" name="code" placeholder="Enter code" label="Code"></app-dialog-text-input>
+            </div>
+            <div>
+                <app-dialog-selector [dialog]="dialog"  name="zoneIds" label="Zone" [data]="zones" [displayFcn]="displayZone" [multiple]="true"></app-dialog-selector>
+            </div>    
+        </div>
+    </form>
+</div>
+<app-dialog-footer [dialogRef]="dialogRef" (onOk)="save()"></app-dialog-footer>
+

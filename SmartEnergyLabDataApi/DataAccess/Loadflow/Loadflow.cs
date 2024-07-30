@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -63,7 +64,7 @@ namespace SmartEnergyLabDataApi.Data
         }
 
         public IList<Node> GetNodesWithLocations(int datasetId) {
-            var datasetIds = this.DataAccess.Datasets.GetAllDatasetIds(datasetId);
+            var datasetIds = this.DataAccess.Datasets.GetInheritedDatasetIds(datasetId);
             var nodes = Session.QueryOver<Node>().
                 Where( m=>m.Dataset.Id.IsIn(datasetIds) ).
                 Fetch(SelectMode.Fetch, m=>m.Zone).
@@ -77,7 +78,25 @@ namespace SmartEnergyLabDataApi.Data
             foreach( var node in nodes) {
                 node.SetVoltage();
             }
-        }    
+        } 
+
+        public bool NodeExists(int datasetId, string code, out Dataset? dataset) {
+            // need to look at all datasets belonging to the user
+            var derivedIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
+            var inheritedIds = DataAccess.Datasets.GetInheritedDatasetIds(datasetId);
+            var node = Session.QueryOver<Node>().
+                Where( m=>m.Code.IsInsensitiveLike(code)).
+                Where( m=>m.Dataset.Id.IsIn(derivedIds) || m.Dataset.Id.IsIn(inheritedIds)).
+                Fetch(SelectMode.Fetch,m=>m.Dataset).
+                Take(1).
+                SingleOrDefault();
+            if ( node!=null) {
+                dataset = node.Dataset;
+            } else {
+                dataset = null;
+            }
+            return node!=null;
+        }
 
         #endregion
 
@@ -101,7 +120,25 @@ namespace SmartEnergyLabDataApi.Data
             Where( m=>m.Dataset == dataset).
             OrderBy(m=>m.Id).Asc.
             List();
-        }        
+        }
+
+        public bool ZoneExists(int datasetId, string code, out Dataset? dataset) {
+            // need to look at all datasets belonging to the user
+            var derivedIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
+            var inheritedIds = DataAccess.Datasets.GetInheritedDatasetIds(datasetId);
+            var zone = Session.QueryOver<Zone>().
+                Where( m=>m.Code.IsInsensitiveLike(code)).
+                Where( m=>m.Dataset.Id.IsIn(derivedIds) || m.Dataset.Id.IsIn(inheritedIds)).
+                Fetch(SelectMode.Fetch,m=>m.Dataset).
+                Take(1).
+                SingleOrDefault();
+            if ( zone!=null) {
+                dataset = zone.Dataset;
+            } else {
+                dataset = null;
+            }
+            return zone!=null;
+        }
         #endregion
 
         #region Boundary
@@ -116,6 +153,11 @@ namespace SmartEnergyLabDataApi.Data
         public Boundary GetBoundary(string code) {
             return Session.QueryOver<Boundary>().Where( m=>m.Code == code).Take(1).SingleOrDefault();
         }
+
+        public Boundary GetBoundary(int id) {
+            return Session.Get<Boundary>(id);
+        }
+
         public IList<Boundary> GetBoundaries(Dataset dataset) {
             return Session.QueryOver<Boundary>().
                 Where( m=>m.Dataset == dataset).
@@ -144,6 +186,8 @@ namespace SmartEnergyLabDataApi.Data
         public IList<BoundaryZone> GetBoundaryZones(int boundaryId) {
             return Session.QueryOver<BoundaryZone>().
             Where(m=>m.Boundary.Id == boundaryId).
+            Fetch(SelectMode.Fetch,m=>m.Boundary).
+            Fetch(SelectMode.Fetch,m=>m.Zone).
             OrderBy(m=>m.Id).Asc.List();
         }
 
@@ -176,6 +220,14 @@ namespace SmartEnergyLabDataApi.Data
         public Branch GetBranch(string code) {
             return Session.QueryOver<Branch>().Where( m=>m.Code == code).Take(1).SingleOrDefault();
         }
+        public Branch GetBranch(int id) {
+            return Session.QueryOver<Branch>().
+                    Where( m=>m.Id == id).
+                    Fetch(SelectMode.Fetch,m=>m.Node1).
+                    Fetch(SelectMode.Fetch,m=>m.Node2).
+                    Take(1).SingleOrDefault();
+        }
+
         public IList<Branch> GetBranches(Dataset dataset) {
             return Session.QueryOver<Branch>().
                 Where( m=>m.Dataset == dataset).
@@ -183,6 +235,24 @@ namespace SmartEnergyLabDataApi.Data
                 Fetch(SelectMode.Fetch,m=>m.Node2).
                 OrderBy(m=>m.Id).Asc.
                 List();
+        }
+
+        public bool BranchExists(int datasetId, string code, out Dataset? dataset) {
+            // need to look at all datasets belonging to the user
+            var derivedIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
+            var inheritedIds = DataAccess.Datasets.GetInheritedDatasetIds(datasetId);
+            var branch = Session.QueryOver<Branch>().
+                Where( m=>m.Code.IsInsensitiveLike(code)).
+                Where( m=>m.Dataset.Id.IsIn(derivedIds) || m.Dataset.Id.IsIn(inheritedIds)).
+                Fetch(SelectMode.Fetch,m=>m.Dataset).
+                Take(1).
+                SingleOrDefault();
+            if ( branch!=null) {
+                dataset = branch.Dataset;
+            } else {
+                dataset = null;
+            }
+            return branch!=null;
         }
         #endregion
 
@@ -295,7 +365,7 @@ namespace SmartEnergyLabDataApi.Data
         }
 
         public IList<Branch> GetVisibleBranches(int datasetId) {
-            var datasetIds = this.DataAccess.Datasets.GetAllDatasetIds(datasetId);
+            var datasetIds = this.DataAccess.Datasets.GetInheritedDatasetIds(datasetId);
             Node node1=null, node2=null;
             GridSubstationLocation location1=null, location2=null;
             var branches = Session.QueryOver<Branch>().
@@ -330,6 +400,27 @@ namespace SmartEnergyLabDataApi.Data
         public LoadflowResult GetLoadflowResult(int datasetId) {
             return Session.QueryOver<LoadflowResult>().Where( m=>m.Dataset.Id == datasetId).Take(1).SingleOrDefault();
         }
+        #endregion
+
+        #region general
+        public string CanDelete(string typeName, int id) {
+            var msg = "";
+            if ( typeName == "Node") {
+                var branches = Session.QueryOver<Branch>().Where( m=>m.Node1.Id == id || m.Node2.Id == id).List();
+                if ( branches.Count>0) {
+                    msg+="Cannot delete this node since its used in these branches [";
+                    foreach( var b in branches) {
+                        msg+=b.Code;
+                        if ( b!=branches.Last()) {
+                            msg+=", ";
+                        }
+                    }
+                    msg+="]";
+                }
+            }
+            return msg;
+        }
+
         #endregion
     }
 }

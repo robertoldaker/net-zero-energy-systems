@@ -354,8 +354,8 @@ export interface Branch {
     node2Code: string
     node1Name: string
     node2Name: string
-    node1: Node
-    node2: Node
+    node1Id: number
+    node2Id: number
     outaged: boolean
     powerFlow: number | null
     bFlow: number
@@ -385,6 +385,7 @@ export interface Ctrl {
 export interface Zone {
     id: number
     code: string
+    datasetId: number
 }
 
 export interface NetworkData {

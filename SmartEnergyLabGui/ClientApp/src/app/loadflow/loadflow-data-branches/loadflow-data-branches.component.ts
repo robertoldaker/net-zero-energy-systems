@@ -6,18 +6,19 @@ import { LoadflowDataService } from '../loadflow-data-service.service';
 import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
+import { DialogService } from 'src/app/dialogs/dialog.service';
 
 @Component({
   selector: 'app-loadflow-data-branches',
   templateUrl: './loadflow-data-branches.component.html',
-  styleUrls: ['./loadflow-data-branches.component.css']
+  styleUrls: ['../loadflow-data-common.css','./loadflow-data-branches.component.css']
 })
 export class LoadflowDataBranchesComponent extends ComponentBase {
 
-    constructor(private dataService: LoadflowDataService) {
+    constructor(private dataService: LoadflowDataService, private dialogService: DialogService) {
         super()
         this.createDataSource(dataService.networkData.branches)
-        this.displayedColumns = ['code','node1Code','node2Code','region','x','cap','linkType','freePower','powerFlow']
+        this.displayedColumns = ['buttons','code','node1Code','node2Code','region','x','cap','linkType','freePower','powerFlow']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.createDataSource(results.branches)
         }))
@@ -39,9 +40,10 @@ export class LoadflowDataBranchesComponent extends ComponentBase {
     @ViewChild(TablePaginatorComponent)
     tablePaginator: TablePaginatorComponent | undefined    
     datasetData?: DatasetData<Branch>
-    dataFilter: DataFilter = new DataFilter(20) 
+    dataFilter: DataFilter = new DataFilter(20, { active: 'code', direction: 'asc'}) 
     branches: MatTableDataSource<any> = new MatTableDataSource()
     displayedColumns: string[]
+    typeName: string = "Branch"
 
     getBranchId(index: number, item: Branch) {
         return item.id;
@@ -56,5 +58,14 @@ export class LoadflowDataBranchesComponent extends ComponentBase {
     filterTable(e: DataFilter) {
         this.createDataSource()
     }
+
+    edit( e: ICellEditorDataDict) {
+        this.dialogService.showLoadflowBranchDialog(e);
+    }
+
+    add() {
+        this.dialogService.showLoadflowBranchDialog();
+    }
+
 
 }

@@ -3,21 +3,22 @@ import { Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Zone, DatasetData } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
-import { DataFilter } from 'src/app/datasets/cell-editor/cell-editor.component';
+import { DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
+import { DialogService } from 'src/app/dialogs/dialog.service';
 
 @Component({
     selector: 'app-loadflow-data-zones',
     templateUrl: './loadflow-data-zones.component.html',
-    styleUrls: ['./loadflow-data-zones.component.css']
+    styleUrls: ['../loadflow-data-common.css','./loadflow-data-zones.component.css']
 })
 export class LoadflowDataZonesComponent extends ComponentBase {
 
-    constructor(private dataService: LoadflowDataService) {
+    constructor(private dataService: LoadflowDataService, private dialogService:DialogService) {
         super();
         this.createDataSource(this.dataService.networkData.zones);
-        this.displayedColumns = ['code']
+        this.displayedColumns = ['buttons','code']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.createDataSource(results.zones);
         }))
@@ -33,15 +34,15 @@ export class LoadflowDataZonesComponent extends ComponentBase {
         }
         if ( this.datasetData ) {
             let cellData = this.dataFilter.GetCellDataObjects(this.dataService.dataset,this.datasetData,(item)=>item.code)
-            this.nodes = new MatTableDataSource(cellData)        
+            this.zones = new MatTableDataSource(cellData)        
         } 
     }
     
     @ViewChild(TablePaginatorComponent)
     tablePaginator: TablePaginatorComponent | undefined    
     datasetData?: DatasetData<Zone>
-    dataFilter: DataFilter = new DataFilter(20) 
-    nodes: MatTableDataSource<any> = new MatTableDataSource()
+    dataFilter: DataFilter = new DataFilter(20,{ active: 'code', direction: 'asc'}) 
+    zones: MatTableDataSource<any> = new MatTableDataSource()
     displayedColumns: string[]
 
     getNodeId(index: number, item: Zone) {
@@ -56,6 +57,14 @@ export class LoadflowDataZonesComponent extends ComponentBase {
 
     filterTable(e: DataFilter) {
         this.createDataSource()
+    }
+
+    edit( e: ICellEditorDataDict) {
+        this.dialogService.showLoadflowZoneDialog(e);
+    }
+
+    add() {
+        this.dialogService.showLoadflowZoneDialog();
     }
 
 }

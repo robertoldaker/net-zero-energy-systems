@@ -10,7 +10,7 @@ import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-
 @Component({
     selector: 'app-loadflow-data-ctrls',
     templateUrl: './loadflow-data-ctrls.component.html',
-    styleUrls: ['./loadflow-data-ctrls.component.css']
+    styleUrls: ['../loadflow-data-common.css','./loadflow-data-ctrls.component.css']
 })
 export class LoadflowDataCtrlsComponent extends ComponentBase {
 

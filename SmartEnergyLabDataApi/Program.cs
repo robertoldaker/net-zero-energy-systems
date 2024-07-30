@@ -140,6 +140,11 @@ public static class Program
         // Needed to read spreadsheets
         System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
+        EditItemModel.AddHandler("Node", new NodeItemHandler());
+        EditItemModel.AddHandler("Zone", new ZoneItemHandler());
+        EditItemModel.AddHandler("Boundary", new BoundaryItemHandler());
+        EditItemModel.AddHandler("Branch", new BranchItemHandler());
+
         app.Run();
 
     }

@@ -43,6 +43,12 @@ namespace SmartEnergyLabDataApi.Loadflow
             }
             _stageResults = new StageResults();
             bo = new Boundary(this);
+            // create nodes wrapper
+            _nodes = new Nodes(_da,_dataset.Id);
+            // create branches wrapper
+            _branches = new Branches(_da,_dataset.Id,_nodes);
+            // create ctrl wrapper
+            _ctrls = new Ctrls(_da,_dataset.Id,_branches);
         }
 
         public void Dispose()
@@ -118,19 +124,12 @@ namespace SmartEnergyLabDataApi.Loadflow
             StageResult sr=null;
             try {
                 sr = _stageResults.NewStage("Link to nodes table");
-                // create nodes wrapper
-                _nodes = new Nodes(_da,_dataset.Id);
                 _stageResults.StageResult( sr, StageResultEnum.Pass, $"Count {_nodes.Count}");
 
-                // create branches wrapper
                 sr = _stageResults.NewStage("Link to branches table");
-                _branches = new Branches(_da,_dataset.Id,_nodes);
                 _stageResults.StageResult( sr, StageResultEnum.Pass, $"Count {_branches.Count}");
-                sr = _stageResults.NewStage("Link to branches table");
 
-                // create ctrl wrapper
                 sr = _stageResults.NewStage("Link to controls table");
-                _ctrls = new Ctrls(_da,_dataset.Id,_branches);
                 _stageResults.StageResult( sr, StageResultEnum.Pass, $"Count {_ctrls.Count}");
                 // No nodes or branches then return
                 if ( _nodes.Count==0 || _branches.Count==0 )                 {

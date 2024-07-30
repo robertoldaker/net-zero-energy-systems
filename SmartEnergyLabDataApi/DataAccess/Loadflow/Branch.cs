@@ -13,6 +13,11 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
+        public Branch(Dataset dataset)
+        {
+            Dataset = dataset;
+        }
+
         /// <summary>
         /// Database identifier
         /// </summary>
@@ -71,6 +76,11 @@ namespace SmartEnergyLabDataApi.Data
         [ManyToOne(Column = "DatasetId", Cascade = "none")]
         public virtual Dataset Dataset { get; set; }
 
+        public virtual int DatasetId {
+            get {
+                return Dataset.Id;
+            }
+        }
 
         public virtual string LineName {
             get {
@@ -99,6 +109,18 @@ namespace SmartEnergyLabDataApi.Data
         public virtual string Node2Name {
             get {
                 return Node2.Name;
+            }
+        }
+
+        public virtual int Node1Id {
+            get {
+                return Node1.Id;
+            }
+        }
+        
+        public virtual int Node2Id {
+            get {
+                return Node2.Id;
             }
         }
 

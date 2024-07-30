@@ -6,11 +6,7 @@
                 <app-dialog-text-input [dialog]="dialog" name="code" placeholder="Enter code" label="Code"></app-dialog-text-input>
             </div>
             <div>
-                <app-dialog-selector [dialog]="dialog"  name="zoneId" label="Zone">
-                    <mat-option *ngFor="let z of zones" [value]="z.id">
-                        <span>{{z.code}}</span>    
-                    </mat-option>
-                </app-dialog-selector>                        
+                <app-dialog-selector [dialog]="dialog"  name="zoneId" label="Zone" [data]="zones" [displayFcn]="displayZone"></app-dialog-selector>
             </div>    
         </div>
         <div class="row">

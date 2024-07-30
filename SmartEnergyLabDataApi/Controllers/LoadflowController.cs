@@ -155,7 +155,8 @@ namespace SmartEnergyLabDataApi.Controllers
         [Route("NetworkData")]
         public LoadflowNetworkData NetworkData(int datasetId) {
             using( var lf = new Loadflow.Loadflow(datasetId) ) {
-                lf.NetCheck();
+                //?? Can generate exceptons with incomplete data
+                //??lf.NetCheck();
                 return new LoadflowNetworkData(lf);
             }
         }
@@ -306,6 +307,18 @@ namespace SmartEnergyLabDataApi.Controllers
                 }
                 da.Loadflow.SetNodeVoltages(dataset.Id);
                 da.CommitChanges();
+            }
+        }
+
+
+        /// <summary>
+        /// Says whether a loadflow object can be deleted
+        /// </summary>
+        [HttpGet]
+        [Route("CanDelete")]
+        public IActionResult CanDelete(string typeName, int id) {
+            using( var da = new DataAccess()) {
+                return Ok(da.Loadflow.CanDelete(typeName,id));
             }
         }
 

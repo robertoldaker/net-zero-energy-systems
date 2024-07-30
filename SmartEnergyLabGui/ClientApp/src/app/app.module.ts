@@ -140,13 +140,16 @@ import { DatasetDialogComponent } from './datasets/dataset-dialog/dataset-dialog
 import { TablePaginatorComponent } from './datasets/table-paginator/table-paginator.component';
 import { LoadflowDataBoundariesComponent } from './loadflow/loadflow-data-boundaries/loadflow-data-boundaries.component';
 import { LoadflowDataZonesComponent } from './loadflow/loadflow-data-zones/loadflow-data-zones.component';
-import { LoadflowNodeDialogComponent } from './loadflow/loadflow-node-dialog/loadflow-node-dialog.component';
+import { LoadflowNodeDialogComponent } from './loadflow/dialogs/loadflow-node-dialog/loadflow-node-dialog.component';
 import { LoadflowMapSearchComponent } from './loadflow/loadflow-map/loadflow-map-search/loadflow-map-search.component';
 import { DialogTextInputComponent } from './datasets/dialog-text-input/dialog-text-input.component';
 import { DialogCheckboxComponent } from './datasets/dialog-checkbox/dialog-checkbox.component';
 import { DialogSelectorComponent } from './datasets/dialog-selector/dialog-selector.component';
 import { DialogBaseInput } from './datasets/dialog-base-input';
 import { CellButtonsComponent } from './datasets/cell-buttons/cell-buttons.component';
+import { LoadflowZoneDialogComponent } from './loadflow/dialogs/loadflow-zone-dialog/loadflow-zone-dialog.component';
+import { LoadflowBoundaryDialogComponent } from './loadflow/dialogs/loadflow-boundary-dialog/loadflow-boundary-dialog.component';
+import { LoadflowBranchDialogComponent } from './loadflow/dialogs/loadflow-branch-dialog/loadflow-branch-dialog.component';
 
 
 @NgModule({
@@ -248,7 +251,10 @@ import { CellButtonsComponent } from './datasets/cell-buttons/cell-buttons.compo
         DialogCheckboxComponent,
         DialogSelectorComponent,
         DialogBaseInput,
-        CellButtonsComponent
+        CellButtonsComponent,
+        LoadflowZoneDialogComponent,
+        LoadflowBoundaryDialogComponent,
+        LoadflowBranchDialogComponent,
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

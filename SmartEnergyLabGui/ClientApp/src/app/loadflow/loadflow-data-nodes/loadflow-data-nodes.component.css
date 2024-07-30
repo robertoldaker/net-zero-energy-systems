@@ -17,14 +17,3 @@
     justify-content: flex-end;
     font-style: italic;
 }
-
-.mat-column-buttons {
-    width: 100px;
-    text-align: left;
-    padding-left: 0 !important;
-}
-
-tr.isDeleted {
-    text-decoration: line-through;
-    opacity: 0.7;
-}
