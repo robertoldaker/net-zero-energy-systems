@@ -237,13 +237,15 @@ namespace SmartEnergyLabDataApi.Data
                 List();
         }
 
-        public bool BranchExists(int datasetId, string code, out Dataset? dataset) {
+        public bool BranchExists(int datasetId, string code, int node1Id, int node2Id, out Dataset? dataset) {
             // need to look at all datasets belonging to the user
             var derivedIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
             var inheritedIds = DataAccess.Datasets.GetInheritedDatasetIds(datasetId);
             var branch = Session.QueryOver<Branch>().
-                Where( m=>m.Code.IsInsensitiveLike(code)).
+                Where( m=>m.Code == code ).
                 Where( m=>m.Dataset.Id.IsIn(derivedIds) || m.Dataset.Id.IsIn(inheritedIds)).
+                Where(m=>m.Node1.Id == node1Id).
+                Where(m=>m.Node2.Id == node2Id).
                 Fetch(SelectMode.Fetch,m=>m.Dataset).
                 Take(1).
                 SingleOrDefault();
@@ -265,6 +267,13 @@ namespace SmartEnergyLabDataApi.Data
         {
             Session.Delete(obj);
         }
+        public Ctrl GetCtrl(int id) {
+            return Session.QueryOver<Ctrl>().
+                Where( m=>m.Id == id).
+                Take(1).
+                SingleOrDefault();
+        }
+
         public IList<Ctrl> GetCtrls(Dataset dataset) {
             return Session.QueryOver<Ctrl>().
                 Where( m=>m.Dataset == dataset).
@@ -400,27 +409,6 @@ namespace SmartEnergyLabDataApi.Data
         public LoadflowResult GetLoadflowResult(int datasetId) {
             return Session.QueryOver<LoadflowResult>().Where( m=>m.Dataset.Id == datasetId).Take(1).SingleOrDefault();
         }
-        #endregion
-
-        #region general
-        public string CanDelete(string typeName, int id) {
-            var msg = "";
-            if ( typeName == "Node") {
-                var branches = Session.QueryOver<Branch>().Where( m=>m.Node1.Id == id || m.Node2.Id == id).List();
-                if ( branches.Count>0) {
-                    msg+="Cannot delete this node since its used in these branches [";
-                    foreach( var b in branches) {
-                        msg+=b.Code;
-                        if ( b!=branches.Last()) {
-                            msg+=", ";
-                        }
-                    }
-                    msg+="]";
-                }
-            }
-            return msg;
-        }
-
         #endregion
     }
 }

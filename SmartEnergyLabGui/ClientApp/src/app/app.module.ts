@@ -150,6 +150,8 @@ import { CellButtonsComponent } from './datasets/cell-buttons/cell-buttons.compo
 import { LoadflowZoneDialogComponent } from './loadflow/dialogs/loadflow-zone-dialog/loadflow-zone-dialog.component';
 import { LoadflowBoundaryDialogComponent } from './loadflow/dialogs/loadflow-boundary-dialog/loadflow-boundary-dialog.component';
 import { LoadflowBranchDialogComponent } from './loadflow/dialogs/loadflow-branch-dialog/loadflow-branch-dialog.component';
+import { LoadflowCtrlDialogComponent } from './loadflow/dialogs/loadflow-ctrl-dialog/loadflow-ctrl-dialog.component';
+import { DialogAutoCompleteComponent } from './datasets/dialog-auto-complete/dialog-auto-complete.component';
 
 
 @NgModule({
@@ -255,6 +257,8 @@ import { LoadflowBranchDialogComponent } from './loadflow/dialogs/loadflow-branc
         LoadflowZoneDialogComponent,
         LoadflowBoundaryDialogComponent,
         LoadflowBranchDialogComponent,
+        LoadflowCtrlDialogComponent,
+        DialogAutoCompleteComponent,
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

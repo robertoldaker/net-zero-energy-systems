@@ -31,7 +31,6 @@ export class LoadflowZoneDialogComponent extends DialogBase implements OnInit {
         this.dialogData = dialogData
         // disable controls not user-editable
         if ( this.dialogData && !this.dialogData._isLocalDataset ) {
-            console.log(`isLocalDataset [${this.dialogData._isLocalDataset}]`)
             fCode.disable()
         }
     }

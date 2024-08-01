@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { DialogBase } from 'src/app/dialogs/dialog-base';
 import { DialogBaseInput } from '../dialog-base-input';
@@ -16,6 +16,16 @@ export class DialogSelectorComponent extends DialogBaseInput implements OnInit {
     }
 
     ngOnInit(): void {
+        // if enum is supplied then overwrite data with this
+        if ( this.enum ) {
+            this.data = []
+            for (var prop in this.enum) {
+                let id = parseInt(prop)
+                if ( !isNaN(id) ) {
+                    this.data.push({ id: id, name: this.enum[prop] })
+                }
+            }    
+        }
     }
 
     @Input()
@@ -28,7 +38,24 @@ export class DialogSelectorComponent extends DialogBaseInput implements OnInit {
     data:any[] = []
 
     @Input()
+    enum:any
+
+    @Input()
     multiple:boolean = false
+
+    @Output()
+    onSelectionChange = new EventEmitter<any>()
+
+    selectionChange(e: any) {
+        let id = e.value
+        let obj:any
+        if (this.enum) {
+            obj = this.enum[id]
+        } else {
+            obj = this.data.find(m=>this.valueFcn(m)==id)
+        }
+        this.onSelectionChange.emit(obj)
+    }
 
     @Input()
     valueFcn(data: any):number {
@@ -47,9 +74,4 @@ export class DialogSelectorComponent extends DialogBaseInput implements OnInit {
             return "?";
         }
     }
-
-    get error():string {
-        return this.dialog?.getError(this.name)
-    }
-
 }

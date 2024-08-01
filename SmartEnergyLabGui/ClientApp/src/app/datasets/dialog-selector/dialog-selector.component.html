@@ -1,7 +1,7 @@
 <div [formGroup]="dialog.form">
     <mat-form-field appearance="fill" [color]="'primary'">
         <mat-label>{{label}}</mat-label>             
-        <mat-select [formControlName]="name" [multiple]="multiple">
+        <mat-select [formControlName]="name" [multiple]="multiple" (selectionChange)="selectionChange($event)">
             <mat-option *ngFor="let d of data" [value]="valueFcn(d)">
                 <span>{{displayFcn(d)}}</span> 
             </mat-option>

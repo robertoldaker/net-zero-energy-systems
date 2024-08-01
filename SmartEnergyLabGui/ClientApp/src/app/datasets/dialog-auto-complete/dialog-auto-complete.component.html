@@ -1,0 +1,13 @@
+<div [formGroup] = "dialog.form" [ngClass]="{ disabled: false }">
+    <mat-form-field appearance="fill" [color]="'primary'">
+        <mat-label>{{label}}</mat-label>
+        <input matInput class="editable" [placeholder]="placeholder" [formControlName]="name"  [type]="'text'" [readonly]="false" [matAutocomplete]="auto" (keyup)="onKeyup($event)"> 
+        <mat-autocomplete #auto (optionSelected)="optionSelected($event)">
+            <mat-option *ngFor="let option of searchOptions" [value]="option">
+                <span>{{getDisplayStrFcn(option)}}</span>
+            </mat-option>
+        </mat-autocomplete>         
+        <mat-error>{{error}}</mat-error>    
+    </mat-form-field>    
+</div>
+

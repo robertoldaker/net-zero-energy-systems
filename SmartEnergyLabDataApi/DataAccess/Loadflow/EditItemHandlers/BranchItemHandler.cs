@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using NHibernate.Driver;
 
 namespace SmartEnergyLabDataApi.Data;
 
@@ -22,27 +23,46 @@ public class BranchItemHandler : IEditItemHandler
 
     public void Check(EditItemModel m)
     {
-        if ( m.GetString("code",out string code)) {
+        //?? prevents code from being null or empty
+        /*
+        if ( m.GetString("code",out string code)) {            
             if ( string.IsNullOrEmpty(code)) {
                 m.AddError("code",$"Code must be set");
             }
             else if ( m.Da.Loadflow.BranchExists(m.Dataset.Id,code, out Dataset ds) ) {
                 m.AddError("code",$"Branch already exists in dataset [{ds.Name}]");
             }
-        } else if ( m.ItemId == 0 ) {
+            
+        } 
+        else if ( m.ItemId == 0 ) {
             m.AddError("code","Code must be set");
-        }
+        }*/
+        //?? allows code to be null or empty
+        m.GetString("code",out string code);
+        
         // demand        
         m.CheckDouble("x",0);
         // generation
         m.CheckDouble("cap",0);
         // node 1 id
-        if ( m.CheckInt("nodeId1")==null && m.ItemId == 0) {
+        var nodeId1 = m.CheckInt("nodeId1");
+        if ( nodeId1==null && m.ItemId == 0) {
             m.AddError("nodeId1","Node 1 must be set");
         }
         // node 2 id
-        if ( m.CheckInt("nodeId2")==null && m.ItemId == 0) {
+        var nodeId2 = m.CheckInt("nodeId2");
+        if ( nodeId2==null && m.ItemId == 0) {
             m.AddError("nodeId2","Node 2 must be set");
+        }
+        if ( nodeId1!=null && nodeId1==nodeId2 ) {
+            m.AddError("nodeId1","Nodes must be different");
+            m.AddError("nodeId2","Nodes must be different");
+        }
+        // Check another one doesn't already exist
+        if ( nodeId1!=null && nodeId2!=null) {
+            if ( m.Da.Loadflow.BranchExists(m.Dataset.Id,code, (int) nodeId1, (int) nodeId2,out Dataset ds) ) {
+                m.AddError("code",$"Branch with same code and end-points already exists in dataset [{ds.Name}]");
+            }            
         }
     }
 

@@ -6,6 +6,7 @@ import { LoadflowDataService } from '../loadflow-data-service.service';
 import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
+import { DialogService } from 'src/app/dialogs/dialog.service';
 
 @Component({
     selector: 'app-loadflow-data-ctrls',
@@ -14,10 +15,13 @@ import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-
 })
 export class LoadflowDataCtrlsComponent extends ComponentBase {
 
-    constructor(private dataService: LoadflowDataService) {
+    constructor(
+            private dataService: LoadflowDataService,
+            private dialogService: DialogService
+        ) {
         super()
         this.createDataSource(dataService.networkData.ctrls);        
-        this.displayedColumns = ['code','node1Code','node2Code','type','minCtrl','maxCtrl','cost','setPoint']
+        this.displayedColumns = ['buttons','code','node1Code','node2Code','type','minCtrl','maxCtrl','cost','setPoint']
         this.addSub(dataService.NetworkDataLoaded.subscribe( (results) => {
             this.createDataSource(results.ctrls)
         }))
@@ -33,9 +37,10 @@ export class LoadflowDataCtrlsComponent extends ComponentBase {
     @ViewChild(TablePaginatorComponent)
     tablePaginator: TablePaginatorComponent | undefined    
     datasetData?: DatasetData<Ctrl>
-    dataFilter: DataFilter = new DataFilter(20) 
+    dataFilter: DataFilter = new DataFilter(20, { active: 'code', direction: 'asc'}) 
     ctrls: MatTableDataSource<any> = new MatTableDataSource()
     displayedColumns: string[]
+    typeName: string = "Branch"
 
     getCtrlId(index: number, item: Ctrl) {
         return item.id;
@@ -59,5 +64,13 @@ export class LoadflowDataCtrlsComponent extends ComponentBase {
 
     filterTable(e: DataFilter) {
         this.createDataSource()
+    }
+
+    edit( e: ICellEditorDataDict) {
+        this.dialogService.showLoadflowCtrlDialog(e);
+    }
+
+    add() {
+        this.dialogService.showLoadflowCtrlDialog();
     }
 }

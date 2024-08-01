@@ -64,7 +64,6 @@ export class LoadflowBoundaryDialogComponent extends DialogBase implements OnIni
     save() {
         if ( this.datasetsService.currentDataset) {
             let changedControls = this.getUpdatedControls()
-            console.log(changedControls);
             let id = this.dialogData?._data ? this.dialogData._data.id : 0
             this.dataService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: "Boundary", data: changedControls }, (resp)=>{
                 this.datasetsService.refreshData()

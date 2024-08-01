@@ -47,6 +47,7 @@ public class NodeItemHandler : IEditItemHandler
         if ( m.GetString("code",out string code)) {
             node.Code = code;
             node.SetVoltage();
+            node.SetLocation(m.Da);
         }
         // demand        
         var demand = m.CheckDouble("demand",0);

@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { Boundary, Dataset, DatasetData, DatasetType, GridSubstation, LoadflowLink, LoadflowLocation, LoadflowResults, LocationData, NetworkData, Node } from '../data/app.data';
+import { Boundary, Branch, Dataset, DatasetData, DatasetType, GridSubstation, LoadflowLink, LoadflowLocation, LoadflowResults, LocationData, NetworkData, Node } from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { ShowMessageService } from '../main/show-message/show-message.service';
@@ -52,7 +52,6 @@ export class LoadflowDataService {
     private loadDataset() {
         this.loadNetworkData(false);
         this.dataClientService.GetLocationData(this.dataset.id, (results)=>{
-            console.log(`location data ${results.locations.length}`)
             this.locationData = results;
             this.LocationDataLoaded.emit(results);
         })
@@ -131,10 +130,24 @@ export class LoadflowDataService {
         this.loadDataset();
     }
 
-    public searchLocations(str: string, maxResults: number):LoadflowLocation[]  {
+    searchLocations(str: string, maxResults: number):LoadflowLocation[]  {
         let lowerStr = str.toLocaleLowerCase();
         var searchResults = this.locationData.locations.filter(m=>m.name.toLocaleLowerCase().includes(lowerStr)).slice(0,maxResults)
         return searchResults;
+    }
+
+    getBranchesWithoutCtrls() {
+        // same location and voltage at either side of branch
+        let ctrlBranches = this.networkData.branches.data.filter( m=>m.node1Code.substring(0,5) == m.node2Code.substring(0,5))
+        // now only include ones without ctrls
+        let results:Branch[] = []
+        for( let b of ctrlBranches) {
+            let ctrl = this.networkData.ctrls.data.find( m=>m.lineName == b.lineName)
+            if ( !ctrl ) {
+                results.push(b)
+            }
+        }
+        return results;
     }
 
     ResultsLoaded:EventEmitter<LoadflowResults> = new EventEmitter<LoadflowResults>()

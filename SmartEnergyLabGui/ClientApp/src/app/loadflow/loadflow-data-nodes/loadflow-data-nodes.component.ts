@@ -80,19 +80,11 @@ export class LoadflowDataNodesComponent extends ComponentBase {
     }
 
     delete(e:any) {
-        console.log('in delete')
         let element = e.element;
         let id = element._data.id
         let bs = this.dataService.networkData.branches.data.filter(m=>m.node1Id == id || m.node2Id== id)
         if ( bs.length>0 ) {
-            let bsStr = ''
-            for( var i=0;i<bs.length;i++) {
-                bsStr+=bs[i].code
-                if ( i<bs.length-1) {
-                    bsStr+=", "
-                }
-            }
-            this.dialogService.showMessageDialog(new MessageDialog(`Cannot delete node since it used by these branches [${bsStr}]`))
+            this.dialogService.showMessageDialog(new MessageDialog(`Cannot delete node since it used by <b>${bs.length}</b> branches`))
             e.canDelete = false
         }
     }

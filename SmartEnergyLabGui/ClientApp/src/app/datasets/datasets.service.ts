@@ -42,7 +42,6 @@ export class DatasetsService {
     }
 
     saveUserEditWithPrompt(value: string, cellData: CellEditorData, onEdited: (resp: string)=>void, onError: (resp: any)=>void) {
-        console.log('saveUserEditWithPrompt')
         this.dataService.GetDatasetResultCount(cellData.dataset.id,(count)=>{
             if ( count>0 ) {
                 this.dialogService.showMessageDialog({

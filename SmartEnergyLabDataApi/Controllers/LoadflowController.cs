@@ -309,18 +309,5 @@ namespace SmartEnergyLabDataApi.Controllers
                 da.CommitChanges();
             }
         }
-
-
-        /// <summary>
-        /// Says whether a loadflow object can be deleted
-        /// </summary>
-        [HttpGet]
-        [Route("CanDelete")]
-        public IActionResult CanDelete(string typeName, int id) {
-            using( var da = new DataAccess()) {
-                return Ok(da.Loadflow.CanDelete(typeName,id));
-            }
-        }
-
     }
 }

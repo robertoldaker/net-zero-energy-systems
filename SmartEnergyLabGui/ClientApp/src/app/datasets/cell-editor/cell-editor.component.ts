@@ -87,7 +87,6 @@ export class CellEditorComponent {
                 this.error = ''
                 this.onEdited.emit(this.data)
             }, (error) =>{
-                console.log(error)
                 this.error = error[this.data.columnName]
                 if ( this.input) {
                     this.input.nativeElement.focus()

@@ -20,4 +20,8 @@ export class DialogBaseInput implements OnInit {
 
     @Input()
     dialog: DialogBase = new DialogBase()
+
+    get error():string {
+        return this.dialog?.getError(this.name)
+    }
 }

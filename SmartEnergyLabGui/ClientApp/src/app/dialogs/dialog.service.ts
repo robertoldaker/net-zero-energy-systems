@@ -22,6 +22,7 @@ import { ICellEditorDataDict } from '../datasets/cell-editor/cell-editor.compone
 import { LoadflowZoneDialogComponent } from '../loadflow/dialogs/loadflow-zone-dialog/loadflow-zone-dialog.component';
 import { LoadflowBoundaryDialogComponent } from '../loadflow/dialogs/loadflow-boundary-dialog/loadflow-boundary-dialog.component';
 import { LoadflowBranchDialogComponent } from '../loadflow/dialogs/loadflow-branch-dialog/loadflow-branch-dialog.component';
+import { LoadflowCtrlDialogComponent } from '../loadflow/dialogs/loadflow-ctrl-dialog/loadflow-ctrl-dialog.component';
 
 @Injectable({
     providedIn: 'root'
@@ -133,5 +134,11 @@ export class DialogService {
         let options = Object.assign({},this.defaultOptions)
         options.data = cellObj
         this.dialog.open(LoadflowBranchDialogComponent, options)
+    }
+
+    showLoadflowCtrlDialog(cellObj?: ICellEditorDataDict) {
+        let options = Object.assign({},this.defaultOptions)
+        options.data = cellObj
+        this.dialog.open(LoadflowCtrlDialogComponent, options)
     }
 }

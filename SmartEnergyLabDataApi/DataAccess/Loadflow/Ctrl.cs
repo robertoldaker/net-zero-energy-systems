@@ -16,6 +16,11 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
+        public Ctrl(Dataset dataset)
+        {
+            Dataset = dataset;
+        }
+
         /// <summary>
         /// Database identifier
         /// </summary>
@@ -53,6 +58,13 @@ namespace SmartEnergyLabDataApi.Data
         [ManyToOne(Column = "DatasetId", Cascade = "none")]
         public virtual Dataset Dataset { get; set; }
 
+        public virtual int DatasetId {
+            get {
+                return Dataset.Id;
+            }
+        }
+
+
         public virtual string Node1Code {
             get {
                 return Node1.Code;
@@ -80,8 +92,7 @@ namespace SmartEnergyLabDataApi.Data
         public virtual string LineName {
             get {
                 var code = string.IsNullOrEmpty(Code) ? Id.ToString() : Code;
-                return $"{Node1.Code}-{Node2.Code}:{code}";
-            }
+                return $"{Node1.Code}-{Node2.Code}:{code}";            }
         }
 
 

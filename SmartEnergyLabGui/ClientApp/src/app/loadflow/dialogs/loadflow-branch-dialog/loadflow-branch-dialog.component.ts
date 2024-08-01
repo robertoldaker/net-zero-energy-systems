@@ -25,7 +25,6 @@ export class LoadflowBranchDialogComponent extends DialogBase {
     ) { 
         super()
         let fCode = this.addFormControl('code')
-        fCode.addValidators( [Validators.required])
         let fNode1 = this.addFormControl('nodeId1')
         fNode1.addValidators( [Validators.required])
         let fNode2 = this.addFormControl('nodeId2')
@@ -34,7 +33,7 @@ export class LoadflowBranchDialogComponent extends DialogBase {
         let fCap = this.addFormControl('cap')
         if ( dialogData?._data ) {
             let data:Branch = dialogData._data
-            this.title = `Edit branch [${data.code}]`
+            this.title = `Edit branch [${data.lineName}]`
             fCode.setValue(data.code)
             fNode1.setValue(data.node1Id)
             fNode2.setValue(data.node2Id)

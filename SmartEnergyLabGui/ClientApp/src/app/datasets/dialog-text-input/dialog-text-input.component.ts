@@ -30,10 +30,6 @@ export class DialogTextInputComponent extends DialogBaseInput implements OnInit 
         return this.isUserEditReverted ? false : this.dialog?.getUserEdit(this.name) !== undefined
     }
 
-    get error():string {
-        return this.dialog?.getError(this.name)
-    }
-
     revert() {
         this.dialog?.revertToPrevValue(this.name)
         this.isUserEditReverted = true

@@ -30,7 +30,9 @@ namespace SmartEnergyLabDataApi.Models
             checkModel();
             if ( _errors.Count==0 ) {
                 beforeSave();
-                _da.CommitChanges();
+                if ( _errors.Count==0 ) {
+                    _da.CommitChanges();
+                }
             }
             return _errors.Count==0;
         }

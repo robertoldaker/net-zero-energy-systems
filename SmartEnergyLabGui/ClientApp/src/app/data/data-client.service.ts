@@ -331,12 +331,6 @@ export class DataClientService implements ILogs {
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
     }
 
-    CanDelete(typeName: string, id: number, onLoad: (resp: string)=> void | undefined) {
-        this.getRequest<string>(
-            `/Loadflow/CanDelete?typeName=${typeName}&id=${id}`,
-            onLoad);
-    }
-
     /**
      * Datasets
      */
@@ -359,7 +353,6 @@ export class DataClientService implements ILogs {
     }
 
     EditItem(editItem: EditItem, onOk: (resp: string)=> void, onError: (error: any)=>void) {
-        console.log(editItem)
         this.postDialogRequest<EditItem>('/Datasets/EditItem', editItem, onOk, onError);
     }
 
