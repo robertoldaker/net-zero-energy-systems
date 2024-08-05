@@ -4,9 +4,13 @@ namespace SmartEnergyLabDataApi.Data;
 
 public class ZoneItemHandler : IEditItemHandler
 {
-    public void BeforeUndelete(EditItemModel m)
-    {
-        
+    public string BeforeUndelete(EditItemModel m)
+    {        
+        return "";
+    }
+
+    public string BeforeDelete(EditItemModel m, bool isSourceEdit) {
+        return "";
     }
 
     public void Check(EditItemModel m)

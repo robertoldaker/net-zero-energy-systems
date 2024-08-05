@@ -5,6 +5,7 @@ using HaloSoft.EventLogger;
 using NHibernate;
 using Org.BouncyCastle.Crypto.Signers;
 using Remotion.Linq.Parsing.Structure.IntermediateModel;
+using SmartEnergyLabDataApi.Loadflow;
 
 namespace SmartEnergyLabDataApi.Data
 {
@@ -55,6 +56,29 @@ namespace SmartEnergyLabDataApi.Data
             }
             if ( oldVersion<44) {
                 updateDistributionSubstationLinks();
+            }
+            if ( oldVersion<57) {
+                updateLoadflowCtrls();
+            }
+        }
+
+        private static void updateLoadflowCtrls() {
+            using ( var da = new DataAccess() ) {
+                var ctrls = da.Session.QueryOver<Ctrl>().List();
+                foreach ( var c in ctrls) {                    
+                    if ( c.Branch==null && !string.IsNullOrEmpty(c.old_Code) ) {
+                        var b = da.Session.QueryOver<Branch>().Where( m=>m.Code == c.old_Code && c.Dataset.Id == m.Dataset.Id).Take(1).SingleOrDefault();
+                        if ( b!=null) {
+                            c.Branch = b;
+                            c.old_Node1 = null;
+                            c.old_Node2 = null;
+                        } else {
+                            Logger.Instance.LogInfoEvent($"Could not find branch for ctrl [{c.LineName}]");
+                        }
+                    }
+                }
+                //
+                da.CommitChanges();
             }
         }
 

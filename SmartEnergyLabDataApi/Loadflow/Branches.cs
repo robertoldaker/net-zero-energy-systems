@@ -17,7 +17,6 @@ namespace SmartEnergyLabDataApi.Loadflow
                 base.add(key,objWrapper);
             }
             DatasetData = di;
-
         }
         public DatasetData<Branch> DatasetData {get; private set;}
 

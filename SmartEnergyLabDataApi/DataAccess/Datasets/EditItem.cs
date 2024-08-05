@@ -26,7 +26,9 @@ public interface IEditItemHandler {
 
     void Save(EditItemModel m);
 
-    void BeforeUndelete(EditItemModel m);
+    string BeforeUndelete(EditItemModel m);
+
+    string BeforeDelete(EditItemModel m, bool isSourceEdit);
 }
 
 public class EditItemModel : DbModel {
@@ -108,6 +110,14 @@ public class EditItemModel : DbModel {
             _handler.Save(this);
         } else {
             updateUserEdit();
+        }
+        // Delete all existing results for this dataset and any derived ones
+        if ( _dataset.Type == DatasetType.Elsi) {
+            _da.Elsi.DeleteResults(_dataset.Id);
+        } else if ( _dataset.Type == DatasetType.Loadflow) {
+            _da.Loadflow.DeleteResults(_dataset.Id);
+        } else {
+            throw new Exception($"Unexpected dataset type [{_dataset.Type}]");
         }
     }
 
@@ -219,35 +229,36 @@ public class EditItemModel : DbModel {
         addError(name, message);
     }
 
-    public void Delete() {
-        if ( IsSourceEdit() ) {
-            // remove item
-            _da.Session.Delete(_item);
-            // remove all user edits associated with object
-            var userEdits = _da.Datasets.GetUserEdits(_editItem.className,((IId) _item).Id.ToString());
-            foreach( var ue in userEdits) {
-                _da.Datasets.Delete(ue);
-            }
-        } else {
-            // marks it as being deleted
-            var userEdit = new UserEdit() {
-                Dataset = _dataset,
-                TableName = _editItem.className,
-                Key = _editItem.id.ToString(),
-                IsRowDelete = true
-            };
-            _da.Datasets.Add(userEdit);
-        }       
-        _da.CommitChanges();
-    }
-
-    public void UnDelete() {
-        _handler.BeforeUndelete(this);
-        var ue = _da.Datasets.GetDeleteUserEdit(_dataset.Id, _editItem.className, _editItem.id.ToString());
-        if ( ue!=null ) {
-            _da.Datasets.Delete(ue);
+    public string Delete() {
+        var isSourceEdit = IsSourceEdit();
+        var msg = _handler.BeforeDelete(this, isSourceEdit);
+        if ( string.IsNullOrEmpty(msg) ) {
+            if ( isSourceEdit ) {
+                // remove item
+                _da.Session.Delete(_item);
+                // remove all user edits associated with object
+                var userEdits = _da.Datasets.GetUserEdits(_editItem.className,((IId) _item).Id.ToString());
+                foreach( var ue in userEdits) {
+                    _da.Datasets.Delete(ue);
+                }
+            } else {
+                _da.Datasets.AddDeleteUserEdit((IId) _item,_dataset);
+            }       
             _da.CommitChanges();
         }
+        return msg;
+    }
+
+    public string UnDelete() {
+        var msg = _handler.BeforeUndelete(this);
+        if ( string.IsNullOrEmpty(msg)) {
+            var ue = _da.Datasets.GetDeleteUserEdit(_dataset.Id, _editItem.className, _editItem.id.ToString());
+            if ( ue!=null ) {
+                _da.Datasets.Delete(ue);
+                _da.CommitChanges();
+            }
+        }
+        return msg;
     }
 
     private bool IsSourceEdit() {

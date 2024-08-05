@@ -119,8 +119,13 @@ namespace SmartEnergyLabDataApi.Data
                     And(m=>m.Scenario == scenario).
                     Take(1).SingleOrDefault();
         }
+
         public void Add(ElsiResult result) {
             Session.Save(result);
+        }
+
+        public void Delete(ElsiResult result) {
+            Session.Delete(result);
         }
 
         public IList<ElsiResult> GetResults(int datasetId, ElsiScenario scenario) {
@@ -143,6 +148,16 @@ namespace SmartEnergyLabDataApi.Data
             return Session.QueryOver<ElsiResult>().
                 Where(m=>m.Dataset.Id.IsIn(dsIds)).
                 RowCount();
+        }
+
+        public void DeleteResults(int datasetId) {
+            var dsIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
+            var results = Session.QueryOver<ElsiResult>().
+                Where(m=>m.Dataset.Id.IsIn(dsIds)).
+                List();
+            foreach( var r in results) {
+                Delete(r);
+            }
         }
 
         public ElsiResult GetResult(int id) {

@@ -8,6 +8,7 @@ import { DatasetsService } from 'src/app/datasets/datasets.service';
 import { DialogBase } from 'src/app/dialogs/dialog-base';
 import { LoadflowDataService } from '../../loadflow-data-service.service';
 import { Branch, Node } from 'src/app/data/app.data';
+import { ISearchResults } from 'src/app/datasets/dialog-auto-complete/dialog-auto-complete.component';
 
 @Component({
   selector: 'app-loadflow-branch-dialog',
@@ -20,25 +21,27 @@ export class LoadflowBranchDialogComponent extends DialogBase {
     constructor(public dialogRef: MatDialogRef<DatasetDialogComponent>, 
         @Inject(MAT_DIALOG_DATA) dialogData:ICellEditorDataDict | undefined,
         private dataService: DataClientService, 
-        loadflowService: LoadflowDataService,
+        private loadflowService: LoadflowDataService,
         private datasetsService: DatasetsService
     ) { 
         super()
         let fCode = this.addFormControl('code')
-        let fNode1 = this.addFormControl('nodeId1')
+        let fNode1 = this.addFormControl('node1')
+        let fNodeId1 = this.addFormControl('nodeId1')
         fNode1.addValidators( [Validators.required])
-        let fNode2 = this.addFormControl('nodeId2')
+        let fNode2 = this.addFormControl('node2')
+        let fNodeId2 = this.addFormControl('nodeId2')
         fNode2.addValidators( [Validators.required])
         let fX = this.addFormControl('x')
         let fCap = this.addFormControl('cap')
         if ( dialogData?._data ) {
             let data:Branch = dialogData._data
-            this.title = `Edit branch [${data.lineName}]`
+            this.title = `Edit branch [${data.displayName}]`
             fCode.setValue(data.code)
-            fNode1.setValue(data.node1Id)
-            fNode2.setValue(data.node2Id)
-            fX.setValue(data.x)
-            fCap.setValue(data.cap)
+            fNode1.setValue(data.node1Code)
+            fNode2.setValue(data.node2Code)
+            fX.setValue(data.x.toFixed(3))
+            fCap.setValue(data.cap.toFixed(3))
         } else {
             this.title = `Add branch`
             fX.setValue(0)
@@ -51,11 +54,9 @@ export class LoadflowBranchDialogComponent extends DialogBase {
             fNode1.disable()
             fNode2.disable()
         }
-        this.nodes = loadflowService.networkData.nodes.data;
     }
 
     title: string
-    nodes: Node[] = []
 
     displayNode(n: any) {
         if ( n.code ) {
@@ -63,6 +64,33 @@ export class LoadflowBranchDialogComponent extends DialogBase {
         } else {
             return "??"
         }
+    }
+
+    selectedNode1(e: any) {
+        this.form.get('nodeId1')?.setValue(e.id)
+        this.form.get('nodeId1')?.markAsDirty()
+    }
+
+    selectedNode2(e: any) {
+        this.form.get('nodeId2')?.setValue(e.id)
+        this.form.get('nodeId2')?.markAsDirty()
+    }
+
+    searchNodes(e: ISearchResults) {
+        let nodes = this.loadflowService.networkData.nodes.data;
+
+        let results:Node[] = [];
+        let searchText = e.text.toLocaleUpperCase()
+        nodes.forEach(m=>{
+            if ( m.code.toUpperCase().startsWith(searchText) && results.length<50) {
+                results.push(m);
+                return true;
+            } else {
+                return false;
+            }
+        });        
+        results.sort((a, b) => a.code.localeCompare(b.code)); 
+        e.results = results;
     }
 
     save() {

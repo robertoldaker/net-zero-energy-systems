@@ -1,0 +1,20 @@
+.datasetIcon {
+    font-size: 22px;
+    width: 18px;
+    vertical-align: middle;
+    margin-right: 0px !important;
+}
+
+.lockIcon {
+    color: darkorange;
+    font-size: 14px;
+    width: 18px;
+    height: 12px;
+    margin-right: 0px !important;
+    text-align: center;
+}
+
+.lockIconSpacer {
+    display: inline-block;
+    width: 10px;
+}

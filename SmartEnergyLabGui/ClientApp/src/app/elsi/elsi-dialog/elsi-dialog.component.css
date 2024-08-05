@@ -14,12 +14,6 @@
     padding-bottom: 1rem;
 }
 
-.datasetIcon {
-    font-size: 14px;
-    width: 18px;
-    height: 18px;
-}
-
 .dateContainer {        
     /*float: left;*/
     display: flex;

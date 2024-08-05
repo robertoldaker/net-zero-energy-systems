@@ -1,17 +1,20 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { DialogBaseInput } from '../dialog-base-input';
 import { DatasetsService } from '../datasets.service';
-import { DialogBase } from 'src/app/dialogs/dialog-base';
 
 @Component({
     selector: 'app-dialog-auto-complete',
     templateUrl: './dialog-auto-complete.component.html',
     styleUrls: ['../dialog-base-input.css','./dialog-auto-complete.component.css']
 })
-export class DialogAutoCompleteComponent extends DialogBaseInput {
+export class DialogAutoCompleteComponent extends DialogBaseInput implements OnInit {
 
     constructor(ds: DatasetsService) {
         super(ds)
+    }
+
+    ngOnInit(): void {
+        this.initialValue = this.dialog.form.get(this.name)?.value
     }
 
     @Input()
@@ -34,12 +37,27 @@ export class DialogAutoCompleteComponent extends DialogBaseInput {
 
     searchTimeoutId: any
     searchOptions: any[] = []
+    selectedObj: any
 
     lastSearchStr = ''
+    initialValue: string = ''
+
+    onBlur(e: any) {
+        let fc = this.dialog.form.get(this.name);
+        let name;
+        if (this.selectedObj) {               
+            name = this.getDisplayStrFcn(this.selectedObj)
+        } else {
+            name = this.initialValue;
+        }
+        if ( fc) {
+            fc.setValue(name)
+        }
+    }
 
     onKeyup(e:any) {
         let searchStr = e.target.value 
-        if (searchStr.length >= 2 && this.lastSearchStr!=searchStr) {
+        if ( this.lastSearchStr!=searchStr) {
             // Store just incase it changes before making the call
             if (this.searchTimeoutId != undefined) {
                 clearTimeout(this.searchTimeoutId);
@@ -54,13 +72,13 @@ export class DialogAutoCompleteComponent extends DialogBaseInput {
     }
 
     optionSelected(e: any) {
-        let selectedObj = e.option.value;
-        if (selectedObj) {               
-            let name = this.getDisplayStrFcn(selectedObj)
+        this.selectedObj = e.option.value;
+        if (this.selectedObj) {               
+            let name = this.getDisplayStrFcn(this.selectedObj)
             let fc = this.dialog.form.get(this.name);
             if ( fc) {
                 fc.setValue(name)
-                this.onSelected.emit(selectedObj)
+                this.onSelected.emit(this.selectedObj)
             }
         }
     }

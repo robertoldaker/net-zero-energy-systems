@@ -33,17 +33,17 @@ export class LoadflowCtrlDialogComponent extends DialogBase {
         this.branches = this.loadflowService.getBranchesWithoutCtrls()
         if ( dialogData?._data ) {
             let data:Ctrl = dialogData._data
-            this.title = `Edit control [${data.lineName}]`
-            let branch = this.loadflowService.networkData.branches.data.find(m=>m.lineName == data.lineName)
+            this.title = `Edit control [${data.displayName}]`
+            let branch = this.loadflowService.networkData.branches.data.find(m=>m.id == data.branchId)
             if ( branch) {
                 fBranch.setValue(branch.id)
                 this.branches.push(branch) // Need to add it to the list since it won't be in the list otherwise
                 this.selectedBranch = branch
             }
             fType.setValue(data.type)
-            fMinCtrl.setValue(data.minCtrl)
-            fMaxCtrl.setValue(data.maxCtrl)
-            fCost.setValue(data.cost)
+            fMinCtrl.setValue(data.minCtrl.toFixed(2))
+            fMaxCtrl.setValue(data.maxCtrl.toFixed(2))
+            fCost.setValue(data.cost.toFixed(1))
 
         } else {
             this.title = `Add control`
@@ -51,6 +51,7 @@ export class LoadflowCtrlDialogComponent extends DialogBase {
             fMinCtrl.setValue(0)
             fMaxCtrl.setValue(0)
             fCost.setValue(10)
+            fCost.markAsDirty()
         }
         this.dialogData = dialogData
         // disable controls not user-editable

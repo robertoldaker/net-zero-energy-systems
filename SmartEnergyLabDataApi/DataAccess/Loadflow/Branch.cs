@@ -1,12 +1,14 @@
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.ObjectPool;
+using MySqlX.XDevAPI;
+using NHibernate.Classic;
 using NHibernate.Mapping.Attributes;
 
 namespace SmartEnergyLabDataApi.Data
 {
 
     [Class(0, Table = "loadflow_branches")]
-    public class Branch : IId, IDataset
+    public class Branch : IId, IDataset, ILifecycle
     {
         public Branch()
         {
@@ -89,6 +91,13 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
+        public virtual string DisplayName {
+            get {
+                var suffix = string.IsNullOrEmpty(Code) ? "" : $" ({Code})";
+                return $"{Node1.Code} <=> {Node2.Code}{suffix}";
+            }
+        }
+
         public virtual string Node1Code {
             get {
                 return Node1.Code;
@@ -135,5 +144,29 @@ namespace SmartEnergyLabDataApi.Data
 
         public virtual double? FreePower {get; set;}
 
+        public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
+        {
+            // Delete ctrls pointing at this branch
+            var ctrls = s.QueryOver<Ctrl>().Where( m=>m.Branch.Id == Id).List();
+            foreach( var c in ctrls) {
+                s.Delete(c);
+            }
+
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual void OnLoad(NHibernate.ISession s, object id)
+        {
+        }
+
+        public virtual LifecycleVeto OnSave(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual LifecycleVeto OnUpdate(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
     }
 }

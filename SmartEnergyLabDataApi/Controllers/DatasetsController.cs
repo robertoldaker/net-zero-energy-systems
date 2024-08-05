@@ -119,9 +119,10 @@ public class DatasetsController : ControllerBase
     /// <param name="editItem">data for item to be deleted</param>
     [HttpPost]
     [Route("DeleteItem")]
-    public void DeleteItem([FromBody] EditItem editItem) {
+    public object DeleteItem([FromBody] EditItem editItem) {
         using ( var m = new EditItemModel(this,editItem)) {
-            m.Delete();
+            var msg = m.Delete();
+            return new { msg=msg };
         }
     }
 
@@ -131,9 +132,10 @@ public class DatasetsController : ControllerBase
     /// <param name="editItem">data for item to be undeleted</param>
     [HttpPost]
     [Route("UnDeleteItem")]
-    public void UnDeleteItem([FromBody] EditItem editItem) {
+    public object UnDeleteItem([FromBody] EditItem editItem) {
         using ( var m = new EditItemModel(this,editItem)) {
-            m.UnDelete();
+            var msg = m.UnDelete();
+            return new { msg=msg };
         }
     }
 

@@ -10,17 +10,69 @@ namespace SmartEnergyLabDataApi.Loadflow
     {
         private DataAccess _da;
         private Dataset _dataset;
-        public LoadflowXlsmLoader(DataAccess da)
+
+        private ObjectCache<Node> _nodeCache;
+        private ObjectCache<Zone> _zoneCache;
+        private ObjectCache<Branch> _branchCache;
+        private ObjectCache<Ctrl> _ctrlCache;
+        private ObjectCache<Data.Boundary> _boundaryCache;
+        private ObjectCache<BoundaryZone> _boundaryZoneCache;
+        public LoadflowXlsmLoader()
         {
-            _da = da;
-            var name = "GB network";
-            _dataset = da.Datasets.GetDataset(DatasetType.Loadflow,name);
-            if ( _dataset == null ) {
-                throw new Exception($"Cannot find loadflow dataset [{name}]");
-            }
         }
 
-        public string LoadNodes(IFormFile file) {
+        public string Load(IFormFile formFile) {
+            string msg = "";
+            using( _da = new DataAccess() ) {
+                var name = "GB network";
+                _dataset = _da.Datasets.GetDataset(DatasetType.Loadflow,name);
+                if ( _dataset==null) {
+                    var root = _da.Datasets.GetRootDataset(DatasetType.Loadflow);
+                    _dataset = new Dataset() { Type = DatasetType.Loadflow, Parent = root, Name = name };                
+                    _da.Datasets.Add(_dataset);
+                }
+                // Caches of existing objects
+                var existingNodes = _da.Loadflow.GetNodes(_dataset);
+                _nodeCache = new ObjectCache<Node>(_da, existingNodes, m=>m.Code, (m,code)=>m.Code=code );
+                //
+                var existingZones = _da.Loadflow.GetZones(_dataset);
+                _zoneCache = new ObjectCache<Zone>(_da, existingZones, m=>m.Code, (m,code)=>m.Code=code );
+                //
+                var existingBranches = _da.Loadflow.GetBranches(_dataset);
+                _branchCache = new ObjectCache<Branch>(_da, existingBranches, m=>m.GetKey(), (m,key)=>m.SetCode(key) );
+                //
+                var existingCtrls = _da.Loadflow.GetCtrls(_dataset);
+                _ctrlCache = new ObjectCache<Ctrl>(_da, existingCtrls, m=>m.Code, (m,code)=>{} );
+
+                var existingBoundaries = _da.Loadflow.GetBoundaries(_dataset);
+                _boundaryCache = new ObjectCache<Data.Boundary>(_da, existingBoundaries, m=>m.Code, (m,code)=>m.Code=code );
+                //
+                var existingBoundaryZones = _da.Loadflow.GetBoundaryZones(_dataset);
+                _boundaryZoneCache = new ObjectCache<BoundaryZone>(_da, existingBoundaryZones, m=>$"{m.Boundary.Code}:{m.Zone.Code}", (m,key)=>{
+                    var cpnts = key.Split(':');
+                    var boundaryCode = cpnts[0];
+                    var zoneCode = cpnts[1];
+                    m.Boundary = _boundaryCache.GetOrCreate(boundaryCode, out bool created);
+                    if ( created ) {
+                        m.Boundary.Dataset = _dataset;
+                    }
+                    m.Zone = _zoneCache.GetOrCreate(zoneCode, out created);
+                    if ( created ) {
+                        m.Zone.Dataset = _dataset;
+                    }
+                } );
+
+                msg+=loadNodes(formFile) + "\n";
+                msg+=loadBranches(formFile) + "\n";
+                msg+=loadCtrls(formFile) + "\n";
+                msg+=loadBoundaries(formFile) + "\n";
+                //
+                _da.CommitChanges();
+            }
+            return msg;
+        }
+
+        private string loadNodes(IFormFile file) {
             using (var stream = file.OpenReadStream()) {
                 using (var reader = ExcelReaderFactory.CreateReader(stream)) {
                     do {
@@ -69,12 +121,6 @@ namespace SmartEnergyLabDataApi.Loadflow
 
         private string readNodes(IExcelDataReader reader) {
             Logger.Instance.LogInfoEvent("Start reading nodes");
-            // Caches of existing objects
-            var existingNodes = _da.Loadflow.GetNodes(_dataset);
-            var nodeCache = new ObjectCache<Node>(_da, existingNodes, m=>m.Code, (m,code)=>m.Code=code );
-            //
-            var existingZones = _da.Loadflow.GetZones(_dataset);
-            var zoneCache = new ObjectCache<Zone>(_da, existingZones, m=>m.Code, (m,code)=>m.Code=code );
             int numNodesAdded = 0;
             int numNodesUpdated = 0;
             int numZonesAdded = 0;
@@ -101,14 +147,16 @@ namespace SmartEnergyLabDataApi.Loadflow
                 }
                 var ext = reader.GetBoolean(7);
                 //
-                var node = nodeCache.GetOrCreate(code, out bool created);
+                var node = _nodeCache.GetOrCreate(code, out bool created);
                 if ( created ) {
+                    node.Dataset = _dataset;
                     numNodesAdded++;
                 } else {
                     numNodesUpdated++;
                 }
-                var zone = zoneCache.GetOrCreate(zoneCode, out created);
+                var zone = _zoneCache.GetOrCreate(zoneCode, out created);
                 if ( created ) {
+                    zone.Dataset = _dataset;
                     numZonesAdded++;
                 } 
                 node.Demand = demand;
@@ -125,7 +173,7 @@ namespace SmartEnergyLabDataApi.Loadflow
             return msg;
         }
 
-        public string LoadBranches(IFormFile file) {
+        private string loadBranches(IFormFile file) {
             using (var stream = file.OpenReadStream()) {
                 using (var reader = ExcelReaderFactory.CreateReader(stream)) {
                     do {
@@ -140,7 +188,7 @@ namespace SmartEnergyLabDataApi.Loadflow
             throw new Exception("Could not find \"Base\" sheet");
         }
 
-        public string LoadCtrls(IFormFile file) {
+        private string loadCtrls(IFormFile file) {
             using (var stream = file.OpenReadStream()) {
                 using (var reader = ExcelReaderFactory.CreateReader(stream)) {
                     do {
@@ -155,7 +203,7 @@ namespace SmartEnergyLabDataApi.Loadflow
             throw new Exception("Could not find \"Base\" sheet");
         }
 
-        public string LoadBoundaries(IFormFile file) {
+        private string loadBoundaries(IFormFile file) {
             using (var stream = file.OpenReadStream()) {
                 using (var reader = ExcelReaderFactory.CreateReader(stream)) {
                     do {
@@ -189,13 +237,6 @@ namespace SmartEnergyLabDataApi.Loadflow
             int numBranchesAdded = 0;
             int numBranchesUpdated = 0;
             //
-            // Caches of existing objects
-            var existingNodes = _da.Loadflow.GetNodes(_dataset);
-            var nodeCache = new ObjectCache<Node>(_da, existingNodes, m=>m.Code, (m,code)=>m.Code=code );
-            //
-            var existingBranches = _da.Loadflow.GetBranches(_dataset);
-            var branchCache = new ObjectCache<Branch>(_da, existingBranches, m=>m.GetKey(), (m,key)=>m.SetCode(key) );
-
             // Read data by row
             while (reader.Read()) {
                 var region = reader.GetString(branchIndex);
@@ -211,16 +252,17 @@ namespace SmartEnergyLabDataApi.Loadflow
                 var cap = reader.GetDouble(branchIndex+8);
                 var linkType = reader.GetString(branchIndex+9);
                 // node1
-                if ( !nodeCache.TryGetValue(node1Code, out Node node1)) {
+                if ( !_nodeCache.TryGetValue(node1Code, out Node node1)) {
                     throw new Exception($"Cannot find node [{node1Code}]");
                 }
                 // node2
-                if ( !nodeCache.TryGetValue(node2Code, out Node node2)) {
+                if ( !_nodeCache.TryGetValue(node2Code, out Node node2)) {
                     throw new Exception($"Cannot find node [{node2Code}]");
                 }
-                // branchss
-                var branch = branchCache.GetOrCreate($"{node1Code}-{node2Code}:{code}", out bool created);
+                // branches
+                var branch = _branchCache.GetOrCreate($"{node1Code}-{node2Code}:{code}", out bool created);
                 if ( created ) {
+                    branch.Dataset = _dataset;
                     numBranchesAdded++;
                 } else {
                     numBranchesUpdated++;
@@ -246,22 +288,6 @@ namespace SmartEnergyLabDataApi.Loadflow
             int numBoundariesAdded = 0;
             int numBoundaryZonesUpdated = 0;
             //
-            //
-            var existingBoundaries = _da.Loadflow.GetBoundaries(_dataset);
-            var boundaryCache = new ObjectCache<Data.Boundary>(_da, existingBoundaries, m=>m.Code, (m,code)=>m.Code=code );
-            //
-            var existingZones = _da.Loadflow.GetZones(_dataset);
-            var zoneCache = new ObjectCache<Zone>(_da, existingZones, m=>m.Code, (m,code)=>m.Code=code );
-            //
-            var existingBoundaryZones = _da.Loadflow.GetBoundaryZones(_dataset);
-            var boundaryZoneCache = new ObjectCache<BoundaryZone>(_da, existingBoundaryZones, m=>$"{m.Boundary.Code}:{m.Zone.Code}", (m,key)=>{
-                var cpnts = key.Split(':');
-                var boundaryCode = cpnts[0];
-                var zoneCode = cpnts[1];
-                m.Boundary = boundaryCache.GetOrCreate(boundaryCode, out bool created);
-                m.Zone = zoneCache.GetOrCreate(zoneCode, out created);
-            } );
-            //
 
             //
             reader.Read(); // Eat first row
@@ -279,8 +305,9 @@ namespace SmartEnergyLabDataApi.Loadflow
                 }
                 // B8 has a trailing space - so trim all 
                 boundaryCode = boundaryCode.TrimEnd();
-                var boundary = boundaryCache.GetOrCreate(boundaryCode, out bool created);
+                var boundary = _boundaryCache.GetOrCreate(boundaryCode, out bool created);
                 if ( created ) {
+                    boundary.Dataset = _dataset;
                     numBoundariesAdded++;
                 }
                 boundaryCodes[i] = boundaryCode;
@@ -290,7 +317,7 @@ namespace SmartEnergyLabDataApi.Loadflow
             while (reader.Read()) {
                 var zoneCode = reader.GetString(0);
                 // node
-                if ( !zoneCache.TryGetValue(zoneCode, out Zone zone)) {
+                if ( !_zoneCache.TryGetValue(zoneCode, out Zone zone)) {
                     throw new Exception($"Cannot find zone [{zoneCode}]");
                 }
                 //
@@ -305,13 +332,14 @@ namespace SmartEnergyLabDataApi.Loadflow
                     var key=$"{boundaryCode}:{zoneCode}";
                     if ( entry==1) {
                         // Create it if it doesn't exist
-                        boundaryZoneCache.GetOrCreate(key, out bool created);
+                        var bz = _boundaryZoneCache.GetOrCreate(key, out bool created);
                         if ( created ) {
+                            bz.Dataset = _dataset;
                             numBoundaryZonesUpdated++;
                         }
                     } else if ( entry == 0) {
                         // Delete it if it exists
-                        if ( boundaryZoneCache.TryGetValue(key, out BoundaryZone bz) ) {
+                        if ( _boundaryZoneCache.TryGetValue(key, out BoundaryZone bz) ) {
                             _da.Loadflow.Delete(bz);
                             numBoundaryZonesUpdated++;
                         }
@@ -326,6 +354,7 @@ namespace SmartEnergyLabDataApi.Loadflow
         private string readCtrls(IExcelDataReader reader, int ctrlIndex) 
         {
             Logger.Instance.LogInfoEvent("Start reading ctrls");
+            string msg="";
             //
             int numCtrlsAdded = 0;
             int numCtrlsUpdated = 0;
@@ -334,9 +363,6 @@ namespace SmartEnergyLabDataApi.Loadflow
             var existingNodes = _da.Loadflow.GetNodes(_dataset);
             var nodeCache = new ObjectCache<Node>(_da, existingNodes, m=>m.Code, (m,code)=>m.Code=code );
             //
-            var existingCtrls = _da.Loadflow.GetCtrls(_dataset);
-            var ctrlCache = new ObjectCache<Ctrl>(_da, existingCtrls, m=>m.Code, (m,code)=>m.Code=code );
-
             // Read data by row
             while (reader.Read()) {
                 var region = reader.GetString(ctrlIndex+0);
@@ -350,31 +376,31 @@ namespace SmartEnergyLabDataApi.Loadflow
                 var minCtrl = reader.GetDouble(ctrlIndex+5);
                 var maxCtrl = reader.GetDouble(ctrlIndex+6);
                 var cost = reader.GetDouble(ctrlIndex+11);
-                // node1
-                if ( !nodeCache.TryGetValue(node1Code, out Node node1)) {
-                    throw new Exception($"Cannot find node [{node1Code}]");
-                }
-                // node2
-                if ( !nodeCache.TryGetValue(node2Code, out Node node2)) {
-                    throw new Exception($"Cannot find node [{node2Code}]");
-                }
-                // branchss
-                var ctrl = ctrlCache.GetOrCreate(code, out bool created);
+                // 
+                var ctrl = _ctrlCache.GetOrCreate(code, out bool created);
                 if ( created ) {
+                    ctrl.Dataset = _dataset;
+                    var key = $"{node1Code}-{node2Code}:{code}";
+                    if ( _branchCache.TryGetValue(key, out Branch b) ) {
+                        ctrl.Branch = b;
+                    } else {
+                        var m= $"Could not find branch for ctrl [{key}]";
+                        Logger.Instance.LogInfoEvent(m);
+                        msg+=m;
+                    }
                     numCtrlsAdded++;
                 } else {
                     numCtrlsUpdated++;
                 }
-                ctrl.Node1 = node1;
-                ctrl.Node2 = node2;
                 ctrl.Region = region;
                 ctrl.Type = type;
                 ctrl.MinCtrl = minCtrl;
                 ctrl.MaxCtrl = maxCtrl;
                 ctrl.Cost = cost;
             }
-            string msg = $"{numCtrlsAdded} ctrls added, {numCtrlsUpdated} ctrls updated";
-            Logger.Instance.LogInfoEvent($"End reading ctrls {msg}");
+            var mm=$"{numCtrlsAdded} ctrls added, {numCtrlsUpdated} ctrls updated";
+            Logger.Instance.LogInfoEvent($"End reading ctrls {mm}");
+            msg+=mm;
             return msg;
         }
 

@@ -57,7 +57,7 @@ export class LoadflowDataService {
         })
     }
 
-    public loadNetworkData(withMessage: boolean) {
+    private loadNetworkData(withMessage: boolean) {
         if ( withMessage ) {
             this.messageService.showMessage('Loading ...')
         }
@@ -128,6 +128,9 @@ export class LoadflowDataService {
 
     reload() {
         this.loadDataset();
+        if ( this.boundaryName!=null ) {
+            this.setBound(this.boundaryName);
+        }
     }
 
     searchLocations(str: string, maxResults: number):LoadflowLocation[]  {
@@ -142,7 +145,7 @@ export class LoadflowDataService {
         // now only include ones without ctrls
         let results:Branch[] = []
         for( let b of ctrlBranches) {
-            let ctrl = this.networkData.ctrls.data.find( m=>m.lineName == b.lineName)
+            let ctrl = this.networkData.ctrls.data.find( m=>m.branchId == b.id)
             if ( !ctrl ) {
                 results.push(b)
             }

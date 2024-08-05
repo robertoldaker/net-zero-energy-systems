@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using NHibernate;
 using NHibernate.Criterion;
 using NHibernate.Driver;
 
@@ -6,22 +7,28 @@ namespace SmartEnergyLabDataApi.Data;
 
 public class CtrlItemHandler : IEditItemHandler
 {
-    public void BeforeUndelete(EditItemModel m)
+    public string BeforeUndelete(EditItemModel m)
     {
         Ctrl c = (Ctrl) m.Item;
-        //?? Need to undelete Branch as well??
-        int node1Id = c.Node1.Id;
-        // ensure node1 is not deleted
-        var ue = m.Da.Datasets.GetDeleteUserEdit(m.Dataset.Id, "Node", c.Node1.Id.ToString());
-        if ( ue!=null ) {
-            m.Da.Datasets.Delete(ue);
-        }
-        // ensure node2 is not deleted
-        ue = m.Da.Datasets.GetDeleteUserEdit(m.Dataset.Id, "Node", c.Node2.Id.ToString());
-        if ( ue!=null ) {
-            m.Da.Datasets.Delete(ue);
+        
+        // see if we already have a ctrl pointing at the branch referenced by this ctrl
+        var q = m.Da.Session.QueryOver<Ctrl>();
+        q = q.Fetch(SelectMode.Fetch,m=>m.Node1);
+        q = q.Fetch(SelectMode.Fetch,m=>m.Node2);            
+        var di = new DatasetData<Ctrl>(m.Da,m.Dataset.Id,m=>m.Id.ToString(),q);
+        //
+        var ctrl = di.Data.Where( m=>m.Branch.Id == c.Branch.Id).FirstOrDefault();
+        if ( ctrl!=null ) { 
+            return $"There is already a ctrl pointing at the same branch so this ctrl cannot be undeleted.\n\n(called <b>{ctrl.DisplayName}</b> in dataset <b>{ctrl.Dataset.Name}</b>)";
+        } else {
+            return "";
         }
     }
+
+    public string BeforeDelete(EditItemModel m, bool isSourceEdit) {
+        return "";
+    }
+
 
     public void Check(EditItemModel m)
     {
@@ -43,7 +50,7 @@ public class CtrlItemHandler : IEditItemHandler
     public object GetItem(EditItemModel model)
     {
         var id = model.ItemId;
-        return id>0 ? model.Da.Loadflow.GetCtrl(id) : new Ctrl(model.Dataset);
+        return id>0 ? model.Da.Loadflow.GetCtrl(id) : new Ctrl(model.Dataset, null);
     }
 
     public void Save(EditItemModel m)
@@ -57,9 +64,7 @@ public class CtrlItemHandler : IEditItemHandler
             var b = m.Da.Loadflow.GetBranch((int) branchId);
             if ( b!=null ) {
                 //
-                c.Code = b.Code;
-                c.Node1 = b.Node1;
-                c.Node2 = b.Node2;
+                c.Branch = b;
             } else {
                 m.AddError("branchId",$"Cannot find branch with id [{branchId}]");
             }

@@ -7,7 +7,10 @@
         <mat-option *ngFor="let ds of datasetInfo" [value]="ds.dataset.id">
             <span *ngIf="ds.indent==0">{{ds.dataset.name}}</span>    
             <ng-container *ngIf="ds.indent>0">
-                <mat-icon class="datasetIcon" [ngStyle]="{'margin-right': '0px', 'margin-left': ds.indent +'rem'}">subdirectory_arrow_right</mat-icon><span>{{ds.dataset.name}}</span>
+                <mat-icon class="datasetIcon" [ngStyle]="{ 'margin-left': ds.indent +'rem'}">subdirectory_arrow_right</mat-icon>                
+                <mat-icon *ngIf="ds.dataset.isReadOnly" class="lockIcon">lock</mat-icon>
+                <div *ngIf="!ds.dataset.isReadOnly" class="lockIconSpacer"></div>
+                <span>{{ds.dataset.name}}</span>
             </ng-container>
         </mat-option>
     </mat-select>

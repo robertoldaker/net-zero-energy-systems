@@ -343,7 +343,7 @@ export interface Node {
 export interface Branch {
     id: number
     datasetId: number
-    lineName: string
+    displayName: string
     region: string
     code: string
     r: number
@@ -368,7 +368,9 @@ export enum LoadflowCtrlType {  QB=0,  // Quad booster
                              }
 export interface Ctrl {
     id: number
+    displayName: string
     datasetId: number
+    branchId: number
     region: string
     code: string
     minCtrl: number
@@ -381,7 +383,6 @@ export interface Ctrl {
     node2Name: string
     node1: Node
     node2: Node
-    lineName: string
     setPoint: number | null
 }
 

@@ -237,6 +237,15 @@ namespace SmartEnergyLabDataApi.Data
                 List();
         }
 
+        public IList<Ctrl> GetCtrlsForBranch(Branch b, Dataset dataset) {
+            var datasetIds = DataAccess.Datasets.GetInheritedDatasetIds(dataset.Id);
+            var ctrls = Session.QueryOver<Ctrl>().
+                Where( m=>m.Branch.Id == b.Id).
+                Where( m=>m.Dataset.Id.IsIn(datasetIds)).
+                List();
+            return ctrls;
+        }
+
         public bool BranchExists(int datasetId, string code, int node1Id, int node2Id, out Dataset? dataset) {
             // need to look at all datasets belonging to the user
             var derivedIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
@@ -283,16 +292,10 @@ namespace SmartEnergyLabDataApi.Data
         #endregion
 
         public string LoadFromXlsm(IFormFile formFile) {
-            var msg = "";
             using ( var da = new DataAccess() ) {
-                var loader = new LoadflowXlsmLoader(da);
-                msg+=loader.LoadNodes(formFile) + "\n";
-                msg+=loader.LoadBranches(formFile) + "\n";
-                msg+=loader.LoadCtrls(formFile) + "\n";
-                msg+=loader.LoadBoundaries(formFile) + "\n";
-                da.CommitChanges();
+                var loader = new LoadflowXlsmLoader();
+                return loader.Load(formFile);
             }
-            return msg;
         }
          
         public FileStreamResult SaveBranchesAsCsv(string? region=null) {
@@ -383,18 +386,10 @@ namespace SmartEnergyLabDataApi.Data
                 Left.JoinAlias(()=>node1.Location,()=>location1).
                 Left.JoinAlias(()=>node2.Location,()=>location2).
                 Where(m=>m.Dataset.Id.IsIn(datasetIds)).
-                Where( m=>!m.LinkType.IsInsensitiveLike("Transformer")).
+                Where( m=>m.LinkType==null || !m.LinkType.IsInsensitiveLike("Transformer")).
                 Where( m=>location1.Id!=location2.Id).
                 List();
             return branches;
-        }
-
-        public int GetResultCount(int datasetId) {
-
-            var dsIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
-            return Session.QueryOver<LoadflowResult>().
-                Where(m=>m.Dataset.Id.IsIn(dsIds)).
-                RowCount();            
         }
 
         #region LoadflowResults
@@ -409,6 +404,24 @@ namespace SmartEnergyLabDataApi.Data
         public LoadflowResult GetLoadflowResult(int datasetId) {
             return Session.QueryOver<LoadflowResult>().Where( m=>m.Dataset.Id == datasetId).Take(1).SingleOrDefault();
         }
+        public int GetResultCount(int datasetId) {
+
+            var dsIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
+            return Session.QueryOver<LoadflowResult>().
+                Where(m=>m.Dataset.Id.IsIn(dsIds)).
+                RowCount();            
+        }
+
+        public void DeleteResults(int datasetId) {
+            var dsIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
+            var results = Session.QueryOver<LoadflowResult>().
+                Where(m=>m.Dataset.Id.IsIn(dsIds)).
+                List();
+            foreach( var r in results ) {
+                Delete(r);
+            }
+        }
+
         #endregion
     }
 }

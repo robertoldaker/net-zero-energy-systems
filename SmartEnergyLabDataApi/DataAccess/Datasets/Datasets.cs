@@ -32,6 +32,37 @@ public class Datasets : DataSet
         Session.Delete(userEdit);
     }
 
+    public void AddDeleteUserEdit(IId obj, Dataset dataset) {
+        //
+        var tableName = obj.GetType().Name;
+        var key = obj.Id.ToString();
+        // Check one doesn;t already exist
+        var ue = GetDeleteUserEdit(dataset.Id, tableName, key);        
+        if ( ue==null ) {
+            var userEdit = new UserEdit() {
+                Dataset = dataset,
+                TableName = tableName,
+                Key = key,
+                IsRowDelete = true
+            };
+            Add(userEdit);
+        }
+    }
+
+    public UserEdit GetDeleteUserEdit(int datasetId, IId obj) {
+        //
+        var tableName = obj.GetType().Name;
+        var key = obj.Id.ToString();
+        //
+        var data = Session.QueryOver<UserEdit>().
+            Where(m=>m.Dataset.Id == datasetId).
+            And(m=>m.TableName == tableName).
+            And(m=>m.IsRowDelete).
+            And(m=>m.Key == key).
+            Take(1).SingleOrDefault();
+        return data;
+    }
+
     public UserEdit GetDeleteUserEdit(int datasetId, string tableName, string key) {
         var data = Session.QueryOver<UserEdit>().
             Where(m=>m.Dataset.Id == datasetId).
@@ -246,6 +277,7 @@ public class Datasets : DataSet
         return Session.QueryOver<Dataset>().
             Where( m=>(m.User.Id == userId) || m.User==null).
             And(m=>m.Type == type).
+            OrderBy(m=>m.Name).Asc.
             List();
     }
     public Dataset GetDataset( DatasetType type, int userId, string name) {

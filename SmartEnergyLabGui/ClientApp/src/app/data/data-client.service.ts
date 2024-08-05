@@ -356,11 +356,11 @@ export class DataClientService implements ILogs {
         this.postDialogRequest<EditItem>('/Datasets/EditItem', editItem, onOk, onError);
     }
 
-    DeleteItem(editItem: EditItem, onOk: (resp: string)=> void) {
+    DeleteItem(editItem: EditItem, onOk: (resp: any)=> void) {
         this.postRequest<EditItem>('/Datasets/DeleteItem', editItem, onOk);
     }
 
-    UnDeleteItem(editItem: EditItem, onOk: (resp: string)=> void) {
+    UnDeleteItem(editItem: EditItem, onOk: (resp: any)=> void) {
         this.postRequest<EditItem>('/Datasets/UnDeleteItem', editItem, onOk);
     }
 

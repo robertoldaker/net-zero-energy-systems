@@ -16,9 +16,10 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
-        public Ctrl(Dataset dataset)
+        public Ctrl(Dataset dataset, Branch branch)
         {
             Dataset = dataset;
+            Branch = branch;
         }
 
         /// <summary>
@@ -31,8 +32,14 @@ namespace SmartEnergyLabDataApi.Data
         [Property()]
         public virtual string Region {get; set;}
 
-        [Property()]
-        public virtual string Code {get; set;}
+        public virtual string Code {
+            get {
+                return Branch.Code;
+            }
+        }
+
+        [Property(Column = "code")]
+        public virtual string old_Code { get; set;}
 
         [Property()]
         public virtual double MinCtrl {get; set;}
@@ -47,12 +54,36 @@ namespace SmartEnergyLabDataApi.Data
         public virtual LoadflowCtrlType Type {get; set;}
 
         [JsonIgnore]
+        [ManyToOne(Column = "BranchId", Cascade = "none")]
+        public virtual Branch Branch {get; set;}
+
+        public virtual int BranchId {
+            get {
+                return Branch.Id;
+            }
+        }
+
+        [JsonIgnore]
+        public virtual Node Node1 {
+            get {
+                return Branch.Node1;
+            }
+        }
+
+        [JsonIgnore]
         [ManyToOne(Column = "Node1Id", Cascade = "none")]
-        public virtual Node Node1 {get; set;}
+        public virtual Node old_Node1 {get; set;}
+
+        [JsonIgnore]
+        public virtual Node Node2 {
+            get {
+                return Branch.Node2;
+            }
+        }
 
         [JsonIgnore]
         [ManyToOne(Column = "Node2Id", Cascade = "none")]
-        public virtual Node Node2 {get; set;}
+        public virtual Node old_Node2 {get; set;}
 
         [JsonIgnore()]
         [ManyToOne(Column = "DatasetId", Cascade = "none")]
@@ -91,8 +122,14 @@ namespace SmartEnergyLabDataApi.Data
 
         public virtual string LineName {
             get {
-                var code = string.IsNullOrEmpty(Code) ? Id.ToString() : Code;
-                return $"{Node1.Code}-{Node2.Code}:{code}";            }
+                return Branch.LineName;
+            }
+        }
+
+        public virtual string DisplayName {
+            get {
+                return Branch.DisplayName;
+            }
         }
 
 

@@ -5,20 +5,41 @@ namespace SmartEnergyLabDataApi.Data;
 
 public class BranchItemHandler : IEditItemHandler
 {
-    public void BeforeUndelete(EditItemModel m)
+    public string BeforeUndelete(EditItemModel m)
     {
         Branch b = (Branch) m.Item;
         int node1Id = b.Node1.Id;
         // ensure node1 is not deleted
-        var ue = m.Da.Datasets.GetDeleteUserEdit(m.Dataset.Id, "Node", b.Node1.Id.ToString());
+        var ue = m.Da.Datasets.GetDeleteUserEdit(m.Dataset.Id, b.Node1);
         if ( ue!=null ) {
             m.Da.Datasets.Delete(ue);
         }
         // ensure node2 is not deleted
-        ue = m.Da.Datasets.GetDeleteUserEdit(m.Dataset.Id, "Node", b.Node2.Id.ToString());
+        ue = m.Da.Datasets.GetDeleteUserEdit(m.Dataset.Id, b.Node2);
         if ( ue!=null ) {
             m.Da.Datasets.Delete(ue);
         }
+        // undelete a ctrl pointing at this branch (assuming one only)
+        var ctrls = m.Da.Loadflow.GetCtrlsForBranch(b,m.Dataset);
+        if ( ctrls.Count==1) {
+            ue = m.Da.Datasets.GetDeleteUserEdit(m.Dataset.Id, ctrls[0]);
+            if ( ue!=null ) {
+                m.Da.Datasets.Delete(ue);
+            }
+        }
+        //
+        return "";
+    }
+
+    public string BeforeDelete(EditItemModel m, bool isSourceEdit) {
+        Branch b = (Branch) m.Item;
+        // Also mark as deleted any ctrls pointing at this branch
+        var ctrls = m.Da.Loadflow.GetCtrlsForBranch(b,m.Dataset);
+        foreach( var c in ctrls) {
+            m.Da.Datasets.AddDeleteUserEdit(c,m.Dataset);
+        }
+        //
+        return "";
     }
 
     public void Check(EditItemModel m)
@@ -47,16 +68,16 @@ public class BranchItemHandler : IEditItemHandler
         // node 1 id
         var nodeId1 = m.CheckInt("nodeId1");
         if ( nodeId1==null && m.ItemId == 0) {
-            m.AddError("nodeId1","Node 1 must be set");
+            m.AddError("node1","Node 1 must be set");
         }
         // node 2 id
         var nodeId2 = m.CheckInt("nodeId2");
         if ( nodeId2==null && m.ItemId == 0) {
-            m.AddError("nodeId2","Node 2 must be set");
+            m.AddError("node2","Node 2 must be set");
         }
         if ( nodeId1!=null && nodeId1==nodeId2 ) {
-            m.AddError("nodeId1","Nodes must be different");
-            m.AddError("nodeId2","Nodes must be different");
+            m.AddError("node1","Nodes must be different");
+            m.AddError("node2","Nodes must be different");
         }
         // Check another one doesn't already exist
         if ( nodeId1!=null && nodeId2!=null) {

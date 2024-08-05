@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using SmartEnergyLabDataApi.Common;
+using SmartEnergyLabDataApi.Data;
 
 namespace SmartEnergyLabDataApi.Loadflow
 {
@@ -46,7 +47,7 @@ namespace SmartEnergyLabDataApi.Loadflow
 
 
         // Setup boundary calc and run intact network case
-        public BoundaryFlowResult? SetBound(string boundname) {
+        public BoundaryFlowResult? SetBound(string boundaryCode) {
             double[] ivang=null;
             int i, p;
             double[] mism;
@@ -57,7 +58,11 @@ namespace SmartEnergyLabDataApi.Loadflow
             double din=0, dout=0, dins=0, douts=0;
             BoundaryFlowResult? bfr = null;
 
-            _boundnm = boundname;
+            var bndry = _lf.Boundaries.Data.Where( m=>m.Code == boundaryCode).FirstOrDefault();
+            if ( bndry == null ) {
+                throw new Exception($"Could not find boundary with code [{boundaryCode}]");
+            }
+            _boundnm = bndry.Code;
 
             var sr = _lf.StageResults.NewStage("Check base load flow");
 
@@ -72,7 +77,7 @@ namespace SmartEnergyLabDataApi.Loadflow
 
             sr = _lf.StageResults.NewStage("Link to boundary table");
 
-            _nbd = _lf.GetNodeBoundaryData(boundname);
+            _nbd = _lf.GetNodeBoundaryData(bndry);
 
             _lf.StageResults.StageResult(sr,StageResultEnum.Pass,$"Zones in boundary = {_nbd.Count}");
 
@@ -104,7 +109,7 @@ namespace SmartEnergyLabDataApi.Loadflow
 
             bfr = new BoundaryFlowResult(gin,din,gout,dout,_ia);
 
-            _lf.StageResults.StageResult(sr,StageResultEnum.Pass,$"{boundname} base transfer = {_pfer:f1} IA = {_ia:f1}");
+            _lf.StageResults.StageResult(sr,StageResultEnum.Pass,$"{_boundnm} base transfer = {_pfer:f1} IA = {_ia:f1}");
 
             sr = _lf.StageResults.NewStage("Calc interconnection sensitivities");
 

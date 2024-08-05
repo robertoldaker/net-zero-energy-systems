@@ -14,7 +14,7 @@ export class DialogTextInputComponent extends DialogBaseInput implements OnInit 
 
     constructor(ds: DatasetsService) {
         super(ds)
-     }
+    }
 
     ngOnInit(): void {
     }
@@ -25,6 +25,9 @@ export class DialogTextInputComponent extends DialogBaseInput implements OnInit 
     @Input()
     placeholder: string = ""
     isUserEditReverted = false
+
+    @Input()
+    fieldClasses = {}
 
     get hasUserEdit(): boolean {
         return this.isUserEditReverted ? false : this.dialog?.getUserEdit(this.name) !== undefined

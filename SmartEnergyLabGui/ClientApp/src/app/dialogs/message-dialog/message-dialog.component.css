@@ -19,4 +19,6 @@ div#icon > .mat-icon {
 
 div#message {
     margin-left: 1rem;
+    white-space: pre-wrap;
+    text-align: center;
 }

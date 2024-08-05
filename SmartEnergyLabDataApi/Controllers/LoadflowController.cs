@@ -155,8 +155,6 @@ namespace SmartEnergyLabDataApi.Controllers
         [Route("NetworkData")]
         public LoadflowNetworkData NetworkData(int datasetId) {
             using( var lf = new Loadflow.Loadflow(datasetId) ) {
-                //?? Can generate exceptons with incomplete data
-                //??lf.NetCheck();
                 return new LoadflowNetworkData(lf);
             }
         }

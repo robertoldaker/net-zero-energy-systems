@@ -12,7 +12,10 @@ namespace SmartEnergyLabDataApi.Loadflow
         private Nodes _nodes;
         private double[] _btfr;
         private Branches _branches;
-        private Ctrls _ctrls;
+        private Ctrls _ctrls;        
+        private DatasetData<Data.Boundary> _boundaries;
+        private DatasetData<Zone> _zones;
+
 
         // Used to store results        
         private StageResults _stageResults;
@@ -49,6 +52,10 @@ namespace SmartEnergyLabDataApi.Loadflow
             _branches = new Branches(_da,_dataset.Id,_nodes);
             // create ctrl wrapper
             _ctrls = new Ctrls(_da,_dataset.Id,_branches);
+            // boundaries
+            _boundaries = loadBoundaries(_da,datasetId);
+            // zones
+            _zones = loadZones(_da,datasetId);
         }
 
         public void Dispose()
@@ -83,6 +90,18 @@ namespace SmartEnergyLabDataApi.Loadflow
         public Ctrls Ctrls {
             get {
                 return _ctrls;
+            }
+        }
+
+        public DatasetData<Data.Boundary> Boundaries {
+            get {
+                return _boundaries;
+            }
+        }
+
+        public DatasetData<Zone> Zones {
+            get {
+                return _zones;
             }
         }
 
@@ -207,18 +226,9 @@ namespace SmartEnergyLabDataApi.Loadflow
             return true;
         }
 
-        public NodeBoundaryData GetNodeBoundaryData(string boundaryName) {
-            var bndry = _da.Loadflow.GetBoundary(boundaryName);
+        public NodeBoundaryData GetNodeBoundaryData(Data.Boundary bndry) {
             NodeBoundaryData nbd=null;
-            if ( bndry!=null) {
-                var bd = _da.Loadflow.GetBoundaryZones(bndry.Id);
-                if ( bd==null ) {
-                    throw new Exception($"Unexpected empty list of boundary zones for boundary [{boundaryName}]");                    
-                }
-                nbd = new NodeBoundaryData(bd);
-            } else {
-                throw new Exception($"Unknown boundary [{boundaryName}]");
-            }
+            nbd = new NodeBoundaryData(bndry.Zones);
             return nbd;
         }
 
@@ -245,6 +255,29 @@ namespace SmartEnergyLabDataApi.Loadflow
                 }
             } while( chng);
         }
+
+        private DatasetData<Data.Boundary> loadBoundaries(DataAccess da, int datasetId) {
+            var q = da.Session.QueryOver<Data.Boundary>();
+            var ds = new DatasetData<Data.Boundary>(da, datasetId,m=>m.Id.ToString(),q);
+            // add zones they belong to
+            var boundDict = da.Loadflow.GetBoundaryZoneDict(ds.Data);
+            foreach( var b in ds.Data) {
+                if ( boundDict.ContainsKey(b) ) {
+                    b.Zones = boundDict[b];
+                } else {
+                    b.Zones = new List<Zone>();
+                }
+            }
+            return ds;
+        }
+
+        private DatasetData<Zone> loadZones(DataAccess da, int datasetId) {
+            var q = da.Session.QueryOver<Zone>();
+            var ds = new DatasetData<Zone>(da, datasetId,m=>m.Id.ToString(),q);
+            return ds;
+        }
+
+
 
         // Set up admittance matrix
         // Default lf=true selects most non-zero row as reference

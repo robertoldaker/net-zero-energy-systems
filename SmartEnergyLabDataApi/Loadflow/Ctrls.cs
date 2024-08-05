@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using NHibernate;
+using Org.BouncyCastle.Asn1.Cms;
 using SmartEnergyLabDataApi.Data;
 
 namespace SmartEnergyLabDataApi.Loadflow
@@ -9,7 +10,7 @@ namespace SmartEnergyLabDataApi.Loadflow
             var q = da.Session.QueryOver<Ctrl>();
             q = q.Fetch(SelectMode.Fetch,m=>m.Node1);
             q = q.Fetch(SelectMode.Fetch,m=>m.Node2);            
-            var di = new DatasetData<Ctrl>(da,datasetId,m=>m.LineName,q);            
+            var di = new DatasetData<Ctrl>(da,datasetId,m=>m.Id.ToString(),q);            
             foreach( var c in di.Data) {
                 var key = c.LineName;
                 var branchWrapper = branches.get(key);

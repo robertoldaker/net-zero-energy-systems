@@ -571,7 +571,7 @@ public class LoadflowETYSLoader
                 Logger.Instance.LogErrorEvent(msg);
             }
             //
-            throw new Exception("Multiple isolated networks found");
+            //??throw new Exception("Multiple isolated networks found");
         }
         //
         updateNodes(nodeNames);
@@ -745,18 +745,6 @@ public class LoadflowETYSLoader
                         Logger.Instance.LogInfoEvent($"Could not find node [{ssC.Node2.Code}]");
                         continue;
                     }
-                    ctrl = new Ctrl() {
-                        Node1 = node1,
-                        Node2 = node2,
-                        Code = ssC.Code,
-                        Type = ssC.Type,
-                        MinCtrl = ssC.MinCtrl,
-                        MaxCtrl = ssC.MaxCtrl,
-                        Cost = ssC.Cost,
-                        Dataset = dataset,
-                    };
-                    da.Loadflow.Add(ctrl);
-                    Logger.Instance.LogInfoEvent($"Adding Ctrl [{ctrl.LineName}]");
                     if ( branch == null ) {
                         branch = new Branch() {
                             Node1 = node1,
@@ -773,6 +761,16 @@ public class LoadflowETYSLoader
                         da.Loadflow.Add(branch);
                         Logger.Instance.LogInfoEvent($"Adding branch [{branch.LineName}]");
                     }
+                    ctrl = new Ctrl() {
+                        Branch = branch,
+                        Type = ssC.Type,
+                        MinCtrl = ssC.MinCtrl,
+                        MaxCtrl = ssC.MaxCtrl,
+                        Cost = ssC.Cost,
+                        Dataset = dataset,
+                    };
+                    da.Loadflow.Add(ctrl);
+                    Logger.Instance.LogInfoEvent($"Adding Ctrl [{ctrl.LineName}]");
                 }
             } else {
                 Logger.Instance.LogInfoEvent($"Cannot find branch for Ctrl [{ssC.LineName}]");
@@ -824,15 +822,13 @@ public class LoadflowETYSLoader
         int index = 1;
         foreach( var b in ctrlBranches) {
             var ctrls = existingCtrls.Where( 
-                m=>m.Node1.Code == b.Node1.Code &&
-                    m.Node2.Code == b.Node2.Code).ToList();
+                m=>m.Branch.Id == b.Id).ToList();
             if ( ctrls.Count==0 )  {
                 var voltage=b.Node1.Code[4];
+                // Make the codes the same so we can locate the branch
+                b.Code = $"Q{index++}";
                 var ctrl = new Ctrl() {
-                    Code = $"Q{index++}",
-                    //
-                    Node1 = b.Node1,
-                    Node2 = b.Node2,
+                    Branch = b,
                     //
                     MinCtrl = (voltage == '4') ? -0.2 : -0.15,
                     MaxCtrl = (voltage == '4') ?  0.2 :  0.15,
@@ -842,8 +838,6 @@ public class LoadflowETYSLoader
                     //
                     Dataset = dataset,
                 };
-                // Make the codes the same so we can locate the branch
-                b.Code = ctrl.Code;
                 //
                 da.Loadflow.Add(ctrl);
                 Logger.Instance.LogInfoEvent($"Adding ctrl=[{ctrl.Code} [{ctrl.Node1.Code}] [{ctrl.Node2.Code}]");

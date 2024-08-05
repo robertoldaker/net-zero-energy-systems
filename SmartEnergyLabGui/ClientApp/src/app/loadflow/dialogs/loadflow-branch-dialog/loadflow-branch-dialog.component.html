@@ -8,18 +8,18 @@
         </div>
         <div class="row">
             <div>
-                <app-dialog-selector [dialog]="dialog"  name="nodeId1" label="Node 1" [data]="nodes" [displayFcn]="displayNode"></app-dialog-selector>
+                <app-dialog-auto-complete [dialog]="dialog" placeholder="search for node 1" name="node1" label="Node 1" (onSearch)="searchNodes($event)" [getDisplayStrFcn]="displayNode" (onSelected)="selectedNode1($event)"></app-dialog-auto-complete>
             </div>    
             <div>
-                <app-dialog-selector [dialog]="dialog"  name="nodeId2" label="Node 2" [data]="nodes" [displayFcn]="displayNode"></app-dialog-selector>
+                <app-dialog-auto-complete [dialog]="dialog"  placeholder="search for node 1" name="node2" label="Node 2" (onSearch)="searchNodes($event)" [getDisplayStrFcn]="displayNode" (onSelected)="selectedNode2($event)"></app-dialog-auto-complete>
             </div>    
         </div>
         <div class="row">
             <div>
-                <app-dialog-text-input [dialog]="dialog" name="x" placeholder="Enter reactance" label="Reactance (x)"></app-dialog-text-input>
+                <app-dialog-text-input [dialog]="dialog" name="x" placeholder="Enter reactance" label="Reactance (x)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
             </div>
             <div>
-                <app-dialog-text-input [dialog]="dialog" name="cap" placeholder="Enter capacity in MW" label="Capacity (MW)"></app-dialog-text-input>
+                <app-dialog-text-input [dialog]="dialog" name="cap" placeholder="Enter capacity in MW" label="Capacity (MW)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
             </div>    
         </div>
     </form>

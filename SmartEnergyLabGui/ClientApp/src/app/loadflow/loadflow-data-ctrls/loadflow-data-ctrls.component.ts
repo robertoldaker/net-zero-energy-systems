@@ -40,7 +40,7 @@ export class LoadflowDataCtrlsComponent extends ComponentBase {
     dataFilter: DataFilter = new DataFilter(20, { active: 'code', direction: 'asc'}) 
     ctrls: MatTableDataSource<any> = new MatTableDataSource()
     displayedColumns: string[]
-    typeName: string = "Branch"
+    typeName: string = "Ctrl"
 
     getCtrlId(index: number, item: Ctrl) {
         return item.id;
@@ -51,7 +51,7 @@ export class LoadflowDataCtrlsComponent extends ComponentBase {
             this.datasetData = datasetData;
         }
         if ( this.datasetData) {
-            let cellData = this.dataFilter.GetCellDataObjects(this.dataService.dataset, this.datasetData,(item)=>`${item.node1Code}-${item.node2Code}:${item.code}`)
+            let cellData = this.dataFilter.GetCellDataObjects(this.dataService.dataset, this.datasetData,(item)=>item.id.toString())
             this.ctrls = new MatTableDataSource(cellData)    
         }
     }

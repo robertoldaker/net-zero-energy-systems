@@ -4,7 +4,7 @@ import { DataClientService } from "../data/data-client.service";
 import { ElsiDataService } from "../elsi/elsi-data.service";
 import { LoadflowDataService } from "../loadflow/loadflow-data-service.service";
 import { CellEditorData } from "./cell-editor/cell-editor.component";
-import { MessageDialogIcon } from "../dialogs/message-dialog/message-dialog.component";
+import { MessageDialog, MessageDialogIcon } from "../dialogs/message-dialog/message-dialog.component";
 import { DialogFooterButtonsEnum } from "../dialogs/dialog-footer/dialog-footer.component";
 import { Dataset, DatasetType } from "../data/app.data";
 import { UserService } from "../users/user.service";
@@ -92,11 +92,7 @@ export class DatasetsService {
     }
 
     afterEdit(cellData: CellEditorData, resp: string, onEdited: (resp:string)=>void ) {
-        if ( cellData.dataset.type === DatasetType.Elsi ) {
-            this.elsiDataService.loadDataset()
-        } else if ( cellData.dataset.type === DatasetType.Loadflow ) {
-            this.loadflowDataService.loadNetworkData(true)
-        }
+        this.refreshData()
         if ( onEdited) {
             onEdited(resp)
         }
@@ -165,6 +161,12 @@ export class DatasetsService {
     private deleteItem(id: number, className: string, dataset: Dataset, onDeleted: ()=>void) {
         this.dataService.DeleteItem({id: id, className: className, datasetId: dataset.id}, (resp)=>{
             this.refreshData();
+            // this means it couldn't be unDeleted
+            if ( resp.msg ) {
+                this.dialogService.showMessageDialog(new MessageDialog(resp.msg))
+            } else {
+                onDeleted()
+            }
             onDeleted();
         });
     }
@@ -192,7 +194,12 @@ export class DatasetsService {
     private unDeleteItem(id: number, className: string, dataset: Dataset, onDeleted: ()=>void) {
         this.dataService.UnDeleteItem({id: id, className: className, datasetId: dataset.id}, (resp)=>{
             this.refreshData();
-            onDeleted();
+            // this means it couldn't be unDeleted
+            if ( resp.msg ) {
+                this.dialogService.showMessageDialog(new MessageDialog(resp.msg))
+            } else {
+                onDeleted()
+            }
         });
     }
 
@@ -202,7 +209,7 @@ export class DatasetsService {
             if ( dataset.type === DatasetType.Elsi ) {
                 this.elsiDataService.loadDataset()
             } else if ( dataset.type === DatasetType.Loadflow ) {
-                this.loadflowDataService.loadNetworkData(true)
+                this.loadflowDataService.reload()
             }    
         }
     }
