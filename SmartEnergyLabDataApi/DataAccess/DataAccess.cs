@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
 using NHibernate;
+using NHibernate.Dialect.Function;
 using Org.BouncyCastle.Crypto.Signers;
 using Remotion.Linq.Parsing.Structure.IntermediateModel;
 using SmartEnergyLabDataApi.Loadflow;
@@ -59,6 +60,35 @@ namespace SmartEnergyLabDataApi.Data
             }
             if ( oldVersion<57) {
                 updateLoadflowCtrls();
+            }
+            if ( oldVersion<58) {
+                updateGridSubstationLocations();
+            }
+        }
+
+        private static void updateGridSubstationLocations() {
+            using( var da = new DataAccess() ) {
+                var datasets = da.Session.QueryOver<Dataset>().List();
+                foreach( var ds in datasets) {
+                    var nodes = da.Session.QueryOver<Node>().Where( m=>m.Dataset.Id == ds.Id ).List();
+                    var locDict = new Dictionary<int,GridSubstationLocation>();
+                    foreach( var n in nodes) {
+                        var loc = n.Location;
+                        if ( loc!=null ) {
+                            if ( loc.Dataset==null || loc.Dataset.Id != ds.Id) {
+                                if ( locDict.ContainsKey(loc.Id) ) {
+                                    n.Location = locDict[loc.Id];
+                                } else {
+                                    n.Location = loc.Copy(ds);
+                                    da.NationalGrid.Add(n.Location);
+                                    locDict.Add(loc.Id,n.Location);
+                                }
+                            }
+                        }
+                    }
+                }
+                //
+                da.CommitChanges();
             }
         }
 

@@ -1,3 +1,4 @@
+using Google.Apis.Sheets.v4.Data;
 using NHibernate.Classic;
 using NHibernate.Mapping.Attributes;
 using System.Text.Json.Serialization;
@@ -14,35 +15,13 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
-        public static GridSubstationLocation Create(string reference, GridSubstationLocationSource source) {
+        public static GridSubstationLocation Create(string reference, GridSubstationLocationSource source, Dataset dataset) {
             var gs = new GridSubstationLocation();
             gs.GISData = new GISData();
             gs.Reference = reference;
             gs.Source = source;
+            gs.Dataset = dataset;
             return gs;
-        }
-
-        public virtual LifecycleVeto OnSave(NHibernate.ISession s)
-        {
-            return LifecycleVeto.NoVeto;
-        }
-
-        public virtual LifecycleVeto OnUpdate(NHibernate.ISession s)
-        {
-            return LifecycleVeto.NoVeto;
-        }
-
-        public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
-        {
-            var nodes = s.QueryOver<Node>().Where( m=>m.Location == this).List();
-            foreach( var n in nodes) {
-                n.Location = null;
-            }
-            return LifecycleVeto.NoVeto;
-        }
-
-        public virtual void OnLoad(NHibernate.ISession s, object id)
-        {
         }
 
         /// <summary>
@@ -78,6 +57,51 @@ namespace SmartEnergyLabDataApi.Data
         [ManyToOne(Column = "GISDataId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
         public virtual GISData GISData { get; set; }
 
+        [JsonIgnore()]
+        [ManyToOne(Column = "DatasetId", Cascade = "none")]
+        public virtual Dataset Dataset { get; set; }
+
+        public virtual int DatasetId {
+            get {
+                return this.Dataset.Id;
+            }
+        }    
+        
+        public virtual LifecycleVeto OnSave(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual LifecycleVeto OnUpdate(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
+        {
+            var nodes = s.QueryOver<Node>().Where( m=>m.Location == this).List();
+            foreach( var n in nodes) {
+                n.Location = null;
+            }
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual void OnLoad(NHibernate.ISession s, object id)
+        {
+        }
+
+        public virtual GridSubstationLocation Copy(Dataset ds) {
+            var loc = new GridSubstationLocation();
+            loc.Name = this.Name;
+            loc.Reference = this.Reference;
+            loc.Source = this.Source;
+            loc.GISData = new GISData();
+            loc.GISData.Latitude = this.GISData.Latitude;
+            loc.GISData.Longitude = this.GISData.Longitude;
+            loc.Dataset = ds;
+            //
+            return loc;
+        }
 
     }
 }

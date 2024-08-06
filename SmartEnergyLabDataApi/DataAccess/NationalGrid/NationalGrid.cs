@@ -11,6 +11,14 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
+        public DataAccess DataAccess
+        {
+            get
+            {
+                return (DataAccess) _dataAccess;
+            }
+        }
+
         public void Add(GridOverheadLine ohl) 
         {
             Session.Save(ohl);
@@ -55,8 +63,11 @@ namespace SmartEnergyLabDataApi.Data
             Session.Delete(loc);
         }
 
-        public GridSubstationLocation GetGridSubstationLocation(string reference) {
-            return Session.QueryOver<GridSubstationLocation>().Where( m=>m.Reference == reference).Take(1).SingleOrDefault();
+        public GridSubstationLocation GetGridSubstationLocation(string reference, Dataset dataset=null) {
+            return Session.QueryOver<GridSubstationLocation>().
+                Where( m=>m.Reference == reference).
+                And( m=>m.Dataset==dataset).
+                Take(1).SingleOrDefault();
         }
 
         public IList<GridSubstationLocation> GetGridSubstationLocations() {
@@ -70,7 +81,9 @@ namespace SmartEnergyLabDataApi.Data
             return locations;
         }
 
-        public IList<int> GetGridSubstationLocationsForLoadflowCtrls() {
+        public IList<int> GetGridSubstationLocationsForLoadflowCtrls(int datasetId) {
+            //
+            var datasetIds = this.DataAccess.Datasets.GetInheritedDatasetIds(datasetId);
             //
             GridSubstationLocation loc=null;
             Branch b=null;
@@ -78,9 +91,13 @@ namespace SmartEnergyLabDataApi.Data
             var sq = QueryOver.Of<Ctrl>().
                 JoinAlias(m=>m.Branch,()=>b).
                 JoinAlias(()=>b.Node1,()=>node1).
+                Where( m=>m.Dataset.Id.IsIn(datasetIds)).
                 Where(m=>node1.Location.Id==loc.Id).
                 Select(m => m.Id);
-            var locationIds = Session.QueryOver<GridSubstationLocation>(()=>loc).WithSubquery.WhereExists(sq).Select(m=>m.Id).List<int>();
+            var locationIds = Session.QueryOver<GridSubstationLocation>(()=>loc).
+                Where( m=>m.Dataset.Id.IsIn(datasetIds)).
+                WithSubquery.WhereExists(sq).Select(m=>m.Id).
+                List<int>();
             return locationIds;
         }
 

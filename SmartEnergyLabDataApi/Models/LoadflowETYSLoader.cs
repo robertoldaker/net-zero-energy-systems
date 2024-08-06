@@ -202,14 +202,14 @@ public class LoadflowETYSLoader
                 var sc = nf.Key;
                 GridSubstationLocation newLoc = null;
                 if ( knownLocations.ContainsKey(sc.Code)) {
-                    newLoc = GridSubstationLocation.Create(sc.Code,GridSubstationLocationSource.Estimated);
+                    newLoc = GridSubstationLocation.Create(sc.Code,GridSubstationLocationSource.Estimated, dataset);
                     newLoc.Name = sc.Name;
                     newLoc.GISData.Latitude = knownLocations[sc.Code][0];
                     newLoc.GISData.Longitude = knownLocations[sc.Code][1];
                     da.NationalGrid.Add(newLoc);
                     Logger.Instance.LogInfoEvent($"Added known location for code [{sc.Code}] [{sc.Name}]");
                 } else {
-                    newLoc = addEstimatedLocation(sc, branches, gridSubstationLocations);
+                    newLoc = addEstimatedLocation(sc, branches, gridSubstationLocations, dataset);
                     if ( newLoc!=null ) {
                         da.NationalGrid.Add(newLoc);
                         Logger.Instance.LogInfoEvent($"Added estimated location for code [{sc.Code}] [{sc.Name}]");
@@ -229,7 +229,7 @@ public class LoadflowETYSLoader
         }
     }
 
-    private GridSubstationLocation addEstimatedLocation(SubstationCode sc,IList<Branch> branches, IList<GridSubstationLocation> gridSubstationLocations) {
+    private GridSubstationLocation addEstimatedLocation(SubstationCode sc,IList<Branch> branches, IList<GridSubstationLocation> gridSubstationLocations, Dataset dataset) {
         var code = sc.Code;
         var name = sc.Name;
         var connectedNodes = branches.Where(m=>m.Node1.Code.Substring(0,4) == code && m.Node2.Code.Substring(0,4)!=code && m.Node2.Location!=null).Select(m=>m.Node2).ToList();
@@ -254,7 +254,7 @@ public class LoadflowETYSLoader
                 lat = lat/ (double) nLocs;
                 lng = lng / (double) nLocs;
                 // Add an estimated location
-                newLoc = GridSubstationLocation.Create(code,GridSubstationLocationSource.Estimated);
+                newLoc = GridSubstationLocation.Create(code,GridSubstationLocationSource.Estimated, dataset);
                 newLoc.GISData.Latitude = lat;
                 newLoc.GISData.Longitude = lng;
                 newLoc.Name = name;
@@ -263,7 +263,7 @@ public class LoadflowETYSLoader
         return newLoc;
     }
 
-    private GridSubstationLocation googleMapsLookup(DataAccess da, SubstationCode substationCode) {
+    private GridSubstationLocation googleMapsLookup(DataAccess da, SubstationCode substationCode, Dataset dataset) {
 
         // append substation to get google maps to search for substation site
         var substationLookup = substationCode.Name;
@@ -288,7 +288,7 @@ public class LoadflowETYSLoader
         if ( textSearch?.places?.Count>0) {            
             var placeName = textSearch.places[0].displayName.text;
             if ( isLocInPlaceName(substationCode.Name,placeName) ) {
-                var loc = GridSubstationLocation.Create(substationCode.Code, GridSubstationLocationSource.GoogleMaps);
+                var loc = GridSubstationLocation.Create(substationCode.Code, GridSubstationLocationSource.GoogleMaps, dataset);
                 loc.Name = substationCode.Name;
                 loc.GISData.Latitude = textSearch.places[0].location.latitude;
                 loc.GISData.Longitude = textSearch.places[0].location.longitude;

@@ -18,9 +18,18 @@ namespace SmartEnergyLabDataApi.Data
         public static void SetLocation(this Node n, DataAccess da) {
             if ( n.Code!=null && n.Code.Length>4) {
                 var locCode = n.Code.Substring(0,4);
-                var location = da.NationalGrid.GetGridSubstationLocation(locCode);
+                // First try with locations in this dataset 
+                var location = da.NationalGrid.GetGridSubstationLocation(locCode, n.Dataset);
                 if ( location!=null ) {
                     n.Location = location;
+                }
+                // If no match then try looking for ones with no dataset
+                if ( location==null ) {
+                    location = da.NationalGrid.GetGridSubstationLocation(locCode);
+                    if ( location!=null ) {
+                        n.Location = location.Copy(n.Dataset);
+                        da.NationalGrid.Add(n.Location);
+                    }
                 }
             }
         }

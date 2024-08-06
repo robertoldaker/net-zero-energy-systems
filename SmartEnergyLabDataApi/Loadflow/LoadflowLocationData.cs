@@ -11,7 +11,7 @@ namespace SmartEnergyLabDataApi.Loadflow
                 var locDict = new Dictionary<GridSubstationLocation,LoadflowLocation>();
                 var nodes = da.Loadflow.GetNodesWithLocations(datasetId);
                 // ids of locations that have ctrls
-                var qbIds = da.NationalGrid.GetGridSubstationLocationsForLoadflowCtrls();
+                var qbIds = da.NationalGrid.GetGridSubstationLocationsForLoadflowCtrls(datasetId);
                 foreach(var node in nodes) {
                     LoadflowLocation loc;
                     if ( locDict.ContainsKey(node.Location)) {

@@ -105,7 +105,7 @@ namespace SmartEnergyLabDataApi.Models
                     // Grid substation location
                     var loc = da.NationalGrid.GetGridSubstationLocation(sc.Code);
                     if ( loc==null ) {
-                        loc = GridSubstationLocation.Create(sc.Code, GridSubstationLocationSource.SHET); 
+                        loc = GridSubstationLocation.Create(sc.Code, GridSubstationLocationSource.SHET, null); 
                         da.NationalGrid.Add(loc);                       
                         nLocAdded++;
                     }
@@ -338,7 +338,7 @@ namespace SmartEnergyLabDataApi.Models
                     var locCode = feature.properties.SUBSTATION.Substring(0,4);
                     var loc = da.NationalGrid.GetGridSubstationLocation(locCode);
                     if ( loc==null ) {
-                        loc = GridSubstationLocation.Create(locCode, GridSubstationLocationSource.NGET); 
+                        loc = GridSubstationLocation.Create(locCode, GridSubstationLocationSource.NGET, null); 
                         da.NationalGrid.Add(loc);                       
                     }
                     //
@@ -366,7 +366,7 @@ namespace SmartEnergyLabDataApi.Models
                     var ic = _nodeInterConnectors[code];
                     var loc = da.NationalGrid.GetGridSubstationLocation(code);
                     if ( loc==null ) {
-                        loc = GridSubstationLocation.Create(code, GridSubstationLocationSource.NGET); 
+                        loc = GridSubstationLocation.Create(code, GridSubstationLocationSource.NGET, null); 
                         da.NationalGrid.Add(loc);                       
                     }
                     loc.Name = ic.Name;
