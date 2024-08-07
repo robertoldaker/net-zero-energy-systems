@@ -15,12 +15,14 @@
                       <span class="checkboxLabel">Only edited rows</span>
         </mat-checkbox>
     </div>
-    <mat-paginator 
-    [length]="dataFilter.dataLength"
-    [pageSize]="dataFilter.take" 
-    (page)="page($event)" 
-    [showFirstLastButtons]="true"
-    [hidePageSize]="true"
-    aria-label="Select page">
-    </mat-paginator>
+    <div class="paginator">
+        <mat-paginator 
+        [length]="dataFilter.dataLength"
+        [pageSize]="dataFilter.take" 
+        (page)="page($event)" 
+        [showFirstLastButtons]="true"
+        [hidePageSize]="true"
+        aria-label="Select page">
+        </mat-paginator>    
+    </div>
 </div>

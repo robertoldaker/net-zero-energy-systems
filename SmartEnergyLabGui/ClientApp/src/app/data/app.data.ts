@@ -331,7 +331,7 @@ export interface Node {
     code: string
     voltage: number
     name: string
-    location: GridLoadflowLocation | undefined
+    location: GridSubstationLocation | undefined
     demand: number
     generation: number
     ext: boolean
@@ -398,6 +398,7 @@ export interface NetworkData {
     ctrls: DatasetData<Ctrl>
     boundaries: DatasetData<Boundary>
     zones: DatasetData<Zone>
+    locations: DatasetData<GridSubstationLocation>
 }
 
 export interface LocationData {
@@ -405,11 +406,15 @@ export interface LocationData {
     links: LoadflowLink[]
 }
 
-export interface GridLoadflowLocation {
+export enum GridSubstationLocationSource { NGET, SHET, SPT, GoogleMaps, Estimated, UserDefined}
+export interface GridSubstationLocation {
     id: number
+    datasetId: number
     name: string
     reference: string
-    gisData: GISData
+    source: GridSubstationLocationSource
+    latitude: number
+    longitude: number
 }
 
 export interface LoadflowLocation {

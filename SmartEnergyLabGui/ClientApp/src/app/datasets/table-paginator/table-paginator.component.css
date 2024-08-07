@@ -1,12 +1,16 @@
 div.outerContainer {
-    display: grid; 
-    grid-auto-flow: column;  
+    display: flex; 
+    flex-direction:row;
+    flex-wrap: wrap;
+    justify-content: space-between;
 }
 
 div.search {
-    white-space: nowrap;
     align-self: center;
-    justify-self: flex-start;
+}
+
+div.paginator {
+    align-self: center;
 }
 
 input[type=text].searchInput {

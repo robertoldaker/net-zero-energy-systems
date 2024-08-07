@@ -145,6 +145,7 @@ public static class Program
         EditItemModel.AddHandler("Boundary", new BoundaryItemHandler());
         EditItemModel.AddHandler("Branch", new BranchItemHandler());
         EditItemModel.AddHandler("Ctrl", new CtrlItemHandler());
+        EditItemModel.AddHandler("GridSubstationLocation", new GridSubstationLocationItemHandler());
 
         app.Run();
 

@@ -1,0 +1,57 @@
+<app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)"  (onAdd)="add()" [typeName]="typeName"></app-table-paginator>
+
+<div style="overflow: auto; height: calc(100vh - 170px)">
+
+    <table style="width: 100%;" mat-table [fixedLayout]="true" [dataSource]="data" [trackBy]="getDataId" matSort matSortActive="code" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
+    
+        <!-- buttons Column -->
+        <ng-container matColumnDef="buttons">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-buttons [element]="element" [typeName]="typeName" (onEdit)="edit($event)"></app-cell-buttons>
+            </td>
+        </ng-container>
+
+        <!-- code -->
+        <ng-container matColumnDef="reference">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Code</th>
+          <td mat-cell *matCellDef="let element">{{element.reference.value}}</td>
+        </ng-container>
+    
+        <!-- name -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+          <td mat-cell *matCellDef="let element">
+            {{element.name.value}}
+          </td>
+        </ng-container>
+    
+        <!-- latitude -->
+        <ng-container matColumnDef="latitude">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Latitude</th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.latitude" [decimalPlaces]="5"></app-cell-editor>
+            </td>
+        </ng-container>
+            
+        <!-- longitude -->
+        <ng-container matColumnDef="longitude">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Longitude</th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.longitude" [decimalPlaces]="5"></app-cell-editor>
+            </td>
+        </ng-container>
+            
+        <!-- source -->
+        <ng-container matColumnDef="source">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Source</th>
+            <td mat-cell *matCellDef="let element">
+                {{getSource(element.source.value)}}
+            </td>
+        </ng-container>
+            
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{isDeleted: row._isDeleted}"></tr>
+    </table>            
+</div>
+

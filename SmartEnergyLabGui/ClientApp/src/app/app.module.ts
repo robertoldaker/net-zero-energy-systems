@@ -152,6 +152,8 @@ import { LoadflowBoundaryDialogComponent } from './loadflow/dialogs/loadflow-bou
 import { LoadflowBranchDialogComponent } from './loadflow/dialogs/loadflow-branch-dialog/loadflow-branch-dialog.component';
 import { LoadflowCtrlDialogComponent } from './loadflow/dialogs/loadflow-ctrl-dialog/loadflow-ctrl-dialog.component';
 import { DialogAutoCompleteComponent } from './datasets/dialog-auto-complete/dialog-auto-complete.component';
+import { LoadflowDataLocationsComponent } from './loadflow/loadflow-data-locations/loadflow-data-locations.component';
+import { LoadflowLocationDialogComponent } from './loadflow/dialogs/loadflow-location-dialog/loadflow-location-dialog.component';
 
 
 @NgModule({
@@ -259,6 +261,8 @@ import { DialogAutoCompleteComponent } from './datasets/dialog-auto-complete/dia
         LoadflowBranchDialogComponent,
         LoadflowCtrlDialogComponent,
         DialogAutoCompleteComponent,
+        LoadflowDataLocationsComponent,
+        LoadflowLocationDialogComponent,
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

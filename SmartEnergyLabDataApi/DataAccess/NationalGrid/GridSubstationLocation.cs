@@ -5,10 +5,10 @@ using System.Text.Json.Serialization;
 
 namespace SmartEnergyLabDataApi.Data
 {
-    public enum GridSubstationLocationSource { NGET, SHET, SPT, GoogleMaps, Estimated}
+    public enum GridSubstationLocationSource { NGET, SHET, SPT, GoogleMaps, Estimated, UserDefined}
     
     [Class(0, Table = "grid_substation_locations")]
-    public class GridSubstationLocation : ILifecycle
+    public class GridSubstationLocation : IId, IDataset, ILifecycle
     {
         public GridSubstationLocation()
         {
@@ -51,6 +51,30 @@ namespace SmartEnergyLabDataApi.Data
         [Column(Name = "source",Default = "0")]
         public virtual GridSubstationLocationSource Source {get; set;}
         
+        /// <summary>
+        /// Latitude
+        /// </summary>
+        public virtual double Latitude { 
+            get {
+                return GISData.Latitude;
+            }
+            set {
+                GISData.Latitude = value;
+            }
+        }
+
+        /// <summary>
+        /// Longitude
+        /// </summary>
+        public virtual double Longitude { 
+            get {
+                return GISData.Longitude;
+            }
+            set {
+                GISData.Longitude = value;
+            }
+        }
+
         /// <summary>
         /// GIS data
         /// </summary>

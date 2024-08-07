@@ -23,7 +23,8 @@ export class LoadflowDataService {
             branches: { tableName: '',data:[], userEdits: [], deletedData: [] }, 
             ctrls: { tableName: '',data:[], userEdits: [],deletedData: [] },
             boundaries: { tableName: '',data:[], userEdits: [],deletedData: [] },
-            zones: { tableName: '',data:[], userEdits: [],deletedData: [] } 
+            zones: { tableName: '',data:[], userEdits: [],deletedData: [] },
+            locations: { tableName: '',data:[], userEdits: [],deletedData: [] } 
         }
         this.locationData = { locations: [], links: []}
         this.signalRService.hubConnection.on('Loadflow_AllTripsProgress', (data) => {

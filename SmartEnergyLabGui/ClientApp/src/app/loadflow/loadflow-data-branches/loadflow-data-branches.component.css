@@ -1,55 +1,42 @@
-.mat-column-x {
-    text-align: right;
-    padding-right: 4rem   
-}
 
 .mat-column-code {
-    min-width: 170px;
-    width: 12%;
+    width: 100px;
 }
 
 .mat-column-node1Code {
-    min-width: 170px;
-    width: 12%;
 }
 
 .mat-column-node2Code {
-    min-width: 170px;
-    width: 12%;
 }
 
 .mat-column-region {
-    min-width: 140px;
-    width: 10%;
+    width: 50px;
 }
 
 .mat-column-x {
-    min-width: 140px;
-    width: 10%;
+    width: 120px;
+    text-align: right;
+    padding-right: 1rem   
 }
 
 .mat-column-cap {
-    min-width: 140px;
-    width: 10%;
+    width: 120px;
     text-align: right;
-    padding-right: 4rem;
+    padding-right: 1rem;
 }
 
 .mat-column-linkType {
-    min-width: 170px;
-    width: 12%;
+    width: 120px;
 }
 
 .mat-column-freePower {
-    min-width: 140px;
-    width: 10%;
+    width: 120px;
     text-align: right;
     font-style: italic;
 }
 
 .mat-column-powerFlow {
-    min-width: 140px;
-    width: 10%;
+    width: 120px;
     text-align: right;
     font-style: italic;
 }

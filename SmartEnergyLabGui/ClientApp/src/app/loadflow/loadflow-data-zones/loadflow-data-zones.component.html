@@ -2,7 +2,7 @@
 
 <div style="overflow: auto; height: calc(100vh - 170px)">
     
-    <table style="width: 100px;" #table mat-table [dataSource]="zones" [trackBy]="getNodeId" matSort  matSortActive="code" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
+    <table style="width: 300px;" #table mat-table [dataSource]="zones" [trackBy]="getNodeId" matSort  matSortActive="code" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
 
         <!-- buttons Column -->
         <ng-container matColumnDef="buttons">

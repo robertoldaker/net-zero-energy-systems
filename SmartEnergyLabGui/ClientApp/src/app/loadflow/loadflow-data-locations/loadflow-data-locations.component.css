@@ -1,0 +1,21 @@
+.mat-column-reference {
+    width: 50px;
+}
+
+.mat-column-name {
+}
+
+.mat-column-latitude {
+    width: 130px;
+    text-align: right;
+}
+
+.mat-column-longitude {
+    width: 130px;
+    text-align: right;
+}
+
+.mat-column-source {
+    width: 180px;
+    padding-left: 4rem;
+}

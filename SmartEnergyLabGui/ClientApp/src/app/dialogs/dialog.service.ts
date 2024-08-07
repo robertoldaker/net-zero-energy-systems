@@ -23,6 +23,7 @@ import { LoadflowZoneDialogComponent } from '../loadflow/dialogs/loadflow-zone-d
 import { LoadflowBoundaryDialogComponent } from '../loadflow/dialogs/loadflow-boundary-dialog/loadflow-boundary-dialog.component';
 import { LoadflowBranchDialogComponent } from '../loadflow/dialogs/loadflow-branch-dialog/loadflow-branch-dialog.component';
 import { LoadflowCtrlDialogComponent } from '../loadflow/dialogs/loadflow-ctrl-dialog/loadflow-ctrl-dialog.component';
+import { LoadflowLocationDialogComponent } from '../loadflow/dialogs/loadflow-location-dialog/loadflow-location-dialog.component';
 
 @Injectable({
     providedIn: 'root'
@@ -140,5 +141,11 @@ export class DialogService {
         let options = Object.assign({},this.defaultOptions)
         options.data = cellObj
         this.dialog.open(LoadflowCtrlDialogComponent, options)
+    }
+
+    showLoadflowLocationDialog(cellObj?: ICellEditorDataDict) {
+        let options = Object.assign({},this.defaultOptions)
+        options.data = cellObj
+        this.dialog.open(LoadflowLocationDialogComponent, options)
     }
 }

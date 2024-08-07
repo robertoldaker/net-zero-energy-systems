@@ -277,8 +277,6 @@ namespace SmartEnergyLabDataApi.Loadflow
             return ds;
         }
 
-
-
         // Set up admittance matrix
         // Default lf=true selects most non-zero row as reference
         private SparseMatrix AdmittanceMat( bool lf=true) {

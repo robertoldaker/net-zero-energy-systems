@@ -63,6 +63,10 @@ namespace SmartEnergyLabDataApi.Data
             Session.Delete(loc);
         }
 
+        public GridSubstationLocation GetGridSubstationLocation(int id) {
+            return Session.Get<GridSubstationLocation>(id);
+        }
+
         public GridSubstationLocation GetGridSubstationLocation(string reference, Dataset dataset=null) {
             return Session.QueryOver<GridSubstationLocation>().
                 Where( m=>m.Reference == reference).

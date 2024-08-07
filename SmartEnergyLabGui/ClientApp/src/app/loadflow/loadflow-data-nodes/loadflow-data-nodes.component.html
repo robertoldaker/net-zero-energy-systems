@@ -51,7 +51,9 @@
         <!-- Ext Column -->
         <ng-container matColumnDef="ext">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Ext</th>
-            <td mat-cell *matCellDef="let element">{{element.ext.value}}</td>
+            <td mat-cell *matCellDef="let element">
+                <input type="checkbox" [checked]="element.ext.value" disabled/>
+            </td>
         </ng-container>
 
         <!-- Mismatch  Column -->

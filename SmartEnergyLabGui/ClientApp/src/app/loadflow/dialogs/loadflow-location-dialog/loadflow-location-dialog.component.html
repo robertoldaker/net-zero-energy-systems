@@ -1,0 +1,22 @@
+<app-dialog-header [dialogRef]="dialogRef">{{title}}</app-dialog-header>
+<div mat-dialog-content id="content">
+    <form [formGroup]="form">
+        <div class="row">
+            <div>
+                <app-dialog-text-input [dialog]="dialog" name="code" placeholder="Enter 4-letter code (uppercase)" label="Code"></app-dialog-text-input>
+            </div>
+            <div>
+                <app-dialog-text-input [dialog]="dialog" name="name" placeholder="Enter name for location" label="Name"></app-dialog-text-input>
+            </div>    
+        </div>
+        <div class="row">
+            <div>
+                <app-dialog-text-input [dialog]="dialog" name="latitude" placeholder="Enter latitude" label="Latitude" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
+            </div>
+            <div>
+                <app-dialog-text-input [dialog]="dialog" name="longitude" placeholder="Enter longitude" label="Longitude" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
+            </div>    
+        </div>
+    </form>
+</div>
+<app-dialog-footer [dialogRef]="dialogRef" (onOk)="save()"></app-dialog-footer>

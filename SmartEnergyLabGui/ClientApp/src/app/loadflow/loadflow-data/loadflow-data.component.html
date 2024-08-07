@@ -4,22 +4,25 @@
     </div>
 </div>
 <mat-tab-group [ngClass]="{hide: showMap}" animationDuration="0ms" [preserveContent]="true" [selectedIndex]="selected.value" (selectedIndexChange)="selected.setValue($event)">
-    <mat-tab label="Nodes">
+    <mat-tab label="Nodes" labelClass="matTabLabelNarrow">
         <app-loadflow-data-nodes></app-loadflow-data-nodes>
     </mat-tab>
-    <mat-tab label="Branches">
+    <mat-tab label="Branches" labelClass="matTabLabelNarrow">
         <app-loadflow-data-branches></app-loadflow-data-branches>
     </mat-tab>
-    <mat-tab label="Controls">
+    <mat-tab label="Controls" labelClass="matTabLabelNarrow">
         <app-loadflow-data-ctrls></app-loadflow-data-ctrls>
     </mat-tab>
-    <mat-tab label="Boundaries">
+    <mat-tab label="Boundaries" labelClass="matTabLabelNarrow">
         <app-loadflow-data-boundaries></app-loadflow-data-boundaries>
     </mat-tab>
-    <mat-tab label="Zones">
+    <mat-tab label="Zones" labelClass="matTabLabelNarrow">
         <app-loadflow-data-zones></app-loadflow-data-zones>
     </mat-tab>
-    <mat-tab *ngIf="showAllTripResults" label="All trip results" >
+    <mat-tab label="Locations" labelClass="matTabLabelNarrow">
+        <app-loadflow-data-locations></app-loadflow-data-locations>
+    </mat-tab>
+    <mat-tab *ngIf="showAllTripResults" label="All trip results" labelClass="matTabLabelNarrow">
         <app-loadflow-trip-results></app-loadflow-trip-results>
     </mat-tab>
 </mat-tab-group>    

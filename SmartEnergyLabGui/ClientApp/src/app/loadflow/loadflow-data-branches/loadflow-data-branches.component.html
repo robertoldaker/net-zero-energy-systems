@@ -1,7 +1,7 @@
 <app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)" (onAdd)="add()" [typeName]="typeName"></app-table-paginator>
 
 <div style="overflow: auto; height: calc(100vh - 170px)">
-    <table style="width: 100%;" mat-table [dataSource]="branches" [trackBy]="getBranchId" matSort  matSortActive="code" matSortDirection="asc"  matSortDisableClear (matSortChange)="sortTable($event)">
+    <table style="width: 100%;" mat-table [fixedLayout]="true" [dataSource]="branches" [trackBy]="getBranchId" matSort  matSortActive="code" matSortDirection="asc"  matSortDisableClear (matSortChange)="sortTable($event)">
     
         <!-- buttons Column -->
         <ng-container matColumnDef="buttons">
@@ -13,7 +13,7 @@
 
         <!-- code -->
         <ng-container matColumnDef="code">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Branch</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Code</th>
           <td mat-cell *matCellDef="let element">{{element.code.value}}</td>
         </ng-container>
     
@@ -34,13 +34,7 @@
             <div *ngIf="element.node2Name.value" class="nodeName">({{element.node2Name.value}})</div>
           </td>
         </ng-container>
-    
-        <!-- region -->
-        <ng-container matColumnDef="region">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Region</th>
-            <td mat-cell *matCellDef="let element">{{element.region.value}}</td>
-        </ng-container>
-    
+        
         <!-- x -->
         <ng-container matColumnDef="x">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">X</th>

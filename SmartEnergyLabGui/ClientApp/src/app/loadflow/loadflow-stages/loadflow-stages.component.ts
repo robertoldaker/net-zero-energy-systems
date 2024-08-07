@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { StageResult, StageResultEnum } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
@@ -9,7 +9,7 @@ import { ComponentBase } from 'src/app/utils/component-base';
     templateUrl: './loadflow-stages.component.html',
     styleUrls: ['./loadflow-stages.component.css']
 })
-export class LoadflowStagesComponent extends ComponentBase {
+export class LoadflowStagesComponent extends ComponentBase implements AfterViewInit {
 
     constructor(private dataService: LoadflowDataService) {
         super()
@@ -22,12 +22,22 @@ export class LoadflowStagesComponent extends ComponentBase {
             this.stageResults = []
         }))
     }
+    ngAfterViewInit(): void {
+        if ( this.div ) {
+            let element = this.div.nativeElement
+            let box = element.getBoundingClientRect()
+            element.style.height = `calc(100vh - ${box.top}px)`
+        }
+    }
     //StageResultEnum
     stageResults:StageResult[]
     displayedColumns:string[]
     getStageText(result: StageResultEnum) {
         return StageResultEnum[result];
     }
+
+    @ViewChild('divContainer')
+    div: ElementRef | undefined;
 
     getIconRef(result: StageResultEnum) {
         if ( result==StageResultEnum.Pass) {

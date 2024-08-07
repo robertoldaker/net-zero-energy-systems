@@ -2,7 +2,7 @@
 
 <div style="overflow: auto; height: calc(100vh - 170px)">
 
-    <table style="width: 100%;" mat-table [dataSource]="ctrls" [trackBy]="getCtrlId" matSort matSortActive="code" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
+    <table style="width: 100%;" mat-table [fixedLayout]="true" [dataSource]="ctrls" [trackBy]="getCtrlId" matSort matSortActive="code" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
     
         <!-- buttons Column -->
         <ng-container matColumnDef="buttons">
@@ -14,7 +14,7 @@
 
         <!-- code -->
         <ng-container matColumnDef="code">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Ctrl</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Code</th>
           <td mat-cell *matCellDef="let element">{{element.code.value}}</td>
         </ng-container>
     

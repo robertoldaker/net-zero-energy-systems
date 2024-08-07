@@ -237,3 +237,8 @@ div.nodeName {
 .mat-row:hover {
     background-color: #ddd;
 }
+
+/* for matTab to make the labels thinner */
+.matTabLabelNarrow {
+    min-width: 40px !important;
+}

@@ -1,4 +1,5 @@
 using System.Linq;
+using Org.BouncyCastle.Asn1.Icao;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
 
@@ -16,6 +17,10 @@ namespace SmartEnergyLabDataApi.Loadflow
             Boundaries = lf.Boundaries;
             // Zones
             Zones = lf.Zones;
+            // Locations
+            using (var da = new DataAccess() ) {
+                Locations = loadLocations(da, lf.Dataset.Id);
+            }
         }
 
         public DatasetData<Node> Nodes {get; private set;}
@@ -23,6 +28,13 @@ namespace SmartEnergyLabDataApi.Loadflow
         public DatasetData<Ctrl> Ctrls {get; private set;}
         public DatasetData<Data.Boundary> Boundaries {get; private set;}
         public DatasetData<Zone> Zones {get; private set;}
+        public DatasetData<GridSubstationLocation> Locations {get; private set;}
+
+        private DatasetData<GridSubstationLocation> loadLocations(DataAccess da, int datasetId) {
+            var q = da.Session.QueryOver<GridSubstationLocation>();
+            var locs = new DatasetData<GridSubstationLocation>(da, datasetId,m=>m.Id.ToString(),q);
+            return locs;
+        }
 
     }
 }
