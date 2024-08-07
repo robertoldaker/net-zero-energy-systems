@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { LoadflowDataService } from '../loadflow-data-service.service';
+import { LoadflowDataService } from '../../loadflow-data-service.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { MatTabLabel } from '@angular/material/tabs';
 
@@ -24,14 +24,7 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
         }))
     }
     ngAfterViewInit(): void {
-        if ( this.tabLabels ) {
-            console.log('tableLabels')
-            console.log(this.tabLabels)
-        }
     }
-
-    @ViewChildren(MatTabLabel)
-    tabLabels: QueryList<MatTabLabel> | undefined
     
     get mapButtonImage(): string {
         return this.showMap ? '/assets/images/table.png' : '/assets/images/world.png'

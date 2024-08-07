@@ -1,16 +1,14 @@
 import { Component, ViewChild } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Node, DatasetData } from '../../data/app.data';
-import { LoadflowDataService } from '../loadflow-data-service.service';
-import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
-import { ComponentBase } from 'src/app/utils/component-base';
+import { Node, DatasetData } from 'src/app/data/app.data';
+import { LoadflowDataService } from 'src/app/loadflow/loadflow-data-service.service';
+import { DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
-import { MatPaginator } from '@angular/material/paginator';
 import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
 import { DatasetsService } from 'src/app/datasets/datasets.service';
-import { ShowMessageService } from 'src/app/main/show-message/show-message.service';
 import { MessageDialog } from 'src/app/dialogs/message-dialog/message-dialog.component';
+import { ComponentBase } from 'src/app/utils/component-base';
 
 @Component({
     selector: 'app-loadflow-data-nodes',
@@ -23,7 +21,6 @@ export class LoadflowDataNodesComponent extends ComponentBase {
         private dataService: LoadflowDataService, 
         private dialogService: DialogService,
         public datasetsService: DatasetsService,
-        private showMessageService: ShowMessageService
      ) {
         super();
         this.dataFilter = new DataFilter(20, { active: 'code', direction: 'asc'})

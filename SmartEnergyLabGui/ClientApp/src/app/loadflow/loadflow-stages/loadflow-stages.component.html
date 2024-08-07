@@ -1,4 +1,4 @@
-<div #divContainer style="overflow: auto">
+<app-div-auto-scroller>
     <table style="width: 100%;" mat-table [dataSource]="stageResults">
 
         <!-- Stage Column -->
@@ -24,4 +24,4 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
-</div>
+</app-div-auto-scroller>

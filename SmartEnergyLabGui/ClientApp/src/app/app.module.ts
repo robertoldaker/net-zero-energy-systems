@@ -80,12 +80,12 @@ import { LoadProfileComponent } from './low-voltage/load-profile/load-profile.co
 import { LoadflowHomeComponent } from './loadflow/loadflow-home/loadflow-home.component';
 import { LoadflowHeaderComponent } from './loadflow/loadflow-header/loadflow-header.component';
 import { MainMenuComponent } from './main/main-menu/main-menu.component';
-import { LoadflowDataComponent } from './loadflow/loadflow-data/loadflow-data.component';
+import { LoadflowDataComponent } from './loadflow/data/loadflow-data/loadflow-data.component';
 import { LoadflowDialogComponent } from './loadflow/loadflow-dialog/loadflow-dialog.component';
 import { LoadflowStagesComponent } from './loadflow/loadflow-stages/loadflow-stages.component';
-import { LoadflowDataNodesComponent } from './loadflow/loadflow-data-nodes/loadflow-data-nodes.component';
-import { LoadflowDataBranchesComponent } from './loadflow/loadflow-data-branches/loadflow-data-branches.component';
-import { LoadflowDataCtrlsComponent } from './loadflow/loadflow-data-ctrls/loadflow-data-ctrls.component';
+import { LoadflowDataNodesComponent } from './loadflow/data/loadflow-data-nodes/loadflow-data-nodes.component';
+import { LoadflowDataBranchesComponent } from './loadflow/data/loadflow-data-branches/loadflow-data-branches.component';
+import { LoadflowDataCtrlsComponent } from './loadflow/data/loadflow-data-ctrls/loadflow-data-ctrls.component';
 import { AboutLoadflowDialogComponent } from './loadflow/about-loadflow-dialog/about-loadflow-dialog.component';
 import { LoadflowTripResultsComponent } from './loadflow/loadflow-trip-results/loadflow-trip-results.component';
 import { LoadflowTripTableComponent } from './loadflow/loadflow-trip-table/loadflow-trip-table.component';
@@ -138,8 +138,8 @@ import { SolarInstallationsComponent } from './low-voltage/solar-installations/s
 import { DatasetSelectorComponent } from './datasets/dataset-selector/dataset-selector.component';
 import { DatasetDialogComponent } from './datasets/dataset-dialog/dataset-dialog.component';
 import { TablePaginatorComponent } from './datasets/table-paginator/table-paginator.component';
-import { LoadflowDataBoundariesComponent } from './loadflow/loadflow-data-boundaries/loadflow-data-boundaries.component';
-import { LoadflowDataZonesComponent } from './loadflow/loadflow-data-zones/loadflow-data-zones.component';
+import { LoadflowDataBoundariesComponent } from './loadflow/data/loadflow-data-boundaries/loadflow-data-boundaries.component';
+import { LoadflowDataZonesComponent } from './loadflow/data/loadflow-data-zones/loadflow-data-zones.component';
 import { LoadflowNodeDialogComponent } from './loadflow/dialogs/loadflow-node-dialog/loadflow-node-dialog.component';
 import { LoadflowMapSearchComponent } from './loadflow/loadflow-map/loadflow-map-search/loadflow-map-search.component';
 import { DialogTextInputComponent } from './datasets/dialog-text-input/dialog-text-input.component';
@@ -152,8 +152,9 @@ import { LoadflowBoundaryDialogComponent } from './loadflow/dialogs/loadflow-bou
 import { LoadflowBranchDialogComponent } from './loadflow/dialogs/loadflow-branch-dialog/loadflow-branch-dialog.component';
 import { LoadflowCtrlDialogComponent } from './loadflow/dialogs/loadflow-ctrl-dialog/loadflow-ctrl-dialog.component';
 import { DialogAutoCompleteComponent } from './datasets/dialog-auto-complete/dialog-auto-complete.component';
-import { LoadflowDataLocationsComponent } from './loadflow/loadflow-data-locations/loadflow-data-locations.component';
+import { LoadflowDataLocationsComponent } from './loadflow/data/loadflow-data-locations/loadflow-data-locations.component';
 import { LoadflowLocationDialogComponent } from './loadflow/dialogs/loadflow-location-dialog/loadflow-location-dialog.component';
+import { DivAutoScrollerComponent } from './utils/div-auto-scroller/div-auto-scroller.component';
 
 
 @NgModule({
@@ -263,6 +264,7 @@ import { LoadflowLocationDialogComponent } from './loadflow/dialogs/loadflow-loc
         DialogAutoCompleteComponent,
         LoadflowDataLocationsComponent,
         LoadflowLocationDialogComponent,
+        DivAutoScrollerComponent,
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

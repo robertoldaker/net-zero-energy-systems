@@ -23,11 +23,6 @@ export class LoadflowStagesComponent extends ComponentBase implements AfterViewI
         }))
     }
     ngAfterViewInit(): void {
-        if ( this.div ) {
-            let element = this.div.nativeElement
-            let box = element.getBoundingClientRect()
-            element.style.height = `calc(100vh - ${box.top}px)`
-        }
     }
     //StageResultEnum
     stageResults:StageResult[]
@@ -35,9 +30,6 @@ export class LoadflowStagesComponent extends ComponentBase implements AfterViewI
     getStageText(result: StageResultEnum) {
         return StageResultEnum[result];
     }
-
-    @ViewChild('divContainer')
-    div: ElementRef | undefined;
 
     getIconRef(result: StageResultEnum) {
         if ( result==StageResultEnum.Pass) {

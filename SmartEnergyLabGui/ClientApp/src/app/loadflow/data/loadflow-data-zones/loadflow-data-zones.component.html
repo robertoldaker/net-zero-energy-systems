@@ -1,6 +1,6 @@
 <app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)" (onAdd)="add()" [typeName]="'Node'"></app-table-paginator>
 
-<div style="overflow: auto; height: calc(100vh - 170px)">
+<app-div-auto-scroller>
     
     <table style="width: 300px;" #table mat-table [dataSource]="zones" [trackBy]="getNodeId" matSort  matSortActive="code" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
 
@@ -25,4 +25,5 @@
         </tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{isDeleted: row._isDeleted}"></tr>
     </table>
-</div>
+</app-div-auto-scroller>
+

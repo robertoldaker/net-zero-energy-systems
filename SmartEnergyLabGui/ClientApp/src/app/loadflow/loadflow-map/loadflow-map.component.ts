@@ -30,7 +30,9 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             this.addMapData()
         }))     
         this.addSub(this.loadflowDataService.ResultsLoaded.subscribe((loadflowResults)=>{
-            this.selectBoundaryBranches(loadflowResults.boundaryTrips.trips)
+            if ( loadflowResults.boundaryTrips) {
+                this.selectBoundaryBranches(loadflowResults.boundaryTrips.trips)
+            }
         }))         
         this.addSub(this.loadflowDataService.ObjectSelected.subscribe((selectedItem)=>{
             this.selectObject(selectedItem)

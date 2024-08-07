@@ -1,8 +1,8 @@
 import { Component, ViewChild } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Branch, DatasetData } from '../../data/app.data';
-import { LoadflowDataService } from '../loadflow-data-service.service';
+import { Branch, DatasetData } from '../../../data/app.data';
+import { LoadflowDataService } from '../../loadflow-data-service.service';
 import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
