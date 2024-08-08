@@ -103,10 +103,6 @@ namespace SmartEnergyLabDataApi.Data
 
         public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
         {
-            var nodes = s.QueryOver<Node>().Where( m=>m.Location == this).List();
-            foreach( var n in nodes) {
-                n.Location = null;
-            }
             return LifecycleVeto.NoVeto;
         }
 

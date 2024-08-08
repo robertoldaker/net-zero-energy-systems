@@ -399,6 +399,7 @@ export interface NetworkData {
     boundaries: DatasetData<Boundary>
     zones: DatasetData<Zone>
     locations: DatasetData<GridSubstationLocation>
+    mapData: LocationData
 }
 
 export interface LocationData {

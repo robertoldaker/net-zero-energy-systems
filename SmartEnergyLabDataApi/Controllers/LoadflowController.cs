@@ -22,17 +22,6 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
-        /// Loads Loadflow geometry data from NationalGrid's website
-        /// </summary>
-        [HttpPost]        
-        [Route("LoadNodeGeometry")]
-        public void LoadNodeGeometry() {
-            var m = new LoadflowNodeGeometry();
-            m.Run();
-        }
-
-
-        /// <summary>
         /// Loads data from Loadflow spreadsheet
         /// </summary>
         /// <param name="file"></param>
@@ -167,8 +156,9 @@ namespace SmartEnergyLabDataApi.Controllers
         [HttpGet]
         [Route("LocationData")]
         public LoadflowLocationData LocationData(int datasetId) {
-            var m = new LoadflowLocationData(datasetId);
-            return m;
+            //??var m = new LoadflowLocationData(datasetId);
+            //??return m;
+            return null;
         }
 
         /// <summary>

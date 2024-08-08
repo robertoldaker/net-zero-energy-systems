@@ -83,7 +83,12 @@ export class DialogService {
 
     showDatasetDialog(dataset: Dataset | null, parent: Dataset | null, onOk: (datasetId: number)=>void) {
         let options = Object.assign({},this.defaultOptions)
-        options.data = { dataset: dataset, parent: parent}
+        if ( dataset ) {
+            // make copy so we can freely edit it
+            options.data = { dataset: Object.assign({},dataset), parent: parent}
+        } else {
+            options.data = { dataset: null, parent: parent}
+        }
         let dialogRef = this.dialog.open(DatasetDialogComponent, options)
         dialogRef.afterClosed().subscribe((datasetId)=>{
             onOk(datasetId);

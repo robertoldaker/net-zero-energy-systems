@@ -77,6 +77,7 @@ public class LoadflowETYSLoader
             var nodes = da.Loadflow.GetNodes(dataset);
             var branches = da.Loadflow.GetBranches(dataset);
             var zones = da.Loadflow.GetZones(dataset);
+            //
             var nodesNoZones = nodes.Where(m=>m.Zone==null).ToList();
             //
             Logger.Instance.LogInfoEvent($"Number of nodes no zones = [{nodesNoZones.Count}]");
@@ -126,10 +127,10 @@ public class LoadflowETYSLoader
 
     private void updateNodeLocations(Dictionary<string,SubstationCode> codesDict) {
         using( var da = new DataAccess() ) {
-            var gridSubstationLocations = da.NationalGrid.GetGridSubstationLocations();
             var dataset = getDataset(da,BASE_YEAR);
             var nodes = da.Loadflow.GetNodes(dataset);
             var branches = da.Loadflow.GetBranches(dataset);
+            var gridSubstationLocations = da.NationalGrid.GetGridSubstationLocations(dataset);
 
             var blackList=new string[] {"SANX","GART","FENW","CHAS","CLYN","BEIW","GLGL","WHHO","LOCL","TKNW","TKNO","ORMO","ORMW"};
             var codeAliases = new Dictionary<string,string>() {
@@ -142,8 +143,6 @@ public class LoadflowETYSLoader
                 {"CREA",new double[] {58.21040,-4.50244}}, // CREAG RIABHACH WINDFARM
                 {"MILW",new double[] {57.12366,-4.84634}}  // MILLENIUM WIND
             };
-            //
-            nodes = nodes.Where( m=>m.Location==null).ToList();
 
             //
             int nFound=0;
@@ -215,11 +214,6 @@ public class LoadflowETYSLoader
                         Logger.Instance.LogInfoEvent($"Added estimated location for code [{sc.Code}] [{sc.Name}]");
                     } else {
                         Logger.Instance.LogInfoEvent($"Could not find location for code [{sc.Code}]");
-                    }
-                }
-                if ( newLoc!=null) {
-                    foreach( var node in nf.Value) {
-                        node.Location = newLoc;
                     }
                 }
             }
@@ -892,6 +886,7 @@ public class LoadflowETYSLoader
                         Dataset = dataset
                     };
                     existingNode.SetVoltage();
+                    existingNode.SetLocation(da);
                     da.Loadflow.Add(existingNode);
                     numAdded++;
                 }

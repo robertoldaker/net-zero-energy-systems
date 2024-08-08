@@ -71,8 +71,8 @@ namespace SmartEnergyLabDataApi.Models
         protected override void checkModel()
         {
             var userId = _c.GetUserId();
-            if ( _da.Datasets.GetDataset(_obj.Type,_obj.Name,userId,_obj.Parent.Id,_obj.Id)!=null) {
-                this.addError("name","A dataset with this version already exists");
+            if ( _da.Datasets.GetDataset(_obj.Type,_obj.Name,userId,_obj.Id)!=null) {
+                this.addError("name","A dataset with this name already exists");
             }
         }
 
@@ -120,7 +120,7 @@ namespace SmartEnergyLabDataApi.Models
             var parentObj = _da.Datasets.GetDataset(_obj.ParentId);
             if ( parentObj == null ) {
                 this.addError("","Unexpected error - parent object is null");
-            } else if (_da.Datasets.GetDataset(parentObj.Type,_obj.Name,userId,_obj.ParentId,0)!=null) {
+            } else if (_da.Datasets.GetDataset(parentObj.Type,_obj.Name,userId,0)!=null) {
                 this.addError("name","A dataset with this name already exists");
             }
         }

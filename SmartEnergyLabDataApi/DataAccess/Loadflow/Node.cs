@@ -75,7 +75,10 @@ namespace SmartEnergyLabDataApi.Data
         /// <summary>
         /// location of node
         /// </summary>
+        [JsonIgnore()]
         [ManyToOne(Column = "locationId", Cascade = "none", Fetch = FetchMode.Join)]
+        public virtual GridSubstationLocation old_Location { get; set; }
+
         public virtual GridSubstationLocation Location { get; set; }
 
         [JsonIgnore()]

@@ -17,14 +17,14 @@ public class GridSubstationLocationItemHandler : IEditItemHandler
 
     public void Check(EditItemModel m)
     {
-        Regex regex = new Regex("[A-Z]{4}");
+        Regex regex = new Regex("^[A-Z]{4}X?$");
         // reference
         if ( m.GetString("code", out string reference)) {
             if ( string.IsNullOrEmpty(reference)) {
-                m.AddError("code","Please enter a 4-letter uppercase code");                
+                m.AddError("code","Please enter a 4-letter uppercase code with optional trailing X");                
             } else {
                 if ( !regex.IsMatch(reference) ) {
-                    m.AddError("code","Please enter a 4-letter uppercase code");                
+                    m.AddError("code","Please enter a 4-letter uppercase code with optional trailing X");
                 }
             }
         }

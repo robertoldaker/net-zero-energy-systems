@@ -21,6 +21,10 @@ namespace SmartEnergyLabDataApi.Loadflow
             using (var da = new DataAccess() ) {
                 Locations = loadLocations(da, lf.Dataset.Id);
             }
+            //
+            assignNodeLocations();
+            //
+            MapData = new LoadflowLocationData(this);
         }
 
         public DatasetData<Node> Nodes {get; private set;}
@@ -29,11 +33,35 @@ namespace SmartEnergyLabDataApi.Loadflow
         public DatasetData<Data.Boundary> Boundaries {get; private set;}
         public DatasetData<Zone> Zones {get; private set;}
         public DatasetData<GridSubstationLocation> Locations {get; private set;}
+        public LoadflowLocationData MapData {get; private set;}
 
         private DatasetData<GridSubstationLocation> loadLocations(DataAccess da, int datasetId) {
             var q = da.Session.QueryOver<GridSubstationLocation>();
             var locs = new DatasetData<GridSubstationLocation>(da, datasetId,m=>m.Id.ToString(),q);
             return locs;
+        }
+
+        private void assignNodeLocations() {
+            // create dictionary using ref. as key
+            var locs = Locations.Data;
+            var nodes = Nodes.Data;
+            var locDict = new Dictionary<string,GridSubstationLocation>();
+            foreach( var loc in locs) {
+                if ( !locDict.ContainsKey(loc.Reference)) {
+                    locDict.Add(loc.Reference,loc);
+                }
+            }
+            // look up node location based on first 4 chars of code
+            foreach( var n in nodes) {
+                var locCode = n.Code.Substring(0,4);
+                if ( n.Ext ) {
+                    locCode+="X";
+                }
+                if ( locDict.ContainsKey(locCode)) {
+                    n.Location = locDict[locCode];
+                }
+            }
+
         }
 
     }

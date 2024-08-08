@@ -86,6 +86,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     private readonly LOC_COLOUR = 'grey'
     private readonly QB_SEL_COLOUR = 'red'
     private readonly LOC_SEL_COLOUR = 'white'
+    private readonly LOC_EMPTY_COLOUR = 'white'
     private readonly BOUNDARY_COLOUR = '#00FF2F'
     
     locMarkerOptions: MapOptions<google.maps.MarkerOptions> = new MapOptions()
@@ -201,13 +202,14 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     addLocMarker(loc: LoadflowLocation) {
 
         let fillColor = loc.isQB ? this.QB_COLOUR : this.LOC_COLOUR
+        let fillOpacity = loc.nodes.length==0 ? 0 : 1
         let sqIcon:google.maps.Symbol = {
             path: google.maps.SymbolPath.CIRCLE,
             scale: 4,
             strokeOpacity: 1,
             strokeColor: 'black',
             strokeWeight: 0.5,
-            fillOpacity: 1,
+            fillOpacity: fillOpacity,
             fillColor: fillColor
         };
 

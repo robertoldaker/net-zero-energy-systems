@@ -237,6 +237,11 @@ public class Datasets : DataSet
             foreach( var z in zones) {
                 Session.Delete(z);
             }
+            // Locations
+            var locations = Session.QueryOver<GridSubstationLocation>().Where( m=>m.Dataset.Id == dataset.Id).List();
+            foreach( var l in locations) {
+                Session.Delete(l);
+            }
         }
         Session.Delete(dataset);
     }
@@ -246,13 +251,12 @@ public class Datasets : DataSet
     }
 
 
-    public Dataset GetDataset(DatasetType type, string name, int userId, int parentId, int id) {
+    public Dataset GetDataset(DatasetType type, string name, int userId, int id) {
         return Session.QueryOver<Dataset>().
             Where(m=>m.Name.IsInsensitiveLike(name)).
             And(m=>m.Type ==type).
             And(m=>m.Id!=id).
             And(m=>m.User.Id==userId || m.User==null).
-            And(m=>m.Parent.Id == parentId).
             Take(1).SingleOrDefault();
     }
 

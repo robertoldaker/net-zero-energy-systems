@@ -73,17 +73,16 @@ namespace SmartEnergyLabDataApi.Data
                     var nodes = da.Session.QueryOver<Node>().Where( m=>m.Dataset.Id == ds.Id ).List();
                     var locDict = new Dictionary<int,GridSubstationLocation>();
                     foreach( var n in nodes) {
-                        var loc = n.Location;
+                        var loc = n.old_Location;
                         if ( loc!=null ) {
                             if ( loc.Dataset==null || loc.Dataset.Id != ds.Id) {
-                                if ( locDict.ContainsKey(loc.Id) ) {
-                                    n.Location = locDict[loc.Id];
-                                } else {
-                                    n.Location = loc.Copy(ds);
-                                    da.NationalGrid.Add(n.Location);
-                                    locDict.Add(loc.Id,n.Location);
+                                if ( !locDict.ContainsKey(loc.Id) ) {
+                                    var newLoc = loc.Copy(ds);
+                                    da.NationalGrid.Add(newLoc);
+                                    locDict.Add(loc.Id,newLoc);
                                 }
                             }
+                            n.old_Location = null;
                         }
                     }
                 }

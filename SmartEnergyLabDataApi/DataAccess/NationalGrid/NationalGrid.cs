@@ -75,34 +75,17 @@ namespace SmartEnergyLabDataApi.Data
         }
 
         public IList<GridSubstationLocation> GetGridSubstationLocations() {
-            return Session.QueryOver<GridSubstationLocation>().Fetch(SelectMode.Fetch, m=>m.GISData).List();
+            return Session.QueryOver<GridSubstationLocation>().
+                Where( m=>m.Dataset==null).
+                Fetch(SelectMode.Fetch, m=>m.GISData).
+                List();
         }
 
-        public IList<GridSubstationLocation> GetGridSubstationLocationsForLoadflow() {
-            GridSubstationLocation loc=null;
-            var sq = QueryOver.Of<Node>().Where(m => (m.Location.Id == loc.Id) ).Select(m => m.Id);
-            var locations = Session.QueryOver<GridSubstationLocation>(()=>loc).WithSubquery.WhereExists(sq).List();
-            return locations;
-        }
-
-        public IList<int> GetGridSubstationLocationsForLoadflowCtrls(int datasetId) {
-            //
-            var datasetIds = this.DataAccess.Datasets.GetInheritedDatasetIds(datasetId);
-            //
-            GridSubstationLocation loc=null;
-            Branch b=null;
-            Node node1=null;
-            var sq = QueryOver.Of<Ctrl>().
-                JoinAlias(m=>m.Branch,()=>b).
-                JoinAlias(()=>b.Node1,()=>node1).
-                Where( m=>m.Dataset.Id.IsIn(datasetIds)).
-                Where(m=>node1.Location.Id==loc.Id).
-                Select(m => m.Id);
-            var locationIds = Session.QueryOver<GridSubstationLocation>(()=>loc).
-                Where( m=>m.Dataset.Id.IsIn(datasetIds)).
-                WithSubquery.WhereExists(sq).Select(m=>m.Id).
-                List<int>();
-            return locationIds;
+        public IList<GridSubstationLocation> GetGridSubstationLocations(Dataset dataset) {
+            return Session.QueryOver<GridSubstationLocation>().
+                Where( m=>m.Dataset.Id == dataset.Id).
+                Fetch(SelectMode.Fetch, m=>m.GISData).
+                List();
         }
 
         public IList<GridSubstationLocation> GetGridSubstationLocationsBySource(GridSubstationLocationSource source) {

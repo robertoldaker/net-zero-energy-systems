@@ -37,9 +37,9 @@ export class DatasetDialogComponent extends DialogBase implements OnInit {
     save() {
         if ( this.data.dataset ) {
             // edit            
-            let data = Object.assign({},this.form.value);
-            data.id = this.data.dataset.id
-            data.parent = null
+            let data = Object.assign(this.data.dataset,this.form.value);
+            //??data.id = this.data.dataset.id
+            //??data.parent = null
             this.service.SaveDataset(data,()=>{
                 this.messageService.showMessageWithTimeout("Dataset successfully saved")
                 this.dialogRef.close(data.id);

@@ -24,7 +24,8 @@ export class LoadflowDataService {
             ctrls: { tableName: '',data:[], userEdits: [],deletedData: [] },
             boundaries: { tableName: '',data:[], userEdits: [],deletedData: [] },
             zones: { tableName: '',data:[], userEdits: [],deletedData: [] },
-            locations: { tableName: '',data:[], userEdits: [],deletedData: [] } 
+            locations: { tableName: '',data:[], userEdits: [],deletedData: [] },
+            mapData: {  locations:[], links: [] }
         }
         this.locationData = { locations: [], links: []}
         this.signalRService.hubConnection.on('Loadflow_AllTripsProgress', (data) => {
@@ -52,10 +53,10 @@ export class LoadflowDataService {
 
     private loadDataset() {
         this.loadNetworkData(false);
-        this.dataClientService.GetLocationData(this.dataset.id, (results)=>{
-            this.locationData = results;
-            this.LocationDataLoaded.emit(results);
-        })
+        //this.dataClientService.GetLocationData(this.dataset.id, (results)=>{
+        //    this.locationData = results;
+        //    this.LocationDataLoaded.emit(results);
+        //})
     }
 
     private loadNetworkData(withMessage: boolean) {
@@ -64,8 +65,10 @@ export class LoadflowDataService {
         }
         this.dataClientService.GetNetworkData( this.dataset.id, (results)=>{
             this.networkData = results
+            this.locationData = results.mapData
             this.messageService.clearMessage()
             this.NetworkDataLoaded.emit(results);
+            this.LocationDataLoaded.emit(results.mapData);
         })
     }
 
@@ -142,7 +145,8 @@ export class LoadflowDataService {
 
     getBranchesWithoutCtrls() {
         // same location and voltage at either side of branch
-        let ctrlBranches = this.networkData.branches.data.filter( m=>m.node1Code.substring(0,5) == m.node2Code.substring(0,5))
+        //??let ctrlBranches = this.networkData.branches.data.filter( m=>m.node1Code.substring(0,5) == m.node2Code.substring(0,5))
+        let ctrlBranches = this.networkData.branches.data
         // now only include ones without ctrls
         let results:Branch[] = []
         for( let b of ctrlBranches) {

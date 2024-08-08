@@ -63,16 +63,6 @@ namespace SmartEnergyLabDataApi.Data
             List();
         }
 
-        public IList<Node> GetNodesWithLocations(int datasetId) {
-            var datasetIds = this.DataAccess.Datasets.GetInheritedDatasetIds(datasetId);
-            var nodes = Session.QueryOver<Node>().
-                Where( m=>m.Dataset.Id.IsIn(datasetIds) ).
-                Fetch(SelectMode.Fetch, m=>m.Zone).
-                Where(m=>m.Location!=null).
-                List();
-            return nodes;
-        }    
-
         public void SetNodeVoltages(int datasetId) {
             var nodes = Session.QueryOver<Node>().Where( m=>m.Dataset.Id == datasetId).List();
             foreach( var node in nodes) {
