@@ -1,30 +1,26 @@
-import { Component, ViewChild } from '@angular/core';
-import { Sort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
-import { Node, DatasetData } from 'src/app/data/app.data';
+import { Component} from '@angular/core';
+import { Node} from 'src/app/data/app.data';
 import { LoadflowDataService } from 'src/app/loadflow/loadflow-data-service.service';
 import { DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
-import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
 import { DatasetsService } from 'src/app/datasets/datasets.service';
 import { MessageDialog } from 'src/app/dialogs/message-dialog/message-dialog.component';
-import { ComponentBase } from 'src/app/utils/component-base';
+import { DataTableBaseComponent } from 'src/app/loadflow/data/data-table-base.component';
 
 @Component({
     selector: 'app-loadflow-data-nodes',
     templateUrl: './loadflow-data-nodes.component.html',
     styleUrls: ['../loadflow-data-common.css','./loadflow-data-nodes.component.css']
 })
-export class LoadflowDataNodesComponent extends ComponentBase {
+export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
 
     constructor(
-        private dataService: LoadflowDataService, 
+        dataService: LoadflowDataService, 
         private dialogService: DialogService,
-        public datasetsService: DatasetsService,
      ) {
-        super();
-        this.dataFilter = new DataFilter(20, { active: 'code', direction: 'asc'})
-        this.createDataSource(this.dataService.networkData.nodes);
+        super(dataService);
+        this.dataFilter.sort = { active: 'code', direction: 'asc'};
+        this.createDataSource(dataService.networkData.nodes);
         this.displayedColumns = ['buttons','code','voltage','zoneName','demand','generation','ext','mismatch']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.createDataSource(results.nodes);
@@ -32,40 +28,6 @@ export class LoadflowDataNodesComponent extends ComponentBase {
         this.addSub( dataService.ResultsLoaded.subscribe( (results) => {
             this.createDataSource(results.nodes);
         }))
-    }
-
-    private createDataSource(datasetData?: DatasetData<Node>) {
-
-        if ( datasetData ) {
-            this.datasetData = datasetData;
-        }
-        if ( this.datasetData ) {
-            let cellData = this.dataFilter.GetCellDataObjects(this.dataService.dataset,this.datasetData,(item)=>item.id.toString())
-            this.nodes = new MatTableDataSource(cellData)        
-        } 
-    }
-    
-    datasetData?: DatasetData<Node>
-    dataFilter: DataFilter
-    nodes: MatTableDataSource<any> = new MatTableDataSource()
-    displayedColumns: string[]
-
-    @ViewChild(TablePaginatorComponent)
-    tablePaginator: TablePaginatorComponent | undefined
-
-    getNodeId(index: number, item: Node) {
-        return item.id;
-    }
-
-    sortTable(e:Sort) {
-        this.dataFilter.sort = e
-        this.dataFilter.skip = 0
-        this.createDataSource()
-        this.tablePaginator?.firstPage()
-    }
-
-    filterTable(e: DataFilter) {
-        this.createDataSource()
     }
 
     edit( e: ICellEditorDataDict) {

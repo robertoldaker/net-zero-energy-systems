@@ -2,7 +2,7 @@
 
 <app-div-auto-scroller>
 
-    <table style="width: 100%;" mat-table [fixedLayout]="true" [dataSource]="ctrls" [trackBy]="getCtrlId" matSort matSortActive="code" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
+    <table style="width: 100%;" mat-table [fixedLayout]="true" [dataSource]="data" [trackBy]="getDataId" matSort matSortActive="code" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
     
         <!-- buttons Column -->
         <ng-container matColumnDef="buttons">

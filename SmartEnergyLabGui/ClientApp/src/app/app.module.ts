@@ -155,6 +155,7 @@ import { DialogAutoCompleteComponent } from './datasets/dialog-auto-complete/dia
 import { LoadflowDataLocationsComponent } from './loadflow/data/loadflow-data-locations/loadflow-data-locations.component';
 import { LoadflowLocationDialogComponent } from './loadflow/dialogs/loadflow-location-dialog/loadflow-location-dialog.component';
 import { DivAutoScrollerComponent } from './utils/div-auto-scroller/div-auto-scroller.component';
+import { DataTableBaseComponent } from './loadflow/data/data-table-base.component';
 
 
 @NgModule({
@@ -265,6 +266,7 @@ import { DivAutoScrollerComponent } from './utils/div-auto-scroller/div-auto-scr
         LoadflowDataLocationsComponent,
         LoadflowLocationDialogComponent,
         DivAutoScrollerComponent,
+        DataTableBaseComponent,
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

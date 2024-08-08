@@ -7,55 +7,26 @@ import { DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/ce
 import { ComponentBase } from 'src/app/utils/component-base';
 import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
+import { DataTableBaseComponent } from '../data-table-base.component';
 
 @Component({
     selector: 'app-loadflow-data-boundaries',
     templateUrl: './loadflow-data-boundaries.component.html',
     styleUrls: ['../loadflow-data-common.css','./loadflow-data-boundaries.component.css']
 })
-export class LoadflowDataBoundariesComponent extends ComponentBase {
+export class LoadflowDataBoundariesComponent extends DataTableBaseComponent<Boundary> {
 
-    constructor(private dataService: LoadflowDataService, private dialogService: DialogService) {
-        super();
+    constructor(dataService: LoadflowDataService, private dialogService: DialogService) {
+        super(dataService);
+        this.dataFilter.sort = { active: 'code', direction: 'asc'};
         this.createDataSource(this.dataService.networkData.boundaries);
         this.displayedColumns = ['buttons','code','zone']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.createDataSource(results.boundaries);
         }))
     }
-
-    private createDataSource(datasetData?: DatasetData<Boundary>) {
-
-        if ( datasetData ) {
-            this.datasetData = datasetData;
-        }
-        if ( this.datasetData ) {
-            let cellData = this.dataFilter.GetCellDataObjects(this.dataService.dataset,this.datasetData,(item)=>item.code)
-            this.boundaries = new MatTableDataSource(cellData)        
-        } 
-    }
     
-    @ViewChild(TablePaginatorComponent)
-    tablePaginator: TablePaginatorComponent | undefined    
-    datasetData?: DatasetData<Boundary>
-    dataFilter: DataFilter = new DataFilter(20, { active: 'code', direction: 'asc'}) 
-    boundaries: MatTableDataSource<any> = new MatTableDataSource()
-    displayedColumns: string[]
     typeName: string = 'Boundary'
-
-    getId(index: number, item: Boundary) {
-        return item.id;
-    }
-
-    sortTable(e:Sort) {
-        this.dataFilter.sort = e
-        this.createDataSource()
-        this.tablePaginator?.firstPage()
-    }
-
-    filterTable(e: DataFilter) {
-        this.createDataSource()
-    }
 
     edit( e: ICellEditorDataDict) {
         this.dialogService.showLoadflowBoundaryDialog(e);

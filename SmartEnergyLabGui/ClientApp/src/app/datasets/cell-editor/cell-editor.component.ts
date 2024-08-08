@@ -330,11 +330,16 @@ export class DataFilter {
         return items;
     }
 
+    public reset() {
+        this.skip = 0
+        this.searchStr = ''
+        this.onlyEditedRows = false
+    }
+
     skip: number = 0;
     take: number;
     dataLength: number = 0
     searchStr: string = ''
     onlyEditedRows: boolean=false
     sort: Sort | undefined
-    resetPage: boolean = false
 }
