@@ -1,35 +1,40 @@
+
+export interface IMapData<T> {
+    id: number
+    options: T
+}
+
 export class MapOptions<T> {
     
-    private _optionsArray:{ id: number, options: T}[]
-    private _optionsMap:Map<number,number>
+    private _optionsArray:IMapData<T>[]
 
     constructor() {
         this._optionsArray = []
-        this._optionsMap = new Map()
     }
 
     clear() {
         this._optionsArray = []
-        this._optionsMap.clear()
+    }
+
+    remove(id: number) {
+        let index = this.getIndex(id);
+        this._optionsArray.splice(index,1);
     }
 
     add(id: number, options: T) {
         // push into the array
         this._optionsArray.push({id: id, options: options})
-        // record in a map the index
-        this._optionsMap.set(id,this._optionsArray.length-1)
     }
 
-    getArray():{ id: number, options: T}[] {
+    getArray():IMapData<T>[] {
         return this._optionsArray
     }
 
     getIndex(id: number): number {
-        let index = this._optionsMap.get(id)
-        if ( index==undefined ) {
-            return -1
-        } else {
-            return index
-        }
+        return this._optionsArray.findIndex(m=>m.id == id)
+    }
+
+    get(id: number): IMapData<T> | undefined {
+        return this._optionsArray.find(m=>m.id == id)
     }
 }

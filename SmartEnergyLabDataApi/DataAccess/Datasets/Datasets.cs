@@ -121,10 +121,10 @@ public class Datasets : DataSet
         if ( typeof(IDataset).GetTypeInfo().IsAssignableFrom(typeof(T).Ge‌​tTypeInfo())) {
             q = q.Where( m=>((IDataset) m).Dataset.Id.IsIn(datasetIds));
         }
-        //
-        if ( typeof(IId).GetTypeInfo().IsAssignableFrom(typeof(T).Ge‌​tTypeInfo()) ) {
-            q = q.OrderBy(m=>((IId)m).Id).Asc;
-        }
+        //?? not sure this is needed?
+        //??if ( typeof(IId).GetTypeInfo().IsAssignableFrom(typeof(T).Ge‌​tTypeInfo()) ) {
+        //??    q = q.OrderBy(m=>((IId)m).Id).Asc;
+        //??}
         // apply all user edits
         var data = q.List();
         applyUserEdits<T>(data,datasetIds, keyFcn, out userEdits, out deletedData);

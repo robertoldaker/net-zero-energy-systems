@@ -29,7 +29,7 @@ export class LoadflowLocationDialogComponent extends DialogBase implements OnIni
         fName.addValidators( [Validators.required])
         let fLatitude = this.addFormControl('latitude')
         let fLongitude = this.addFormControl('longitude')
-        if ( dialogData?._data ) {
+        if ( dialogData?._data?.id ) {
             let data:GridSubstationLocation = dialogData._data
             this.title = `Edit location [${data.reference}]`
             fCode.setValue(data.reference)
@@ -42,8 +42,12 @@ export class LoadflowLocationDialogComponent extends DialogBase implements OnIni
             fCode.markAsDirty()
             fName.setValue('')
             fName.markAsDirty()
-            fLatitude.setValue(0)
-            fLongitude.setValue(0)
+            let lat = dialogData?._data?.lat ? dialogData._data.lat : 0;
+            let lng = dialogData?._data?.lng ? dialogData._data.lng : 0;
+            fLatitude.setValue(lat.toFixed(5))
+            fLatitude.markAsDirty()
+            fLongitude.setValue(lng.toFixed(5))
+            fLongitude.markAsDirty()
         }
         this.dialogData = dialogData
         // disable controls not user-editable

@@ -136,10 +136,15 @@ export class DialogService {
         this.dialog.open(LoadflowBoundaryDialogComponent, options)
     }
 
-    showLoadflowBranchDialog(cellObj?: ICellEditorDataDict) {
+    showLoadflowBranchDialog(cellObj?: ICellEditorDataDict, onClose?: (e: any)=>void ) {
         let options = Object.assign({},this.defaultOptions)
         options.data = cellObj
-        this.dialog.open(LoadflowBranchDialogComponent, options)
+        let dialogRef = this.dialog.open(LoadflowBranchDialogComponent, options)
+        dialogRef.afterClosed().subscribe((input)=>{
+            if ( onClose ) {
+                onClose(input)
+            }
+        });
     }
 
     showLoadflowCtrlDialog(cellObj?: ICellEditorDataDict) {
@@ -148,9 +153,14 @@ export class DialogService {
         this.dialog.open(LoadflowCtrlDialogComponent, options)
     }
 
-    showLoadflowLocationDialog(cellObj?: ICellEditorDataDict) {
+    showLoadflowLocationDialog(cellObj?: ICellEditorDataDict, onClose?: (e: any)=>void) {
         let options = Object.assign({},this.defaultOptions)
         options.data = cellObj
-        this.dialog.open(LoadflowLocationDialogComponent, options)
+        let dialogRef = this.dialog.open(LoadflowLocationDialogComponent, options)
+        dialogRef.afterClosed().subscribe((input)=>{
+            if ( onClose ) {
+                onClose(input)
+            }
+        });
     }
 }

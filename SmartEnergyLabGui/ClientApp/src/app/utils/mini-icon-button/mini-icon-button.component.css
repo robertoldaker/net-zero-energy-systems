@@ -1,0 +1,27 @@
+div.buttonContainer {
+    margin-right: 3px;
+    display: inline-block;
+    line-height: 100%;
+}
+
+div.buttonContainer:nth-last-child() {
+    margin-right: 0px;
+}
+
+.matIconButton {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.matIconButton.disabled {
+    cursor: default;
+    opacity: 0.4;
+}
+
+.matIconButton:hover {
+    opacity: 1;
+}
+
+.matIconButton.disabled:hover {
+    opacity: 0.4;
+}

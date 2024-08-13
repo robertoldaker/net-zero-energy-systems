@@ -29,7 +29,7 @@ export class LoadflowNodeDialogComponent extends DialogBase implements OnInit {
         let fZoneId = this.addFormControl('zoneId')
         let fExt = this.addFormControl('ext')
         fCode.addValidators( [Validators.required])
-        if ( dialogData?._data ) {
+        if ( dialogData?._data?.id ) {
             let data:Node = dialogData._data
             this.title = `Edit node [${data.code}]`
             fCode.setValue(data.code)
@@ -39,7 +39,9 @@ export class LoadflowNodeDialogComponent extends DialogBase implements OnInit {
             fExt.setValue(data.ext)
         } else {
             this.title = `Add node`
-            fCode.setValue("")
+            let code = dialogData?._data.code ? dialogData._data.code : ''
+            fCode.setValue(code)
+            fCode.markAsDirty()
             fDemand.setValue(0)
             fGeneration.setValue(0)
             fZoneId.setValue("")

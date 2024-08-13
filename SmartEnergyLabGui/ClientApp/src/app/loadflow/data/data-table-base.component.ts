@@ -26,8 +26,12 @@ export class DataTableBaseComponent<T extends IId> extends DialogBase  {
 
         if ( datasetData ) {
             this.datasetData = datasetData
-            this.dataFilter.reset()
-            this.tablePaginator?.firstPage()
+            // only do this if was a change in dataset not a refresh
+            if ( this.dataService.dataset.id != this.lastDatasetId ) {
+                this.dataFilter.reset()
+                this.tablePaginator?.firstPage()
+                this.lastDatasetId = this.dataService.dataset.id    
+            }
         }
         if ( this.datasetData ) {
             let cellData = this.dataFilter.GetCellDataObjects(this.dataService.dataset,this.datasetData,(item)=>item.id.toString())
@@ -39,6 +43,7 @@ export class DataTableBaseComponent<T extends IId> extends DialogBase  {
     dataFilter: DataFilter
     data: MatTableDataSource<ICellEditorDataDict> = new MatTableDataSource()
     displayedColumns: string[] = []
+    lastDatasetId: number = 0
 
     @ViewChild(TablePaginatorComponent)
     tablePaginator: TablePaginatorComponent | undefined

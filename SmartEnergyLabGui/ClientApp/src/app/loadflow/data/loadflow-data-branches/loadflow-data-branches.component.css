@@ -4,9 +4,11 @@
 }
 
 .mat-column-node1Code {
+   /* min-width: 100px;  */
 }
 
 .mat-column-node2Code {
+    /* min-width: 100px; */
 }
 
 .mat-column-region {
@@ -22,7 +24,7 @@
 .mat-column-cap {
     width: 120px;
     text-align: right;
-    padding-right: 1rem;
+    padding-right: 2rem;
 }
 
 .mat-column-linkType {

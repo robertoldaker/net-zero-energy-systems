@@ -68,16 +68,16 @@ public class BranchItemHandler : IEditItemHandler
         // node 1 id
         var nodeId1 = m.CheckInt("nodeId1");
         if ( nodeId1==null && m.ItemId == 0) {
-            m.AddError("node1","Node 1 must be set");
+            m.AddError("nodeId1","Node 1 must be set");
         }
         // node 2 id
         var nodeId2 = m.CheckInt("nodeId2");
         if ( nodeId2==null && m.ItemId == 0) {
-            m.AddError("node2","Node 2 must be set");
+            m.AddError("nodeId2","Node 2 must be set");
         }
         if ( nodeId1!=null && nodeId1==nodeId2 ) {
-            m.AddError("node1","Nodes must be different");
-            m.AddError("node2","Nodes must be different");
+            m.AddError("nodeId1","Nodes must be different");
+            m.AddError("nodeId2","Nodes must be different");
         }
         // Check another one doesn't already exist
         if ( nodeId1!=null && nodeId2!=null) {

@@ -26,33 +26,60 @@ export class LoadflowBranchDialogComponent extends DialogBase {
     ) { 
         super()
         let fCode = this.addFormControl('code')
-        let fNode1 = this.addFormControl('node1')
         let fNodeId1 = this.addFormControl('nodeId1')
-        fNode1.addValidators( [Validators.required])
-        let fNode2 = this.addFormControl('node2')
+        fNodeId1.addValidators( [Validators.required])
         let fNodeId2 = this.addFormControl('nodeId2')
-        fNode2.addValidators( [Validators.required])
+        fNodeId2.addValidators( [Validators.required])
         let fX = this.addFormControl('x')
         let fCap = this.addFormControl('cap')
-        if ( dialogData?._data ) {
+        this.nodes1 = this.loadflowService.networkData.nodes.data
+        this.nodes2 = this.nodes1
+        if ( dialogData?._data?.id ) {
             let data:Branch = dialogData._data
             this.title = `Edit branch [${data.displayName}]`
             fCode.setValue(data.code)
-            fNode1.setValue(data.node1Code)
-            fNode2.setValue(data.node2Code)
+            fNodeId1.setValue(data.node1Id)
+            fNodeId2.setValue(data.node2Id)
             fX.setValue(data.x.toFixed(3))
             fCap.setValue(data.cap.toFixed(3))
         } else {
             this.title = `Add branch`
+            let node1 = dialogData?._data?.node1 ? dialogData._data.node1 : ''
+            if ( node1 ) {
+                this.nodes1 = this.filterNodes(node1,this.nodes1)
+                if ( this.nodes1.length == 1) {
+                    fNodeId1.setValue(this.nodes1[0].id)
+                    fNodeId1.markAsDirty()
+                }
+            }
+            let node2 = dialogData?._data?.node2 ? dialogData._data.node2 : ''
+            if ( node2 ) {
+                this.nodes2 = this.filterNodes(node2,this.nodes2)
+                if ( this.nodes2.length == 1) {
+                    fNodeId2.setValue(this.nodes2[0].id)
+                    fNodeId2.markAsDirty()
+                }
+            }
             fX.setValue(0)
             fCap.setValue(0)
         }
+
         this.dialogData = dialogData
         // disable controls not user-editable
         if ( this.dialogData && !this.dialogData._isLocalDataset ) {
             fCode.disable()
-            fNode1.disable()
-            fNode2.disable()
+            fNodeId1.disable()
+            fNodeId2.disable()
+        }
+    }
+
+    filterNodes(nodeRef: string, nodes: Node[]):Node[] {
+        if ( nodeRef.length > 4) {
+            let snode1 = nodeRef.substring(0,4)
+            let enode1 = nodeRef.substring(4,5)
+            return nodes.filter( m=>m.code.startsWith(snode1) && m.code.endsWith(enode1))
+        } else {
+            return nodes.filter( m=>m.code.startsWith(nodeRef))
         }
     }
 
@@ -66,32 +93,8 @@ export class LoadflowBranchDialogComponent extends DialogBase {
         }
     }
 
-    selectedNode1(e: any) {
-        this.form.get('nodeId1')?.setValue(e.id)
-        this.form.get('nodeId1')?.markAsDirty()
-    }
-
-    selectedNode2(e: any) {
-        this.form.get('nodeId2')?.setValue(e.id)
-        this.form.get('nodeId2')?.markAsDirty()
-    }
-
-    searchNodes(e: ISearchResults) {
-        let nodes = this.loadflowService.networkData.nodes.data;
-
-        let results:Node[] = [];
-        let searchText = e.text.toLocaleUpperCase()
-        nodes.forEach(m=>{
-            if ( m.code.toUpperCase().startsWith(searchText) && results.length<50) {
-                results.push(m);
-                return true;
-            } else {
-                return false;
-            }
-        });        
-        results.sort((a, b) => a.code.localeCompare(b.code)); 
-        e.results = results;
-    }
+    nodes1:Node[] = []
+    nodes2:Node[] = []
 
     save() {
         if ( this.datasetsService.currentDataset) {

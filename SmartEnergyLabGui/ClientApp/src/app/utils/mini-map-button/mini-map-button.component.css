@@ -1,0 +1,36 @@
+.miniMapButton {
+    display: inline-flex;
+    flex-direction: row;
+    font-size: 12px;
+    font-weight: normal;
+    font-style: normal;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    border: 1px #bbb solid;
+    border-radius: 3px;
+    vertical-align: middle;
+    background: #fefefe;
+    margin-left: 0.5em;
+}
+
+.miniMapButton.disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+:not(.miniMapButton.disabled) {
+    cursor: pointer;    
+}
+
+:not(.miniMapButton.disabled):hover {
+    background: #eee;
+}
+
+.miniMapButton:nth-child(0) {
+    margin-left: 0;
+}
+
+
+

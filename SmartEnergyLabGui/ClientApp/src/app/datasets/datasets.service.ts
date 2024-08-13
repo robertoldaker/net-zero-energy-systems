@@ -3,7 +3,7 @@ import { DialogService } from "../dialogs/dialog.service";
 import { DataClientService } from "../data/data-client.service";
 import { ElsiDataService } from "../elsi/elsi-data.service";
 import { LoadflowDataService } from "../loadflow/loadflow-data-service.service";
-import { CellEditorData } from "./cell-editor/cell-editor.component";
+import { CellEditorData, ICellEditorDataDict } from "./cell-editor/cell-editor.component";
 import { MessageDialog, MessageDialogIcon } from "../dialogs/message-dialog/message-dialog.component";
 import { DialogFooterButtonsEnum } from "../dialogs/dialog-footer/dialog-footer.component";
 import { Dataset, DatasetType } from "../data/app.data";
@@ -213,4 +213,36 @@ export class DatasetsService {
             }    
         }
     }
+}
+
+export interface IDatasetId {
+    datasetId: number
+}
+
+export class EditItemData<T extends IDatasetId> implements ICellEditorDataDict {
+    constructor(item: T, datasetsService: DatasetsService, isDeleted?:boolean) {
+        this._data = item
+        this._isDeleted = isDeleted
+        this._isLocalDataset = item.datasetId === datasetsService.currentDataset?.id
+        this._isLocalEdit = isDeleted || this._isLocalEdit
+    }
+    [index: string]: CellEditorData
+    _data: any
+    _isDeleted: any
+    _isLocalDataset: any
+    _isLocalEdit: any 
+}
+
+export class NewItemData<T> implements ICellEditorDataDict {
+    constructor(item: any) {
+        this._data = item
+        this._isDeleted = false
+        this._isLocalDataset = true
+        this._isLocalEdit = true
+    }
+    [index: string]: CellEditorData
+    _data: any
+    _isDeleted: any
+    _isLocalDataset: any
+    _isLocalEdit: any 
 }

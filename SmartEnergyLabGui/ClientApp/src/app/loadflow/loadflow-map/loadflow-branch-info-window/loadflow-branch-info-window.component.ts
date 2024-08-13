@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { LoadflowDataService } from '../../loadflow-data-service.service';
-import { LoadflowLink } from 'src/app/data/app.data';
+import { Branch, LoadflowLink } from 'src/app/data/app.data';
+import { DatasetsService, EditItemData } from 'src/app/datasets/datasets.service';
+import { DialogService } from 'src/app/dialogs/dialog.service';
 
 @Component({
   selector: 'app-loadflow-branch-info-window',
@@ -9,7 +11,11 @@ import { LoadflowLink } from 'src/app/data/app.data';
   styleUrls: ['./loadflow-branch-info-window.component.css']
 })
 export class LoadflowBranchInfoWindowComponent extends ComponentBase {
-    constructor(private loadflowDataService: LoadflowDataService) {        
+    constructor(
+        private loadflowDataService: LoadflowDataService,
+        private dialogService: DialogService,
+        private datasetsService: DatasetsService
+    ) {        
         super()
         this.addSub( this.loadflowDataService.ObjectSelected.subscribe( (selectedMapItem)=>{
             this.link = selectedMapItem.link
@@ -27,8 +33,17 @@ export class LoadflowBranchInfoWindowComponent extends ComponentBase {
         return this.link?.branches[0] ? this.link?.branches.map(m=>`${m.displayName}`) : []
     }
 
+    get branches():Branch[] {
+        return this.link?.branches ? this.link.branches : []
+    }
+
     get branchCount():number {
         return this.link?.branches[0] ? this.link?.branches.length : 0
+    }
+
+    edit(b: Branch) {
+        let itemData = new EditItemData<Branch>(b, this.datasetsService)
+        this.dialogService.showLoadflowBranchDialog(itemData)
     }
 
 }

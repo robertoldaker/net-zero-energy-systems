@@ -1,16 +1,16 @@
-<div style="height: calc(100vh - 72px)">
-    <!--<button (click)="zoomIn()">Zoom in</button>&nbsp;<button (click)="zoomOut()">Zoom out</button>-->
+<div #divContainer style="height: calc(100vh - 72px)" >
     <google-map width="100%" height="100%" [center]="center" [options]="options" (zoomChanged)="zoomChanged()" [zoom]="zoom" (centerChanged)="centerChanged()" (mapClick)="mapClick($event)">
         <div class="mapOverlay" #key>
             <app-loadflow-map-key></app-loadflow-map-key>
             <app-loadflow-map-search></app-loadflow-map-search>
+            <app-loadflow-map-buttons (onAddLocation)="addLocation($event)"></app-loadflow-map-buttons>
         </div>
 
-        <map-marker #locMarkers *ngFor="let markerOption of locMarkerOptions.getArray()" [options]="markerOption.options" (mapClick)="locMarkerClicked(markerOption.id)"></map-marker>
+        <map-marker #locMarkers *ngFor="let markerOption of locMarkerOptions.getArray()" [options]="markerOption.options" (mapClick)="locMarkerClicked(markerOption)" (mapDragend)="locMarkerDragEnd({ mo: markerOption, e: $event} )"></map-marker>
         <map-polyline #branchLines *ngFor="let branchOption of branchOptions.getArray()" [options]="branchOption.options" (polylineClick)="branchLineClicked(branchOption.id)"></map-polyline>
 
         <map-info-window #locInfoWindow  (closeclick)="clearSelection()">
-            <app-loadflow-loc-info-window></app-loadflow-loc-info-window>
+            <app-loadflow-loc-info-window (onNewBranch)="newBranch($event)"></app-loadflow-loc-info-window>
         </map-info-window>
         <map-info-window #branchInfoWindow (closeclick)="clearSelection()">
             <app-loadflow-branch-info-window></app-loadflow-branch-info-window>

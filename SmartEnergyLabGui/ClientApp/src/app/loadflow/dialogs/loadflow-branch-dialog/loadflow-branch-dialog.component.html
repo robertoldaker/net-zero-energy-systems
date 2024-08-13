@@ -3,15 +3,10 @@
     <form [formGroup]="form">
         <div class="row">
             <div>
-                <app-dialog-text-input [dialog]="dialog" name="code" placeholder="Enter code" label="Code"></app-dialog-text-input>
-            </div>
-        </div>
-        <div class="row">
-            <div>
-                <app-dialog-auto-complete [dialog]="dialog" placeholder="search for node 1" name="node1" label="Node 1" (onSearch)="searchNodes($event)" [getDisplayStrFcn]="displayNode" (onSelected)="selectedNode1($event)"></app-dialog-auto-complete>
+                <app-dialog-selector [dialog]="dialog" placeholder="Select node 1" name="nodeId1" label="Node 1" [data]="nodes1" [displayFcn]="displayNode"></app-dialog-selector>
             </div>    
             <div>
-                <app-dialog-auto-complete [dialog]="dialog"  placeholder="search for node 1" name="node2" label="Node 2" (onSearch)="searchNodes($event)" [getDisplayStrFcn]="displayNode" (onSelected)="selectedNode2($event)"></app-dialog-auto-complete>
+                <app-dialog-selector [dialog]="dialog"  placeholder="Select node 2" name="nodeId2" label="Node 2" [data]="nodes2" [displayFcn]="displayNode"></app-dialog-selector>
             </div>    
         </div>
         <div class="row">
@@ -21,6 +16,11 @@
             <div>
                 <app-dialog-text-input [dialog]="dialog" name="cap" placeholder="Enter capacity in MW" label="Capacity (MW)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
             </div>    
+        </div>
+        <div class="row">
+            <div>
+                <app-dialog-text-input [dialog]="dialog" name="code" placeholder="Enter code" label="Code"></app-dialog-text-input>
+            </div>
         </div>
     </form>
 </div>

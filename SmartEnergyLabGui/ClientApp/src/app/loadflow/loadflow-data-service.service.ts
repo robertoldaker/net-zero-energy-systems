@@ -3,6 +3,8 @@ import { Boundary, Branch, Dataset, DatasetData, DatasetType, GridSubstation, Lo
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { ShowMessageService } from '../main/show-message/show-message.service';
+import { DialogService } from '../dialogs/dialog.service';
+import { MessageDialog } from '../dialogs/message-dialog/message-dialog.component';
 
 type NodeDict = {
     [code: string]:Node
@@ -16,7 +18,10 @@ export type SelectedMapItem = {location: LoadflowLocation | null, link: Loadflow
 
 export class LoadflowDataService {
 
-    constructor(private dataClientService: DataClientService, private signalRService: SignalRService, private messageService: ShowMessageService) { 
+    constructor(private dataClientService: DataClientService, 
+        private signalRService: SignalRService, 
+        private messageService: ShowMessageService,
+        private dialogService: DialogService) { 
         this.gridSubstations = [];
         this.networkData = { 
             nodes: { tableName: '',data:[], userEdits: [], deletedData: [] }, 
@@ -69,6 +74,16 @@ export class LoadflowDataService {
             this.messageService.clearMessage()
             this.NetworkDataLoaded.emit(results);
             this.LocationDataLoaded.emit(results.mapData);
+            // re-select if location is still selected
+            if ( this.selectedMapItem?.location ) {
+                let oldLoc = this.selectedMapItem.location
+                this.selectLocation(oldLoc.id)
+            }
+            // and link
+            if ( this.selectedMapItem?.link ) {
+                let oldLink = this.selectedMapItem.link
+                this.selectLink(oldLink.id)
+            }
         })
     }
 
@@ -117,6 +132,11 @@ export class LoadflowDataService {
         }
     }
 
+    getLocation(locId: number):LoadflowLocation | undefined {
+        let loc = this.locationData.locations.find(m=>m.id==locId)
+        return loc
+    }
+
     selectLink(branchId: number) {
         let branch = this.locationData.links.find(m=>m.id==branchId)
         if ( branch) {
@@ -156,6 +176,17 @@ export class LoadflowDataService {
             }
         }
         return results;
+    }
+
+    canDeleteNode(node: Node):boolean {
+        let id = node.id
+        let bs = this.networkData.branches.data.filter(m=>m.node1Id == id || m.node2Id== id)
+        if ( bs.length>0 ) {
+            this.dialogService.showMessageDialog(new MessageDialog(`Cannot delete node since it used by <b>${bs.length}</b> branches`))
+            return false
+        } else {
+            return true
+        }
     }
 
     ResultsLoaded:EventEmitter<LoadflowResults> = new EventEmitter<LoadflowResults>()

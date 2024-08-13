@@ -7,7 +7,10 @@
         <tr>
             <td>Branches:</td>
             <td>
-                <div *ngFor="let name of branchNames">{{name}}</div>
+                <div *ngFor="let b of branches">
+                    <span>{{b.displayName}}</span>
+                    <app-map-buttons typeName="Branch" [element]="b" (onEdit)="edit($event)"></app-map-buttons>
+                </div>
             </td>
         </tr>
     </table>

@@ -156,6 +156,10 @@ import { LoadflowDataLocationsComponent } from './loadflow/data/loadflow-data-lo
 import { LoadflowLocationDialogComponent } from './loadflow/dialogs/loadflow-location-dialog/loadflow-location-dialog.component';
 import { DivAutoScrollerComponent } from './utils/div-auto-scroller/div-auto-scroller.component';
 import { DataTableBaseComponent } from './loadflow/data/data-table-base.component';
+import { MapButtonsComponent } from './datasets/map-buttons/map-buttons.component';
+import { MiniMapButtonComponent } from './utils/mini-map-button/mini-map-button.component';
+import { LoadflowMapButtonsComponent } from './loadflow/loadflow-map/loadflow-map-buttons/loadflow-map-buttons.component';
+import { MiniIconButtonComponent } from './utils/mini-icon-button/mini-icon-button.component';
 
 
 @NgModule({
@@ -267,6 +271,10 @@ import { DataTableBaseComponent } from './loadflow/data/data-table-base.componen
         LoadflowLocationDialogComponent,
         DivAutoScrollerComponent,
         DataTableBaseComponent,
+        MapButtonsComponent,
+        MiniMapButtonComponent,
+        LoadflowMapButtonsComponent,
+        MiniIconButtonComponent,
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

@@ -7,18 +7,38 @@
             <circle  cx="10" cy="7" r="5" fill="#7E4444"/>
         </svg>
         <span>{{name}}</span>
+        <app-mini-icon-button (onClick)="deleteLocation($event)" iconName="delete_forever" title="Delete this location" fontSize="20px" [disabled]="!canDeleteLocation"></app-mini-icon-button>
     </div>
     <table id="table">
         <tr>
             <td>Ref:</td>
-            <td>{{reference}}</td>
+            <td>
+                <span>{{reference}}</span>
+            </td>
         </tr>
         <tr>
             <td>Nodes:</td>
             <td>
-                <div *ngFor="let node of nodes">{{node.code}}</div>
+                <div *ngFor="let node of nodes">
+                    <span>{{node.code}}</span>
+                    <app-map-buttons typeName="Node" [element]="node" (onEdit)="edit($event)" (onDelete)="delete($event)"></app-map-buttons>
+                </div>
             </td>
         </tr>
     </table>
+    <div class="bottomButtons">
+        <app-mini-map-button (onClick)="addNode($event)" [disabled]="!datasetsService.isEditable">
+            <mat-icon [inline]="true">add</mat-icon>
+            <span>Node</span>
+        </app-mini-map-button>
+        <app-mini-map-button (onClick)="addInternalBranch($event)" [disabled]="!datasetsService.isEditable">
+            <mat-icon [inline]="true">add</mat-icon>
+            <span>Branch (int.)</span>
+        </app-mini-map-button>
+        <app-mini-map-button (onClick)="addExternalBranch($event)" [disabled]="!datasetsService.isEditable">
+            <mat-icon [inline]="true">add</mat-icon>
+            <span>Branch (ext.)</span>
+        </app-mini-map-button>
+    </div>
 </div>
 

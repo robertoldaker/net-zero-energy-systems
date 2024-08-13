@@ -8,6 +8,7 @@ namespace SmartEnergyLabDataApi.Loadflow
             //  
             var q = da.Session.QueryOver<Node>();
             q = q.Fetch(SelectMode.Fetch,m=>m.Zone);
+            q = q.OrderBy(m=>m.Code).Asc;
             var di = new DatasetData<Node>(da,datasetId,m=>m.Id.ToString(), q);
             foreach( var b in di.Data) {
                 var key = b.Code;

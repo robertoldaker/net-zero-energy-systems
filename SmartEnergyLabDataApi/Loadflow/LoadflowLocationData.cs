@@ -1,4 +1,5 @@
 using System.Linq;
+using Microsoft.Extensions.ObjectPool;
 using NHibernate.Criterion;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Models;
@@ -45,7 +46,9 @@ namespace SmartEnergyLabDataApi.Loadflow
                     link = linkDict[key2];
                     link.Branches.Add(b);
                 } else {
-                    link = new LoadflowLink(b);
+                    var ctrl = ctrls.Where( m=>m.Branch.Id == b.Id).FirstOrDefault();
+                    var isHVDC = ctrl!=null && ctrl.Type == LoadflowCtrlType.HVDC;
+                    link = new LoadflowLink(b,isHVDC);
                     linkDict.Add(key1,link);
                 }
             }
@@ -110,9 +113,10 @@ namespace SmartEnergyLabDataApi.Loadflow
 
     public class LoadflowLink {
         private List<Branch> _branches;
-        public LoadflowLink(Branch branch) {
+        public LoadflowLink(Branch branch, bool isHVDC) {
             _branches = new List<Branch>();
             _branches.Add(branch);
+            IsHVDC = isHVDC;
         }
 
         public int Id {
@@ -144,5 +148,7 @@ namespace SmartEnergyLabDataApi.Loadflow
                 return _branches[0].Node2.Location.GISData;
             }
         }
+
+        public bool IsHVDC {  get; private set;}
     }
 }

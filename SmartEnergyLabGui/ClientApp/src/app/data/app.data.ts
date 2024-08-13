@@ -431,6 +431,7 @@ export interface LoadflowLink {
     id: number
     branches: Branch[]
     voltage: number
+    isHVDC: boolean
     gisData1: GISData
     gisData2: GISData
 }

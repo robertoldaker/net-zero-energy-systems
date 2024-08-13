@@ -1,0 +1,19 @@
+div.bottomButtons {
+    text-align: center;
+    margin-top: 0.5em;
+}
+
+.small-icon-button {
+    height: 20px !important;
+    line-height: 16px !important;
+    font-size: 10px;
+ 
+    .mat-icon {
+       width: 16px !important;
+       height: 16px !important;
+       line-height: 16px !important;
+    }
+    .material-icons {
+       font-size: 16px !important;
+    }
+ }
