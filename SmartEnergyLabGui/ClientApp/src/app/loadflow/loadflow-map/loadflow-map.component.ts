@@ -298,6 +298,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     locMarkerDragEnd(e: {mo: IMapData<google.maps.MarkerOptions>, e: any}) {
         let loc = this.loadflowDataService.getLocation(e.mo.id)
         if ( loc && this.datasetsService.currentDataset) {
+            console.log(`loc ${loc.name} ${e.mo.id} ${loc.id}`)
             let data = { latitude: e.e.latLng.lat(), longitude: e.e.latLng.lng() };
             this.dataService.EditItem({id: loc.id, datasetId: this.datasetsService.currentDataset.id, className: "GridSubstationLocation", data: data }, (resp)=>{
                 this.datasetsService.refreshData()
@@ -305,9 +306,6 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
                 console.log(errors)
             })
         }
-    }
-
-    keydown(e: any) {
     }
 
     branchLineClicked(branchId: number) {

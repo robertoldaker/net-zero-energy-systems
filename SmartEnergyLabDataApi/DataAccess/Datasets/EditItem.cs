@@ -134,7 +134,8 @@ public class EditItemModel : DbModel {
                 // 
                 var itemValue = prop.GetValue(_item);
                 var editValue = _editItem.data[name]; 
-                var userEdit = userEdits.Where( m=>string.Compare(m.ColumnName,name,true)==0 ).FirstOrDefault();
+                string key = ((IId) _item).Id.ToString();
+                var userEdit = userEdits.Where( m=>string.Compare(m.ColumnName,name,true)==0 && m.Key == key).FirstOrDefault();
                 if ( itemValue.ToString() == editValue.ToString()) {
                     //
                     if ( userEdit!=null ) {
@@ -142,7 +143,7 @@ public class EditItemModel : DbModel {
                     }
                 } else {
                     if ( userEdit==null) {
-                        userEdit = new UserEdit() { TableName = _item.GetType().Name, ColumnName=prop.Name,Dataset = _dataset, Key = ((IId) _item).Id.ToString()  };
+                        userEdit = new UserEdit() { TableName = _item.GetType().Name, ColumnName=prop.Name,Dataset = _dataset, Key = key  };
                         _da.Datasets.Add(userEdit);
                     }
                     userEdit.Value = editValue.ToString();

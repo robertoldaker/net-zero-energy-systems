@@ -25,6 +25,10 @@ public class GridSubstationLocationItemHandler : IEditItemHandler
             } else {
                 if ( !regex.IsMatch(reference) ) {
                     m.AddError("code","Please enter a 4-letter uppercase code with optional trailing X");
+                } else {
+                    if ( m.Da.NationalGrid.GridSubstationLocationExists(m.Dataset.Id,reference, out Dataset ds) ) {
+                        m.AddError("code",$"Location already exists in dataset [{ds.Name}]");
+                    }
                 }
             }
         }

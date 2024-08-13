@@ -94,6 +94,24 @@ namespace SmartEnergyLabDataApi.Data
             return q.List();
         }
 
+        public bool GridSubstationLocationExists(int datasetId, string reference, out Dataset? dataset) {
+            // need to look at all datasets belonging to the user
+            var derivedIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
+            var inheritedIds = DataAccess.Datasets.GetInheritedDatasetIds(datasetId);
+            var loc = Session.QueryOver<GridSubstationLocation>().
+                Where( m=>m.Reference.IsInsensitiveLike(reference)).
+                Where( m=>m.Dataset.Id.IsIn(derivedIds) || m.Dataset.Id.IsIn(inheritedIds)).
+                Fetch(SelectMode.Fetch,m=>m.Dataset).
+                Take(1).
+                SingleOrDefault();
+            if ( loc!=null) {
+                dataset = loc.Dataset;
+            } else {
+                dataset = null;
+            }
+            return loc!=null;
+        }
+
         public void DeleteLocations(GridSubstationLocationSource source) {
             var locs = GetGridSubstationLocationsBySource(source);
             foreach( var loc in locs) {
