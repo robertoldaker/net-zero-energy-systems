@@ -19,7 +19,7 @@ export class LoadflowLocationDialogComponent extends DialogBase implements OnIni
     constructor(public dialogRef: MatDialogRef<DatasetDialogComponent>, 
         @Inject(MAT_DIALOG_DATA) dialogData:ICellEditorDataDict | undefined,
         private dataService: DataClientService, 
-        loadflowService: LoadflowDataService,
+        private loadflowService: LoadflowDataService,
         private datasetsService: DatasetsService
     ) { 
         super()
@@ -67,7 +67,7 @@ export class LoadflowLocationDialogComponent extends DialogBase implements OnIni
 
             let id = this.dialogData?._data ? this.dialogData._data.id : 0
             this.dataService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: "GridSubstationLocation", data: changedControls }, (resp)=>{
-                this.datasetsService.refreshData()
+                this.loadflowService.afterEdit(resp)
                 this.dialogRef.close();
             }, (errors)=>{
                 this.fillErrors(errors)

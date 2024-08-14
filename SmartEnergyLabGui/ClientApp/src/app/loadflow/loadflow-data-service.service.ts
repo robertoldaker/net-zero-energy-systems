@@ -5,6 +5,7 @@ import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { DialogService } from '../dialogs/dialog.service';
 import { MessageDialog } from '../dialogs/message-dialog/message-dialog.component';
+import { DatasetsService } from '../datasets/datasets.service';
 
 type NodeDict = {
     [code: string]:Node
@@ -85,6 +86,10 @@ export class LoadflowDataService {
                 this.selectLink(oldLink.id)
             }
         })
+    }
+
+    private getLocationData(nd: NetworkData) {
+        
     }
 
     setBound(boundaryName: string) {
@@ -188,6 +193,55 @@ export class LoadflowDataService {
             return true
         }
     }
+
+    afterEdit(resp: DatasetData<any>[] ) {
+        console.log('after edit')
+        console.log(resp)
+        //
+        for( let r of resp) {
+            let dd = this.getDatasetData(r.tableName)
+            DatasetsService.updateDatasetData(dd,r)    
+        }
+        //
+        this.NetworkDataLoaded.emit(this.networkData)
+    }
+
+    private getDatasetData(typeName: string):DatasetData<any> {
+        if ( typeName == "Node") {
+            return this.networkData.nodes;
+        } else if ( typeName == "Branch") {
+            return this.networkData.branches
+        } else if ( typeName == "Ctrl") {
+            return this.networkData.ctrls
+        } else if ( typeName == "Zone") {
+            return this.networkData.zones
+        } else if ( typeName == "Boundary") {
+            return this.networkData.boundaries
+        } else if ( typeName == "GridSubstationLocation") {
+            return this.networkData.locations
+        } else {
+            throw `Unexpected typeName found [${typeName}]`
+        }
+    }
+
+    afterDelete(id: number, className: string, dataset: Dataset) {
+        console.log('after Delete')
+        console.log(`id=${id},className=${className},datasetId=${dataset.id}`);
+
+        let dd = this.getDatasetData(className)
+        DatasetsService.deleteDatasetData(dd,id, dataset)
+        this.NetworkDataLoaded.emit(this.networkData)
+    }
+
+    afterUnDelete(id: number, className: string, dataset: Dataset) {
+        console.log('after un Delete')
+        console.log(`id=${id},className=${className},datasetId=${dataset.id}`);
+
+        let dd = this.getDatasetData(className)
+        DatasetsService.unDeleteDatasetData(dd,id, dataset)
+        this.NetworkDataLoaded.emit(this.networkData)
+    }
+
 
     ResultsLoaded:EventEmitter<LoadflowResults> = new EventEmitter<LoadflowResults>()
     NetworkDataLoaded:EventEmitter<NetworkData> = new EventEmitter<NetworkData>()

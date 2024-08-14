@@ -43,7 +43,7 @@ public class GridSubstationLocationItemHandler : IEditItemHandler
         m.CheckDouble("longitude");
     }
 
-    public object GetItem(EditItemModel m)
+    public IId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
         return id>0 ? m.Da.NationalGrid.GetGridSubstationLocation(id) : new GridSubstationLocation() { Dataset = m.Dataset};
@@ -75,5 +75,16 @@ public class GridSubstationLocationItemHandler : IEditItemHandler
         if ( loc.Id==0) {
             m.Da.NationalGrid.Add(loc);
         }
+    }
+
+    public List<DatasetData<object>> GetDatasetData(EditItemModel m)
+    {
+        using( var da = new DataAccess() ) {
+            var list = new List<DatasetData<object>>();
+            var q = da.Session.QueryOver<GridSubstationLocation>().Where( n=>n.Id == m.Item.Id);
+            var di = new DatasetData<GridSubstationLocation>(da,m.Dataset.Id,m=>m.Id.ToString(), q);
+            list.Add(di.getBaseDatasetData());
+            return list;
+        }        
     }
 }

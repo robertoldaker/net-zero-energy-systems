@@ -50,7 +50,7 @@ export class MapButtonsComponent implements OnInit {
             // if so go ahead and delete with further verification
             if ( e.canDelete) {
                 let id:number = this.element.id
-                this.datasetsService.deleteItemWithCheck(id,this.typeName,()=>{})            
+                this.datasetsService.deleteItemWithCheck(id,this.typeName)            
             }
         }
     }
@@ -61,8 +61,7 @@ export class MapButtonsComponent implements OnInit {
                 throw "unexpected type for id"
             }
             let id:number = this.element.id
-            this.datasetsService.unDeleteItemWithCheck(id,this.typeName,()=>{
-            })    
+            this.datasetsService.unDeleteItemWithCheck(id,this.typeName)    
         }
     }
 

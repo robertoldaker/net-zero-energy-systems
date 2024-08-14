@@ -47,7 +47,7 @@ export class CellButtonsComponent implements OnInit {
             // if so go ahead and delete with further verification
             if ( e.canDelete) {
                 let id:number = this.element.id.value
-                this.datasetsService.deleteItemWithCheck(id,this.typeName,()=>{})            
+                this.datasetsService.deleteItemWithCheck(id,this.typeName)            
             }
         }
     }
@@ -58,8 +58,7 @@ export class CellButtonsComponent implements OnInit {
                 throw "unexpected type for id"
             }
             let id:number = this.element.id.value
-            this.datasetsService.unDeleteItemWithCheck(id,this.typeName,()=>{
-            })    
+            this.datasetsService.unDeleteItemWithCheck(id,this.typeName)    
         }
     }
 

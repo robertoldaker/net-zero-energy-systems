@@ -6,6 +6,7 @@ import { DatasetDialogComponent } from 'src/app/datasets/dataset-dialog/dataset-
 import { DatasetsService } from 'src/app/datasets/datasets.service';
 import { DialogBase } from 'src/app/dialogs/dialog-base';
 import { Zone } from 'src/app/data/app.data';
+import { LoadflowDataService } from '../../loadflow-data-service.service';
 
 @Component({
     selector: 'app-loadflow-zone-dialog',
@@ -17,6 +18,7 @@ export class LoadflowZoneDialogComponent extends DialogBase implements OnInit {
     constructor(public dialogRef: MatDialogRef<DatasetDialogComponent>,
         @Inject(MAT_DIALOG_DATA) dialogData: ICellEditorDataDict | undefined,
         private dataService: DataClientService,
+        private loadflowService: LoadflowDataService,
         private datasetsService: DatasetsService) { 
         super()
         let fCode = this.addFormControl('code')
@@ -45,7 +47,7 @@ export class LoadflowZoneDialogComponent extends DialogBase implements OnInit {
             let changedControls = this.getUpdatedControls()
             let id = this.dialogData?._data ? this.dialogData._data.id : 0
             this.dataService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: "Zone", data: changedControls }, (resp)=>{
-                this.datasetsService.refreshData()
+                this.loadflowService.afterEdit(resp)
                 this.dialogRef.close();
             }, (errors)=>{
                 this.fillErrors(errors)

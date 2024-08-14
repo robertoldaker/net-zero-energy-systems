@@ -30,8 +30,10 @@ namespace SmartEnergyLabDataApi.Data
                 if ( loc!=null ) {
                     var newLoc = loc.Copy(n.Dataset);
                     da.NationalGrid.Add(newLoc);
+                    loc = newLoc;
                 }
             }
+            n.Location = loc;
         }
     }
 }

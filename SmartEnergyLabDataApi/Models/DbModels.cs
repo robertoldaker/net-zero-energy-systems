@@ -32,6 +32,7 @@ namespace SmartEnergyLabDataApi.Models
                 beforeSave();
                 if ( _errors.Count==0 ) {
                     _da.CommitChanges();
+                    afterSave();
                 }
             }
             return _errors.Count==0;
@@ -43,6 +44,10 @@ namespace SmartEnergyLabDataApi.Models
         protected virtual void beforeSave() {
 
         }
+        protected virtual void afterSave() {
+
+        }
+
 
         public Dictionary<string,string> Errors {
             get {

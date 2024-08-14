@@ -47,7 +47,7 @@ public class CtrlItemHandler : IEditItemHandler
         }
     }
 
-    public object GetItem(EditItemModel model)
+    public IId GetItem(EditItemModel model)
     {
         var id = model.ItemId;
         return id>0 ? model.Da.Loadflow.GetCtrl(id) : new Ctrl(model.Dataset, null);
@@ -92,6 +92,18 @@ public class CtrlItemHandler : IEditItemHandler
         //
         if ( c.Id==0) {
             m.Da.Loadflow.Add(c);
+        }
+    }
+
+    public List<DatasetData<object>> GetDatasetData(EditItemModel m)
+    {
+        using( var da = new DataAccess() ) {
+            var list = new List<DatasetData<object>>();
+            var q = da.Session.QueryOver<Ctrl>().Where( n=>n.Id == m.Item.Id);
+            q = q.Fetch(SelectMode.Fetch,m=>m.Branch);
+            var di = new DatasetData<Ctrl>(da,m.Dataset.Id,m=>m.Id.ToString(), q);
+            list.Add(di.getBaseDatasetData());
+            return list;
         }
     }
 }

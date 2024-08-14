@@ -6,7 +6,7 @@ import { LoadflowDataService } from "../loadflow/loadflow-data-service.service";
 import { CellEditorData, ICellEditorDataDict } from "./cell-editor/cell-editor.component";
 import { MessageDialog, MessageDialogIcon } from "../dialogs/message-dialog/message-dialog.component";
 import { DialogFooterButtonsEnum } from "../dialogs/dialog-footer/dialog-footer.component";
-import { Dataset, DatasetType } from "../data/app.data";
+import { Dataset, DatasetData, DatasetType } from "../data/app.data";
 import { UserService } from "../users/user.service";
 import { IFormControlDict } from "../dialogs/dialog-base";
 
@@ -41,7 +41,7 @@ export class DatasetsService {
         }
     }
 
-    saveUserEditWithPrompt(value: string, cellData: CellEditorData, onEdited: (resp: string)=>void, onError: (resp: any)=>void) {
+    saveUserEditWithPrompt(value: string, cellData: CellEditorData, onEdited: (resp: DatasetData<any>)=>void, onError: (resp: any)=>void) {
         this.dataService.GetDatasetResultCount(cellData.dataset.id,(count)=>{
             if ( count>0 ) {
                 this.dialogService.showMessageDialog({
@@ -58,7 +58,7 @@ export class DatasetsService {
         })
     }
 
-    saveUserEdit(value: string, cellData: CellEditorData, onEdited: (resp: string)=>void, onError: (resp: any) =>void) {
+    saveUserEdit(value: string, cellData: CellEditorData, onEdited: (resp: DatasetData<any>)=>void, onError: (resp: any) =>void) {
         if ( this.currentDataset ) {
             let id = parseInt(cellData.key)
             let data:IFormControlDict = {}
@@ -71,7 +71,7 @@ export class DatasetsService {
         }
     }
 
-    removeUserEditWithPrompt( cellData: CellEditorData, onEdited: (resp:string)=>void) {
+    removeUserEditWithPrompt( cellData: CellEditorData, onEdited: (resp:DatasetData<any>)=>void) {
         this.dataService.GetDatasetResultCount(cellData.dataset.id,(count)=>{
             if ( count>0 ) {
                 this.dialogService.showMessageDialog({
@@ -91,8 +91,12 @@ export class DatasetsService {
         })
     }
 
-    afterEdit(cellData: CellEditorData, resp: string, onEdited: (resp:string)=>void ) {
-        this.refreshData()
+    afterEdit(cellData: CellEditorData, resp: any, onEdited: (resp:DatasetData<any>)=>void ) {
+        if ( this.currentDataset?.type === DatasetType.Elsi ) {
+            this.elsiDataService.loadDataset()
+        } else if ( this.currentDataset?.type === DatasetType.Loadflow ) {
+            this.loadflowDataService.afterEdit(resp)
+        }    
         if ( onEdited) {
             onEdited(resp)
         }
@@ -138,7 +142,7 @@ export class DatasetsService {
         })    
     }
 
-    deleteItemWithCheck(id: number, className: string, onDeleted: ()=>void) {
+    deleteItemWithCheck(id: number, className: string) {
         if ( !this.currentDataset ) {
             throw "No dataset defined";
         }
@@ -150,28 +154,32 @@ export class DatasetsService {
                     icon: MessageDialogIcon.Info,
                     buttons: DialogFooterButtonsEnum.OKCancel
                     }, ()=>{
-                        this.deleteItem(id, className, dataset, onDeleted)
+                        this.deleteItem(id, className, dataset)
                     })                            
             } else {
-                this.deleteItem(id, className, dataset, onDeleted)
+                this.deleteItem(id, className, dataset)
             }
         })    
     }
 
-    private deleteItem(id: number, className: string, dataset: Dataset, onDeleted: ()=>void) {
+    private deleteItem(id: number, className: string, dataset: Dataset) {
         this.dataService.DeleteItem({id: id, className: className, datasetId: dataset.id}, (resp)=>{
-            this.refreshData();
-            // this means it couldn't be unDeleted
+            // this means it couldn't be delete
             if ( resp.msg ) {
                 this.dialogService.showMessageDialog(new MessageDialog(resp.msg))
             } else {
-                onDeleted()
+                this.afterDeleteItem(id, className, dataset)
             }
-            onDeleted();
         });
     }
 
-    unDeleteItemWithCheck(id: number, className: string, onDeleted: ()=>void) {
+    private afterDeleteItem(id: number, className: string, dataset: Dataset) {
+        if ( dataset.type == DatasetType.Loadflow) {
+            this.loadflowDataService.afterDelete(id, className, dataset)
+        }
+    }
+
+    unDeleteItemWithCheck(id: number, className: string) {
         if ( !this.currentDataset ) {
             throw "No dataset defined";
         }
@@ -183,27 +191,33 @@ export class DatasetsService {
                     icon: MessageDialogIcon.Info,
                     buttons: DialogFooterButtonsEnum.OKCancel
                     }, ()=>{
-                        this.unDeleteItem(id, className, dataset, onDeleted)
+                        this.unDeleteItem(id, className, dataset)
                     })                            
             } else {
-                this.unDeleteItem(id, className, dataset, onDeleted)
+                this.unDeleteItem(id, className, dataset)
             }
         })    
     }    
 
-    private unDeleteItem(id: number, className: string, dataset: Dataset, onDeleted: ()=>void) {
+    private unDeleteItem(id: number, className: string, dataset: Dataset) {
         this.dataService.UnDeleteItem({id: id, className: className, datasetId: dataset.id}, (resp)=>{
-            this.refreshData();
             // this means it couldn't be unDeleted
             if ( resp.msg ) {
                 this.dialogService.showMessageDialog(new MessageDialog(resp.msg))
             } else {
-                onDeleted()
+                this.afterUnDeleteItem(id, className, dataset)
             }
         });
     }
 
+    private afterUnDeleteItem(id: number, className: string, dataset: Dataset) {
+        if ( dataset.type == DatasetType.Loadflow) {
+            this.loadflowDataService.afterUnDelete(id, className, dataset)
+        }
+    }
+
     public refreshData() {
+        console.log('refresh data')
         if ( this.currentDataset ) {
             let dataset = this.currentDataset
             if ( dataset.type === DatasetType.Elsi ) {
@@ -213,6 +227,49 @@ export class DatasetsService {
             }    
         }
     }
+
+    public static deleteDatasetData(dd: DatasetData<any>, id: number, dataset: Dataset) {
+        let index = dd.data.findIndex(m=>m.id == id)
+        // delete from list of data
+        if (index>=0) {
+            let d = dd.data[index];
+            dd.data.splice(index,1)
+            // non-source edit so add to list of delete data
+            if ( d.datasetId != dataset.id) {
+                dd.deletedData.push(d)
+            }
+        }
+    }
+
+    public static unDeleteDatasetData(dd: DatasetData<any>, id: number, dataset: Dataset) {
+        let index = dd.deletedData.findIndex(m=>m.id == id)
+        // delete from list of data
+        if (index>=0) {
+            let d = dd.deletedData[index];
+            dd.deletedData.splice(index,1)
+            dd.data.push(d)
+        }
+    }
+
+    public static updateDatasetData(dd: DatasetData<any>, resp: DatasetData<any>) {
+        for( let d of resp.data) {
+            let index = dd.data.findIndex(m=>m.id == d.id)
+            if ( index>=0 ) {
+                dd.data[index] = d;
+            } else {
+                dd.data.push(d);
+            }
+            let ues = dd.userEdits.filter(m=>m.key == d.id)
+            for (let ue of ues) {
+                let index = dd.userEdits.findIndex(m=>m.id === ue.id)
+                dd.userEdits.splice(index,1)
+            }                
+        }
+        for( let ue of resp.userEdits ) {
+            dd.userEdits.push(ue);
+        }
+    }
+
 }
 
 export interface IDatasetId {

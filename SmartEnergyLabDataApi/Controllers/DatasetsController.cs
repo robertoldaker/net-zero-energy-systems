@@ -106,7 +106,7 @@ public class DatasetsController : ControllerBase
     public IActionResult EditItem([FromBody] EditItem editItem) {
         using ( var m = new EditItemModel(this,editItem)) {
             if ( m.Save() ) {
-                return Ok();
+                return Ok(m.DatasetData);
             } else {
                 return this.ModelErrors(m.Errors);
             }

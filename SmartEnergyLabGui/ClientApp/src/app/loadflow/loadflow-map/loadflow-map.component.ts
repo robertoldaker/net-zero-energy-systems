@@ -145,6 +145,14 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
     }
 
+    markerTrackByFcn(index:number , mo: IMapData<google.maps.MarkerOptions>):any {
+        return mo.id;
+    }
+
+    polylineTrackByFcn(index:number , mo: IMapData<google.maps.PolylineOptions>):any {
+        return mo.id;
+    }
+
     addMapData() {
         let locs = this.loadflowDataService.locationData.locations
 
@@ -301,7 +309,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             console.log(`loc ${loc.name} ${e.mo.id} ${loc.id}`)
             let data = { latitude: e.e.latLng.lat(), longitude: e.e.latLng.lng() };
             this.dataService.EditItem({id: loc.id, datasetId: this.datasetsService.currentDataset.id, className: "GridSubstationLocation", data: data }, (resp)=>{
-                this.datasetsService.refreshData()
+                this.loadflowDataService.afterEdit(resp)
             }, (errors)=>{
                 console.log(errors)
             })

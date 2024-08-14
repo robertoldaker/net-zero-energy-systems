@@ -20,7 +20,7 @@ public class EditItem {
 
 public interface IEditItemHandler {
 
-    object GetItem(EditItemModel m);
+    IId GetItem(EditItemModel m);
 
     void Check(EditItemModel m);
 
@@ -29,13 +29,17 @@ public interface IEditItemHandler {
     string BeforeUndelete(EditItemModel m);
 
     string BeforeDelete(EditItemModel m, bool isSourceEdit);
+
+    List<DatasetData<object>> GetDatasetData(EditItemModel m);
 }
 
 public class EditItemModel : DbModel {
     private EditItem _editItem;
     private Dataset _dataset;
     private IEditItemHandler _handler;
-    private object _item;
+    private IId _item;
+
+    private List<DatasetData<object>> _datasetData;
 
     private static Dictionary<string,IEditItemHandler> _handlerDict = new Dictionary<string, IEditItemHandler>();
 
@@ -90,10 +94,23 @@ public class EditItemModel : DbModel {
         }
     }
 
-    public object Item {
+    public IId Item {
         get {
             return _item;
         }
+    }
+
+    public List<DatasetData<object>> DatasetData {
+        get {
+            return _datasetData;
+        }
+    }
+
+    protected override void afterSave()
+    {
+        base.afterSave();
+        //
+        _datasetData = _handler.GetDatasetData(this);
     }
 
     protected override void checkModel()
@@ -153,18 +170,6 @@ public class EditItemModel : DbModel {
         //
 
     }
-
-    private void checkNode() {
-        // code
-    }
-
-    private void checkZone() {
-    }
-
-    private void saveZone() {
-        //
-    }
-
 
     public bool GetString(string name, out string value) {
         if ( _editItem.data.TryGetValue(name,out object valueObj)) {

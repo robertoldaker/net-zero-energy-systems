@@ -78,7 +78,7 @@ export class LoadflowLocInfoWindowComponent extends ComponentBase {
     deleteLocation(e: any) {
         if ( this.loc ) {
             let id:number = this.loc.id
-            this.datasetsService.deleteItemWithCheck(id,"GridSubstationLocation",()=>{})                
+            this.datasetsService.deleteItemWithCheck(id,"GridSubstationLocation")                
         }
     }
 }

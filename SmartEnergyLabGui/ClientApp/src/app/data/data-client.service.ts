@@ -352,7 +352,7 @@ export class DataClientService implements ILogs {
         this.postRequest<number>('/Datasets/Delete', id, onLoad);
     }
 
-    EditItem(editItem: EditItem, onOk: (resp: string)=> void, onError: (error: any)=>void) {
+    EditItem(editItem: EditItem, onOk: (resp: DatasetData<any>[])=> void, onError: (error: any)=>void) {
         this.postDialogRequest<EditItem>('/Datasets/EditItem', editItem, onOk, onError);
     }
 
@@ -626,7 +626,7 @@ export class DataClientService implements ILogs {
         })
     }
 
-    private postDialogRequest<T>(url: string, data: T,onOk: (resp: string)=>void, onError: (error: any)=> void) {
+    private postDialogRequest<T>(url: string, data: T,onOk: (resp: any)=>void, onError: (error: any)=> void) {
         this.http.post<string>(this.baseUrl + url, data).subscribe(resp => {
             if ( onOk) {
                 onOk(resp);

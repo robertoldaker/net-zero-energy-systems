@@ -361,10 +361,20 @@ public class DatasetData<T> where T : class {
         UserEdits = userEdits;
         DeletedData = deletedData;
     }
+    public DatasetData() {}
     public string TableName {get; private set;}
     public IList<T> Data {get; private set;}
     public IList<T> DeletedData {get; private set;}
     public IList<UserEdit> UserEdits{get; private set;}
+
+    public DatasetData<object> getBaseDatasetData() {
+        var dd = new DatasetData<object>();
+        dd.Data = Data.Cast<object>().ToList();
+        dd.DeletedData = DeletedData.Cast<object>().ToList();
+        dd.UserEdits = UserEdits;
+        dd.TableName = TableName;
+        return dd;
+    }
 
 }
 

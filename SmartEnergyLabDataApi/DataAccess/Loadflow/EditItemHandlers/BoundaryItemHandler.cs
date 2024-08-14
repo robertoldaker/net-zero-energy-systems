@@ -24,7 +24,7 @@ public class BoundaryItemHandler : IEditItemHandler
         }
     }
 
-    public object GetItem(EditItemModel m)
+    public IId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
         return id>0 ? m.Da.Loadflow.GetBoundary(id) : new Boundary(m.Dataset);
@@ -67,6 +67,26 @@ public class BoundaryItemHandler : IEditItemHandler
                     m.Da.Loadflow.Delete(bz);
                 }
             }
+        }
+    }
+
+    public List<DatasetData<object>> GetDatasetData(EditItemModel m)
+    {
+        using( var da = new DataAccess() ) {
+            var list = new List<DatasetData<object>>();
+            var q = da.Session.QueryOver<Boundary>().Where( n=>n.Id == m.Item.Id);
+            var di = new DatasetData<Boundary>(da,m.Dataset.Id,m=>m.Id.ToString(), q);
+            // add zones they belong to
+            var boundDict = da.Loadflow.GetBoundaryZoneDict(di.Data);
+            foreach( var b in di.Data) {
+                if ( boundDict.ContainsKey(b) ) {
+                    b.Zones = boundDict[b];
+                } else {
+                    b.Zones = new List<Zone>();
+                }
+            }
+            list.Add(di.getBaseDatasetData());
+            return list;
         }
     }
 }

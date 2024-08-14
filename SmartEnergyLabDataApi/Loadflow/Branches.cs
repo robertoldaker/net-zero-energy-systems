@@ -10,6 +10,7 @@ namespace SmartEnergyLabDataApi.Loadflow
         public Branches(DataAccess da, int datasetId, Nodes nodes) {
             var q = da.Session.QueryOver<Branch>();
             q = q.Fetch(SelectMode.Fetch,m=>m.Node1);
+            q = q.Fetch(SelectMode.Fetch,m=>m.Node2);
             var di = new DatasetData<Branch>(da,datasetId,m=>m.Id.ToString(),q);            
             foreach( var b in di.Data) {
                 var key = b.LineName;

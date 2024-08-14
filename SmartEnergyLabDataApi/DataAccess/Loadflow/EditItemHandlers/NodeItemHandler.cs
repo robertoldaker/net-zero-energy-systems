@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using NHibernate;
+using NHibernate.AdoNet.Util;
 
 namespace SmartEnergyLabDataApi.Data;
 
@@ -39,7 +41,7 @@ public class NodeItemHandler : IEditItemHandler
         }
     }
 
-    public object GetItem(EditItemModel model)
+    public IId GetItem(EditItemModel model)
     {
         var id = model.ItemId;
         return id>0 ? model.Da.Loadflow.GetNode(id) : new Node(model.Dataset);
@@ -79,6 +81,26 @@ public class NodeItemHandler : IEditItemHandler
         //
         if ( node.Id==0) {
             m.Da.Loadflow.Add(node);
+        }
+    }
+
+    public List<DatasetData<object>> GetDatasetData(EditItemModel m)
+    {
+        using( var da = new DataAccess() ) {
+            var list = new List<DatasetData<object>>();
+            var q = da.Session.QueryOver<Node>().Where( n=>n.Id == m.Item.Id);
+                q = q.Fetch(SelectMode.Fetch,m=>m.Zone);
+            var di = new DatasetData<Node>(da,m.Dataset.Id,m=>m.Id.ToString(), q);
+            list.Add(di.getBaseDatasetData());
+            Node node = (Node) m.Item;
+            if ( node.Location!=null ) {
+                var qq = da.Session.QueryOver<GridSubstationLocation>().Where( n=>n.Id == node.Location.Id);
+                var dii = new DatasetData<GridSubstationLocation>(da,m.Dataset.Id,m=>m.Id.ToString(), qq);
+                // add ref. to location
+                di.Data[0].Location = dii.Data[0];
+                list.Add(dii.getBaseDatasetData());            
+            }
+            return list;
         }
     }
 }

@@ -116,7 +116,7 @@ export class LoadflowCtrlDialogComponent extends DialogBase {
 
             let id = this.dialogData?._data ? this.dialogData._data.id : 0
             this.dataService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: "Ctrl", data: changedControls }, (resp)=>{
-                this.datasetsService.refreshData()
+                this.loadflowService.afterEdit(resp)
                 this.dialogRef.close();
             }, (errors)=>{
                 this.fillErrors(errors)

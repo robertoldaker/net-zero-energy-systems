@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using NHibernate;
 using NHibernate.Driver;
 
 namespace SmartEnergyLabDataApi.Data;
@@ -87,7 +88,7 @@ public class BranchItemHandler : IEditItemHandler
         }
     }
 
-    public object GetItem(EditItemModel model)
+    public IId GetItem(EditItemModel model)
     {
         var id = model.ItemId;
         return id>0 ? model.Da.Loadflow.GetBranch(id) : new Branch(model.Dataset);
@@ -128,4 +129,18 @@ public class BranchItemHandler : IEditItemHandler
             m.Da.Loadflow.Add(b);
         }
     }
+
+    public List<DatasetData<object>> GetDatasetData(EditItemModel m)
+    {
+        using( var da = new DataAccess() ) {
+            var list = new List<DatasetData<object>>();
+            var q = da.Session.QueryOver<Branch>().Where( n=>n.Id == m.Item.Id);
+            q = q.Fetch(SelectMode.Fetch,m=>m.Node1);
+            q = q.Fetch(SelectMode.Fetch,m=>m.Node2);
+            var di = new DatasetData<Branch>(da,m.Dataset.Id,m=>m.Id.ToString(), q);
+            list.Add(di.getBaseDatasetData());
+            return list;
+        }
+    }
+
 }
