@@ -74,18 +74,9 @@ public class BoundaryItemHandler : IEditItemHandler
     {
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
-            var q = da.Session.QueryOver<Boundary>().Where( n=>n.Id == m.Item.Id);
-            var di = new DatasetData<Boundary>(da,m.Dataset.Id,m=>m.Id.ToString(), q);
-            // add zones they belong to
-            var boundDict = da.Loadflow.GetBoundaryZoneDict(di.Data);
-            foreach( var b in di.Data) {
-                if ( boundDict.ContainsKey(b) ) {
-                    b.Zones = boundDict[b];
-                } else {
-                    b.Zones = new List<Zone>();
-                }
-            }
-            list.Add(di.getBaseDatasetData());
+            var boundary = (Boundary) m.Item;
+            var boundDi = da.Loadflow.GetBoundaryDatasetData(m.Dataset.Id, m=>m.Id == boundary.Id);
+            list.Add(boundDi.getBaseDatasetData());
             return list;
         }
     }

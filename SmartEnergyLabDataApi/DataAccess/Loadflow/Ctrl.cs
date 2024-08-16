@@ -63,7 +63,6 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
-        [JsonIgnore]
         public virtual Node Node1 {
             get {
                 return Branch.Node1;
@@ -74,7 +73,6 @@ namespace SmartEnergyLabDataApi.Data
         [ManyToOne(Column = "Node1Id", Cascade = "none")]
         public virtual Node old_Node1 {get; set;}
 
-        [JsonIgnore]
         public virtual Node Node2 {
             get {
                 return Branch.Node2;

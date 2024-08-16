@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { LoadflowDataService } from '../../loadflow-data-service.service';
-import { Branch, LoadflowLink } from 'src/app/data/app.data';
+import { Branch, ILoadflowLink } from 'src/app/data/app.data';
 import { DatasetsService, EditItemData } from 'src/app/datasets/datasets.service';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 
@@ -22,23 +22,26 @@ export class LoadflowBranchInfoWindowComponent extends ComponentBase {
         }))
     }
 
-    private link: LoadflowLink | null = null
+    private link: ILoadflowLink | null = null
 
     get name():string {
-        let name = `${this.link?.branches[0].node1Name} <=> ${this.link?.branches[0].node2Name}`
+        let name = "";
+        if ( this.link && this.link.branches.length>0 ) {
+            name = `${this.link?.branches[0].node1Name} <=> ${this.link?.branches[0].node2Name}`
+        }
         return name
     }
 
-    get branchNames():string[] {
-        return this.link?.branches[0] ? this.link?.branches.map(m=>`${m.displayName}`) : []
+    get branchNames():string[] {        
+        return this.link ? this.link.branches.map(m=>`${m.displayName}`) : []
     }
 
     get branches():Branch[] {
-        return this.link?.branches ? this.link.branches : []
+        return this.link ? this.link.branches : []
     }
 
     get branchCount():number {
-        return this.link?.branches[0] ? this.link?.branches.length : 0
+        return this.link ? this.link.branches.length : 0
     }
 
     edit(b: Branch) {

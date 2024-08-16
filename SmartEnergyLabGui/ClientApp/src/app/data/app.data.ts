@@ -355,8 +355,14 @@ export interface Branch {
     node2Code: string
     node1Name: string
     node2Name: string
+    node1Voltage: number
+    node2Voltage: number
     node1Id: number
     node2Id: number
+    node1LocationId: number
+    node2LocationId: number
+    node1GISData: GISData | null
+    node2GISData: GISData | null
     outaged: boolean
     powerFlow: number | null
     bFlow: number
@@ -399,12 +405,18 @@ export interface NetworkData {
     boundaries: DatasetData<Boundary>
     zones: DatasetData<Zone>
     locations: DatasetData<GridSubstationLocation>
-    mapData: LocationData
 }
 
 export interface LocationData {
-    locations: LoadflowLocation[]
-    links: LoadflowLink[]
+    locations: ILoadflowLocation[]
+    links: ILoadflowLink[]
+}
+
+export interface UpdateLocationData {
+    updateLocations: ILoadflowLocation[]
+    deleteLocations: ILoadflowLocation[]
+    updateLinks: ILoadflowLink[]
+    deleteLinks: ILoadflowLink[]
 }
 
 export enum GridSubstationLocationSource { NGET, SHET, SPT, GoogleMaps, Estimated, UserDefined}
@@ -418,7 +430,7 @@ export interface GridSubstationLocation {
     longitude: number
 }
 
-export interface LoadflowLocation {
+export interface ILoadflowLocation {
     id: number
     name: string
     reference: string
@@ -427,7 +439,7 @@ export interface LoadflowLocation {
     isQB: boolean
 }
 
-export interface LoadflowLink {
+export interface ILoadflowLink {
     id: number
     branches: Branch[]
     voltage: number

@@ -21,10 +21,8 @@ namespace SmartEnergyLabDataApi.Loadflow
             using (var da = new DataAccess() ) {
                 Locations = loadLocations(da, lf.Dataset.Id);
             }
-            //
-            assignNodeLocations();
-            //
-            MapData = new LoadflowLocationData(this);
+            //?? Not needed as reverted to using node.Location as a db foreign key
+            //??assignNodeLocations();
         }
 
         public DatasetData<Node> Nodes {get; private set;}
@@ -33,7 +31,6 @@ namespace SmartEnergyLabDataApi.Loadflow
         public DatasetData<Data.Boundary> Boundaries {get; private set;}
         public DatasetData<Zone> Zones {get; private set;}
         public DatasetData<GridSubstationLocation> Locations {get; private set;}
-        public LoadflowLocationData MapData {get; private set;}
 
         private DatasetData<GridSubstationLocation> loadLocations(DataAccess da, int datasetId) {
             var q = da.Session.QueryOver<GridSubstationLocation>();

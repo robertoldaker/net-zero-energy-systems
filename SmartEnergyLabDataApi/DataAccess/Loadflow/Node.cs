@@ -58,6 +58,17 @@ namespace SmartEnergyLabDataApi.Data
         [Property()]
         public virtual int Voltage {get; set;}
         
+
+        [ManyToOne(Column = "ZoneId", Cascade = "none", Fetch = FetchMode.Join)]
+        public virtual Zone Zone {get; set;}
+        
+
+        /// <summary>
+        /// location of node
+        /// </summary>
+        [ManyToOne(Column = "locationId", Cascade = "none", Fetch = FetchMode.Join)]
+        public virtual GridSubstationLocation Location { get; set; }
+
         public virtual string Name { 
             get {
                 if ( this.Location!=null ) {
@@ -67,20 +78,7 @@ namespace SmartEnergyLabDataApi.Data
                 }
             }
         }
-
-        [ManyToOne(Column = "ZoneId", Cascade = "none")]
-        public virtual Zone Zone {get; set;}
         
-
-        /// <summary>
-        /// location of node
-        /// </summary>
-        [JsonIgnore()]
-        [ManyToOne(Column = "locationId", Cascade = "none", Fetch = FetchMode.Join)]
-        public virtual GridSubstationLocation old_Location { get; set; }
-
-        public virtual GridSubstationLocation Location { get; set; }
-
         [JsonIgnore()]
         [ManyToOne(Column = "DatasetId", Cascade = "none")]
         public virtual Dataset Dataset { get; set; }

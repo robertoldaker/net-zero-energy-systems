@@ -67,11 +67,11 @@ namespace SmartEnergyLabDataApi.Data
         public virtual string LinkType {get; set;}
 
         [JsonIgnore()]
-        [ManyToOne(Column = "Node1Id", Cascade = "none")]
+        [ManyToOne(Column = "Node1Id", Cascade = "none", Fetch = FetchMode.Join)]
         public virtual Node Node1 {get; set;}
 
         [JsonIgnore()]
-        [ManyToOne(Column = "Node2Id", Cascade = "none")]
+        [ManyToOne(Column = "Node2Id", Cascade = "none", Fetch = FetchMode.Join)]
         public virtual Node Node2 {get; set;}
 
         [JsonIgnore()]
@@ -109,6 +109,7 @@ namespace SmartEnergyLabDataApi.Data
                 return Node2.Code;
             }
         }
+
         public virtual string Node1Name {
             get {
                 return Node1.Name;
@@ -118,6 +119,42 @@ namespace SmartEnergyLabDataApi.Data
         public virtual string Node2Name {
             get {
                 return Node2.Name;
+            }
+        }
+
+        public virtual int Node1Voltage {
+            get {
+                return Node1.Voltage;
+            }
+        }
+        
+        public virtual int Node2Voltage {
+            get {
+                return Node2.Voltage;
+            }
+        }
+
+        public virtual int Node1LocationId {
+            get {
+                return Node1.Location!=null ? Node1.Location.Id : 0;
+            }
+        }
+        
+        public virtual int Node2LocationId {
+            get {
+                return Node2.Location!=null ? Node2.Location.Id : 0;
+            }
+        }
+
+        public virtual GISData Node1GISData {
+            get {
+                return Node1.Location!=null ? Node1.Location.GISData : null;
+            }
+        }
+        
+        public virtual GISData Node2GISData {
+            get {
+                return Node2.Location!=null ? Node2.Location.GISData : null;
             }
         }
 

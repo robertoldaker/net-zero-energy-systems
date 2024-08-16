@@ -1,8 +1,8 @@
 import { AfterViewInit, Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { GoogleMap, MapInfoWindow, MapMarker, MapPolyline } from '@angular/google-maps';
 import { ComponentBase } from 'src/app/utils/component-base';
-import { LoadflowDataService, SelectedMapItem } from '../loadflow-data-service.service';
-import { LoadflowLocation, LoadflowLink, BoundaryTrip, BoundaryTripType } from 'src/app/data/app.data';
+import { LoadflowDataService, LoadflowLink, LoadflowLocation, SelectedMapItem } from '../loadflow-data-service.service';
+import { BoundaryTrip, BoundaryTripType, ILoadflowLink, ILoadflowLocation, UpdateLocationData } from 'src/app/data/app.data';
 import { IMapData, MapOptions } from 'src/app/utils/map-options';
 import { ShowMessageService } from 'src/app/main/show-message/show-message.service';
 import { DialogService } from 'src/app/dialogs/dialog.service';
@@ -40,6 +40,10 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.addSub(this.loadflowDataService.LocationDataLoaded.subscribe(() => {
             // add markers and lines to represent loadflow nodes, branches and ctrls 
             this.addMapData()
+        }))
+        this.addSub(this.loadflowDataService.LocationDataUpdated.subscribe((updateLocationData) => {
+            // add markers and lines to represent loadflow nodes, branches and ctrls 
+            this.updateMapData(updateLocationData)
         }))
         this.addSub(this.loadflowDataService.ResultsLoaded.subscribe((loadflowResults) => {
             if (loadflowResults.boundaryTrips) {
@@ -205,7 +209,50 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         })
     }
 
-    getBranchOptions(b: LoadflowLink):google.maps.PolylineOptions  {
+    updateMapData(updateLocationData: UpdateLocationData) {
+        console.log('updateMapData')
+        console.log(updateLocationData)
+
+        let updateLocs = updateLocationData.updateLocations
+        let deleteLocs = updateLocationData.deleteLocations
+        let updateLinks = updateLocationData.updateLinks
+        let deleteLinks = updateLocationData.deleteLinks
+
+        // Locations
+        // remove markers
+        for (let loc of deleteLocs) {
+            this.locMarkerOptions.remove(loc.id)
+        }
+        // replace or add markers as needed
+        updateLocs.forEach(loc => {
+            let markerOption = this.locMarkerOptions.get(loc.id);
+            let options = this.getLocMarkerOptions(loc)
+            if (markerOption) {
+                markerOption.options = options
+            } else {
+                this.locMarkerOptions.add(loc.id, options)
+            }
+        })
+
+        // Links
+        // delete ones not needed
+        for (let link of deleteLinks) {
+            this.branchOptions.remove(link.id)
+        }
+        // replace or add branch options as needed
+        updateLinks.forEach(link => {
+            let branchOption = this.branchOptions.get(link.id);
+            let options = this.getBranchOptions(link)
+            if (branchOption) {
+                branchOption.options = options
+            } else {
+                this.branchOptions.add(link.id, options)
+            }
+        })
+
+    }
+
+    getBranchOptions(b: ILoadflowLink):google.maps.PolylineOptions  {
         let options = this.getPolylineOptions(b, false, false);
         options.path = [
             { lat: b.gisData1.latitude, lng: b.gisData1.longitude },
@@ -214,7 +261,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         return options;
     }
 
-    private getPolylineOptions(link: LoadflowLink, selected: boolean, isBoundary: boolean): google.maps.PolylineOptions {
+    private getPolylineOptions(link: ILoadflowLink, selected: boolean, isBoundary: boolean): google.maps.PolylineOptions {
         let options: google.maps.PolylineOptions = {
             strokeOpacity: 0, // makes it invisible
             strokeWeight: 20 // allows it to be selected when mouse close to line not directly over it
@@ -269,7 +316,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         return options;
     }
 
-    getLocMarkerOptions(loc: LoadflowLocation): google.maps.MarkerOptions {
+    getLocMarkerOptions(loc: ILoadflowLocation): google.maps.MarkerOptions {
         let fillColor = loc.isQB ? this.QB_COLOUR : this.LOC_COLOUR
         let fillOpacity = loc.nodes.length == 0 ? 0 : 1
         let sqIcon: google.maps.Symbol = {
@@ -296,6 +343,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     }
 
     locMarkerClicked(mapData: IMapData<google.maps.MarkerOptions>) {
+        console.log('locMArkerSelected')
         if ( this.addBranchHandler?.inProgress ) {
             this.addBranchHandler.location2Selected(mapData.id)
         } else {
@@ -320,7 +368,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.loadflowDataService.selectLink(branchId)
     }
 
-    selectMarker(loc: LoadflowLocation, mm: MapMarker, select: boolean) {
+    selectMarker(loc: ILoadflowLocation, mm: MapMarker, select: boolean) {
         //
         let s: any = mm.marker?.getIcon()
         if (loc.isQB) {
@@ -334,7 +382,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.showLocInfoWindow(loc, mm, select)
     }
 
-    showLocInfoWindow(loc: LoadflowLocation, mm: MapMarker, select: boolean) {
+    showLocInfoWindow(loc: ILoadflowLocation, mm: MapMarker, select: boolean) {
         // pan/zoom to new position
         if (select) {
             let center = { lat: loc.gisData.latitude, lng: loc.gisData.longitude }
@@ -350,7 +398,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
     }
 
-    selectBranch(branch: LoadflowLink, mpl: MapPolyline, select: boolean) {
+    selectBranch(branch: ILoadflowLink, mpl: MapPolyline, select: boolean) {
         //
         let options = this.getPolylineOptions(branch, select, false)
         mpl.polyline?.setOptions(options);
@@ -358,7 +406,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.showBranchInfoWindow(branch, mpl, select)
     }
 
-    showBranchInfoWindow(branch: LoadflowLink, mpl: MapPolyline, select: boolean) {
+    showBranchInfoWindow(branch: ILoadflowLink, mpl: MapPolyline, select: boolean) {
         // pan/zoom to new position
         let center = {
             lat: (branch.gisData1.latitude + branch.gisData2.latitude) / 2,
@@ -444,7 +492,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.map?.googleMap?.panTo(this.center)
     }
 
-    boundaryBranches: LoadflowLink[] = []
+    boundaryBranches: ILoadflowLink[] = []
     boundaryMapPolylines: Map<number, MapPolyline> = new Map()
     selectBoundaryBranches(boundaryTrips: BoundaryTrip[]) {
         // unselect current ones
@@ -492,10 +540,10 @@ export class AddBranchHandler {
         }
 
     inProgress = false
-    startLocation: LoadflowLocation | null = null
+    startLocation: ILoadflowLocation | null = null
     eventListener: google.maps.MapsEventListener | undefined
 
-    start(loc: LoadflowLocation | null) {        
+    start(loc: ILoadflowLocation | null) {        
         this.inProgress = true
         this.startLocation = loc
         this.messageService.showMessage("Please select location to connect to ... \n\n(click ESC to cancel)");

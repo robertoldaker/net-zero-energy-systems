@@ -47,10 +47,10 @@ public class ZoneItemHandler : IEditItemHandler
     public List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
         using( var da = new DataAccess() ) {
-            var list = new List<DatasetData<object>>();            
-            var q = da.Session.QueryOver<Zone>().Where( n=>n.Id == m.Item.Id);
-            var di = new DatasetData<Zone>(da,m.Dataset.Id,m=>m.Id.ToString(), q);
-            list.Add(di.getBaseDatasetData());
+            var list = new List<DatasetData<object>>();  
+            var zone = (Zone) m.Item;          
+            var zoneDi = da.Loadflow.GetZoneDatasetData(m.Dataset.Id, m=>m.Id == zone.Id);
+            list.Add(zoneDi.getBaseDatasetData());
             return list;
         }
     }

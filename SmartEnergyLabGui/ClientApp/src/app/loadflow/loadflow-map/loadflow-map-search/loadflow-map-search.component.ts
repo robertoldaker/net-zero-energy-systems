@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { LoadflowDataService } from '../../loadflow-data-service.service';
-import { LoadflowLocation, LocationData } from 'src/app/data/app.data';
+import { ILoadflowLocation, LocationData } from 'src/app/data/app.data';
 import { LoadflowMapComponent } from '../loadflow-map.component';
 
 @Component({
@@ -38,7 +38,7 @@ export class LoadflowMapSearchComponent implements OnInit {
     }
 
     searchTimeoutId: any
-    searchOptions: LoadflowLocation[] = []
+    searchOptions: ILoadflowLocation[] = []
     autoCompleteOpen: boolean = false;
 
     set searchStr(value: string) {

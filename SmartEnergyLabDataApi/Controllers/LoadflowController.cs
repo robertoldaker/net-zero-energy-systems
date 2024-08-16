@@ -149,19 +149,6 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
-        /// Gets loadflow location data
-        /// </summary>
-        /// <param name="datasetId">Id of dataset</param>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("LocationData")]
-        public LoadflowLocationData LocationData(int datasetId) {
-            //??var m = new LoadflowLocationData(datasetId);
-            //??return m;
-            return null;
-        }
-
-        /// <summary>
         /// Setup boundary data prior to trip analysis
         /// </summary>
         /// <param name="datasetId">Dataset id to use</param>

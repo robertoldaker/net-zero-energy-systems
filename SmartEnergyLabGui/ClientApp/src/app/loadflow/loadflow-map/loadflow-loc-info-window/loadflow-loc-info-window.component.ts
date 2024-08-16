@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { LoadflowDataService } from '../../loadflow-data-service.service';
-import { LoadflowLocation, Node } from 'src/app/data/app.data';
+import { ILoadflowLocation, Node } from 'src/app/data/app.data';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { CellEditorData, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { IDeleteItem } from 'src/app/datasets/map-buttons/map-buttons.component';
@@ -24,7 +24,7 @@ export class LoadflowLocInfoWindowComponent extends ComponentBase {
     @Output()
     onNewBranch: EventEmitter<any> = new EventEmitter();
 
-    loc: LoadflowLocation| null = null
+    loc: ILoadflowLocation| null = null
     get name():string {
         return this.loc ? this.loc.name : ''
     }

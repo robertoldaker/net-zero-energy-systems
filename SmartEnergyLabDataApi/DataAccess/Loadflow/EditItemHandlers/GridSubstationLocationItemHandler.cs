@@ -1,5 +1,7 @@
 
 using System.Text.RegularExpressions;
+using NHibernate;
+using NHibernate.Criterion;
 
 namespace SmartEnergyLabDataApi.Data;
 
@@ -81,9 +83,18 @@ public class GridSubstationLocationItemHandler : IEditItemHandler
     {
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
-            var q = da.Session.QueryOver<GridSubstationLocation>().Where( n=>n.Id == m.Item.Id);
-            var di = new DatasetData<GridSubstationLocation>(da,m.Dataset.Id,m=>m.Id.ToString(), q);
-            list.Add(di.getBaseDatasetData());
+            // location
+            GridSubstationLocation loc = (GridSubstationLocation) m.Item;
+            var locDi = da.NationalGrid.GetLocationDatasetData(m.Dataset.Id, n=>n.Id == loc.Id);
+            list.Add(locDi.getBaseDatasetData());
+            // nodes that use this location
+            var nodeDi = da.Loadflow.GetNodeDatasetData(m.Dataset.Id,m=>m.Location.Id == loc.Id);
+            list.Add(nodeDi.getBaseDatasetData());
+            // branches that use these nodes
+            var nodeIds=nodeDi.Data.Select(m=>m.Id).ToArray();
+            var branchDi = da.Loadflow.GetBranchDatasetData(m.Dataset.Id, n=>n.Node1.Id.IsIn(nodeIds) || n.Node2.Id.IsIn(nodeIds));
+            list.Add(branchDi.getBaseDatasetData());
+            //
             return list;
         }        
     }

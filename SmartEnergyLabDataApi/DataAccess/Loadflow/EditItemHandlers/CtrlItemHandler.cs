@@ -99,10 +99,9 @@ public class CtrlItemHandler : IEditItemHandler
     {
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
-            var q = da.Session.QueryOver<Ctrl>().Where( n=>n.Id == m.Item.Id);
-            q = q.Fetch(SelectMode.Fetch,m=>m.Branch);
-            var di = new DatasetData<Ctrl>(da,m.Dataset.Id,m=>m.Id.ToString(), q);
-            list.Add(di.getBaseDatasetData());
+            var ctrl = (Ctrl) m.Item;
+            var ctrlDi = da.Loadflow.GetCtrlDatasetData(m.Dataset.Id,m=>m.Id == ctrl.Id);
+            list.Add(ctrlDi.getBaseDatasetData());
             return list;
         }
     }

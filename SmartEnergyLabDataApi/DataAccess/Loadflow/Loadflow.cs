@@ -88,6 +88,13 @@ namespace SmartEnergyLabDataApi.Data
             return node!=null;
         }
 
+        public DatasetData<Node> GetNodeDatasetData(int datasetId,System.Linq.Expressions.Expression<Func<Node, bool>> expression) {
+            var nodeQuery = Session.QueryOver<Node>().Where(expression);
+            nodeQuery = nodeQuery.Fetch(SelectMode.Fetch,m=>m.Location.GISData);
+            var nodeDi = new DatasetData<Node>(DataAccess,datasetId,m=>m.Id.ToString(), nodeQuery);
+            return nodeDi;        
+        }
+
         #endregion
 
         #region Zone
@@ -129,6 +136,13 @@ namespace SmartEnergyLabDataApi.Data
             }
             return zone!=null;
         }
+
+        public DatasetData<Zone> GetZoneDatasetData(int datasetId,System.Linq.Expressions.Expression<Func<Zone, bool>> expression) {
+            var zoneQuery = Session.QueryOver<Zone>().Where(expression);
+            var zoneDi = new DatasetData<Zone>(DataAccess,datasetId,m=>m.Id.ToString(), zoneQuery);
+            return zoneDi;        
+        }
+
         #endregion
 
         #region Boundary
@@ -154,6 +168,21 @@ namespace SmartEnergyLabDataApi.Data
                 OrderBy(m=>m.Id).Asc.
                 List();
         }
+        public DatasetData<Boundary> GetBoundaryDatasetData(int datasetId,System.Linq.Expressions.Expression<Func<Boundary, bool>> expression) {
+            var boundQuery = Session.QueryOver<Boundary>().Where(expression);
+            var boundDi = new DatasetData<Boundary>(DataAccess,datasetId,m=>m.Id.ToString(), boundQuery);
+            // add zones they belong to
+            var boundDict = GetBoundaryZoneDict(boundDi.Data);
+            foreach( var b in boundDi.Data) {
+                if ( boundDict.ContainsKey(b) ) {
+                    b.Zones = boundDict[b];
+                } else {
+                    b.Zones = new List<Zone>();
+                }
+            }
+            return boundDi;        
+        }
+
         #endregion
 
         #region BoundaryZone
@@ -255,6 +284,16 @@ namespace SmartEnergyLabDataApi.Data
             }
             return branch!=null;
         }
+        public DatasetData<Branch> GetBranchDatasetData(int datasetId,System.Linq.Expressions.Expression<Func<Branch, bool>> expression) {
+            var q = Session.QueryOver<Branch>().Where(expression);
+            q = q.Fetch(SelectMode.Fetch,m=>m.Node1.Location);
+            q = q.Fetch(SelectMode.Fetch,m=>m.Node1.Location.GISData);
+            q = q.Fetch(SelectMode.Fetch,m=>m.Node2.Location);
+            q = q.Fetch(SelectMode.Fetch,m=>m.Node2.Location.GISData);
+            var branchDi = new DatasetData<Branch>(DataAccess,datasetId,m=>m.Id.ToString(), q);
+            return branchDi;
+        }
+
         #endregion
 
         #region Ctrl
@@ -380,6 +419,13 @@ namespace SmartEnergyLabDataApi.Data
                 Where( m=>location1.Id!=location2.Id).
                 List();
             return branches;
+        }
+
+        public DatasetData<Ctrl> GetCtrlDatasetData(int datasetId,System.Linq.Expressions.Expression<Func<Ctrl, bool>> expression) {
+            var ctrlQuery = Session.QueryOver<Ctrl>().Where(expression);
+            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch,m=>m.Branch);
+            var ctrlDi = new DatasetData<Ctrl>(DataAccess,datasetId,m=>m.Id.ToString(), ctrlQuery);
+            return ctrlDi;        
         }
 
         #region LoadflowResults

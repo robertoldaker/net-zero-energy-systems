@@ -134,11 +134,9 @@ public class BranchItemHandler : IEditItemHandler
     {
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
-            var q = da.Session.QueryOver<Branch>().Where( n=>n.Id == m.Item.Id);
-            q = q.Fetch(SelectMode.Fetch,m=>m.Node1);
-            q = q.Fetch(SelectMode.Fetch,m=>m.Node2);
-            var di = new DatasetData<Branch>(da,m.Dataset.Id,m=>m.Id.ToString(), q);
-            list.Add(di.getBaseDatasetData());
+            var branch = (Branch) m.Item;
+            var branchDi = da.Loadflow.GetBranchDatasetData(m.Dataset.Id, n=>n.Id == branch.Id);
+            list.Add(branchDi.getBaseDatasetData());
             return list;
         }
     }

@@ -118,5 +118,12 @@ namespace SmartEnergyLabDataApi.Data
                 Delete(loc);
             }
         }
+
+        public DatasetData<GridSubstationLocation> GetLocationDatasetData(int datasetId,System.Linq.Expressions.Expression<Func<GridSubstationLocation, bool>> expression) {
+            var locQuery = Session.QueryOver<GridSubstationLocation>().Where(expression);
+            var locDi = new DatasetData<GridSubstationLocation>(DataAccess,datasetId,m=>m.Id.ToString(), locQuery);
+            return locDi;        
+        }
+
     }
 }
