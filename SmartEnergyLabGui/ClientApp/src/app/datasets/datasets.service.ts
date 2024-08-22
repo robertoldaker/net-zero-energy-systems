@@ -218,18 +218,6 @@ export class DatasetsService {
         }  
     }
 
-    public refreshData() {
-        console.log('refresh data')
-        if ( this.currentDataset ) {
-            let dataset = this.currentDataset
-            if ( dataset.type === DatasetType.Elsi ) {
-                this.elsiDataService.loadDataset()
-            } else if ( dataset.type === DatasetType.Loadflow ) {
-                this.loadflowDataService.reload()
-            }    
-        }
-    }
-
     public static deleteDatasetData(dd: DatasetData<any>, id: number, dataset: Dataset) {
         let index = dd.data.findIndex(m=>m.id == id)
         // delete from list of data

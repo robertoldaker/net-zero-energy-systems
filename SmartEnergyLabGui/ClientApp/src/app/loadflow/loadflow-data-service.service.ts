@@ -70,56 +70,10 @@ export class LoadflowDataService {
         }
         this.dataClientService.GetNetworkData( this.dataset.id, (results)=>{
             this.networkData = results
-            //??this.locationData = this.getLocationData(this.networkData)
             this.messageService.clearMessage()
             this.NetworkDataLoaded.emit(results);
             this.updateLocationData(true)
-            //??this.LocationDataLoaded.emit(this.locationData);
-            //?? not needed as 
-            // re-select if location is still selected
-            //if ( this.selectedMapItem?.location ) {
-            //    let oldLoc = this.selectedMapItem.location
-            //    this.selectLocation(oldLoc.id)
-            //}
-            // and link
-            //if ( this.selectedMapItem?.link ) {
-            //    let oldLink = this.selectedMapItem.link
-            //    this.selectLink(oldLink.id)
-            //}
         })
-    }
-
-    private old_getLocationData(nd: NetworkData):LocationData {
-        //
-        let locs = nd.locations.data
-        let ctrls = nd.ctrls.data
-        let branches = nd.branches.data
-        //
-        this.locMap = new Map<number,LoadflowLocation>()
-        //
-        for( let loc of locs) {
-            let isQB = ctrls.find(m=>m.node1.location?.id == loc.id && m.type == LoadflowCtrlType.QB)!==undefined
-            this.locMap.set(loc.id,new LoadflowLocation(loc));
-        }  
-        let locations = Array.from(this.locMap.values());
-
-        // Links - include branches that connect different locations
-        let visibleBranches = branches.filter( m=>this.isBranchExternal(m) );
-        this.linkMap = new Map<string,LoadflowLink>();
-        for( let b of visibleBranches) {
-            let link:LoadflowLink | undefined;
-            let keys = this.getBranchKeys(b);
-            if ( !this.linkMap.has(keys.key1) && !this.linkMap.has(keys.key2)) {
-                let ctrl = ctrls.find( m=>m.branchId === b.id);
-                let isHVDC = ctrl?.type === LoadflowCtrlType.HVDC;
-                link = new LoadflowLink(b);
-                this.linkMap.set(keys.key1,link);
-            }
-        }
-        let links = Array.from(this.linkMap.values());
-
-        return { locations: locations, links: links}
-              
     }
 
     private getBranchKeys(b: Branch): { key1: string, key2: string} {
@@ -243,8 +197,6 @@ export class LoadflowDataService {
     }
 
     afterEdit(resp: DatasetData<any>[] ) {
-        console.log('afterEdit')
-        console.log(resp)
         //
         for( let r of resp) {
             let dd = this.getDatasetData(r.tableName)
@@ -256,102 +208,26 @@ export class LoadflowDataService {
         this.updateLocationData(false);
     }
 
-    old_updateLocationData( resp: DatasetData<any>[]) {
-        let updateLocsMap:Map<number,ILoadflowLocation> = new Map<number,ILoadflowLocation>()
-        let updateLinksMap:Map<number,ILoadflowLink> = new Map<number,ILoadflowLink>()
-        console.log('updateLocData')
-        console.log(resp)
+    afterDelete(id: number, className: string, dataset: Dataset) {
+
+        let dd = this.getDatasetData(className)
+        DatasetsService.deleteDatasetData(dd,id, dataset)
+        //
+        this.NetworkDataLoaded.emit(this.networkData)
+        //
+        this.updateLocationData(false)
+    }
+
+    afterUnDelete(resp: DatasetData<any>[] ) {
+        //
         for( let r of resp) {
-            if ( r.tableName == "GridSubstationLocation") {
-                for ( let d of r.data) {
-                    let gsl:GridSubstationLocation = d
-                    let loc = this.locMap.get(gsl.id)
-                    if ( loc ) {
-                        loc.setLocation(gsl)
-                    } else {
-                        loc = new LoadflowLocation(gsl)
-                        this.locMap.set(loc.id,loc)
-                    }
-                    if ( !updateLocsMap.has(loc.id)) {
-                        updateLocsMap.set(loc.id,loc);
-                    }
-                }
-            }
-            if ( r.tableName == "Node") {
-                for ( let d of r.data) {
-                    let node:Node = d
-                    if ( node.location) {
-                        let loc = this.locMap.get(node.location.id)
-                        if ( !loc ) {
-                            loc = new LoadflowLocation(node.location)
-                            this.locMap.set(loc.id,loc)
-                        }
-                        if ( !updateLocsMap.has(loc.id)) {
-                            updateLocsMap.set(loc.id,loc);
-                        }
-                    }
-                }
-                for ( let d of r.deletedData) {
-                    let node:Node = d
-                    if ( node.location) {
-                        let loc = this.locMap.get(node.location.id)
-                        if ( loc ) {
-                            if ( !updateLocsMap.has(loc.id)) {
-                                updateLocsMap.set(loc.id,loc);
-                            }    
-                        }
-                    }
-                }
-            }
-            if ( r.tableName == "Branch") {
-                for ( let d of r.data) {
-                    let branch:Branch = d
-                    let keys = this.getBranchKeys(branch)
-                    let link: LoadflowLink | undefined
-                    if ( this.linkMap.has(keys.key1) ) {
-                        link = this.linkMap.get(keys.key1);
-                    } else if ( this.linkMap.has(keys.key2)) {
-                        link = this.linkMap.get(keys.key2);
-                    }
-                    if ( !link ) {
-                        if ( this.isBranchExternal(branch) ) {
-                            let ctrl = this.networkData.ctrls.data.find( m=>m.branchId === branch.id);
-                            let isHVDC = ctrl?.type === LoadflowCtrlType.HVDC;            
-                            link = new LoadflowLink(branch);
-                            this.linkMap.set(keys.key1,link)    
-                        }
-                    }
-                    //
-                    if ( link ) {
-                        if ( !updateLinksMap.has(link.id)) {
-                            updateLinksMap.set(link.id,link);
-                        }    
-                    }
-                }
-            }
+            let dd = this.getDatasetData(r.tableName)
+            DatasetsService.updateDatasetData(dd,r)    
         }
         //
-        let updateLocs = Array.from(updateLocsMap.values())
-        let updateLinks = Array.from(updateLinksMap.values())
-        // figure out what links need deleting
-        let deleteLinks:LoadflowLink[] = []
-        let deleteLinkKeys:string[] = []
-        let extBranches = this.networkData.branches.data.filter(m=>this.isBranchExternal(m))
-        for( let key of this.linkMap.keys()) {
-            let link = this.linkMap.get(key)
-            if ( link?.branchCount==0) {
-                deleteLinks.push(link)
-                deleteLinkKeys.push(key);
-            }
-        }
-        for( let key of deleteLinkKeys) {
-            this.linkMap.delete(key)
-        }
+        this.NetworkDataLoaded.emit(this.networkData)
         //
-        this.locationData.locations = Array.from(this.locMap.values());
-        this.locationData.links = Array.from(this.linkMap.values());
-        //
-        this.LocationDataUpdated.emit({updateLocations: updateLocs, deleteLocations: [], updateLinks: updateLinks, deleteLinks: deleteLinks, clearBeforeUpdate: false })
+        this.updateLocationData(false);
     }
 
     updateLocationData(clear: boolean) {
@@ -490,75 +366,8 @@ export class LoadflowDataService {
         }
     }
 
-    afterDelete(id: number, className: string, dataset: Dataset) {
-        console.log('after Delete')
-        console.log(`id=${id},className=${className},datasetId=${dataset.id}`);
-
-        let dd = this.getDatasetData(className)
-        DatasetsService.deleteDatasetData(dd,id, dataset)
-        //
-        this.NetworkDataLoaded.emit(this.networkData)
-        //
-        this.updateLocationData(false)
-    }
-
-    old_deleteLocationData(id: number, className: string, dataset: Dataset) {
-        let deleteLocs:ILoadflowLocation[] = []
-        let updateLocs:ILoadflowLocation[] = []
-        let updateLinks:ILoadflowLink[] = []
-        if ( className === "GridSubstationLocation") {
-            let loc = this.locMap.get(id)
-            if ( loc ) {
-                deleteLocs.push(loc)
-            }
-        } else if ( className === "Node") {
-            let locs = this.locationData.locations;
-        } else if ( className === "Branch") {
-            let links = this.locationData.links;
-        }
-        //
-        for( let loc of deleteLocs) {
-            this.locMap.delete(loc.id)
-        }
-        // figure out what links need deleting
-        let deleteLinks:LoadflowLink[] = []
-        let deleteLinkKeys:string[] = []
-        let extBranches = this.networkData.branches.data.filter(m=>this.isBranchExternal(m))
-        for( let key of this.linkMap.keys()) {
-            let link = this.linkMap.get(key)
-            if ( link?.branchCount==0) {
-                deleteLinks.push(link)
-                deleteLinkKeys.push(key);
-            }
-        }
-        for( let key of deleteLinkKeys) {
-            this.linkMap.delete(key)
-        }
-        //
-        this.locationData.locations = Array.from(this.locMap.values());
-        this.locationData.links = Array.from(this.linkMap.values());
-        //
-        this.LocationDataUpdated.emit({updateLocations: updateLocs, deleteLocations: deleteLocs, updateLinks: updateLinks, deleteLinks: deleteLinks, clearBeforeUpdate: false })
-    }
-
-    afterUnDelete(resp: DatasetData<any>[] ) {
-        console.log('after un Delete')
-        console.log(resp);
-
-        //
-        for( let r of resp) {
-            let dd = this.getDatasetData(r.tableName)
-            DatasetsService.updateDatasetData(dd,r)    
-        }
-        //
-        this.NetworkDataLoaded.emit(this.networkData)
-        //
-        this.updateLocationData(false);
-    }
-
     ResultsLoaded:EventEmitter<LoadflowResults> = new EventEmitter<LoadflowResults>()
     NetworkDataLoaded:EventEmitter<NetworkData> = new EventEmitter<NetworkData>()
-    LocationDataLoaded:EventEmitter<LocationData> = new EventEmitter<LocationData>()
     LocationDataUpdated:EventEmitter<UpdateLocationData> = new EventEmitter<UpdateLocationData>()
     AllTripsProgress:EventEmitter<any> = new EventEmitter<any>()
     ObjectSelected:EventEmitter<SelectedMapItem> = new EventEmitter<SelectedMapItem>()

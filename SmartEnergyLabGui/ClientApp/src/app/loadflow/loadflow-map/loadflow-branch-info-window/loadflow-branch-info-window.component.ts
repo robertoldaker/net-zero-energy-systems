@@ -56,10 +56,8 @@ export class LoadflowBranchInfoWindowComponent extends ComponentBase {
             let node2LocationId = this.link.node2LocationId
             let branches = this.loadflowDataService.networkData.branches
             this._branches = branches.data.filter( m=>m.node1LocationId>=0 && m.node2LocationId>=0 && 
-                ( m.node1LocationId===node1LocationId && m.node2LocationId=== node2LocationId) ||
-                ( m.node1LocationId===node2LocationId && m.node2LocationId === node1LocationId))
-            console.log('link filterData')
-            console.log(this._branches)
+                ( m.node1LocationId===node1LocationId && m.node2LocationId===node2LocationId) ||
+                ( m.node1LocationId===node2LocationId && m.node2LocationId===node1LocationId))
         }
     }
 

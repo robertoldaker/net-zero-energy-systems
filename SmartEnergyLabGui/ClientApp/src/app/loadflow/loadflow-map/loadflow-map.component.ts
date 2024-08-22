@@ -34,13 +34,6 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         private datasetsService: DatasetsService
     ) {
         super();
-        //??if (this.loadflowDataService.locationData.locations.length > 0) {
-        //??    this.addMapData();
-        //??}
-        //??this.addSub(this.loadflowDataService.LocationDataLoaded.subscribe(() => {
-        //??    // add markers and lines to represent loadflow nodes, branches and ctrls 
-        //??   this.addMapData()
-        //??}))
         this.addSub(this.loadflowDataService.LocationDataUpdated.subscribe((updateLocationData) => {
             // add markers and lines to represent loadflow nodes, branches and ctrls 
             this.updateMapData(updateLocationData)
@@ -157,61 +150,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         return mo.id;
     }
 
-    addMapData() {
-        let locs = this.loadflowDataService.locationData.locations
-
-        // remove markeroptions not needed in the new locationData list
-        let markerOptionsArray = this.locMarkerOptions.getArray();
-        let deleteList: number[] = []
-        for (let mo of markerOptionsArray) {
-            if (!locs.find(m => m.id === mo.id)) {
-                deleteList.push(mo.id)
-            }
-        }
-        for (let moId of deleteList) {
-            this.locMarkerOptions.remove(moId)
-        }
-
-        // replace or add markers as needed
-        locs.forEach(loc => {
-            let markerOption = this.locMarkerOptions.get(loc.id);
-            let options = this.getLocMarkerOptions(loc)
-            if (markerOption) {
-                markerOption.options = options
-            } else {
-                this.locMarkerOptions.add(loc.id, options)
-            }
-        })
-
-        let links = this.loadflowDataService.locationData.links
-
-        // remove options not needed in the new locationData list of links
-        let branchOptionsArray = this.branchOptions.getArray();
-        deleteList = []
-        for (let mo of branchOptionsArray) {
-            if (!locs.find(m => m.id === mo.id)) {
-                deleteList.push(mo.id)
-            }
-        }
-        for (let moId of deleteList) {
-            this.branchOptions.remove(moId)
-        }
-
-        // replace or add branch options as needed
-        links.forEach(link => {
-            let branchOption = this.branchOptions.get(link.id);
-            let options = this.getBranchOptions(link)
-            if (branchOption) {
-                branchOption.options = options
-            } else {
-                this.branchOptions.add(link.id, options)
-            }
-        })
-    }
-
     updateMapData(updateLocationData: UpdateLocationData) {
-        console.log('updateMapData')
-        console.log(updateLocationData)
 
         if ( updateLocationData.clearBeforeUpdate ) {
             this.locMarkerOptions.clear()
@@ -352,7 +291,6 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     }
 
     locMarkerClicked(mapData: IMapData<google.maps.MarkerOptions>) {
-        console.log('locMArkerSelected')
         if ( this.addBranchHandler?.inProgress ) {
             this.addBranchHandler.location2Selected(mapData.id)
         } else {
@@ -363,7 +301,6 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     locMarkerDragEnd(e: {mo: IMapData<google.maps.MarkerOptions>, e: any}) {
         let loc = this.loadflowDataService.getLocation(e.mo.id)
         if ( loc && this.datasetsService.currentDataset) {
-            console.log(`loc ${loc.name} ${e.mo.id} ${loc.id}`)
             let data = { latitude: e.e.latLng.lat(), longitude: e.e.latLng.lng() };
             this.dataService.EditItem({id: loc.id, datasetId: this.datasetsService.currentDataset.id, className: "GridSubstationLocation", data: data }, (resp)=>{
                 this.loadflowDataService.afterEdit(resp)
