@@ -1,7 +1,9 @@
 
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.ObjectPool;
 using NHibernate;
 using NHibernate.Criterion;
+using NHibernate.Util;
 
 namespace SmartEnergyLabDataApi.Data;
 
@@ -81,21 +83,32 @@ public class GridSubstationLocationItemHandler : IEditItemHandler
 
     public List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
-        using( var da = new DataAccess() ) {
-            var list = new List<DatasetData<object>>();
-            // location
-            GridSubstationLocation loc = (GridSubstationLocation) m.Item;
-            var locDi = da.NationalGrid.GetLocationDatasetData(m.Dataset.Id, n=>n.Id == loc.Id);
-            list.Add(locDi.getBaseDatasetData());
-            // nodes that use this location
-            var nodeDi = da.Loadflow.GetNodeDatasetData(m.Dataset.Id,m=>m.Location.Id == loc.Id);
-            list.Add(nodeDi.getBaseDatasetData());
-            // branches that use these nodes
-            var nodeIds=nodeDi.Data.Select(m=>m.Id).ToArray();
-            var branchDi = da.Loadflow.GetBranchDatasetData(m.Dataset.Id, n=>n.Node1.Id.IsIn(nodeIds) || n.Node2.Id.IsIn(nodeIds));
-            list.Add(branchDi.getBaseDatasetData());
-            //
-            return list;
-        }        
+        var list = new List<DatasetData<object>>();        
+        // location
+        GridSubstationLocation loc = (GridSubstationLocation) m.Item;
+        using ( var da = new DataAccess()) {
+            var nodeIds = da.Session.QueryOver<Node>().Where( m=>m.Location.Id == loc.Id).Select(m=>m.Id).List<int>().ToArray();
+            var branchIds = da.Session.QueryOver<Branch>().Where( m=>m.Node1.Id.IsIn(nodeIds) || m.Node2.Id.IsIn(nodeIds) ).Select(m=>m.Id).List<int>().ToArray();
+            if ( nodeIds.Length == 0 ) {
+                // not being used so just return the dataset for this location
+                var locDi = da.NationalGrid.GetLocationDatasetData(m.Dataset.Id, m=>m.Id == loc.Id);
+                list.Add(locDi.getBaseDatasetData());
+            } else if ( branchIds.Length==0) {
+                // 
+                var nodeDi = da.Loadflow.GetNodeDatasetData(m.Dataset.Id, m=>m.Location.Id == loc.Id, out var locDi);
+                list.Add(nodeDi.getBaseDatasetData());
+                list.Add(locDi.getBaseDatasetData());
+            } else {
+                // load branches that used the nodes used by the location
+                var branchDi = da.Loadflow.GetBranchDatasetData(m.Dataset.Id, n=>n.Node1.Id.IsIn(nodeIds) || n.Node2.Id.IsIn(nodeIds), out var nodeDi, out var locDi);
+                // add the datasets returned to the list
+                list.Add(branchDi.getBaseDatasetData()); 
+                list.Add(nodeDi.getBaseDatasetData());
+                list.Add(locDi.getBaseDatasetData());
+            }
+
+        }
+        //
+        return list;
     }
 }

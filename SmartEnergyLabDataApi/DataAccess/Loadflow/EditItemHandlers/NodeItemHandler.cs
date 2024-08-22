@@ -8,6 +8,14 @@ public class NodeItemHandler : IEditItemHandler
 {
     public string BeforeUndelete(EditItemModel m)
     {
+        // undelete any location that the node is pointing to
+        var node = (Node) m.Item;
+        if ( node.Location!=null) {
+            var ue = m.Da.Datasets.GetDeleteUserEdit(m.Dataset.Id, node.Location);
+            if ( ue!=null ) {
+                m.Da.Datasets.Delete(ue);
+            }
+        }
         return "";
     }
 
@@ -89,12 +97,9 @@ public class NodeItemHandler : IEditItemHandler
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
             var node = (Node) m.Item;
-            var nodeDi = da.Loadflow.GetNodeDatasetData(m.Dataset.Id,m=>m.Id == node.Id);
+            var nodeDi = da.Loadflow.GetNodeDatasetData(m.Dataset.Id,m=>m.Id == node.Id, out var locDi);
             list.Add(nodeDi.getBaseDatasetData());
-            if ( node.Location!=null ) {
-                var locDi = da.NationalGrid.GetLocationDatasetData(m.Dataset.Id,m=>m.Id == node.Location.Id);
-                list.Add(locDi.getBaseDatasetData()); 
-            }
+            list.Add(locDi.getBaseDatasetData()); 
             return list;
         }
     }

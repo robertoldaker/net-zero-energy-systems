@@ -24,6 +24,9 @@ export class MapButtonsComponent implements OnInit {
     @Input()
     typeName: string = ''
 
+    @Input()
+    isDeleted: any
+
     @Output()
     onEdit: EventEmitter<any> = new EventEmitter<any>()
 
@@ -32,7 +35,7 @@ export class MapButtonsComponent implements OnInit {
 
     edit() {
         // Check result count and ask user if necessary
-        if ( this.datasetsService.isEditable ) {
+        if ( this.datasetsService.isEditable && !this.isDeleted ) {
             this.datasetsService.canEdit( ()=>{
                 this.onEdit.emit(this.element)
             })    

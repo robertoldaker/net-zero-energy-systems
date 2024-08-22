@@ -1,12 +1,14 @@
 div.buttonContainer {
-    margin-left: 3px;
     white-space: nowrap;
     display: inline-block;
 }
 
 .matIconButton {
+    margin-left: 2px;
     cursor: pointer;
     opacity: 0.7;
+    font-size: 1.3em;
+    vertical-align: bottom;
 }
 
 .matIconButton.disabled {
@@ -21,3 +23,16 @@ div.buttonContainer {
 .matIconButton.disabled:hover {
     opacity: 0.4;
 }
+
+span.enabled {
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+span.isDeleted {
+    text-decoration:line-through;
+    opacity: 0.5
+}
+
+

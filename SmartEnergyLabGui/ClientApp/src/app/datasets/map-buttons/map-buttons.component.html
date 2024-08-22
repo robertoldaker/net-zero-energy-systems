@@ -1,6 +1,11 @@
 <div class="buttonContainer">
-    <mat-icon class="matIconButton" [ngClass]="{disabled: !datasetsService.isEditable}" [inline]="true" (click)="edit()">edit</mat-icon>
-    <mat-icon class="matIconButton" [ngClass]="{disabled: !datasetsService.isEditable}" [inline]="true" (click)="delete()">delete_forever</mat-icon>
+    <span [ngClass]="{enabled: (datasetsService.isEditable && !isDeleted), isDeleted: isDeleted}" (click)="edit()">
+        <ng-content>
+
+        </ng-content>
+    </span>
+    <mat-icon *ngIf="!isDeleted" class="matIconButton" [ngClass]="{disabled: !datasetsService.isEditable}" [inline]="true" (click)="delete()">delete_forever</mat-icon>
+    <mat-icon *ngIf="isDeleted" class="matIconButton" [ngClass]="{disabled: !datasetsService.isEditable}" [inline]="true" (click)="unDelete()">restore_from_trash</mat-icon>
 </div>
 
 

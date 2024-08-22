@@ -24,7 +24,7 @@ namespace SmartEnergyLabDataApi.Data
         }
         public static void SetLocation(this Node n, DataAccess da) {
             var locCode = n.Code.Substring(0,4);
-            var loc = da.NationalGrid.GetGridSubstationLocation(locCode,n.Dataset);
+            var loc = da.NationalGrid.GetGridSubstationLocation(locCode,n.Dataset,true);
             if ( loc == null ) {
                 loc = da.NationalGrid.GetGridSubstationLocation(locCode,null);
                 if ( loc!=null ) {

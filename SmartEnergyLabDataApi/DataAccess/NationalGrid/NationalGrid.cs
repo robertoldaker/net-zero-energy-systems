@@ -67,13 +67,17 @@ namespace SmartEnergyLabDataApi.Data
             return Session.Get<GridSubstationLocation>(id);
         }
 
-        public GridSubstationLocation GetGridSubstationLocation(string reference, Dataset dataset=null) {
-            return Session.QueryOver<GridSubstationLocation>().
-                Where( m=>m.Reference == reference).
-                And( m=>m.Dataset==dataset).
-                Take(1).SingleOrDefault();
+        public GridSubstationLocation GetGridSubstationLocation(string reference, Dataset dataset=null, bool includeDerived=false) {
+            var q = Session.QueryOver<GridSubstationLocation>().Where( m=>m.Reference == reference); 
+            if ( dataset!=null && includeDerived) {
+                var datasetIds = DataAccess.Datasets.GetInheritedDatasetIds(dataset.Id);
+                q = q.Where( m=>m.Dataset.Id.IsIn(datasetIds));
+            } else {
+                q = q.Where( m=>m.Dataset == dataset);
+            }
+            return q.Take(1).SingleOrDefault();
         }
-
+        
         public IList<GridSubstationLocation> GetGridSubstationLocations() {
             return Session.QueryOver<GridSubstationLocation>().
                 Where( m=>m.Dataset==null).
@@ -119,8 +123,11 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
-        public DatasetData<GridSubstationLocation> GetLocationDatasetData(int datasetId,System.Linq.Expressions.Expression<Func<GridSubstationLocation, bool>> expression) {
-            var locQuery = Session.QueryOver<GridSubstationLocation>().Where(expression);
+        public DatasetData<GridSubstationLocation> GetLocationDatasetData(int datasetId,System.Linq.Expressions.Expression<Func<GridSubstationLocation, bool>> expression=null) {
+            var locQuery = Session.QueryOver<GridSubstationLocation>();
+            if ( expression!=null) {
+                locQuery = locQuery.Where(expression);
+            }
             var locDi = new DatasetData<GridSubstationLocation>(DataAccess,datasetId,m=>m.Id.ToString(), locQuery);
             return locDi;        
         }

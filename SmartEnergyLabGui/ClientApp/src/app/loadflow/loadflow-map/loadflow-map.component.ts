@@ -34,13 +34,13 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         private datasetsService: DatasetsService
     ) {
         super();
-        if (this.loadflowDataService.locationData.locations.length > 0) {
-            this.addMapData();
-        }
-        this.addSub(this.loadflowDataService.LocationDataLoaded.subscribe(() => {
-            // add markers and lines to represent loadflow nodes, branches and ctrls 
-            this.addMapData()
-        }))
+        //??if (this.loadflowDataService.locationData.locations.length > 0) {
+        //??    this.addMapData();
+        //??}
+        //??this.addSub(this.loadflowDataService.LocationDataLoaded.subscribe(() => {
+        //??    // add markers and lines to represent loadflow nodes, branches and ctrls 
+        //??   this.addMapData()
+        //??}))
         this.addSub(this.loadflowDataService.LocationDataUpdated.subscribe((updateLocationData) => {
             // add markers and lines to represent loadflow nodes, branches and ctrls 
             this.updateMapData(updateLocationData)
@@ -213,6 +213,11 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         console.log('updateMapData')
         console.log(updateLocationData)
 
+        if ( updateLocationData.clearBeforeUpdate ) {
+            this.locMarkerOptions.clear()
+            this.branchOptions.clear()    
+        }
+
         let updateLocs = updateLocationData.updateLocations
         let deleteLocs = updateLocationData.deleteLocations
         let updateLinks = updateLocationData.updateLinks
@@ -238,6 +243,10 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         // delete ones not needed
         for (let link of deleteLinks) {
             this.branchOptions.remove(link.id)
+            // if its the selected one then remove the info window
+            if ( link.id == this.loadflowDataService.selectedMapItem?.link?.id) {
+                this.branchInfoWindow?.close()
+            }
         }
         // replace or add branch options as needed
         updateLinks.forEach(link => {
@@ -268,7 +277,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
 
         let lineSymbol: google.maps.Symbol = { path: "" }
-        if (link.branches.length > 1) {
+        if (link.branchCount > 1) {
             lineSymbol.path = "M-1,-1 L-1,1 M1,-1 L1,1" // does a double line
         } else {
             lineSymbol.path = "M0,-1 L0,1" // single line
@@ -318,7 +327,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     getLocMarkerOptions(loc: ILoadflowLocation): google.maps.MarkerOptions {
         let fillColor = loc.isQB ? this.QB_COLOUR : this.LOC_COLOUR
-        let fillOpacity = loc.nodes.length == 0 ? 0 : 1
+        let fillOpacity = loc.hasNodes ? 1 : 0
         let sqIcon: google.maps.Symbol = {
             path: google.maps.SymbolPath.CIRCLE,
             scale: 4,
@@ -337,7 +346,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             },
             title: `${loc.reference}: ${loc.name}`,
             opacity: 1,
-            draggable: true,
+            draggable: this.datasetsService.isEditable,
             zIndex: 15
         }
     }

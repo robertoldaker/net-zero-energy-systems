@@ -14,7 +14,7 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
 
     constructor(dataService: LoadflowDataService, private dialogService: DialogService) {
         super(dataService)
-        this.dataFilter.sort = { active: 'code', direction: 'asc'};
+        this.dataFilter.sort = { active: 'node1Code', direction: 'asc'};
         this.createDataSource(dataService.networkData.branches)
         this.displayedColumns = ['buttons','code','node1Code','node2Code','x','cap','linkType','freePower','powerFlow']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {

@@ -9,10 +9,10 @@ namespace SmartEnergyLabDataApi.Loadflow
     public class Branches : DataStore<BranchWrapper> {
         public Branches(DataAccess da, int datasetId, Nodes nodes) {
             var q = da.Session.QueryOver<Branch>();
-            q = q.Fetch(SelectMode.Fetch,m=>m.Node1);
-            q = q.Fetch(SelectMode.Fetch,m=>m.Node2);
             var di = new DatasetData<Branch>(da,datasetId,m=>m.Id.ToString(),q);            
             foreach( var b in di.Data) {
+                b.Node1 = nodes.DatasetData.GetItem(b.Node1Id);
+                b.Node2 = nodes.DatasetData.GetItem(b.Node2Id);
                 var key = b.LineName;
                 var objWrapper = new BranchWrapper(b,nodes);
                 base.add(key,objWrapper);

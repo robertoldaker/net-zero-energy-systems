@@ -88,10 +88,17 @@ namespace SmartEnergyLabDataApi.Data
             return node!=null;
         }
 
-        public DatasetData<Node> GetNodeDatasetData(int datasetId,System.Linq.Expressions.Expression<Func<Node, bool>> expression) {
+        public DatasetData<Node> GetNodeDatasetData(int datasetId,System.Linq.Expressions.Expression<Func<Node, bool>> expression,
+             out DatasetData<GridSubstationLocation> locDi) {
             var nodeQuery = Session.QueryOver<Node>().Where(expression);
-            nodeQuery = nodeQuery.Fetch(SelectMode.Fetch,m=>m.Location.GISData);
             var nodeDi = new DatasetData<Node>(DataAccess,datasetId,m=>m.Id.ToString(), nodeQuery);
+            var locIds = nodeDi.Data.Where(m=>m.Location!=null).Select(m=>m.Location.Id).ToArray();
+            locDi = DataAccess.NationalGrid.GetLocationDatasetData(datasetId,m=>m.Id.IsIn(locIds));
+            foreach( var node in nodeDi.Data) {
+                if ( node.Location!=null ) {
+                    node.Location = locDi.GetItem(node.Location.Id);
+                }
+            }
             return nodeDi;        
         }
 
@@ -284,13 +291,19 @@ namespace SmartEnergyLabDataApi.Data
             }
             return branch!=null;
         }
-        public DatasetData<Branch> GetBranchDatasetData(int datasetId,System.Linq.Expressions.Expression<Func<Branch, bool>> expression) {
+        public DatasetData<Branch> GetBranchDatasetData(int datasetId,
+            System.Linq.Expressions.Expression<Func<Branch, bool>> expression,
+            out DatasetData<Node> nodeDi,
+            out DatasetData<GridSubstationLocation> locDi) {
             var q = Session.QueryOver<Branch>().Where(expression);
-            q = q.Fetch(SelectMode.Fetch,m=>m.Node1.Location);
-            q = q.Fetch(SelectMode.Fetch,m=>m.Node1.Location.GISData);
-            q = q.Fetch(SelectMode.Fetch,m=>m.Node2.Location);
-            q = q.Fetch(SelectMode.Fetch,m=>m.Node2.Location.GISData);
             var branchDi = new DatasetData<Branch>(DataAccess,datasetId,m=>m.Id.ToString(), q);
+            var node1Ids = branchDi.Data.Select(m=>m.Node1.Id).ToList<int>();
+            var node2Ids = branchDi.Data.Select(m=>m.Node2.Id).ToList<int>();
+            nodeDi = GetNodeDatasetData(datasetId, m=>m.Id.IsIn(node1Ids) || m.Id.IsIn(node2Ids), out locDi );
+            foreach( var b in branchDi.Data) {
+                b.Node1 = nodeDi.GetItem(b.Node1.Id);
+                b.Node2 = nodeDi.GetItem(b.Node2.Id);
+            }
             return branchDi;
         }
 

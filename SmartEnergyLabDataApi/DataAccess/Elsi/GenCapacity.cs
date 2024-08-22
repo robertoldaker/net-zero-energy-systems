@@ -5,7 +5,7 @@ namespace SmartEnergyLabDataApi.Data
 {
 
     [Class(0, Table = "elsi_gen_capacities")]
-    public class GenCapacity : IDataset
+    public class GenCapacity : IDataset, IId
     {
         public GenCapacity()
         {

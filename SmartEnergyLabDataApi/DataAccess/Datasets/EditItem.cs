@@ -264,6 +264,7 @@ public class EditItemModel : DbModel {
                 _da.CommitChanges();
             }
         }
+        _datasetData = _handler.GetDatasetData(this);
         return msg;
     }
 

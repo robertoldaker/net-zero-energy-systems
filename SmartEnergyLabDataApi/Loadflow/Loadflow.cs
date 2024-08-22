@@ -1,4 +1,5 @@
 using System.Linq;
+using Microsoft.Extensions.ObjectPool;
 using SmartEnergyLabDataApi.Common;
 using SmartEnergyLabDataApi.Data;
 
@@ -47,7 +48,8 @@ namespace SmartEnergyLabDataApi.Loadflow
             _stageResults = new StageResults();
             bo = new Boundary(this);
             // create nodes wrapper
-            _nodes = new Nodes(_da,_dataset.Id);
+            var locDi = _da.NationalGrid.GetLocationDatasetData(_dataset.Id);
+            _nodes = new Nodes(_da,_dataset.Id,locDi);
             // create branches wrapper
             _branches = new Branches(_da,_dataset.Id,_nodes);
             // create ctrl wrapper

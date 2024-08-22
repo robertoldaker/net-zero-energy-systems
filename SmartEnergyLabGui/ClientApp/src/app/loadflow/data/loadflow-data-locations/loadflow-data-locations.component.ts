@@ -4,6 +4,7 @@ import { LoadflowDataService } from 'src/app/loadflow/loadflow-data-service.serv
 import { ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { DataTableBaseComponent } from '../data-table-base.component';
+import { IDeleteItem } from 'src/app/datasets/cell-buttons/cell-buttons.component';
 
 @Component({
     selector: 'app-loadflow-data-locations',
@@ -43,4 +44,8 @@ export class LoadflowDataLocationsComponent extends DataTableBaseComponent<GridS
         this.dialogService.showLoadflowLocationDialog();
     }
 
+    delete(e:IDeleteItem) {
+        let loc:GridSubstationLocation = e.element._data;
+        e.canDelete = this.dataService.canDeleteLocation(loc);
+    }
 }

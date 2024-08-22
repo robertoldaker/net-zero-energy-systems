@@ -135,7 +135,7 @@ public class DatasetsController : ControllerBase
     public object UnDeleteItem([FromBody] EditItem editItem) {
         using ( var m = new EditItemModel(this,editItem)) {
             var msg = m.UnDelete();
-            return new { msg=msg };
+            return new { msg=msg, datasets = m.DatasetData };
         }
     }
 

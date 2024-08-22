@@ -205,15 +205,17 @@ export class DatasetsService {
             if ( resp.msg ) {
                 this.dialogService.showMessageDialog(new MessageDialog(resp.msg))
             } else {
-                this.afterUnDeleteItem(id, className, dataset)
+                this.afterUnDeleteItem(resp.datasets)
             }
         });
     }
 
-    private afterUnDeleteItem(id: number, className: string, dataset: Dataset) {
-        if ( dataset.type == DatasetType.Loadflow) {
-            this.loadflowDataService.afterUnDelete(id, className, dataset)
-        }
+    private afterUnDeleteItem(datasets: DatasetData<any>[]) {
+        if ( this.currentDataset?.type === DatasetType.Elsi ) {
+            this.elsiDataService.loadDataset()
+        } else if ( this.currentDataset?.type === DatasetType.Loadflow ) {
+            this.loadflowDataService.afterUnDelete(datasets)
+        }  
     }
 
     public refreshData() {
@@ -241,29 +243,39 @@ export class DatasetsService {
         }
     }
 
-    public static unDeleteDatasetData(dd: DatasetData<any>, id: number, dataset: Dataset) {
-        let index = dd.deletedData.findIndex(m=>m.id == id)
-        // delete from list of data
-        if (index>=0) {
-            let d = dd.deletedData[index];
-            dd.deletedData.splice(index,1)
-            dd.data.push(d)
-        }
-    }
-
     public static updateDatasetData(dd: DatasetData<any>, resp: DatasetData<any>) {
         for( let d of resp.data) {
+            // add or replace in data
             let index = dd.data.findIndex(m=>m.id == d.id)
             if ( index>=0 ) {
                 dd.data[index] = d;
             } else {
                 dd.data.push(d);
             }
+            // remove from deleted data
+            index = dd.deletedData.findIndex(m=>m.id == d.id)
+            if ( index>=0 ) {
+                dd.deletedData.splice(index,1)
+            }
             let ues = dd.userEdits.filter(m=>m.key == d.id)
             for (let ue of ues) {
                 let index = dd.userEdits.findIndex(m=>m.id === ue.id)
                 dd.userEdits.splice(index,1)
             }                
+        }
+        for( let d of resp.deletedData) {
+            // add or replace in deletedData
+            let index = dd.deletedData.findIndex(m=>m.id == d.id)
+            if ( index>=0 ) {
+                dd.deletedData[index] = d;
+            } else {
+                dd.deletedData.push(d);
+            }
+            // remove from data if it exists
+            index = dd.data.findIndex(m=>m.id == d.id)
+            if ( index>=0 ) {
+                dd.data.splice(index,1)
+            }
         }
         for( let ue of resp.userEdits ) {
             dd.userEdits.push(ue);

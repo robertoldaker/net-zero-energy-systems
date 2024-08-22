@@ -417,6 +417,7 @@ export interface UpdateLocationData {
     deleteLocations: ILoadflowLocation[]
     updateLinks: ILoadflowLink[]
     deleteLinks: ILoadflowLink[]
+    clearBeforeUpdate: boolean
 }
 
 export enum GridSubstationLocationSource { NGET, SHET, SPT, GoogleMaps, Estimated, UserDefined}
@@ -434,18 +435,20 @@ export interface ILoadflowLocation {
     id: number
     name: string
     reference: string
-    nodes: Node[]
     gisData: GISData
     isQB: boolean
+    hasNodes: boolean
 }
 
 export interface ILoadflowLink {
     id: number
-    branches: Branch[]
     voltage: number
     isHVDC: boolean
     gisData1: GISData
     gisData2: GISData
+    branchCount: number
+    node1LocationId: number
+    node2LocationId: number
 }
 
 

@@ -17,3 +17,15 @@ div.bottomButtons {
        font-size: 16px !important;
     }
  }
+
+div.itemContainer {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    height: 7rem;
+    overflow-y: auto;
+    margin-top: 0.5rem;
+}
+
+div.miniButtonContainer {
+    margin-top: 0.5rem;
+}

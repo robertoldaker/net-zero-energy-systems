@@ -3,15 +3,11 @@
         <span style="width: 30px"></span>
         <span>{{name}}</span>
     </div>
-    <table id="table">
-        <tr>
-            <td>Branches:</td>
-            <td>
-                <div *ngFor="let b of branches">
-                    <span>{{b.displayName}}</span>
-                    <app-map-buttons typeName="Branch" [element]="b" (onEdit)="edit($event)"></app-map-buttons>
-                </div>
-            </td>
-        </tr>
-    </table>
+    <div class="branchContainer">
+        <div *ngFor="let b of branches">                    
+            <app-map-buttons typeName="Branch" [element]="b" (onEdit)="edit($event)">
+                <span>{{b.displayName}}</span>
+            </app-map-buttons>
+        </div>    
+    </div>
 </div>
