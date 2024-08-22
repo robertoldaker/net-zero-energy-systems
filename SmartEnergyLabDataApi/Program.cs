@@ -81,10 +81,9 @@ public static class Program
         builder.Services.AddSingleton<ICarbonIntensityFetcher,CarbonIntensityFetcher>();
         builder.Services.AddSingleton<IElectricityCostFetcher,ElectricityCostFetcher>();
 
-        builder.Services.AddControllers(options =>
-        {
-            options.Filters.Add<ExceptionLoggerFilter>();
-        });
+        builder.Services.AddControllers(options => options.Filters.Add<ExceptionLoggerFilter>())
+                        .AddJsonOptions(options => options.JsonSerializerOptions.NumberHandling = 
+                                System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals);
 
         var app = builder.Build();
 

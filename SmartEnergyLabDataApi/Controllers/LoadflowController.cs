@@ -8,6 +8,7 @@ using SmartEnergyLabDataApi.Loadflow;
 using static SmartEnergyLabDataApi.Models.LoadflowReference;
 using Org.BouncyCastle.Crypto.Signers;
 using System.Text.Json;
+using System.Linq.Expressions;
 
 namespace SmartEnergyLabDataApi.Controllers
 {
@@ -63,11 +64,12 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("RunBaseLoadflow")]
-        public LoadflowResults RunBaseLoadflow(int datasetId)
+        public IActionResult RunBaseLoadflow(int datasetId)
         {
             using( var lf = new Loadflow.Loadflow(datasetId) ) {
                 lf.RunBaseCase("Auto");
-                return new LoadflowResults(lf);
+                var resp = new LoadflowResults(lf);
+                return this.Ok(resp);
             }
         }
 

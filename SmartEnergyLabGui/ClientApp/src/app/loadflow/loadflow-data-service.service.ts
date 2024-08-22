@@ -445,8 +445,6 @@ export class LoadflowLocation implements ILoadflowLocation {
 
 export class LoadflowLink implements ILoadflowLink {
 
-    private static idCounter:number = 0
-
     private _node1LocationId:number = 0
     private _node2LocationId:number = 0
     private _gisData1:GISData = { id:0, latitude: 0, longitude: 0}
@@ -468,8 +466,7 @@ export class LoadflowLink implements ILoadflowLink {
 
         this.isHVDC = false
         this.branchCount = 1
-        LoadflowLink.idCounter++
-        this._id = LoadflowLink.idCounter
+        this._id = branch.id
         this._isNew = true
     }
 
