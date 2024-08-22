@@ -3,6 +3,8 @@ div.buttonContainer {
     border-left: 4px solid transparent;
     margin-left: 3px;
     white-space: nowrap;
+    font-size: 1.1rem;
+    padding-right: 0.5rem;
 }
 
 div.isLocalEdit {

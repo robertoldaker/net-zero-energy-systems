@@ -1,16 +1,11 @@
 div.buttonContainer {
-    margin-right: 3px;
     display: inline-block;
     line-height: 100%;
 }
 
-div.buttonContainer:nth-last-child(1) {
-    margin-right: 0px;
-}
-
 .matIconButton {
     cursor: pointer;
-    opacity: 0.7;
+    opacity: 0.5;
 }
 
 .matIconButton.disabled {
