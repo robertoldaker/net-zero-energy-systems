@@ -4,7 +4,7 @@ div.buttonContainer {
     line-height: 100%;
 }
 
-div.buttonContainer:nth-last-child() {
+div.buttonContainer:nth-last-child(1) {
     margin-right: 0px;
 }
 
