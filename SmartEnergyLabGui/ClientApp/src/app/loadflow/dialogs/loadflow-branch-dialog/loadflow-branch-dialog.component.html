@@ -3,24 +3,43 @@
     <form [formGroup]="form">
         <div class="row">
             <div>
-                <app-dialog-selector [dialog]="dialog" placeholder="Select node 1" name="nodeId1" label="Node 1" [data]="nodes1" [displayFcn]="displayNode"></app-dialog-selector>
+                <app-dialog-selector [dialog]="dialog" placeholder="Select node 1" name="nodeId1" label="Node 1" [data]="nodes1" [displayFcn]="displayNode" (onSelectionChange)="node1Changed($event)"></app-dialog-selector>
             </div>    
             <div>
-                <app-dialog-selector [dialog]="dialog"  placeholder="Select node 2" name="nodeId2" label="Node 2" [data]="nodes2" [displayFcn]="displayNode"></app-dialog-selector>
+                <app-dialog-selector [dialog]="dialog"  placeholder="Select node 2" name="nodeId2" label="Node 2" [data]="nodes2" [displayFcn]="displayNode" (onSelectionChange)="node2Changed($event)"></app-dialog-selector>
             </div>    
+        </div>
+        <div class="row">
+            <div>
+                <app-dialog-selector [dialog]="dialog" name="type" placeholder="Enter branch type" label="Type" [data]="branchTypes" (onSelectionChange)="typeChanged($event)"></app-dialog-selector>
+            </div>
+            <div>
+                <app-dialog-text-input [dialog]="dialog" name="code" placeholder="Enter code" label="Code"></app-dialog-text-input>
+            </div>
         </div>
         <div class="row">
             <div>
                 <app-dialog-text-input [dialog]="dialog" name="x" placeholder="Enter reactance" label="Reactance (x)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
             </div>
             <div>
-                <app-dialog-text-input [dialog]="dialog" name="cap" placeholder="Enter capacity in MW" label="Capacity (MW)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
+                <app-dialog-text-input [dialog]="dialog" name="cap" placeholder="Enter capacity in MW" label="Capacity (MW)" [fieldClasses]="{numeric: true}" (onChange)="onCapChange($event)"></app-dialog-text-input>
             </div>    
         </div>
-        <div class="row">
-            <div>
-                <app-dialog-text-input [dialog]="dialog" name="code" placeholder="Enter code" label="Code"></app-dialog-text-input>
+        <div *ngIf="isCtrl">
+            <div class="separator">Control parameters</div>
+            <div  class="row">
+                <div>
+                    <app-dialog-text-input [dialog]="dialog" name="minCtrl" label="Min Ctrl" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
+                </div>
+                <div>
+                    <app-dialog-text-input [dialog]="dialog" name="maxCtrl" label="Max Ctrl" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
+                </div>
             </div>
+            <div class="row">
+                <div>
+                    <app-dialog-text-input [dialog]="dialog" name="cost" label="Cost" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
+                </div>
+            </div>    
         </div>
     </form>
 </div>

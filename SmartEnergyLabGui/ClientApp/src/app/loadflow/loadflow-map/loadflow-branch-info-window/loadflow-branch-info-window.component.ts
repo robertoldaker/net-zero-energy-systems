@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { LoadflowDataService } from '../../loadflow-data-service.service';
 import { Branch, ILoadflowLink } from 'src/app/data/app.data';
-import { DatasetsService, EditItemData } from 'src/app/datasets/datasets.service';
+import { DatasetsService } from 'src/app/datasets/datasets.service';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 
 @Component({
@@ -46,7 +46,7 @@ export class LoadflowBranchInfoWindowComponent extends ComponentBase {
     }
 
     edit(b: Branch) {
-        let itemData = new EditItemData<Branch>(b, this.datasetsService)
+        let itemData = this.loadflowDataService.getBranchEditorData(b.id)
         this.dialogService.showLoadflowBranchDialog(itemData)
     }
 

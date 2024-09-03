@@ -64,6 +64,33 @@ namespace SmartEnergyLabDataApi.Data
             if ( oldVersion<58) {
                 updateGridSubstationLocations();
             }
+            if ( oldVersion<59) {
+                updateBranches();
+            }
+        }
+
+        private static void updateBranches() {
+            Logger.Instance.LogInfoEvent($"Starting updating branches");
+            using( var da = new DataAccess() ) {
+                var ctrls = da.Session.QueryOver<Ctrl>().List();
+                foreach( var ctrl in ctrls) {
+                    if ( ctrl.Branch!=null) {
+                        ctrl.Branch.SetCtrl(ctrl);
+                    } else {
+                        Logger.Instance.LogInfoEvent($"Ctrl found with no branch ref. [{ctrl.LineName}]");
+                    }
+                }
+                //
+                da.CommitChanges();
+            }
+            using( var da = new DataAccess() ) {
+                var branches = da.Session.QueryOver<Branch>().List();
+                foreach( var branch in branches) {
+                    branch.SetType();
+                }
+                da.CommitChanges();
+            }
+            Logger.Instance.LogInfoEvent($"Finished updating branches");
         }
 
         private static void updateGridSubstationLocations() {

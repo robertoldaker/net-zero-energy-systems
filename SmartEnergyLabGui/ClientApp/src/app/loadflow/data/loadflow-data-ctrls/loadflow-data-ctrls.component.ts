@@ -35,10 +35,9 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
     typeName: string = "Ctrl"
 
     edit( e: ICellEditorDataDict) {
-        this.dialogService.showLoadflowCtrlDialog(e);
+        let branchId = e._data.branchId
+        let editorData = this.dataService.getBranchEditorData(branchId)
+        this.dialogService.showLoadflowBranchDialog(editorData);
     }
 
-    add() {
-        this.dialogService.showLoadflowCtrlDialog();
-    }
 }

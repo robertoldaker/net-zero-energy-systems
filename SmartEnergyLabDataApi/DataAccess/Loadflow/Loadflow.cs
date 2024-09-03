@@ -293,10 +293,15 @@ namespace SmartEnergyLabDataApi.Data
         }
         public DatasetData<Branch> GetBranchDatasetData(int datasetId,
             System.Linq.Expressions.Expression<Func<Branch, bool>> expression,
+            out DatasetData<Ctrl> ctrlDi,
             out DatasetData<Node> nodeDi,
-            out DatasetData<GridSubstationLocation> locDi) {
-            var q = Session.QueryOver<Branch>().Where(expression);
+            out DatasetData<GridSubstationLocation> locDi) {            
+            var q = Session.QueryOver<Branch>().Where(expression);            
             var branchDi = new DatasetData<Branch>(DataAccess,datasetId,m=>m.Id.ToString(), q);
+            //
+            var ctrlIds = branchDi.Data.Where( m=>m.Ctrl!=null).Select(m=>m.Ctrl.Id).ToArray();
+            ctrlDi = GetCtrlDatasetData(datasetId,m=>m.Id.IsIn(ctrlIds));
+            //
             var node1Ids = branchDi.Data.Select(m=>m.Node1.Id).ToList<int>();
             var node2Ids = branchDi.Data.Select(m=>m.Node2.Id).ToList<int>();
             nodeDi = GetNodeDatasetData(datasetId, m=>m.Id.IsIn(node1Ids) || m.Id.IsIn(node2Ids), out locDi );
@@ -437,6 +442,10 @@ namespace SmartEnergyLabDataApi.Data
         public DatasetData<Ctrl> GetCtrlDatasetData(int datasetId,System.Linq.Expressions.Expression<Func<Ctrl, bool>> expression) {
             var ctrlQuery = Session.QueryOver<Ctrl>().Where(expression);
             ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch,m=>m.Branch);
+            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch,m=>m.Branch.Node1.Location);
+            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch,m=>m.Branch.Node1.Location.GISData);
+            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch,m=>m.Branch.Node2.Location);
+            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch,m=>m.Branch.Node2.Location.GISData);
             var ctrlDi = new DatasetData<Ctrl>(DataAccess,datasetId,m=>m.Id.ToString(), ctrlQuery);
             return ctrlDi;        
         }

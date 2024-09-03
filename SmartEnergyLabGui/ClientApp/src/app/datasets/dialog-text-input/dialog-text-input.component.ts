@@ -29,6 +29,9 @@ export class DialogTextInputComponent extends DialogBaseInput implements OnInit 
     @Input()
     fieldClasses = {}
 
+    @Output()
+    onChange: EventEmitter<any> = new EventEmitter()
+
     get hasUserEdit(): boolean {
         return this.isUserEditReverted ? false : this.dialog?.getUserEdit(this.name) !== undefined
     }
@@ -36,5 +39,9 @@ export class DialogTextInputComponent extends DialogBaseInput implements OnInit 
     revert() {
         this.dialog?.revertToPrevValue(this.name)
         this.isUserEditReverted = true
+    }
+
+    keyUp(e: any) {
+        this.onChange.emit(e)
     }
 }

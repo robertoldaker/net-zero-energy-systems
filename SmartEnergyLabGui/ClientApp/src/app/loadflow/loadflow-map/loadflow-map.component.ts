@@ -516,7 +516,7 @@ export class AddBranchHandler {
         if ( loc2 && this.startLocation) {
             this.messageService.clearMessage();
             let itemData = new NewItemData({node1: this.startLocation.reference, node2: loc2.reference})                
-            this.dialogService.showLoadflowBranchDialog(itemData, ()=>{
+            this.dialogService.showLoadflowBranchDialog({ branch: itemData, ctrl: undefined}, ()=>{
                 this.cancel()
             });
         } else {

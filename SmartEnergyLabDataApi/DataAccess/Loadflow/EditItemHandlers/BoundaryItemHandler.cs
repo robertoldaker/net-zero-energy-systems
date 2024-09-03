@@ -1,18 +1,9 @@
 namespace SmartEnergyLabDataApi.Data;
 
-public class BoundaryItemHandler : IEditItemHandler
+public class BoundaryItemHandler : BaseEditItemHandler
 {
-    public string BeforeUndelete(EditItemModel m)
-    {     
-        return "";   
-    }
 
-    public string BeforeDelete(EditItemModel m, bool isSourceEdit)
-    {        
-        return "";
-    }
-
-    public void Check(EditItemModel m)
+    public override void Check(EditItemModel m)
     {
         if ( !m.GetString("code",out string code) && m.ItemId==0) {
             m.AddError("code","Code needs to be set");
@@ -24,13 +15,13 @@ public class BoundaryItemHandler : IEditItemHandler
         }
     }
 
-    public IId GetItem(EditItemModel m)
+    public override IId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
         return id>0 ? m.Da.Loadflow.GetBoundary(id) : new Boundary(m.Dataset);
     }
 
-    public void Save(EditItemModel m)
+    public override void Save(EditItemModel m)
     {
         Boundary b = (Boundary) m.Item;
         //
@@ -70,7 +61,7 @@ public class BoundaryItemHandler : IEditItemHandler
         }
     }
 
-    public List<DatasetData<object>> GetDatasetData(EditItemModel m)
+    public override List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();

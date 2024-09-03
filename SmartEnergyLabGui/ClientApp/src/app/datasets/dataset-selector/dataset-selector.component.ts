@@ -119,6 +119,7 @@ export class DatasetSelectorComponent implements OnInit {
                 buttons: DialogFooterButtonsEnum.OKCancel
                 }, ()=>{
                     if ( this.dataset) {
+                        this.messageService.showMessage("Deleting dataset ...")
                         this.dataClientService.DeleteDataset(this.dataset.id, ()=>{
                             this.messageService.showMessageWithTimeout("Dataset successfully deleted")
                             this.loadDatasets(0)

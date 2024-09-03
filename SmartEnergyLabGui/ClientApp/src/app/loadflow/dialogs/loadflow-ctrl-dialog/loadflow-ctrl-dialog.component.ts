@@ -109,7 +109,6 @@ export class LoadflowCtrlDialogComponent extends DialogBase {
         this.updateCtrls()
     }
 
-
     save() {
         if ( this.datasetsService.currentDataset) {
             let changedControls = this.getUpdatedControls()

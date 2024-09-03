@@ -30,7 +30,46 @@ public interface IEditItemHandler {
 
     string BeforeDelete(EditItemModel m, bool isSourceEdit);
 
+    void UpdateUserEdits(EditItemModel m);
+
     List<DatasetData<object>> GetDatasetData(EditItemModel m);
+}
+
+public class BaseEditItemHandler : IEditItemHandler
+{
+    public virtual string BeforeDelete(EditItemModel m, bool isSourceEdit)
+    {
+        return "";
+    }
+
+    public virtual string BeforeUndelete(EditItemModel m)
+    {
+        return "";
+    }
+
+    public virtual void Check(EditItemModel m)
+    {
+        throw new NotImplementedException();
+    }
+
+    public virtual List<DatasetData<object>> GetDatasetData(EditItemModel m)
+    {
+        throw new NotImplementedException();
+    }
+
+    public virtual IId GetItem(EditItemModel m)
+    {
+        throw new NotImplementedException();
+    }
+
+    public virtual void UpdateUserEdits(EditItemModel m) {
+        m.UpdateItemUserEdit();
+    }
+
+    public virtual void Save(EditItemModel m)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public class EditItemModel : DbModel {
@@ -126,7 +165,7 @@ public class EditItemModel : DbModel {
         if ( IsSourceEdit() ) {
             _handler.Save(this);
         } else {
-            updateUserEdit();
+            _handler.UpdateUserEdits(this);
         }
         // Delete all existing results for this dataset and any derived ones
         if ( _dataset.Type == DatasetType.Elsi) {
@@ -138,9 +177,14 @@ public class EditItemModel : DbModel {
         }
     }
 
-    private void updateUserEdit() {
-        var userEdits = _da.Datasets.GetUserEdits(_editItem.className,_dataset.Id);
-        var props = _item.GetType().GetProperties();
+    public void UpdateItemUserEdit() {
+        UpdateUserEditForItem(_item);
+    }
+
+    public void UpdateUserEditForItem(IId item) {
+        var className = item.GetType().Name;
+        var userEdits = _da.Datasets.GetUserEdits(className,_dataset.Id);
+        var props = item.GetType().GetProperties();
         var propDict = new Dictionary<string,PropertyInfo>(StringComparer.OrdinalIgnoreCase);
         foreach( var prop in props) {
             propDict.Add(prop.Name.ToLower(),prop);
@@ -149,9 +193,9 @@ public class EditItemModel : DbModel {
         foreach( var name in _editItem.data.Keys) {
             if ( propDict.TryGetValue(name, out PropertyInfo prop)) {
                 // 
-                var itemValue = prop.GetValue(_item);
+                var itemValue = prop.GetValue(item);
                 var editValue = _editItem.data[name]; 
-                string key = ((IId) _item).Id.ToString();
+                string key = ((IId) item).Id.ToString();
                 var userEdit = userEdits.Where( m=>string.Compare(m.ColumnName,name,true)==0 && m.Key == key).FirstOrDefault();
                 if ( itemValue.ToString() == editValue.ToString()) {
                     //
@@ -160,7 +204,7 @@ public class EditItemModel : DbModel {
                     }
                 } else {
                     if ( userEdit==null) {
-                        userEdit = new UserEdit() { TableName = _item.GetType().Name, ColumnName=prop.Name,Dataset = _dataset, Key = key  };
+                        userEdit = new UserEdit() { TableName = className, ColumnName=prop.Name,Dataset = _dataset, Key = key  };
                         _da.Datasets.Add(userEdit);
                     }
                     userEdit.Value = editValue.ToString();
@@ -272,5 +316,4 @@ public class EditItemModel : DbModel {
         IDataset dItem = (IDataset) _item;
         return _dataset.Id == dItem.Dataset.Id;
     }
-
 }

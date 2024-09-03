@@ -752,6 +752,7 @@ public class LoadflowETYSLoader
                             OHL = ssB.OHL,                            
                             Dataset = dataset,
                         };
+                        branch.SetType();
                         da.Loadflow.Add(branch);
                         Logger.Instance.LogInfoEvent($"Adding branch [{branch.LineName}]");
                     }
@@ -763,6 +764,7 @@ public class LoadflowETYSLoader
                         Cost = ssC.Cost,
                         Dataset = dataset,
                     };
+                    branch.SetCtrl(ctrl);
                     da.Loadflow.Add(ctrl);
                     Logger.Instance.LogInfoEvent($"Adding Ctrl [{ctrl.LineName}]");
                 }
@@ -788,6 +790,7 @@ public class LoadflowETYSLoader
                 Ext = n.Ext,
                 Zone = existingZones.Where(m=>m.Code == n.Zone.Code).FirstOrDefault()
             };
+            node.SetLocation(da);
             da.Loadflow.Add(node);
             existingNodes.Add(node);
             Logger.Instance.LogInfoEvent($"Adding HVDC node [{node.Code}]");
@@ -832,6 +835,8 @@ public class LoadflowETYSLoader
                     //
                     Dataset = dataset,
                 };
+                //
+                b.SetCtrl(ctrl);
                 //
                 da.Loadflow.Add(ctrl);
                 Logger.Instance.LogInfoEvent($"Adding ctrl=[{ctrl.Code} [{ctrl.Node1.Code}] [{ctrl.Node2.Code}]");
@@ -1020,6 +1025,7 @@ public class LoadflowETYSLoader
                          SummerCap = circuit.SummerRating,
                          AutumnCap = circuit.AutumnRating,
                     };
+                    branch.SetType();
                     da.Loadflow.Add(branch);
                     numAdded++;
                 }

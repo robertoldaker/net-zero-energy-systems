@@ -6,6 +6,7 @@ import { ShowMessageService } from '../main/show-message/show-message.service';
 import { DialogService } from '../dialogs/dialog.service';
 import { MessageDialog } from '../dialogs/message-dialog/message-dialog.component';
 import { DatasetsService } from '../datasets/datasets.service';
+import { DataFilter, ICellEditorDataDict } from '../datasets/cell-editor/cell-editor.component';
 
 type NodeDict = {
     [code: string]:Node
@@ -211,6 +212,12 @@ export class LoadflowDataService {
     afterDelete(id: number, className: string, dataset: Dataset) {
 
         let dd = this.getDatasetData(className)
+        if ( className === "Branch") {
+            let branch = dd.data.find(m=>m.id == id)
+            if ( branch && branch.ctrl) {
+                DatasetsService.deleteDatasetData(this.networkData.ctrls,branch.ctrl.id, dataset)
+            }
+        } 
         DatasetsService.deleteDatasetData(dd,id, dataset)
         //
         this.NetworkDataLoaded.emit(this.networkData)
@@ -366,12 +373,67 @@ export class LoadflowDataService {
         }
     }
 
+    public getBranchEditorData(branchId: number):IBranchEditorData {
+        let ctrlData
+        let branchData
+        let df = new DataFilter(1)
+        let branch = this.networkData.branches.data.find(m=>m.id === branchId)
+        if ( branch ) {
+            let branchDataset = { 
+                tableName: this.networkData.branches.tableName, 
+                data: [branch],
+                deletedData: [],
+                userEdits: this.networkData.branches.userEdits
+                }
+            let branches = df.GetCellDataObjects(this.dataset,branchDataset,(item)=>item.id.toString())
+            branchData = branches[0]
+            let ctrlId = branch.ctrlId   
+            if ( ctrlId!=0 ) {
+                let ctrl = this.networkData.ctrls.data.find(m=>m.id === ctrlId)
+                if ( ctrl ) {
+                    let ctrlDataset = { tableName: this.networkData.ctrls.tableName, 
+                        data: [ctrl],
+                        deletedData: [],
+                        userEdits: this.networkData.ctrls.userEdits
+                        }
+                    let ctrls = df.GetCellDataObjects(this.dataset,ctrlDataset,(item)=>item.id.toString())
+                    ctrlData = ctrls[0]    
+                }
+            }
+        } else {
+            throw `Cannot find branch with id [${branchId}]`
+        }
+        return { branch: branchData, ctrl: ctrlData}
+    }    
+
+    public getNodeEditorData(nodeId: number):ICellEditorDataDict {
+        let df = new DataFilter(1)
+        let node = this.networkData.nodes.data.find(m=>m.id === nodeId)
+        if ( node ) {
+            let branchDataset = { 
+                tableName: this.networkData.nodes.tableName, 
+                data: [node],
+                deletedData: [],
+                userEdits: this.networkData.nodes.userEdits
+                }
+            let nodes = df.GetCellDataObjects(this.dataset,branchDataset,(item)=>item.id.toString())
+            return nodes[0]
+         } else {
+            throw `Cannot find node with id [${nodeId}]`
+        }
+    }    
+
     ResultsLoaded:EventEmitter<LoadflowResults> = new EventEmitter<LoadflowResults>()
     NetworkDataLoaded:EventEmitter<NetworkData> = new EventEmitter<NetworkData>()
     LocationDataUpdated:EventEmitter<UpdateLocationData> = new EventEmitter<UpdateLocationData>()
     AllTripsProgress:EventEmitter<any> = new EventEmitter<any>()
     ObjectSelected:EventEmitter<SelectedMapItem> = new EventEmitter<SelectedMapItem>()
 
+}
+
+export interface IBranchEditorData {
+    branch: ICellEditorDataDict,
+    ctrl: ICellEditorDataDict | undefined
 }
 
 export class LoadflowLocation implements ILoadflowLocation {
@@ -440,7 +502,6 @@ export class LoadflowLocation implements ILoadflowLocation {
     private areGslDifferent(gslA: GridSubstationLocation, gslB: GridSubstationLocation) {
         return gslA.latitude!=gslB.latitude || gslA.longitude != gslB.longitude
     }
-
 }
 
 export class LoadflowLink implements ILoadflowLink {

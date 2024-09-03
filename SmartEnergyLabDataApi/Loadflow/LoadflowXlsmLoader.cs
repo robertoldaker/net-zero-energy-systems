@@ -150,6 +150,8 @@ namespace SmartEnergyLabDataApi.Loadflow
                 var node = _nodeCache.GetOrCreate(code, out bool created);
                 if ( created ) {
                     node.Dataset = _dataset;
+                    node.SetVoltage();
+                    node.SetLocation(_da);
                     numNodesAdded++;
                 } else {
                     numNodesUpdated++;
@@ -275,6 +277,9 @@ namespace SmartEnergyLabDataApi.Loadflow
                 branch.R = r;
                 branch.X = x;
                 branch.Region = region;
+                if ( created ) {
+                    branch.SetType();
+                }
             }
             string msg = $"{numBranchesAdded} branches added, {numBranchesUpdated} branches updated";
             Logger.Instance.LogInfoEvent($"End reading branches, {msg}");
@@ -397,6 +402,9 @@ namespace SmartEnergyLabDataApi.Loadflow
                 ctrl.MinCtrl = minCtrl;
                 ctrl.MaxCtrl = maxCtrl;
                 ctrl.Cost = cost;
+                if ( created && ctrl.Branch!=null ) {
+                        ctrl.Branch.SetCtrl(ctrl);
+                }
             }
             var mm=$"{numCtrlsAdded} ctrls added, {numCtrlsUpdated} ctrls updated";
             Logger.Instance.LogInfoEvent($"End reading ctrls {mm}");

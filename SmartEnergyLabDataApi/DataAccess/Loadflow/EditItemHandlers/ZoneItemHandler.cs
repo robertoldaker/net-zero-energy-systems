@@ -2,18 +2,9 @@
 namespace SmartEnergyLabDataApi.Data;
 
 
-public class ZoneItemHandler : IEditItemHandler
+public class ZoneItemHandler : BaseEditItemHandler
 {
-    public string BeforeUndelete(EditItemModel m)
-    {        
-        return "";
-    }
-
-    public string BeforeDelete(EditItemModel m, bool isSourceEdit) {
-        return "";
-    }
-
-    public void Check(EditItemModel m)
+    public override void Check(EditItemModel m)
     {
         // code
         if ( m.GetString("code",out string code)) {
@@ -25,13 +16,13 @@ public class ZoneItemHandler : IEditItemHandler
         }
     }
 
-    public IId GetItem(EditItemModel m)
+    public override IId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
         return id>0 ? m.Da.Loadflow.GetZone(id) : new Zone(m.Dataset);
     }
 
-    public void Save(EditItemModel m)
+    public override void Save(EditItemModel m)
     {
         Zone zone = (Zone) m.Item;
         //
@@ -44,7 +35,7 @@ public class ZoneItemHandler : IEditItemHandler
         }
     }
 
-    public List<DatasetData<object>> GetDatasetData(EditItemModel m)
+    public override List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();  

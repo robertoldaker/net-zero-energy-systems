@@ -276,20 +276,6 @@ export interface IDatasetId {
     datasetId: number
 }
 
-export class EditItemData<T extends IDatasetId> implements ICellEditorDataDict {
-    constructor(item: T, datasetsService: DatasetsService, isDeleted?:boolean) {
-        this._data = item
-        this._isDeleted = isDeleted
-        this._isLocalDataset = item.datasetId === datasetsService.currentDataset?.id
-        this._isLocalEdit = isDeleted || this._isLocalEdit
-    }
-    [index: string]: CellEditorData
-    _data: any
-    _isDeleted: any
-    _isLocalDataset: any
-    _isLocalEdit: any 
-}
-
 export class NewItemData<T> implements ICellEditorDataDict {
     constructor(item: any) {
         this._data = item

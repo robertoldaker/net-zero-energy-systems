@@ -1,6 +1,6 @@
 <div class="outerContainer">
     <div class="search">
-        <button *ngIf="datasetsService.isEditable" mat-icon-button aria-label="Add" [title]="addTitle"  (click)="raiseAddEvent()">
+        <button *ngIf="datasetsService.isEditable && allowAdd" mat-icon-button aria-label="Add" [title]="addTitle"  (click)="raiseAddEvent()">
             <mat-icon>add</mat-icon>
         </button>
         <button mat-icon-button aria-label="Search" disabled>

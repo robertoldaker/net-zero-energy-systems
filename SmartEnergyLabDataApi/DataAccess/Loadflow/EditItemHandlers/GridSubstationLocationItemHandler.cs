@@ -7,19 +7,10 @@ using NHibernate.Util;
 
 namespace SmartEnergyLabDataApi.Data;
 
-public class GridSubstationLocationItemHandler : IEditItemHandler
+public class GridSubstationLocationItemHandler : BaseEditItemHandler
 {
-    public string BeforeDelete(EditItemModel m, bool isSourceEdit)
-    {
-        return "";
-    }
 
-    public string BeforeUndelete(EditItemModel m)
-    {
-        return "";
-    }
-
-    public void Check(EditItemModel m)
+    public override void Check(EditItemModel m)
     {
         Regex regex = new Regex("^[A-Z]{4}X?$");
         // reference
@@ -47,13 +38,13 @@ public class GridSubstationLocationItemHandler : IEditItemHandler
         m.CheckDouble("longitude");
     }
 
-    public IId GetItem(EditItemModel m)
+    public override IId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
         return id>0 ? m.Da.NationalGrid.GetGridSubstationLocation(id) : new GridSubstationLocation() { Dataset = m.Dataset};
     }
 
-    public void Save(EditItemModel m)
+    public override void Save(EditItemModel m)
     {
         GridSubstationLocation loc = (GridSubstationLocation) m.Item;
         //
@@ -81,7 +72,7 @@ public class GridSubstationLocationItemHandler : IEditItemHandler
         }
     }
 
-    public List<DatasetData<object>> GetDatasetData(EditItemModel m)
+    public override List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
         var list = new List<DatasetData<object>>();        
         // location
@@ -100,9 +91,10 @@ public class GridSubstationLocationItemHandler : IEditItemHandler
                 list.Add(locDi.getBaseDatasetData());
             } else {
                 // load branches that used the nodes used by the location
-                var branchDi = da.Loadflow.GetBranchDatasetData(m.Dataset.Id, n=>n.Node1.Id.IsIn(nodeIds) || n.Node2.Id.IsIn(nodeIds), out var nodeDi, out var locDi);
+                var branchDi = da.Loadflow.GetBranchDatasetData(m.Dataset.Id, n=>n.Node1.Id.IsIn(nodeIds) || n.Node2.Id.IsIn(nodeIds), out var ctrlDi, out var nodeDi, out var locDi);
                 // add the datasets returned to the list
                 list.Add(branchDi.getBaseDatasetData()); 
+                list.Add(ctrlDi.getBaseDatasetData());
                 list.Add(nodeDi.getBaseDatasetData());
                 list.Add(locDi.getBaseDatasetData());
             }

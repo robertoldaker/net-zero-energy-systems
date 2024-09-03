@@ -26,6 +26,9 @@ export class TablePaginatorComponent implements OnInit {
     @Input()
     typeName:string = "?"
 
+    @Input()
+    allowAdd:boolean = true
+
     @Output()
     onFilter: EventEmitter<DataFilter> = new EventEmitter<DataFilter>()
 

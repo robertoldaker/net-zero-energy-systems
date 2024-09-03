@@ -5,9 +5,9 @@ using NHibernate.Driver;
 
 namespace SmartEnergyLabDataApi.Data;
 
-public class CtrlItemHandler : IEditItemHandler
+public class CtrlItemHandler : BaseEditItemHandler
 {
-    public string BeforeUndelete(EditItemModel m)
+    public override string BeforeUndelete(EditItemModel m)
     {
         Ctrl c = (Ctrl) m.Item;
         
@@ -25,12 +25,12 @@ public class CtrlItemHandler : IEditItemHandler
         }
     }
 
-    public string BeforeDelete(EditItemModel m, bool isSourceEdit) {
+    public override string BeforeDelete(EditItemModel m, bool isSourceEdit) {
         return "";
     }
 
 
-    public void Check(EditItemModel m)
+    public override void Check(EditItemModel m)
     {
         // Ctrls
         m.CheckDouble("minCtrl",null,0);
@@ -47,13 +47,13 @@ public class CtrlItemHandler : IEditItemHandler
         }
     }
 
-    public IId GetItem(EditItemModel model)
+    public override IId GetItem(EditItemModel model)
     {
         var id = model.ItemId;
         return id>0 ? model.Da.Loadflow.GetCtrl(id) : new Ctrl(model.Dataset, null);
     }
 
-    public void Save(EditItemModel m)
+    public override void Save(EditItemModel m)
     {
         Ctrl c = (Ctrl) m.Item;
         //
@@ -95,7 +95,7 @@ public class CtrlItemHandler : IEditItemHandler
         }
     }
 
-    public List<DatasetData<object>> GetDatasetData(EditItemModel m)
+    public override List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();

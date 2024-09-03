@@ -340,10 +340,13 @@ export interface Node {
     mismatch: number | undefined
 }
 
+export enum BranchType { Other, HVDC, OHL, Cable, Composite, Transformer, QB, SSSC, SeriesCapacitor, SeriesReactor }
 export interface Branch {
     id: number
     datasetId: number
     displayName: string
+    type: BranchType
+    ctrlId: number
     region: string
     code: string
     r: number

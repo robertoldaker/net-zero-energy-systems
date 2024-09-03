@@ -24,6 +24,7 @@ import { LoadflowBoundaryDialogComponent } from '../loadflow/dialogs/loadflow-bo
 import { LoadflowBranchDialogComponent } from '../loadflow/dialogs/loadflow-branch-dialog/loadflow-branch-dialog.component';
 import { LoadflowCtrlDialogComponent } from '../loadflow/dialogs/loadflow-ctrl-dialog/loadflow-ctrl-dialog.component';
 import { LoadflowLocationDialogComponent } from '../loadflow/dialogs/loadflow-location-dialog/loadflow-location-dialog.component';
+import { IBranchEditorData } from '../loadflow/loadflow-data-service.service';
 
 @Injectable({
     providedIn: 'root'
@@ -136,9 +137,9 @@ export class DialogService {
         this.dialog.open(LoadflowBoundaryDialogComponent, options)
     }
 
-    showLoadflowBranchDialog(cellObj?: ICellEditorDataDict, onClose?: (e: any)=>void ) {
+    showLoadflowBranchDialog(branchEditorData?: IBranchEditorData, onClose?: (e: any)=>void ) {
         let options = Object.assign({},this.defaultOptions)
-        options.data = cellObj
+        options.data = branchEditorData
         let dialogRef = this.dialog.open(LoadflowBranchDialogComponent, options)
         dialogRef.afterClosed().subscribe((input)=>{
             if ( onClose ) {

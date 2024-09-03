@@ -3,9 +3,8 @@ import { ComponentBase } from 'src/app/utils/component-base';
 import { LoadflowDataService } from '../../loadflow-data-service.service';
 import { Branch, ILoadflowLocation, Node } from 'src/app/data/app.data';
 import { DialogService } from 'src/app/dialogs/dialog.service';
-import { CellEditorData, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { IDeleteItem } from 'src/app/datasets/map-buttons/map-buttons.component';
-import { DatasetsService, EditItemData, NewItemData } from 'src/app/datasets/datasets.service';
+import { DatasetsService, NewItemData } from 'src/app/datasets/datasets.service';
 import { MatTabGroup } from '@angular/material/tabs';
 
 @Component({
@@ -84,7 +83,7 @@ export class LoadflowLocInfoWindowComponent extends ComponentBase {
     }
 
     editNode(node: Node) {
-        let itemData = new EditItemData<Node>(node, this.datasetsService)
+        let itemData = this.loadflowDataService.getNodeEditorData(node.id)
         this.dialogService.showLoadflowNodeDialog(itemData)
     }
 
@@ -94,8 +93,8 @@ export class LoadflowLocInfoWindowComponent extends ComponentBase {
     }
 
     editBranch(branch: Branch) {
-        let itemData = new EditItemData<Branch>(branch, this.datasetsService)
-        this.dialogService.showLoadflowBranchDialog(itemData)
+        let branchEditorData = this.loadflowDataService.getBranchEditorData(branch.id)
+        this.dialogService.showLoadflowBranchDialog(branchEditorData)
     }
 
     addNode(e: any) {
@@ -104,8 +103,8 @@ export class LoadflowLocInfoWindowComponent extends ComponentBase {
     }
 
     addInternalBranch(e: any) {
-        let itemData = new NewItemData({node1: this.loc?.reference, node2: this.loc?.reference})
-        this.dialogService.showLoadflowBranchDialog(itemData);
+        let branchData = new NewItemData({node1: this.loc?.reference, node2: this.loc?.reference})
+        this.dialogService.showLoadflowBranchDialog({branch: branchData, ctrl: undefined});
     }
 
     addExternalBranch(e: any) {

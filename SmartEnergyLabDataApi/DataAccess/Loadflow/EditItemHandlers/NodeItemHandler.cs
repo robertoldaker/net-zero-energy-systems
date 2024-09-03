@@ -4,9 +4,9 @@ using NHibernate.AdoNet.Util;
 
 namespace SmartEnergyLabDataApi.Data;
 
-public class NodeItemHandler : IEditItemHandler
+public class NodeItemHandler : BaseEditItemHandler
 {
-    public string BeforeUndelete(EditItemModel m)
+    public override string BeforeUndelete(EditItemModel m)
     {
         // undelete any location that the node is pointing to
         var node = (Node) m.Item;
@@ -19,11 +19,11 @@ public class NodeItemHandler : IEditItemHandler
         return "";
     }
 
-    public string BeforeDelete(EditItemModel m, bool isSourceEdit) {
+    public override string BeforeDelete(EditItemModel m, bool isSourceEdit) {
         return "";
     }
 
-    public void Check(EditItemModel m)
+    public override void Check(EditItemModel m)
     {
         if ( m.GetString("code",out string code)) {
             Regex regex = new Regex(@"^[A-Z]{4}\d");
@@ -49,13 +49,13 @@ public class NodeItemHandler : IEditItemHandler
         }
     }
 
-    public IId GetItem(EditItemModel model)
+    public override IId GetItem(EditItemModel model)
     {
         var id = model.ItemId;
         return id>0 ? model.Da.Loadflow.GetNode(id) : new Node(model.Dataset);
     }
 
-    public void Save(EditItemModel m)
+    public override void Save(EditItemModel m)
     {
         Node node = (Node) m.Item;
         //
@@ -92,7 +92,7 @@ public class NodeItemHandler : IEditItemHandler
         }
     }
 
-    public List<DatasetData<object>> GetDatasetData(EditItemModel m)
+    public override List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();

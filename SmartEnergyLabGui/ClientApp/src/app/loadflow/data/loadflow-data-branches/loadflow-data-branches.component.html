@@ -35,6 +35,16 @@
           </td>
         </ng-container>
         
+        <!-- type -->
+        <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+            <td mat-cell *matCellDef="let element">
+                <div>{{getTypeStr(element.type.value)}}</div>
+                <!-- show linkType if other -->
+                <div *ngIf="element.type.value==0">({{element.linkType.value}})</div>
+            </td>
+        </ng-container>
+            
         <!-- x -->
         <ng-container matColumnDef="x">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">X</th>
@@ -51,12 +61,6 @@
             </td>
         </ng-container>
             
-        <!-- link type -->
-        <ng-container matColumnDef="linkType">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Link type</th>
-            <td mat-cell *matCellDef="let element">{{element.linkType.value}}</td>
-        </ng-container>
-
         <!-- free power -->
         <ng-container matColumnDef="freePower">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Free</th>

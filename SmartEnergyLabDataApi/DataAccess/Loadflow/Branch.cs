@@ -7,6 +7,8 @@ using NHibernate.Mapping.Attributes;
 namespace SmartEnergyLabDataApi.Data
 {
 
+    public enum BranchType {Other, HVDC, OHL, Cable, Composite, Transformer, QB, SSSC, SeriesCapacitor, SeriesReactor}
+
     [Class(0, Table = "loadflow_branches")]
     public class Branch : IId, IDataset, ILifecycle
     {
@@ -66,6 +68,10 @@ namespace SmartEnergyLabDataApi.Data
         [Property()]
         public virtual string LinkType {get; set;}
 
+        [Property()]
+        [Column(Name = "type", Default = "0")]
+        public virtual BranchType Type {get; set;}
+
         [JsonIgnore()]
         [ManyToOne(Column = "Node1Id", Cascade = "none", Fetch = FetchMode.Join)]
         public virtual Node Node1 {get; set;}
@@ -77,6 +83,15 @@ namespace SmartEnergyLabDataApi.Data
         [JsonIgnore()]
         [ManyToOne(Column = "DatasetId", Cascade = "none")]
         public virtual Dataset Dataset { get; set; }
+
+        [JsonIgnore()]
+        [ManyToOne(Column = "CtrlId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
+        public virtual Ctrl Ctrl {get; set;}
+        public virtual int CtrlId {
+            get {
+                return Ctrl!=null ? Ctrl.Id : 0;
+            }
+        }
 
         public virtual int DatasetId {
             get {

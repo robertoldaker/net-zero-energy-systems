@@ -7,7 +7,25 @@
     height: 17px;
     font-size: 16px;
     cursor: pointer;
+    display: inline-block;
     float: right;
+}
+
+div.inputContainer {
+    white-space:nowrap; 
+}
+
+div.inputContainer > .mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 16px;
+    cursor: pointer;
+    vertical-align: middle;
+    color: darkRed;
+}
+
+div.inputContainer > input {
+    width: 80% !important;    
 }
 
 .delete {

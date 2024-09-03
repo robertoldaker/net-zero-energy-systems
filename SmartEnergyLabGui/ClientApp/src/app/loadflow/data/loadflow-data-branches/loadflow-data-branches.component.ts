@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { Branch } from '../../../data/app.data';
+import { Branch, BranchType } from '../../../data/app.data';
 import { LoadflowDataService } from '../../loadflow-data-service.service';
-import { ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
+import { DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { DataTableBaseComponent } from '../data-table-base.component';
 
@@ -16,7 +16,7 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
         super(dataService)
         this.dataFilter.sort = { active: 'node1Code', direction: 'asc'};
         this.createDataSource(dataService.networkData.branches)
-        this.displayedColumns = ['buttons','code','node1Code','node2Code','x','cap','linkType','freePower','powerFlow']
+        this.displayedColumns = ['buttons','code','node1Code','node2Code','type','x','cap','freePower','powerFlow']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.createDataSource(results.branches)
         }))
@@ -27,13 +27,17 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
 
     typeName: string = "Branch"
 
+    getTypeStr(type: BranchType) {
+        return BranchType[type];
+    }
+
     edit( e: ICellEditorDataDict) {
-        this.dialogService.showLoadflowBranchDialog(e);
+        let branchId = e._data.id
+        let branchEditorData = this.dataService.getBranchEditorData(branchId)
+        this.dialogService.showLoadflowBranchDialog(branchEditorData);
     }
 
     add() {
         this.dialogService.showLoadflowBranchDialog();
     }
-
-
 }
