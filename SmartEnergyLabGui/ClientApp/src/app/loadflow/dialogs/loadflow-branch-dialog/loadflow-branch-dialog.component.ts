@@ -19,7 +19,7 @@ import { ISearchResults } from 'src/app/datasets/dialog-auto-complete/dialog-aut
 export class LoadflowBranchDialogComponent extends DialogBase {
 
     constructor(public dialogRef: MatDialogRef<DatasetDialogComponent>, 
-        @Inject(MAT_DIALOG_DATA) editorData:IBranchEditorData,
+        @Inject(MAT_DIALOG_DATA) editorData:IBranchEditorData | undefined,
         private dataService: DataClientService, 
         private loadflowService: LoadflowDataService,
         private datasetsService: DatasetsService
@@ -60,7 +60,7 @@ export class LoadflowBranchDialogComponent extends DialogBase {
             fType.disable()
         } else {
             this.title = `Add branch`
-            let node1 = editorData.branch?._data?.node1 ? editorData.branch._data.node1 : ''
+            let node1 = editorData?.branch?._data?.node1 ? editorData.branch._data.node1 : ''
             if ( node1 ) {
                 this.nodes1 = this.filterNodes(node1,this.nodes1)
                 if ( this.nodes1.length == 1) {
@@ -68,7 +68,7 @@ export class LoadflowBranchDialogComponent extends DialogBase {
                     fNodeId1.markAsDirty()
                 }
             }
-            let node2 = editorData.branch?._data?.node2 ? editorData.branch._data.node2 : ''
+            let node2 = editorData?.branch?._data?.node2 ? editorData.branch._data.node2 : ''
             if ( node2 ) {
                 this.nodes2 = this.filterNodes(node2,this.nodes2)
                 if ( this.nodes2.length == 1) {
@@ -84,14 +84,18 @@ export class LoadflowBranchDialogComponent extends DialogBase {
             fCost.markAsDirty()
         }
         // disable controls not user-editable
-        if ( editorData.branch && !editorData.branch._isLocalDataset ) {
+        if ( editorData?.branch && !editorData.branch._isLocalDataset ) {
             fCode.disable()
             fNodeId1.disable()
             fNodeId2.disable()
         }
         this.editorData = editorData
         // need to merge branch and ctrl data so the base class can pickup user edits
-        this.dialogData = Object.assign({},editorData.branch,editorData.ctrl);
+        if ( editorData) {
+            this.dialogData = Object.assign({},editorData.branch,editorData.ctrl);
+        } else {
+            this.dialogData = undefined
+        }
     }
 
     filterNodes(nodeRef: string, nodes: Node[]):Node[] {

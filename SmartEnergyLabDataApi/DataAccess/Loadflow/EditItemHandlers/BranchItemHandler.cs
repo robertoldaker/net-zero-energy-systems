@@ -22,9 +22,8 @@ public class BranchItemHandler : BaseEditItemHandler
             m.Da.Datasets.Delete(ue);
         }
         // undelete a ctrl pointing at this branch (assuming one only)
-        var ctrls = m.Da.Loadflow.GetCtrlsForBranch(b,m.Dataset);
-        if ( ctrls.Count==1) {
-            ue = m.Da.Datasets.GetDeleteUserEdit(m.Dataset.Id, ctrls[0]);
+        if ( b.Ctrl!=null) {
+            ue = m.Da.Datasets.GetDeleteUserEdit(m.Dataset.Id, b.Ctrl);
             if ( ue!=null ) {
                 m.Da.Datasets.Delete(ue);
             }
@@ -34,11 +33,14 @@ public class BranchItemHandler : BaseEditItemHandler
     }
 
     public override string BeforeDelete(EditItemModel m, bool isSourceEdit) {
-        Branch b = (Branch) m.Item;
         // Also mark as deleted any ctrls pointing at this branch
-        var ctrls = m.Da.Loadflow.GetCtrlsForBranch(b,m.Dataset);
-        foreach( var c in ctrls) {
-            m.Da.Datasets.AddDeleteUserEdit(c,m.Dataset);
+        if ( isSourceEdit ) {
+            // Ctrl should get deleted automatically
+        } else {
+            Branch b = (Branch) m.Item;
+            if ( b.Ctrl!=null ) {
+                m.Da.Datasets.AddDeleteUserEdit(b.Ctrl,m.Dataset);
+            }
         }
         //
         return "";

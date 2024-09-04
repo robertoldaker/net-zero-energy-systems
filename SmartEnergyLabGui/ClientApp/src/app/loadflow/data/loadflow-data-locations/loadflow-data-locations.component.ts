@@ -44,8 +44,4 @@ export class LoadflowDataLocationsComponent extends DataTableBaseComponent<GridS
         this.dialogService.showLoadflowLocationDialog();
     }
 
-    delete(e:IDeleteItem) {
-        let loc:GridSubstationLocation = e.element._data;
-        e.canDelete = this.dataService.canDeleteLocation(loc);
-    }
 }

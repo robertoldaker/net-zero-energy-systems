@@ -39,9 +39,4 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         this.dialogService.showLoadflowNodeDialog();
     }
 
-    delete(e:IDeleteItem) {
-        let node:Node = e.element._data;
-        e.canDelete = this.dataService.canDeleteNode(node);
-    }
-
 }

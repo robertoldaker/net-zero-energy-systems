@@ -89,7 +89,7 @@ export class LoadflowLocInfoWindowComponent extends ComponentBase {
 
     deleteNode( e: IDeleteItem) {
         let node: Node = e.element
-        e.canDelete = this.loadflowDataService.canDeleteNode(node)
+        //??e.canDelete = this.loadflowDataService.canDeleteNode(node)
     }
 
     editBranch(branch: Branch) {

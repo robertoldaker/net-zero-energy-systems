@@ -24,12 +24,9 @@ export class MiniIconButtonComponent implements OnInit {
     @Input()
     title = ''
     
-    @Output()
-    onClick: EventEmitter<any> = new EventEmitter()
-
-    click(e: any) {
-        if (!this.disabled) {
-            this.onClick.emit(e)
+    click(e: any) {  
+        if ( this.disabled) {
+            e.stopPropagation()
         }
     }
 }

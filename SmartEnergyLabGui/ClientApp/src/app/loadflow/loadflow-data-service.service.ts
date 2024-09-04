@@ -175,6 +175,7 @@ export class LoadflowDataService {
         return results;
     }
 
+    /*
     canDeleteNode(node: Node):boolean {
         let id = node.id
         let bs = this.networkData.branches.data.filter(m=>m.node1Id == id || m.node2Id== id)
@@ -185,6 +186,7 @@ export class LoadflowDataService {
             return true
         }
     }
+    */
 
     canDeleteLocation(loc: GridSubstationLocation):boolean {
         let id = loc.id
@@ -214,8 +216,8 @@ export class LoadflowDataService {
         let dd = this.getDatasetData(className)
         if ( className === "Branch") {
             let branch = dd.data.find(m=>m.id == id)
-            if ( branch && branch.ctrl) {
-                DatasetsService.deleteDatasetData(this.networkData.ctrls,branch.ctrl.id, dataset)
+            if ( branch && branch.ctrlId!==0) {
+                DatasetsService.deleteDatasetData(this.networkData.ctrls,branch.ctrlId, dataset)
             }
         } 
         DatasetsService.deleteDatasetData(dd,id, dataset)

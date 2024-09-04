@@ -7,19 +7,19 @@
             <circle  cx="10" cy="7" r="5" fill="#7E4444"/>
         </svg>
         <span>{{name}}</span>
-        <app-mini-icon-button *ngIf="canDeleteLocation" (onClick)="deleteLocation($event)" iconName="delete_forever" title="Delete this location" fontSize="20px"></app-mini-icon-button>
+        <app-mini-icon-button *ngIf="canDeleteLocation" (click)="deleteLocation($event)" iconName="delete_forever" title="Delete this location" fontSize="20px"></app-mini-icon-button>
     </div>
     <mat-tab-group animationDuration="0ms" [preserveContent]="true">
         <mat-tab label="Nodes" labelClass="matTabLabelInfoWindow">
             <div class="itemContainer">
                 <div *ngFor="let node of nodes">
-                    <app-map-buttons typeName="Node" [element]="node" (onEdit)="editNode($event)" (onDelete)="deleteNode($event)">
+                    <app-map-buttons typeName="Node" [element]="node" (onEdit)="editNode($event)" >
                         {{node.code}}
                     </app-map-buttons>
                 </div>
                 <div style="height: 0.5em"></div>
                 <div *ngFor="let node of deletedNodes">
-                    <app-map-buttons typeName="Node" [element]="node" (onEdit)="editNode($event)" (onDelete)="deleteNode($event)" [isDeleted]="true">
+                    <app-map-buttons typeName="Node" [element]="node" (onEdit)="editNode($event)" [isDeleted]="true">
                         {{node.code}}
                     </app-map-buttons>
                 </div>

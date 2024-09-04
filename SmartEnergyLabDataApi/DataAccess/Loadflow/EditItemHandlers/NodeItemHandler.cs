@@ -20,6 +20,10 @@ public class NodeItemHandler : BaseEditItemHandler
     }
 
     public override string BeforeDelete(EditItemModel m, bool isSourceEdit) {
+        var numBranches = m.Da.Loadflow.GetBranchCountForNode(m.ItemId, isSourceEdit);
+        if ( numBranches > 0 ) {
+            return $"Cannot delete node as used by <b>{numBranches}</b> branches";
+        }
         return "";
     }
 

@@ -30,9 +30,6 @@ export class MapButtonsComponent implements OnInit {
     @Output()
     onEdit: EventEmitter<any> = new EventEmitter<any>()
 
-    @Output()
-    onDelete: EventEmitter<IDeleteItem> = new EventEmitter<IDeleteItem>()
-
     edit() {
         // Check result count and ask user if necessary
         if ( this.datasetsService.isEditable && !this.isDeleted ) {
@@ -47,14 +44,8 @@ export class MapButtonsComponent implements OnInit {
             if ( typeof this.element.id !== "number") {
                 throw "unexpected type for id"
             }
-            // see if we can delete the item
-            let e = { element: this.element, canDelete: true }
-            this.onDelete.emit(e);
-            // if so go ahead and delete with further verification
-            if ( e.canDelete) {
-                let id:number = this.element.id
-                this.datasetsService.deleteItemWithCheck(id,this.typeName)            
-            }
+            let id:number = this.element.id
+            this.datasetsService.deleteItemWithCheck(id,this.typeName)            
         }
     }
 

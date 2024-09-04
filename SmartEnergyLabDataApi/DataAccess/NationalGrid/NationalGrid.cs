@@ -131,6 +131,5 @@ namespace SmartEnergyLabDataApi.Data
             var locDi = new DatasetData<GridSubstationLocation>(DataAccess,datasetId,m=>m.Id.ToString(), locQuery);
             return locDi;        
         }
-
     }
 }

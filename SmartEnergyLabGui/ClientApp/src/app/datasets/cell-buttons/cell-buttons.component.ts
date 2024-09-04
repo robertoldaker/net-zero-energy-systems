@@ -23,11 +23,11 @@ export class CellButtonsComponent implements OnInit {
     @Input()
     typeName: string = ''
 
-    @Output()
-    onEdit: EventEmitter<any> = new EventEmitter<any>()
+    @Input()
+    disableDelete: boolean = false
 
     @Output()
-    onDelete: EventEmitter<IDeleteItem> = new EventEmitter<IDeleteItem>()
+    onEdit: EventEmitter<any> = new EventEmitter<any>()
 
     edit() {
         // Check result count and ask user if necessary
@@ -41,14 +41,8 @@ export class CellButtonsComponent implements OnInit {
             if ( typeof this.element.id.value !== "number") {
                 throw "unexpected type for id"
             }
-            // see if we can delete the item
-            let e = { element: this.element, canDelete: true }
-            this.onDelete.emit(e);
-            // if so go ahead and delete with further verification
-            if ( e.canDelete) {
-                let id:number = this.element.id.value
-                this.datasetsService.deleteItemWithCheck(id,this.typeName)            
-            }
+            let id:number = this.element.id.value
+            this.datasetsService.deleteItemWithCheck(id,this.typeName)            
         }
     }
 

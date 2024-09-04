@@ -10,6 +10,15 @@ namespace SmartEnergyLabDataApi.Data;
 public class GridSubstationLocationItemHandler : BaseEditItemHandler
 {
 
+    public override string BeforeDelete(EditItemModel m, bool isSourceEdit)
+    {
+        int numNodes = m.Da.Loadflow.GetNodeCountForLocation(m.ItemId, isSourceEdit);
+        if ( numNodes > 0 ) {
+            return $"Cannot delete location as used by <b>{numNodes}</b> nodes";
+        }
+        return "";
+    }
+
     public override void Check(EditItemModel m)
     {
         Regex regex = new Regex("^[A-Z]{4}X?$");

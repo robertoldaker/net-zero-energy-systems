@@ -102,6 +102,23 @@ namespace SmartEnergyLabDataApi.Data
             return nodeDi;        
         }
 
+        public int GetNodeCountForLocation(int locationId, bool isSourceEdit) {
+            int count;
+            if ( isSourceEdit ) {
+                var q = Session.QueryOver<Node>().Where( m=>m.Location!=null && m.Location.Id == locationId);
+                count =  q.RowCount(); 
+            } else {
+                var nodeIds = Session.QueryOver<Node>().Where( m=>m.Location!=null && m.Location.Id == locationId).Select(m=>m.Id).List<int>();
+                // exclude user deleted branches
+                var nodeIdKeys = nodeIds.Select(m=>m.ToString()).ToArray<string>();
+                var deleteCount = Session.QueryOver<UserEdit>().Where( m=>m.TableName=="Node" && m.IsRowDelete && m.Key.IsIn(nodeIdKeys)).RowCount();
+                count = nodeIds.Count - deleteCount;
+            }
+            return count;
+        }   
+
+
+
         #endregion
 
         #region Zone
@@ -311,6 +328,21 @@ namespace SmartEnergyLabDataApi.Data
             }
             return branchDi;
         }
+
+        public int GetBranchCountForNode(int nodeId, bool isSourceEdit) {
+            int count;
+            if ( isSourceEdit ) {
+                var q = Session.QueryOver<Branch>().Where( m=>m.Node1.Id == nodeId || m.Node2.Id == nodeId);
+                count =  q.RowCount(); 
+            } else {
+                var branchIds = Session.QueryOver<Branch>().Where( m=>m.Node1.Id == nodeId || m.Node2.Id == nodeId).Select(m=>m.Id).List<int>();
+                // exclude user deleted branches
+                var branchIdKeys = branchIds.Select(m=>m.ToString()).ToArray<string>();
+                var deleteCount = Session.QueryOver<UserEdit>().Where( m=>m.TableName=="Branch" && m.IsRowDelete && m.Key.IsIn(branchIdKeys)).RowCount();
+                count = branchIds.Count - deleteCount;
+            }
+            return count;
+        }   
 
         #endregion
 
