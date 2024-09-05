@@ -102,7 +102,7 @@ public class BranchItemHandler : BaseEditItemHandler
         var id = model.ItemId;
         var branch = id>0 ? model.Da.Loadflow.GetBranch(id) : new Branch(model.Dataset);
         if ( branch==null ) {
-            throw new Exception($"Cannot find branch with is=[{id}]");
+            throw new Exception($"Cannot find branch with id=[{id}]");
         }
         return branch;
     }

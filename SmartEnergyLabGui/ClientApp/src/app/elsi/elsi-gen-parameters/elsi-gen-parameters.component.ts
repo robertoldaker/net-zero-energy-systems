@@ -17,6 +17,7 @@ export class ElsiGenParametersComponent extends ComponentBase {
 
     constructor(public service: ElsiDataService) {
         super()
+        this.dataFilter.sort = { active: 'typeStr', direction: 'asc'};
         this.displayedColumns = ['typeStr','efficiency','emissionsRate','forcedDays','plannedDays','maintenanceCost','fuelCost','warmStart','wearAndTearStart','endurance']
         if ( this.service.datasetInfo) {
             this.createDataSource(this.service.datasetInfo.genParameterInfo)
@@ -32,7 +33,7 @@ export class ElsiGenParametersComponent extends ComponentBase {
             this.datasetData = datasetData;
         }
         if ( this.datasetData) {
-            let cellData = this.dataFilter.GetCellDataObjects<ElsiGenParameter>(this.service.dataset, this.datasetData,(item)=>item.typeStr)
+            let cellData = this.dataFilter.GetCellDataObjects<ElsiGenParameter>(this.service.dataset, this.datasetData,(item)=>item.id.toString())
             this.tableData = new MatTableDataSource(cellData)    
         }
     }

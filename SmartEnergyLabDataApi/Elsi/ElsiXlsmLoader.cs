@@ -320,24 +320,21 @@ namespace SmartEnergyLabDataApi.Elsi
                 var order = getOrder(mZone,genType);
 
                 int index = columnIndex + 5;
-                var scenarios = new ElsiScenario[] {ElsiScenario.CommunityRenewables,ElsiScenario.TwoDegrees,ElsiScenario.SteadyProgression,ElsiScenario.ConsumerEvolution};
-                foreach( var scenario in scenarios) {
-                    var value = reader.GetDouble(index++);
-                    var obj = objCache.GetOrCreate(GenCapacityMethods.GetKey(zone,genType,scenario), out bool created);
-                    if ( created ) {
-                        obj.Zone = zone;
-                        obj.GenType = genType;
-                        obj.Scenario = scenario;
-                        numAdded++;
-                    } else {
-                        numUpdated++;
-                    }
-                    //
-                    obj.Profile = profile;
-                    obj.MainZone = mZone;
-                    obj.Capacity = value;
-                    obj.OrderIndex=order;
+                var obj = objCache.GetOrCreate(GenCapacityMethods.GetKey(zone,genType), out bool created);
+                if ( created ) {
+                    obj.Zone = zone;
+                    obj.GenType = genType;
+                    numAdded++;
+                } else {
+                    numUpdated++;
                 }
+                obj.Profile = profile;
+                obj.MainZone = mZone;
+                obj.OrderIndex=order;
+                obj.CommunityRenewables = reader.GetDouble(index++);
+                obj.TwoDegrees = reader.GetDouble(index++);
+                obj.SteadyProgression = reader.GetDouble(index++);
+                obj.ConsumerEvolution = reader.GetDouble(index++);
             }
             string msg = $"{numAdded} GenCapacities added, {numUpdated} GenCapacities updated";
             Logger.Instance.LogInfoEvent($"End reading GenCapacities, {msg}");

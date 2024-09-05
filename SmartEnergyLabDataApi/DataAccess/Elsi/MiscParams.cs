@@ -12,6 +12,10 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
+        public MiscParams(Dataset dataset) {
+            this.Dataset = dataset;
+        }
+
         /// <summary>
         /// Database identifier
         /// </summary>

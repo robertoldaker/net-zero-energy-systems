@@ -2,7 +2,7 @@
 
     <app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)"></app-table-paginator>
 
-    <table style="width: 100%;" #table mat-table [dataSource]="tableData" [trackBy]="getId" matSort matSortDisableClear (matSortChange)="sortTable($event)">
+    <table style="width: 100%;" #table mat-table [dataSource]="tableData" [trackBy]="getId" matSort matSortActive="typeStr" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
 
         <!-- Type Column -->
         <ng-container matColumnDef="typeStr">

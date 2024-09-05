@@ -35,7 +35,7 @@ public interface IEditItemHandler {
     List<DatasetData<object>> GetDatasetData(EditItemModel m);
 }
 
-public class BaseEditItemHandler : IEditItemHandler
+public abstract class BaseEditItemHandler : IEditItemHandler
 {
     public virtual string BeforeDelete(EditItemModel m, bool isSourceEdit)
     {
@@ -47,29 +47,17 @@ public class BaseEditItemHandler : IEditItemHandler
         return "";
     }
 
-    public virtual void Check(EditItemModel m)
-    {
-        throw new NotImplementedException();
-    }
-
-    public virtual List<DatasetData<object>> GetDatasetData(EditItemModel m)
-    {
-        throw new NotImplementedException();
-    }
-
-    public virtual IId GetItem(EditItemModel m)
-    {
-        throw new NotImplementedException();
-    }
-
     public virtual void UpdateUserEdits(EditItemModel m) {
         m.UpdateItemUserEdit();
     }
 
-    public virtual void Save(EditItemModel m)
-    {
-        throw new NotImplementedException();
-    }
+    public abstract void Check(EditItemModel m);
+
+    public abstract List<DatasetData<object>> GetDatasetData(EditItemModel m);
+
+    public abstract IId GetItem(EditItemModel m);
+
+    public abstract void Save(EditItemModel m);
 }
 
 public class EditItemModel : DbModel {
@@ -197,7 +185,7 @@ public class EditItemModel : DbModel {
                 var editValue = _editItem.data[name]; 
                 string key = ((IId) item).Id.ToString();
                 var userEdit = userEdits.Where( m=>string.Compare(m.ColumnName,name,true)==0 && m.Key == key).FirstOrDefault();
-                if ( itemValue.ToString() == editValue.ToString()) {
+                if ( objToString(itemValue) == objToString(editValue)) {
                     //
                     if ( userEdit!=null ) {
                         _da.Datasets.Delete(userEdit);
@@ -207,12 +195,16 @@ public class EditItemModel : DbModel {
                         userEdit = new UserEdit() { TableName = className, ColumnName=prop.Name,Dataset = _dataset, Key = key  };
                         _da.Datasets.Add(userEdit);
                     }
-                    userEdit.Value = editValue.ToString();
+                    userEdit.Value = objToString(editValue);
                 }
             }
         }
         //
 
+    }
+
+    private string objToString(object? obj) {
+        return obj!=null ? obj.ToString() : "";
     }
 
     public bool GetString(string name, out string value) {

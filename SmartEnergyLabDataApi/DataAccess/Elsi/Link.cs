@@ -11,6 +11,10 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
+        public Link(Dataset dataset) {
+            this.Dataset = dataset;
+        }
+
         /// <summary>
         /// Database identifier
         /// </summary>

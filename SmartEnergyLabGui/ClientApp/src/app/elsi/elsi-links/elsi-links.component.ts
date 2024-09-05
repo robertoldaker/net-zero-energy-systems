@@ -5,7 +5,6 @@ import { DatasetData, ElsiLink} from 'src/app/data/app.data';
 import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { ElsiDataService } from '../elsi-data.service';
-import { ElsiGenCapacityTable } from '../elsi-gen-capacities/elsi-gen-capacities.component';
 import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
 
 @Component({
@@ -17,6 +16,7 @@ export class ElsiLinksComponent extends ComponentBase {
 
     constructor(public service: ElsiDataService) {
         super()
+        this.dataFilter.sort = { active: 'name', direction: 'asc'};
         this.sort = null
         this.displayedColumns = ['name','fromZoneStr','toZoneStr','capacity','revCap','loss','market','itf','itt','btf','btt']
         if ( this.service.datasetInfo) {
@@ -33,7 +33,7 @@ export class ElsiLinksComponent extends ComponentBase {
             this.datasetData = datasetData
         }
         if ( this.datasetData) {
-            let cellData = this.dataFilter.GetCellDataObjects<ElsiLink>(this.service.dataset,this.datasetData,(item)=>item.name)
+            let cellData = this.dataFilter.GetCellDataObjects<ElsiLink>(this.service.dataset,this.datasetData,(item)=>item.id.toString())
             this.tableData = new MatTableDataSource(cellData)    
         }
     }

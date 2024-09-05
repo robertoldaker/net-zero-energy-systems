@@ -31,6 +31,10 @@ namespace SmartEnergyLabDataApi.Data
             Session.Delete(obj);
         }
 
+        public GenParameter GetGenParameter(int id) {
+            return Session.Get<GenParameter>(id);
+        }
+
         public IList<GenParameter> GetGenParameters() {
             return Session.QueryOver<GenParameter>().List();
         }
@@ -56,6 +60,9 @@ namespace SmartEnergyLabDataApi.Data
         public IList<GenCapacity> GetGenCapacities() {
             return Session.QueryOver<GenCapacity>().OrderBy(m=>m.OrderIndex).Asc.List();
         }
+        public GenCapacity GetGenCapacity(int id) {
+            return Session.Get<GenCapacity>(id);
+        }
         #endregion
 
         #region AvailOrDemand
@@ -65,6 +72,10 @@ namespace SmartEnergyLabDataApi.Data
 
         public void Delete(AvailOrDemand gen) {
             Session.Delete(gen);
+        }
+
+        public AvailOrDemand GetAvailOrDemand(int id) {
+            return Session.Get<AvailOrDemand>(id);
         }
 
         public IList<AvailOrDemand> GetAvailOrDemands(ElsiGenDataType dataType) {
@@ -79,6 +90,10 @@ namespace SmartEnergyLabDataApi.Data
 
         public void Delete(PeakDemand obj) {
             Session.Delete(obj);
+        }
+
+        public PeakDemand GetPeakDemand(int id) {
+            return Session.Get<PeakDemand>(id);
         }
 
         public IList<PeakDemand> GetProfilePeakDemands() {
@@ -98,6 +113,10 @@ namespace SmartEnergyLabDataApi.Data
         }
         public IList<Link> GetLinks() {
             return Session.QueryOver<Link>().List();
+        }
+
+        public Link GetLink(int id) {
+            return Session.Get<Link>(id);
         }
         #endregion
 

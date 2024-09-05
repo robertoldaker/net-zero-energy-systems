@@ -15,7 +15,7 @@ using SmartEnergyLabDataApi.Models;
 public static class Program
 {
     // Start the data access - this will check schema and run any startup scripts as needed
-    private const int SCHEMA_VERSION = 59;
+    private const int SCHEMA_VERSION = 60;
     private const int SCRIPT_VERSION = 9;
 
     public static void Main(string[] args)
@@ -138,13 +138,19 @@ public static class Program
 
         // Needed to read spreadsheets
         System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-
+        // Loadflow
         EditItemModel.AddHandler("Node", new NodeItemHandler());
         EditItemModel.AddHandler("Zone", new ZoneItemHandler());
         EditItemModel.AddHandler("Boundary", new BoundaryItemHandler());
         EditItemModel.AddHandler("Branch", new BranchItemHandler());
         EditItemModel.AddHandler("Ctrl", new CtrlItemHandler());
         EditItemModel.AddHandler("GridSubstationLocation", new GridSubstationLocationItemHandler());
+        // Elsi
+        EditItemModel.AddHandler("GenCapacity", new GenCapacityItemHandler());
+        EditItemModel.AddHandler("GenParameter", new GenParameterItemHandler());
+        EditItemModel.AddHandler("Link", new LinkItemHandler());
+        EditItemModel.AddHandler("MiscParams", new MiscParamsItemHandler());
+        EditItemModel.AddHandler("PeakDemand", new PeakDemandItemHandler());
 
         app.Run();
 

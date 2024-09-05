@@ -63,7 +63,10 @@ export class DatasetsService {
             let id = parseInt(cellData.key)
             let data:IFormControlDict = {}
             data[cellData.columnName] = value
-            this.dataService.EditItem({id: id, datasetId: this.currentDataset?.id, className: cellData.tableName, data: data }, (resp)=>{
+            console.log('saveUserEdit')
+            let editItemData = {id: id, datasetId: this.currentDataset?.id, className: cellData.tableName, data: data }
+            console.log(editItemData)
+            this.dataService.EditItem(editItemData, (resp)=>{
                 this.afterEdit(cellData,resp, onEdited)
             }, (errors)=>{
                 onError(errors)

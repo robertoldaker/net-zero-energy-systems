@@ -12,6 +12,11 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
+        public GenCapacity(Dataset dataset)
+        {
+            this.Dataset = dataset;
+        }
+
         /// <summary>
         /// Database identifier
         /// </summary>
@@ -90,6 +95,34 @@ namespace SmartEnergyLabDataApi.Data
         /// <value></value>
         [Property()]
         public virtual double Capacity {get; set;}
+
+        /// <summary>
+        /// Commnity renewables
+        /// </summary>
+        /// <value></value>
+        [Property()]
+        public virtual double CommunityRenewables {get; set;}
+
+        /// <summary>
+        /// Two degrees
+        /// </summary>
+        /// <value></value>
+        [Property()]
+        public virtual double TwoDegrees {get; set;}
+
+        /// <summary>
+        /// Steady Progression
+        /// </summary>
+        /// <value></value>
+        [Property()]
+        public virtual double SteadyProgression {get; set;}
+
+        /// <summary>
+        /// Consumer evolution
+        /// </summary>
+        /// <value></value>
+        [Property()]
+        public virtual double ConsumerEvolution {get; set;}
 
         /// <summary>
         /// Order of entries

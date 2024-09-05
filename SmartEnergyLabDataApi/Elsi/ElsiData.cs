@@ -18,10 +18,10 @@ namespace SmartEnergyLabDataApi.Elsi
         private IList<GenParameter> _genParameters;
         private IList<Link> _links;
         private IList<PeakDemand> _peakDemands;
-        private Dictionary<ElsiMainZone,Dictionary<ElsiGenType,Dictionary<ElsiScenario,List<GenCapacity>>>> _genCapDict;
+        private Dictionary<ElsiMainZone,Dictionary<ElsiGenType,List<GenCapacity>>> _genCapDict;
         //
         private Dictionary<ElsiGenType,GenParameter> _genParamsDict;
-        private Dictionary<ElsiMainZone,Dictionary<ElsiScenario,PeakDemand>> _peakDemandsDict;
+        private Dictionary<ElsiMainZone,PeakDemand> _peakDemandsDict;
         private Dictionary<int,Dictionary<ElsiProfile,Dictionary<ElsiPeriod,AvailOrDemand>>> _demandsDict;
         public ElsiData(DataAccess da, DatasetInfo datasetInfo, ElsiScenario scenario) {
             //
@@ -113,21 +113,19 @@ namespace SmartEnergyLabDataApi.Elsi
 
         private void populatePeakDemandsDict() {
             // Peak demands
-            _peakDemandsDict = new Dictionary<ElsiMainZone, Dictionary<ElsiScenario, PeakDemand>>();
+            _peakDemandsDict = new Dictionary<ElsiMainZone, PeakDemand>();
             foreach( var pd in _peakDemands) {
-                if ( pd.MainZone!=null && pd.Scenario!=null) {
-                    ElsiScenario scn = (ElsiScenario) pd.Scenario;
+                if ( pd.MainZone!=null) {
                     ElsiMainZone mZone = (ElsiMainZone) pd.MainZone;
                     if ( !_peakDemandsDict.ContainsKey(mZone) ) {
-                        _peakDemandsDict.Add(mZone,new Dictionary<ElsiScenario, PeakDemand>());
+                        _peakDemandsDict.Add(mZone,pd);
                     }
-                    _peakDemandsDict[mZone][scn] = pd;
                 }
             }
         }
 
         public PeakDemand GetPeakDemand(ElsiMainZone mainZone) {
-            return _peakDemandsDict[mainZone][Scenario];
+            return _peakDemandsDict[mainZone];
         }
 
         private void populateDemandsDict() {
@@ -155,23 +153,21 @@ namespace SmartEnergyLabDataApi.Elsi
         }
 
         private void populateGenCapDict() {
-            _genCapDict = new Dictionary<ElsiMainZone, Dictionary<ElsiGenType, Dictionary<ElsiScenario, List<GenCapacity>>>>();
+            _genCapDict = new Dictionary<ElsiMainZone, Dictionary<ElsiGenType, List<GenCapacity>>>();
             foreach( var gc in _genCaps) {
                 if ( !_genCapDict.ContainsKey(gc.MainZone) ) {
-                    _genCapDict.Add(gc.MainZone,new Dictionary<ElsiGenType, Dictionary<ElsiScenario, List<GenCapacity>>>());
+                    _genCapDict.Add(gc.MainZone,new Dictionary<ElsiGenType, List<GenCapacity>>());
                 }
                 if ( !_genCapDict[gc.MainZone].ContainsKey(gc.GenType)) {
-                    _genCapDict[gc.MainZone].Add(gc.GenType,new Dictionary<ElsiScenario, List<GenCapacity>>());
+                    _genCapDict[gc.MainZone].Add(gc.GenType,new List<GenCapacity>());
                 }
-                if ( !_genCapDict[gc.MainZone][gc.GenType].ContainsKey(gc.Scenario)) {
-                    _genCapDict[gc.MainZone][gc.GenType].Add(gc.Scenario,new List<GenCapacity>());
-                }
-                _genCapDict[gc.MainZone][gc.GenType][gc.Scenario].Add(gc);
+                _genCapDict[gc.MainZone][gc.GenType].Add(gc);
             }
         }
 
         public IList<GenCapacity> GetGenCapacity(ElsiMainZone mainZone, ElsiGenType genType) {
-            return _genCapDict[mainZone][genType][Scenario];
+            
+            return _genCapDict[mainZone][genType];
         }
 
         private void populateGenParamsDict() {
@@ -404,7 +400,7 @@ namespace SmartEnergyLabDataApi.Elsi
                 var profile = peakDemand.Profile;
                 var market = getMarket(profile);
                 var demandsDict = _data.GetDemandDict(profile);
-                return new Row(mainZone, peakDemand.Peak, demandsDict, market);
+                return new Row(mainZone, peakDemand.GetPeakDemand(_data.Scenario), demandsDict, market);
             }
 
             public class Row {
@@ -450,7 +446,7 @@ namespace SmartEnergyLabDataApi.Elsi
             }
             private Row createRow(ElsiMainZone mainZone, ElsiGenType genType) {
                 var gcs = _data.GetGenCapacity(mainZone,genType);
-                var capacity = gcs.Sum(m=>m.Capacity);
+                var capacity = gcs.Sum(m=>m.GetCapacity(_data.Scenario));
                 var genParam = _data.GetGenParameter(genType);
                 var wavail =genParam.GetWAvail();
                 var oavail = genParam.GetOAvail();
@@ -566,7 +562,7 @@ namespace SmartEnergyLabDataApi.Elsi
             private Row createRow(ElsiMainZone mainZone, ElsiGenType genType) {
                 var scenario = _data.Scenario;
                 var gcs = _data.GetGenCapacity(mainZone, genType);
-                var capacity = gcs.Sum(m=>m.Capacity);
+                var capacity = gcs.Sum(m=>m.GetCapacity(_data.Scenario));
                 var genParam = _data.GetGenParameter(genType);
                 var wavail = genParam.GetWAvail();
                 var oavail = genParam.GetOAvail();

@@ -2,12 +2,12 @@
 
     <app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)"></app-table-paginator>
 
-    <table style="width: 100%;" #table mat-table [dataSource]="tableData" [trackBy]="getId" matSort matSortDisableClear (matSortChange)="sortTable($event)">
+    <table style="width: 100%;" #table mat-table [dataSource]="tableData" [trackBy]="getId" matSort matSortActive="mainZoneStr" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
 
         <!-- Type Column -->
-        <ng-container matColumnDef="zoneStr">
+        <ng-container matColumnDef="mainZoneStr">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Zone</th>
-            <td mat-cell *matCellDef="let element">{{element.zoneStr.value}}</td>
+            <td mat-cell *matCellDef="let element">{{element.mainZoneStr.value}}</td>
         </ng-container>
 
         <!-- Profile Column -->

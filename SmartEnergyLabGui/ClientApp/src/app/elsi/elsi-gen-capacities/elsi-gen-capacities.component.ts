@@ -18,6 +18,7 @@ export class ElsiGenCapacitiesComponent extends ComponentBase {
 
     constructor(public service: ElsiDataService) {
         super()
+        this.dataFilter.sort = { active: 'zoneStr', direction: 'asc'};
         this.displayedColumns = ['zoneStr','genTypeStr','profileStr','communityRenewables','twoDegrees','steadyProgression','consumerEvolution']
         if (this.service.datasetInfo) {
             this.createDataSource(this.service.datasetInfo.genCapacityInfo)
@@ -26,54 +27,34 @@ export class ElsiGenCapacitiesComponent extends ComponentBase {
             this.createDataSource(ds.genCapacityInfo)
         }))
 
+
+
     }
 
     private createDataSource(datasetData?: DatasetData<ElsiGenCapacity>) {
         if ( datasetData ) {
-            let items = this.getTableArray(datasetData.data);
-            this.datasetData = { data: items, tableName: datasetData.tableName, userEdits: datasetData.userEdits, deletedData: []}
+            this.datasetData = datasetData
         }
         if ( this.datasetData) {
-            let cellData = this.dataFilter.GetCellDataObjects<ElsiGenCapacityTable>(
+            let cellData = this.dataFilter.GetCellDataObjects<ElsiGenCapacity>(
                 this.service.dataset,
                 this.datasetData,
-                (item,col)=>item.getKey(col),
-                (col)=>ElsiGenCapacityTable.getCol(col)
+                (item)=>item.id.toString()
             )
             this.tableData = new MatTableDataSource(cellData)    
         }
         return 
     }
 
-    private getTableArray(items: ElsiGenCapacity[]): ElsiGenCapacityTable[] {
-        let tableItems:Map<string,ElsiGenCapacityTable> = new Map();
-        items.forEach(item=>{
-            let tableItem:ElsiGenCapacityTable
-            let ti = tableItems.get(item.name);
-            if ( ti ) {
-                tableItem = ti
-            } else {
-                tableItem = new ElsiGenCapacityTable(item)
-                tableItems.set(item.name,tableItem)
-            }
-            tableItem.update(item)
-        })
-        let tableArray = new Array<ElsiGenCapacityTable>(tableItems.size);
-        let index = 0;
-        tableItems.forEach( (m)=>tableArray[index++] = m)
-        return tableArray;
-    }
-
-
     @ViewChild(TablePaginatorComponent)
     tablePaginator: TablePaginatorComponent | undefined    
     dataFilter: DataFilter = new DataFilter(20)
-    datasetData?: DatasetData<ElsiGenCapacityTable>
+    datasetData?: DatasetData<ElsiGenCapacity>
     displayedColumns: string[]
     tableData: MatTableDataSource<any> = new MatTableDataSource()
 
-    getId(index: number, item: ElsiGenCapacityTable) {
-        return item.name
+    getId(index: number, item: ElsiGenCapacity) {
+        return item.id
     }
 
 
@@ -87,61 +68,4 @@ export class ElsiGenCapacitiesComponent extends ComponentBase {
         this.tablePaginator?.firstPage()
     }
 
-}
-
-export class ElsiGenCapacityTable {
-    constructor(item: ElsiGenCapacity) {
-        this.name = item.name
-        this.zoneStr = item.zoneStr
-        this.genTypeStr = item.genTypeStr
-        this.profileStr = item.profileStr
-    }
-    //?? Needed to get GetCellDataObjects - but needs looking into!
-    id: number = 0
-    name: string
-    zoneStr: string
-    genTypeStr: string
-    profileStr: string
-    communityRenewables: number | undefined
-    twoDegrees: number | undefined
-    steadyProgression: number | undefined
-    consumerEvolution: number| undefined
-    update(item: ElsiGenCapacity) {
-        if ( item.scenario == ElsiScenario.CommunityRenewables) {
-            this.communityRenewables = item.capacity
-        } else if ( item.scenario == ElsiScenario.ConsumerEvolution) {
-            this.consumerEvolution = item.capacity
-        } else if ( item.scenario == ElsiScenario.SteadyProgression) {
-            this.steadyProgression = item.capacity
-        } else if ( item.scenario == ElsiScenario.TwoDegrees) {
-            this.twoDegrees = item.capacity
-        }
-    }
-    getKey(col: string):string {
-        if (col == 'communityRenewables') {
-            return `${this.name}:CommunityRenewables`
-        } else if ( col == 'consumerEvolution') {
-            return `${this.name}:ConsumerEvolution`
-        } else if ( col == 'steadyProgression') {
-            return `${this.name}:SteadyProgression`
-        } else if ( col == 'twoDegrees') {
-            return `${this.name}:TwoDegrees`
-        } else {
-            return this.name
-        }
-    }
-    static getCol(col: string):string {
-        let defaultName = 'capacity';
-        if (col == 'communityRenewables') {
-            return defaultName;
-        } else if ( col == 'consumerEvolution') {
-            return defaultName;
-        } else if ( col == 'steadyProgression') {
-            return defaultName;
-        } else if ( col == 'twoDegrees') {
-            return defaultName;
-        } else {
-            return col;
-        }
-    }
 }

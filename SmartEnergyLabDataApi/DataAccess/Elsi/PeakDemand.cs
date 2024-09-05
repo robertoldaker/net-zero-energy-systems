@@ -8,7 +8,10 @@ namespace SmartEnergyLabDataApi.Data
     {
         public PeakDemand()
         {
+        }
 
+        public PeakDemand(Dataset dataset) {
+            this.Dataset = dataset;
         }
 
         /// <summary>
@@ -55,6 +58,34 @@ namespace SmartEnergyLabDataApi.Data
         /// <value></value>
         [Property()]
         public virtual double Peak {get; set;}
+
+                /// <summary>
+        /// Commnity renewables
+        /// </summary>
+        /// <value></value>
+        [Property()]
+        public virtual double CommunityRenewables {get; set;}
+
+        /// <summary>
+        /// Two degrees
+        /// </summary>
+        /// <value></value>
+        [Property()]
+        public virtual double TwoDegrees {get; set;}
+
+        /// <summary>
+        /// Steady Progression
+        /// </summary>
+        /// <value></value>
+        [Property()]
+        public virtual double SteadyProgression {get; set;}
+
+        /// <summary>
+        /// Consumer evolution
+        /// </summary>
+        /// <value></value>
+        [Property()]
+        public virtual double ConsumerEvolution {get; set;}
 
         [JsonIgnore()]
         [ManyToOne(Column = "DatasetId", Cascade = "none")]

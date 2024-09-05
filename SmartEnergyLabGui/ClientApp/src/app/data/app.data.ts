@@ -722,7 +722,6 @@ export interface ElsiGenParameter {
 
 export interface ElsiGenCapacity {
     id: number,
-    key: string,
     zone: ElsiZone,
     zoneStr: string,
     mainZone: ElsiMainZone,
@@ -731,6 +730,10 @@ export interface ElsiGenCapacity {
     name: string,
     profile: ElsiProfile,
     profileStr: string,
+    communityRenewables: number,
+    twoDegrees: number,
+    steadyProgression: number,
+    consumerEvolution: number,
     scenario: ElsiScenario,
     capacity: number,
     orderIndex: number | null,
@@ -750,6 +753,10 @@ export interface ElsiPeakDemand {
     mainZoneStr: string,
     profile: ElsiProfile,
     profileStr: string,
+    communityRenewables: number,
+    twoDegrees: number,
+    steadyProgression: number,
+    consumerEvolution: number,
     scenario: ElsiScenario,
     peak: number
 }

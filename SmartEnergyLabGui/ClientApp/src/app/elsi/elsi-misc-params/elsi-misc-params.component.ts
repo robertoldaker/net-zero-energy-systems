@@ -28,7 +28,7 @@ export class ElsiMiscParamsComponent extends ComponentBase implements OnInit {
     }
 
     private createCellDataObjects(datasetData: DatasetData<ElsiMiscParams>):ICellEditorDataDict {
-        let cellData = this.dataFilter.GetCellDataObjects<ElsiMiscParams>(this.service.dataset,datasetData,(item)=>"KEY")  
+        let cellData = this.dataFilter.GetCellDataObjects<ElsiMiscParams>(this.service.dataset,datasetData,(item)=>item.id.toString())  
         return cellData[0]
     }
 

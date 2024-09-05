@@ -70,6 +70,10 @@ namespace SmartEnergyLabDataApi.Data
 
         }
 
+        public GenParameter(Dataset dataset) {
+            this.Dataset = dataset;
+        }
+
         /// <summary>
         /// Database identifier
         /// </summary>

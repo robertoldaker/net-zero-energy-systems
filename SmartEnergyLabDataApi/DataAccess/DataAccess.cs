@@ -4,6 +4,7 @@ using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
 using NHibernate;
 using NHibernate.Dialect.Function;
+using NHibernate.Util;
 using Org.BouncyCastle.Crypto.Signers;
 using Remotion.Linq.Parsing.Structure.IntermediateModel;
 using SmartEnergyLabDataApi.Loadflow;
@@ -66,6 +67,63 @@ namespace SmartEnergyLabDataApi.Data
             }
             if ( oldVersion<59) {
                 updateBranches();
+            }
+            if ( oldVersion<60) {
+                updateElsiScenarioData();
+            }
+        }
+
+        private static void updateElsiScenarioData() {
+            using( var da = new DataAccess() ) {
+                var genCapacities = da.Elsi.GetGenCapacities();
+                var crs = genCapacities.Where( m=>m.Scenario == ElsiScenario.CommunityRenewables).ToList();
+                foreach( var cr in crs ) {
+                    cr.CommunityRenewables = cr.Capacity;
+                    // look for others 
+                    var crgc = genCapacities.Where(m=>m.GenType == cr.GenType && m.Zone == cr.Zone ).ToList();
+                    // fill in columns for each scenario
+                    var twoDegrees = crgc.Where(m=>m.Scenario == ElsiScenario.TwoDegrees).FirstOrDefault();
+                    if ( twoDegrees!=null ) {
+                        cr.TwoDegrees = twoDegrees.Capacity;
+                        da.Elsi.Delete(twoDegrees);
+                    }
+                    var steadyProgression = crgc.Where(m=>m.Scenario == ElsiScenario.SteadyProgression).FirstOrDefault();
+                    if ( steadyProgression!=null ) {
+                        cr.SteadyProgression = steadyProgression.Capacity;
+                        da.Elsi.Delete(steadyProgression);
+                    }
+                    var consumerEvolution = crgc.Where(m=>m.Scenario == ElsiScenario.ConsumerEvolution).FirstOrDefault();
+                    if ( consumerEvolution!=null ) {
+                        cr.ConsumerEvolution = consumerEvolution.Capacity;
+                        da.Elsi.Delete(consumerEvolution);
+                    }
+                }
+                //
+                var peakDemands = da.Elsi.GetPeakDemands();
+                var pds = peakDemands.Where( m=>m.Scenario == ElsiScenario.CommunityRenewables).ToList();
+                foreach( var cr in pds ) {
+                    cr.CommunityRenewables = cr.Peak;
+                    // look for others
+                    var crpd = peakDemands.Where(m=>m.MainZone == cr.MainZone && m.Profile == cr.Profile).ToList();
+                    var twoDegrees = crpd.Where(m=>m.Scenario == ElsiScenario.TwoDegrees).FirstOrDefault();
+                    if ( twoDegrees!=null ) {
+                        cr.TwoDegrees = twoDegrees.Peak;
+                        da.Elsi.Delete(twoDegrees);
+                    }
+                    var steadyProgression = crpd.Where(m=>m.Scenario == ElsiScenario.SteadyProgression).FirstOrDefault();
+                    if ( steadyProgression!=null ) {
+                        cr.SteadyProgression = steadyProgression.Peak;
+                        da.Elsi.Delete(steadyProgression);
+                    }
+                    var consumerEvolution = crpd.Where(m=>m.Scenario == ElsiScenario.ConsumerEvolution).FirstOrDefault();
+                    if ( consumerEvolution!=null ) {
+                        cr.ConsumerEvolution = consumerEvolution.Peak;
+                        da.Elsi.Delete(consumerEvolution);
+                    }
+                }
+                //
+                da.CommitChanges();
+
             }
         }
 

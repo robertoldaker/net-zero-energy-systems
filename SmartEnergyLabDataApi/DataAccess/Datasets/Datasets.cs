@@ -152,7 +152,8 @@ public class Datasets : DataSet
                     // See if the object has the property name based on the lower-case column name
                     if ( propDict.TryGetValue(ue.ColumnName, out PropertyInfo prop)) {
                         if ( vId == lastDatasetId ) {
-                            ue.PrevValue = prop.GetValue(gp).ToString();
+                            var prevValue = prop.GetValue(gp);
+                            ue.PrevValue = prevValue!=null ? prevValue.ToString() : "";
                         }
                         // if so apply change
                         if ( prop.PropertyType == typeof (double) || prop.PropertyType == typeof(double?) ) {

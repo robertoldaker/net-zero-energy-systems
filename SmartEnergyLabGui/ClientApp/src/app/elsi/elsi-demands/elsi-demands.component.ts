@@ -16,7 +16,8 @@ export class ElsiDemandsComponent extends ComponentBase {
 
     constructor(public service: ElsiDataService) {
         super()
-        this.displayedColumns = ['zoneStr', 'profileStr', 'communityRenewables', 'twoDegrees', 'steadyProgression', 'consumerEvolution']
+        this.dataFilter.sort = { active: 'mainZoneStr', direction: 'asc'};
+        this.displayedColumns = ['mainZoneStr', 'profileStr', 'communityRenewables', 'twoDegrees', 'steadyProgression', 'consumerEvolution']
         if (this.service.datasetInfo) {
             this.createDataSource(this.service.datasetInfo.peakDemandInfo)
         } 
@@ -27,16 +28,13 @@ export class ElsiDemandsComponent extends ComponentBase {
 
     private createDataSource(datasetData?: DatasetData<ElsiPeakDemand>) {
         if ( datasetData ) {
-            let data = datasetData.data.filter(m=>m.mainZoneStr);
-            let items = this.getTableArray(data);
-            this.datasetData = { data: items, tableName: datasetData.tableName, userEdits: datasetData.userEdits, deletedData: []}
+            this.datasetData = datasetData
         }
         if ( this.datasetData) {
-            let cellData = this.dataFilter.GetCellDataObjects<ElsiPeakDemandTable>(
+            let cellData = this.dataFilter.GetCellDataObjects<ElsiPeakDemand>(
                 this.service.dataset,
                 this.datasetData,
-                (item,col)=>item.getKey(col),
-                (col)=>ElsiPeakDemandTable.getCol(col)
+                (item)=>item.id.toString()
             )
             this.tableData = new MatTableDataSource(cellData)    
         }
@@ -89,7 +87,7 @@ export class ElsiDemandsComponent extends ComponentBase {
     @ViewChild(TablePaginatorComponent)
     tablePaginator: TablePaginatorComponent | undefined    
     dataFilter: DataFilter = new DataFilter(20)
-    datasetData?: DatasetData<ElsiPeakDemandTable>
+    datasetData?: DatasetData<ElsiPeakDemand>
     displayedColumns: string[]
     tableData: MatTableDataSource<any> = new MatTableDataSource()
 
