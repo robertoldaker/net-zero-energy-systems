@@ -24,6 +24,11 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
         }))
     }
     ngAfterViewInit(): void {
+        // dispatch this so that app-div-auto-scroller can detect size change
+        // need to do this otherwise the location of the div is calculated incorrectly
+        window.setTimeout(()=>{
+            window.dispatchEvent(new Event('resize'));
+        })
     }
     
     get mapButtonImage(): string {
@@ -39,8 +44,8 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
     }
 
     tabChange(e: any) {
-        console.log('tabChange')
-        console.log(e)
+        // dispatch this so that app-div-auto-scroller can detect size change
+        window.dispatchEvent(new Event('resize'));
     }
 
 }

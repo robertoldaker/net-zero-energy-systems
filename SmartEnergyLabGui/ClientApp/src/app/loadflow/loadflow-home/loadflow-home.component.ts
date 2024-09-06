@@ -28,7 +28,10 @@ export class LoadflowHomeComponent implements OnInit, AfterViewInit{
     }
 
     splitEnd(e: any) {
+        // update data
         this.updateSplitData()
+        // also dispatch resize event so other elements can perform any sizing etc. in response
+        window.dispatchEvent(new Event('resize'));
     }
 
     updateSplitData() {

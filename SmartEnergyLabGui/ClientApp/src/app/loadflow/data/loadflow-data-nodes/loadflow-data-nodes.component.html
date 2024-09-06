@@ -1,6 +1,6 @@
 <app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)" (onAdd)="add()" [typeName]="'Node'"></app-table-paginator>
 
-<app-div-auto-scroller>
+<app-div-auto-scroller name="nodes">
     
     <table style="width: 100%;" #table mat-table [dataSource]="data" [trackBy]="getDataId" matSort matSortActive="code" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
 

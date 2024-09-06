@@ -1,4 +1,4 @@
-import { AfterContentInit, AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { AfterContentInit, AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild } from '@angular/core';
 
 @Component({
     selector: 'app-div-auto-scroller',
@@ -8,14 +8,11 @@ import { AfterContentInit, AfterViewInit, Component, ElementRef, HostListener, O
 export class DivAutoScrollerComponent implements AfterViewInit {
 
     constructor() { }
+
+    @Input()
+    name: string = "?"
+    
     ngAfterViewInit(): void {
-        if ( this.div ) {
-            let element = this.div.nativeElement
-            let box = element.getBoundingClientRect()
-            console.log('box.top')
-            console.log(box)
-            element.style.height = `calc(100vh - ${box.top}px)`
-        }
     }
 
     @ViewChild('divContainer')
@@ -24,12 +21,14 @@ export class DivAutoScrollerComponent implements AfterViewInit {
     @HostListener('window:resize', [])
     onResize() {
         if ( this.div ) {
-            //let element = this.div.nativeElement
-            //let box = element.getBoundingClientRect()
-            //console.log('resize')
-            //console.log('box.top')
-            //console.log(box.top)
-            //??element.style.height = `calc(100vh - ${box.top}px)`
+            let element = this.div.nativeElement
+            // this should mean its visible
+            if ( element.offsetParent) {
+                let box = element.getBoundingClientRect()
+                let windowHeight = window.innerHeight;
+                let divHeight = windowHeight - box.top
+                element.style.height = `${divHeight}px`
+            }
         }
     }
 

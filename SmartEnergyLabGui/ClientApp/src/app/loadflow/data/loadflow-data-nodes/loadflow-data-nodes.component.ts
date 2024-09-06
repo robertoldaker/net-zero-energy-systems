@@ -20,13 +20,10 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         private dialogService: DialogService,
      ) {
         super(dataService);
-        console.log('nodes constructor')
         this.dataFilter.sort = { active: 'code', direction: 'asc'};
         this.createDataSource(dataService.networkData.nodes);
         this.displayedColumns = ['buttons','code','voltage','zoneName','demand','generation','ext','mismatch']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
-            console.log('NetworkDataLoaded')
-            console.log(results.nodes.data.length)
             this.createDataSource(results.nodes);
         }))
         this.addSub( dataService.ResultsLoaded.subscribe( (results) => {
