@@ -3,7 +3,7 @@
         <img [src]="mapButtonImage"/>
     </div>
 </div>
-<mat-tab-group [ngClass]="{hide: showMap}" animationDuration="0ms" [preserveContent]="true" [selectedIndex]="selected.value" (selectedIndexChange)="selected.setValue($event)">
+<mat-tab-group [ngClass]="{hide: showMap}" animationDuration="0ms" [preserveContent]="true" [selectedIndex]="selected.value" (selectedIndexChange)="selected.setValue($event)" (selectedTabChange)="tabChange($event)">
     <mat-tab label="Nodes" labelClass="matTabLabelNarrow">
         <app-loadflow-data-nodes></app-loadflow-data-nodes>
     </mat-tab>

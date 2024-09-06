@@ -4,7 +4,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Dataset, DatasetData, ElsiPeakDemand, ElsiScenario } from 'src/app/data/app.data';
 import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
-import { ElsiDataService } from '../elsi-data.service';
+import { ElsiDataService } from '../../elsi-data.service';
 import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
 
 @Component({

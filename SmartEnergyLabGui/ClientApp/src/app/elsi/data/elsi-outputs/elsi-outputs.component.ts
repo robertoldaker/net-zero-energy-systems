@@ -1,7 +1,7 @@
 import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Day, ElsiDayResult } from 'src/app/data/app.data';
-import { ElsiDataService } from '../elsi-data.service';
+import { ElsiDataService } from '../../elsi-data.service';
 import { ElsiDayControlComponent } from './elsi-day-control/elsi-day-control.component';
 import { ElsiRowExpanderComponent, ElsiRowExpanderSize } from './elsi-row-expander/elsi-row-expander.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';

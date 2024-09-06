@@ -3,7 +3,7 @@ import { Subscription } from 'rxjs';
 import { ElsiDayResult, ElsiResult } from 'src/app/data/app.data';
 import { DataClientService } from 'src/app/data/data-client.service';
 import { ComponentBase } from 'src/app/utils/component-base';
-import { ElsiDataService } from '../../elsi-data.service';
+import { ElsiDataService } from '../../../elsi-data.service';
 
 @Component({
     selector: 'app-elsi-day-control',

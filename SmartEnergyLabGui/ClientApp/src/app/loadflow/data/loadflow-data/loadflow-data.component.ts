@@ -38,4 +38,9 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
         this.showMap = !this.showMap;
     }
 
+    tabChange(e: any) {
+        console.log('tabChange')
+        console.log(e)
+    }
+
 }

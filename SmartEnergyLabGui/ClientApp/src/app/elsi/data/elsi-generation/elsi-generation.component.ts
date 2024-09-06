@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { ComponentBase } from 'src/app/utils/component-base';
-import { ElsiDataService } from '../elsi-data.service';
+import { ElsiDataService } from '../../elsi-data.service';
 
 @Component({
     selector: 'app-elsi-generation',

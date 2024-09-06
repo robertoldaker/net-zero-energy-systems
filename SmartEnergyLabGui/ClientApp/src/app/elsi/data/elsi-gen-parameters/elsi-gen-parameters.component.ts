@@ -1,54 +1,51 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { DatasetData, ElsiLink} from 'src/app/data/app.data';
+import { DatasetData, ElsiGenParameter} from 'src/app/data/app.data';
 import { CellEditorData, DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { ComponentBase } from 'src/app/utils/component-base';
-import { ElsiDataService } from '../elsi-data.service';
+import { ElsiDataService } from '../../elsi-data.service';
 import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
 
 @Component({
-    selector: 'app-elsi-links',
-    templateUrl: './elsi-links.component.html',
-    styleUrls: ['./elsi-links.component.css']
+    selector: 'app-elsi-gen-parameters',
+    templateUrl: './elsi-gen-parameters.component.html',
+    styleUrls: ['./elsi-gen-parameters.component.css']
 })
-export class ElsiLinksComponent extends ComponentBase {
+export class ElsiGenParametersComponent extends ComponentBase {
+
 
     constructor(public service: ElsiDataService) {
         super()
-        this.dataFilter.sort = { active: 'name', direction: 'asc'};
-        this.sort = null
-        this.displayedColumns = ['name','fromZoneStr','toZoneStr','capacity','revCap','loss','market','itf','itt','btf','btt']
+        this.dataFilter.sort = { active: 'typeStr', direction: 'asc'};
+        this.displayedColumns = ['typeStr','efficiency','emissionsRate','forcedDays','plannedDays','maintenanceCost','fuelCost','warmStart','wearAndTearStart','endurance']
         if ( this.service.datasetInfo) {
-            this.createDataSource(this.service.datasetInfo.linkInfo)
+            this.createDataSource(this.service.datasetInfo.genParameterInfo)
         } 
         this.addSub( this.service.DatasetInfoChange.subscribe( (ds) => {
-            this.createDataSource(ds.linkInfo)
+            this.createDataSource(ds.genParameterInfo)
         }))
     }
 
-    private createDataSource(datasetData?: DatasetData<ElsiLink>) {
+    private createDataSource(datasetData?: DatasetData<ElsiGenParameter>) {
 
         if ( datasetData ) {
-            this.datasetData = datasetData
+            this.datasetData = datasetData;
         }
         if ( this.datasetData) {
-            let cellData = this.dataFilter.GetCellDataObjects<ElsiLink>(this.service.dataset,this.datasetData,(item)=>item.id.toString())
+            let cellData = this.dataFilter.GetCellDataObjects<ElsiGenParameter>(this.service.dataset, this.datasetData,(item)=>item.id.toString())
             this.tableData = new MatTableDataSource(cellData)    
         }
     }
     
-
     @ViewChild(TablePaginatorComponent)
     tablePaginator: TablePaginatorComponent | undefined    
     dataFilter: DataFilter = new DataFilter(20)
-    datasetData?: DatasetData<ElsiLink>
-    displayedColumns: string[]
+    datasetData?: DatasetData<ElsiGenParameter>
     tableData: MatTableDataSource<any> = new MatTableDataSource()
-    @ViewChild(MatSort) sort: MatSort | null;
+    displayedColumns: string[]
 
-
-    getId(index: number, item: ElsiLink) {
+    getId(index: number, item: ElsiGenParameter) {
         return item.id
     }
 
