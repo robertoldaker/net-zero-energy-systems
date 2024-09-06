@@ -19,7 +19,7 @@ export class ElsiGenCapacitiesComponent extends ComponentBase {
     constructor(public service: ElsiDataService) {
         super()
         this.dataFilter.sort = { active: 'zoneStr', direction: 'asc'};
-        this.displayedColumns = ['zoneStr','genTypeStr','profileStr','communityRenewables','twoDegrees','steadyProgression','consumerEvolution']
+        this.displayedColumns = ['zoneStr','genTypeStr','profileStr','communityRenewables','twoDegrees','steadyProgression','consumerEvolution','dummy']
         if (this.service.datasetInfo) {
             this.createDataSource(this.service.datasetInfo.genCapacityInfo)
         } 

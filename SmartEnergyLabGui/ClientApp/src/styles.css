@@ -249,3 +249,8 @@ div.nodeName {
     height: auto ! important;
     min-width: 30px !important;
 }
+
+/* for use with table that has inline editor as last column */
+.mat-column-dummy {
+    width: 40px;
+}

@@ -18,7 +18,7 @@ export class ElsiLinksComponent extends ComponentBase {
         super()
         this.dataFilter.sort = { active: 'name', direction: 'asc'};
         this.sort = null
-        this.displayedColumns = ['name','fromZoneStr','toZoneStr','capacity','revCap','loss','market','itf','itt','btf','btt']
+        this.displayedColumns = ['name','fromZoneStr','toZoneStr','capacity','revCap','loss','market','itf','itt','btf','btt','dummy']
         if ( this.service.datasetInfo) {
             this.createDataSource(this.service.datasetInfo.linkInfo)
         } 

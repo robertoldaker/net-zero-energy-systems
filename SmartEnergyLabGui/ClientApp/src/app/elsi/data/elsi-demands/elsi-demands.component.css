@@ -1,28 +1,25 @@
+.mat-column-mainzoneStr {
+    width: 5rem;
+    padding-right: 1rem;
+}
+
+.mat-column-profileStr {
+}
+
 .mat-column-communityRenewables {
     text-align: right;
-    width: 15rem;
 }
 
 .mat-column-twoDegrees {
     text-align: right;
-    width: 15rem;
 }
 
 .mat-column-steadyProgression {
     text-align: right;
-    width: 15rem;
 }
 
 .mat-column-consumerEvolution {
     text-align: right;
-    width: 15rem;
 }
 
-.mat-column-profileStr {
-    /*width: 5rem;*/
-}
 
-.mat-column-zoneStr {
-    /*width: 5rem;*/
-    padding-right: 1rem;
-}

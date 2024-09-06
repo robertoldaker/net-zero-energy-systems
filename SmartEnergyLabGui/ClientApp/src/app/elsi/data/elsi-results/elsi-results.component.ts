@@ -12,4 +12,8 @@ export class ElsiResultsComponent implements OnInit {
     ngOnInit(): void {
     }
 
+    tabChange(e: any) {
+        // dispatch this so that app-div-auto-scroller can detect size change
+        window.dispatchEvent(new Event('resize'));
+    }
 }

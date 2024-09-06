@@ -26,6 +26,8 @@ export class ElsiHomeComponent implements OnInit {
 
     splitEnd(e: any) {
         this.updateSplitData()
+        // dispatch this so that app-div-auto-scroller can detect size change
+        window.dispatchEvent(new Event('resize'));
     }
 
     updateSplitData() {

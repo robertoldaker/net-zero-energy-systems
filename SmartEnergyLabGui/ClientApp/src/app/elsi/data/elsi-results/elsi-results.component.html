@@ -1,5 +1,5 @@
-<div style="padding: 1rem; overflow: hidden;">
-    <mat-tab-group animationDuration="0ms" [preserveContent]="true" [selectedIndex]="0">
+<div style="overflow: hidden;">
+    <mat-tab-group animationDuration="0ms" [preserveContent]="true" [selectedIndex]="0" (selectedTabChange)="tabChange($event)">
         <mat-tab label="Misc. params" labelClass="matTabLabelNarrow">
             <app-elsi-misc-params></app-elsi-misc-params>    
         </mat-tab>

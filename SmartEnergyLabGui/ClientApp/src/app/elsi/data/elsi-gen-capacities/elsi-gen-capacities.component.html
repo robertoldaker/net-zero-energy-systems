@@ -1,7 +1,6 @@
-<div style="height: calc(100vh - 200px); overflow-y: scroll; padding-right: 1rem">
+<app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)"></app-table-paginator>
 
-    <app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)"></app-table-paginator>
-
+<app-div-auto-scroller>
     <table style="width: 100%;" #table mat-table [dataSource]="tableData" [trackBy]="getId" matSort matSortActive="zoneStr" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
 
         <!-- Type Column -->
@@ -54,7 +53,13 @@
             </td>
         </ng-container>
 
+        <!-- Dummy  Column (this stops spurious hor. scroll bar)-->
+        <ng-container matColumnDef="dummy">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let element"></td>
+        </ng-container>
+
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
-</div>
+</app-div-auto-scroller>

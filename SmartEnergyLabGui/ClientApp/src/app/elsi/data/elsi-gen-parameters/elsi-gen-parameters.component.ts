@@ -18,7 +18,7 @@ export class ElsiGenParametersComponent extends ComponentBase {
     constructor(public service: ElsiDataService) {
         super()
         this.dataFilter.sort = { active: 'typeStr', direction: 'asc'};
-        this.displayedColumns = ['typeStr','efficiency','emissionsRate','forcedDays','plannedDays','maintenanceCost','fuelCost','warmStart','wearAndTearStart','endurance']
+        this.displayedColumns = ['typeStr','efficiency','emissionsRate','forcedDays','plannedDays','maintenanceCost','fuelCost','warmStart','wearAndTearStart','endurance','dummy']
         if ( this.service.datasetInfo) {
             this.createDataSource(this.service.datasetInfo.genParameterInfo)
         } 
