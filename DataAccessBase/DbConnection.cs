@@ -6,6 +6,7 @@ using NHibernate.SqlTypes;
 using NHibernate.Tool.hbm2ddl;
 using NHibernate.Type;
 using NHibernate.UserTypes;
+using NHibernate.Util;
 using Npgsql;
 using NpgsqlTypes;
 using System;
@@ -67,7 +68,7 @@ namespace HaloSoft.DataAccess
         {
             var port = getPort();
             //??string connection = $"Server={Server};Port={port};Uid={Username};Pwd={Password};SslMode=none;";
-            string connection = $"Server={Server};Port={port};Uid={Username};Pwd={Password};";
+            string connection = $"Server={Server};Port={port};Uid={Username};Pwd={Password}; Include Error Details=true;";
             if ( DbProvider == DbProvider.MariaDb) {
                 connection += "SslMode=none;";
             }
@@ -218,7 +219,11 @@ namespace HaloSoft.DataAccess
             update.Execute(true, true);
             // throw an exception of exceptions were generated
             if ( update.Exceptions.Count>0 ) {
-                throw new Exception(update.Exceptions[0].Message);
+                string msg = "";
+                foreach( var exp in update.Exceptions) {
+                    msg+=exp.Message + "\n";
+                }
+                throw new Exception(msg);
             }
         }
 
