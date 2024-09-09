@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using NHibernate.Dialect.Function;
 using NHibernate.Hql.Ast.ANTLR.Tree;
+using SmartEnergyLabDataApi.Controllers;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Models;
 
@@ -94,13 +95,36 @@ public class EditItemModel : DbModel {
             };
 
     public EditItemModel(ControllerBase c, EditItem editItem) : base(c) {
+        //
         _editItem = editItem;
         _dataset = _da.Datasets.GetDataset(editItem.datasetId);
         if ( _dataset==null ) {
             throw new Exception($"Cannot find dataset with id=[{editItem.datasetId}]");
         }
-        _handler = getHandler(_editItem.className);        
+        //
+        checkAuthorisation();
+        //
+        _handler = getHandler(_editItem.className);
+        //
         _item = _handler.GetItem(this);
+    }
+
+    private void checkAuthorisation() {
+        var userId = _c.GetUserId();
+        if ( !_c.IsAuthenticated() || userId ==0 ) {
+            throw new Exception("Not authorised");
+        } else {
+            var user = _da.Users.GetUser(userId);
+            if ( user!=null ) {
+                if ( _dataset.User!=null && _dataset.User.Id!=user.Id ) {
+                    throw new Exception($"Not authorised to edit dataset owned by different user, dataset owner id=[{_dataset.User.Id}], user id=[{user.Id}]");
+                } else if ( _dataset.User==null && user.Role!=UserRole.Admin) {
+                    throw new Exception("Not authorised to edit system owned datasets");
+                }
+            } else {
+                throw new Exception($"Unexpected null user for userId=[{userId}]");
+            }
+        }
     }
 
     public DataAccess Da {
