@@ -170,7 +170,6 @@ namespace SmartEnergyLabDataApi.Loadflow
             if ( _branches.IsDisconnected(_nodes) ) {
                 var msg = $"Disconnected network detected";
                 _stageResults.StageResult( sr, StageResultEnum.Fail, msg);
-                //??throw new Exception(msg);
                 return false;
             } else {
                 _stageResults.StageResult( sr, StageResultEnum.Pass, "");
@@ -179,6 +178,10 @@ namespace SmartEnergyLabDataApi.Loadflow
             // 
             sr = _stageResults.NewStage("Node order");
             _nord = new NodeOrder(_nodes, _branches);
+            if ( _nord.nn<0) {
+                _stageResults.StageResult( sr, StageResultEnum.Fail, "Failed to find reference node");
+                return false;
+            }
             foreach( var branch in _branches.Objs) {
                 branch.Node1Index = _nord.NodePos(_nodes.getIndex(branch.Obj.Node1.Code));
                 branch.Node2Index = _nord.NodePos(_nodes.getIndex(branch.Obj.Node2.Code));
