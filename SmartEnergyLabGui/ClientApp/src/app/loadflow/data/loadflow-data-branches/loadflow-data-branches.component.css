@@ -1,14 +1,17 @@
 
 .mat-column-code {
-    width: 100px;
+    width: 10%;
 }
 
 .mat-column-node1Code {
-   /* min-width: 100px;  */
+    min-width: 150px;
+    width: 25%;    
 }
 
+
 .mat-column-node2Code {
-    /* min-width: 100px; */
+    min-width: 150px;
+    width: 25%;    
 }
 
 .mat-column-region {

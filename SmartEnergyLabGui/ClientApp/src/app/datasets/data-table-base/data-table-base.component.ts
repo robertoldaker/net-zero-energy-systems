@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { DatasetData, IId } from 'src/app/data/app.data';
+import { Dataset, DatasetData, IId } from 'src/app/data/app.data';
 import { DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { DatasetsService } from 'src/app/datasets/datasets.service';
 import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
@@ -15,31 +15,38 @@ import { LoadflowDataService } from 'src/app/loadflow/loadflow-data-service.serv
 })
 export class DataTableBaseComponent<T extends IId> extends DialogBase  {
 
-    constructor(        
-            protected dataService: LoadflowDataService
-        ) {
+    constructor() {
         super()
         this.dataFilter = new DataFilter(20)        
     }
 
-    protected createDataSource(datasetData?: DatasetData<T>) {
+    protected createDataSource(dataset?:Dataset, datasetData?: DatasetData<T>) {
 
-        if ( datasetData ) {
+        if ( datasetData && dataset ) {
+            this.dataset = dataset
             this.datasetData = datasetData
             // only do this if was a change in dataset not a refresh
-            if ( this.dataService.dataset.id != this.lastDatasetId ) {
+            if ( dataset.id != this.lastDatasetId ) {
                 this.dataFilter.reset()
                 this.tablePaginator?.firstPage()
-                this.lastDatasetId = this.dataService.dataset.id    
+                this.lastDatasetId = this.dataset.id
+                // this generates distinct values for column data filters
+                for( let k of this.dataFilter.columnFilterMap.keys()) {
+                    let colFilter=this.dataFilter.columnFilterMap.get(k)
+                    if ( colFilter) {
+                        colFilter.genValues(this.datasetData.data)
+                    }
+                }
             }
         }
-        if ( this.datasetData ) {
-            let cellData = this.dataFilter.GetCellDataObjects(this.dataService.dataset,this.datasetData,(item)=>item.id.toString())
+        if ( this.datasetData && this.dataset) {
+            let cellData = this.dataFilter.GetCellDataObjects(this.dataset,this.datasetData,(item)=>item.id.toString())
             this.data = new MatTableDataSource(cellData)        
         } 
     }
     
     datasetData?: DatasetData<T>
+    dataset?: Dataset
     dataFilter: DataFilter
     data: MatTableDataSource<ICellEditorDataDict> = new MatTableDataSource()
     displayedColumns: string[] = []
@@ -59,7 +66,7 @@ export class DataTableBaseComponent<T extends IId> extends DialogBase  {
         this.tablePaginator?.firstPage()
     }
 
-    filterTable(e: DataFilter) {
+    filterTable(e?: DataFilter) {
         this.createDataSource()
     }
 

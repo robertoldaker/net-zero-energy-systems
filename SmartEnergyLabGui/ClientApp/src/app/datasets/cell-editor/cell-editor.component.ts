@@ -1,7 +1,8 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import { Dataset, DatasetData, DatasetType, IId, UserEdit } from 'src/app/data/app.data';
 import { DatasetsService } from 'src/app/datasets/datasets.service';
+import { DataTableBaseComponent } from '../data-table-base/data-table-base.component';
 
 @Component({
     selector: 'app-cell-editor',
@@ -197,13 +198,25 @@ export class DataFilter {
         if ( this.onlyEditedRows) {
             items = this.filterByEdited(dataset, items, columnNames, datasetData,keyFcn,colFcn)
         }
+
         // add in the deleted objects
         for(let dd of deletedItems) {
             items.push(dd)
         }
+
+        // filter by search string
         if ( this.searchStr ) {
-            items = this.filterData(items,columnNames)
+            items = this.filterDataByStr(items,columnNames)
         }
+
+        // filter by column value
+        items = this.filterDataByColumn(items,columnNames)
+
+        // filter by custom filter fcn
+        if ( this.customFilter) {
+            items = this.filterData(items,this.customFilter)
+        }
+
         if ( this.sort && this.sort.active) {
             this.sortData(items)
         }
@@ -239,7 +252,7 @@ export class DataFilter {
         return rowData
     }
 
-    private filterData(items: any[], columnNames: string[]):any[] {
+    private filterDataByStr(items: any[], columnNames: string[]):any[] {
         let lcSearchStr = this.searchStr.toLowerCase()
         items = items.filter(item=>{
             let filter = false;
@@ -257,6 +270,32 @@ export class DataFilter {
             })
             return filter
         })
+        return items;
+    }
+
+    private filterData(items: any[], customFilter:ICustomDataFilter ):any[] {
+        items = items.filter(item=>{
+            return customFilter.filterFcn(customFilter, item)
+        })    
+        return items;
+    }
+
+    private filterDataByColumn(items: any[], columnNames: string[] ):any[] {
+        // look for columns that have an enabled filter
+        let colNames = columnNames.filter( m=>this.columnFilterMap.get(m)?.enabled )
+        console.log('filterDataByColumn')
+        if ( colNames.length>0 ) {
+            items = items.filter(item=>{
+                let filter = false;
+                colNames.forEach(col=>{
+                    let colFilter = this.columnFilterMap.get(col)
+                    if ( colFilter?.value == item[col] ) {
+                        filter = true
+                    }
+                })
+                return filter
+            })    
+        }
         return items;
     }
 
@@ -342,4 +381,74 @@ export class DataFilter {
     searchStr: string = ''
     onlyEditedRows: boolean=false
     sort: Sort | undefined
+    customFilter: ICustomDataFilter | undefined
+    columnFilterMap: Map<string,ColumnDataFilter> = new Map()
+}
+
+export interface ICustomDataFilter {
+    filterFcn: (customFilter: any, value: any)=>boolean
+}
+
+export class ColumnDataFilter {
+    constructor(private baseComponent: DataTableBaseComponent<any>, public columnName:string, values?:any[], enumerator?: any ) {
+        if ( values) {
+            this.values = values
+            this.auto = false
+        } else {
+            this.values = []
+            this.auto = true
+        }
+        if ( enumerator) {
+            this.enumerator = enumerator
+        }
+    }
+    value: any
+    enabled: boolean = false
+    auto: boolean = true
+    values: any[] = []
+    enumerator: any // enumeration type to map value to a string representation
+    enable(value: any) {
+        if ( this.enumerator ) {
+            this.value = this.enumerator[value]
+        } else {
+            this.value = value
+        }
+        this.enabled = true
+        this.baseComponent.filterTable()
+    }
+    get selectedValue():any {
+        if ( this.enumerator ) {
+            return this.enumerator[this.value]
+        } else {
+            return this.value
+        }
+    }
+    
+    disable() {
+        this.enabled = false
+        this.baseComponent.filterTable()
+    }
+
+    genValues(items: any[]) {
+        if ( this.auto ) {
+            let colItems:any[]
+            if ( this.enumerator) {
+                colItems = items.map(m=>this.enumerator[m[this.columnName]])
+            } else {
+                colItems = items.map(m=>m[this.columnName])
+            }
+        
+            let set = new Set(colItems)
+            this.values = [...set]
+            if ( this.values.length>0) {
+                if ( typeof(this.values[0]) === 'number') {
+                    this.values.sort((a,b)=>b-a) // sorts descending numerically
+                } else {
+                    this.values.sort()
+                }
+            }
+        }
+
+    }
+
 }

@@ -1,0 +1,17 @@
+<div class="header">
+    <span>{{title}}</span>
+    <!--<button mat-icon-button aria-label="More options" >-->
+    <mat-icon [matMenuTriggerFor]="menu" [inline]="true" (click)="menuClick($event)" >filter_list</mat-icon>
+    <!--</button>-->
+</div>
+<div class="filterTab">
+    <div *ngIf="this.filter?.enabled">
+        <span>{{this.filter?.selectedValue}}</span>
+        <mat-icon [inline]="true" (click)="disable($event)">close</mat-icon>
+    </div>    
+</div>
+<mat-menu #menu="matMenu">
+    <button *ngFor="let v of filter?.values" mat-menu-item (click)="selectOption($event,v)">
+        <span>{{v}}</span>
+    </button>
+</mat-menu>                

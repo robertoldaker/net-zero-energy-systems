@@ -2,7 +2,7 @@
 
 <app-div-auto-scroller>
 
-    <table style="width: 100%;" mat-table [fixedLayout]="true" [dataSource]="data" [trackBy]="getDataId" matSort matSortActive="code" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
+    <table style="width: 100%;" mat-table [dataSource]="data" [trackBy]="getDataId" matSort matSortActive="code" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
     
         <!-- buttons Column -->
         <ng-container matColumnDef="buttons">
@@ -38,7 +38,9 @@
     
         <!-- type -->
         <ng-container matColumnDef="type">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <app-column-filter [filter]="typeDataFilter" title="Type"></app-column-filter>
+            </th>
             <td mat-cell *matCellDef="let element">{{getTypeStr(element.type.value)}}</td>
         </ng-container>
     

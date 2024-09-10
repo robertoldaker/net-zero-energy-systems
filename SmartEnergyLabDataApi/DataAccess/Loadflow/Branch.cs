@@ -72,6 +72,12 @@ namespace SmartEnergyLabDataApi.Data
         [Column(Name = "type", Default = "0")]
         public virtual BranchType Type {get; set;}
 
+        public virtual string TypeStr {
+            get {
+                return Type.ToString();
+            }
+        }
+
         [JsonIgnore()]
         [ManyToOne(Column = "Node1Id", Cascade = "none", Fetch = FetchMode.Join)]
         public virtual Node Node1 {get; set;}

@@ -1,10 +1,10 @@
-.mat-column-demand {
-    text-align: right;
-}
-
 .mat-column-code {
     min-width: 200px;
     width: 25%;    
+}
+
+.mat-column-demand {
+    text-align: right;
 }
 
 .mat-column-generation {

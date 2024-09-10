@@ -1,8 +1,9 @@
 .mat-column-reference {
-    width: 50px;
+    width: 10%;
 }
 
 .mat-column-name {
+    width: 25%;
 }
 
 .mat-column-latitude {

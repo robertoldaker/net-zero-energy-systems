@@ -1,0 +1,43 @@
+div.header {
+    white-space: nowrap;
+    display: inline-flex;
+}
+
+div.header > .mat-icon {
+    margin-top: 0;
+    margin-left: 3px;
+    font-size: 1.5em;
+}
+
+div.header > .mat-icon:hover {
+    color: blue;
+}
+
+div.filterTab {
+    text-align: left;
+}
+div.filterTab > div {
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    background-color:#C2571A;
+    color:white;
+    border-radius: 12px;
+    font-size: 1em;
+    display:inline-flex;
+    margin-bottom: 4px;
+}
+
+div.filterTab > div > span {
+    margin-right: 5px;
+}
+
+div.filterTab > div > .mat-icon {
+    font-weight: bolder;
+    font-size: 1.2em;
+}
+
+div.filterTab > div > .mat-icon:hover {
+    color: blue;
+}

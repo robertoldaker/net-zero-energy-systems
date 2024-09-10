@@ -1,30 +1,33 @@
 import { Component } from '@angular/core';
 import { Ctrl, LoadflowCtrlType } from '../../../data/app.data';
 import { LoadflowDataService } from '../../loadflow-data-service.service';
-import { ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
+import { ColumnDataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
-import { DataTableBaseComponent } from '../data-table-base.component';
+import { DataTableBaseComponent } from '../../../datasets/data-table-base/data-table-base.component';
 
 @Component({
     selector: 'app-loadflow-data-ctrls',
     templateUrl: './loadflow-data-ctrls.component.html',
-    styleUrls: ['../loadflow-data-common.css','./loadflow-data-ctrls.component.css']
+    styleUrls: ['../loadflow-data-common.css','../../../datasets/data-table-base/data-table-base.component.css','./loadflow-data-ctrls.component.css']
 })
 export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
 
     constructor(
-            dataService: LoadflowDataService,
+            private dataService: LoadflowDataService,
             private dialogService: DialogService
         ) {
-        super(dataService)
+        super()
         this.dataFilter.sort = { active: 'code', direction: 'asc'};
-        this.createDataSource(dataService.networkData.ctrls);        
+        this.typeDataFilter = new ColumnDataFilter(this,"type",undefined,LoadflowCtrlType)
+        this.dataFilter.columnFilterMap.set(this.typeDataFilter.columnName, this.typeDataFilter)
+
+        this.createDataSource(this.dataService.dataset,dataService.networkData.ctrls);        
         this.displayedColumns = ['buttons','code','node1Code','node2Code','type','minCtrl','maxCtrl','cost','setPoint']
         this.addSub(dataService.NetworkDataLoaded.subscribe( (results) => {
-            this.createDataSource(results.ctrls)
+            this.createDataSource(this.dataService.dataset,results.ctrls)
         }))
         this.addSub(dataService.ResultsLoaded.subscribe( (results) => {
-            this.createDataSource(results.ctrls)
+            this.createDataSource(this.dataService.dataset,results.ctrls)
         }))
     }
 
@@ -33,6 +36,7 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
     }
 
     typeName: string = "Ctrl"
+    typeDataFilter: ColumnDataFilter
 
     edit( e: ICellEditorDataDict) {
         let branchId = e._data.branchId

@@ -346,6 +346,7 @@ export interface Branch {
     datasetId: number
     displayName: string
     type: BranchType
+    typeStr: string
     ctrlId: number
     region: string
     code: string
