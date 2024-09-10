@@ -1,23 +1,29 @@
-<app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)"></app-table-paginator>
+<app-table-paginator [dataFilter]="dataFilter" [allowAdd]="false" (onFilter)="filterTable($event)"></app-table-paginator>
 
 <app-div-auto-scroller>
-    <table style="width: 100%;" #table mat-table [dataSource]="tableData" [trackBy]="getId" matSort matSortActive="zoneStr" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
+    <table style="width: 100%;" #table mat-table [dataSource]="data" [trackBy]="getDataId" matSort matSortActive="zoneStr" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
 
-        <!-- Type Column -->
+        <!-- Zone Column -->
         <ng-container matColumnDef="zoneStr">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Zone</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <app-column-filter [filter]="zoneDataFilter" title="Zone"></app-column-filter>
+            </th>
             <td mat-cell *matCellDef="let element">{{element.zoneStr.value}}</td>
         </ng-container>
 
         <!-- Gen type Column -->
         <ng-container matColumnDef="genTypeStr">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <app-column-filter [filter]="typeDataFilter" title="Type"></app-column-filter>                
+            </th>
             <td mat-cell *matCellDef="let element">{{element.genTypeStr.value}}</td>
         </ng-container>
 
         <!-- Profile Column -->
         <ng-container matColumnDef="profileStr">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Profile</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <app-column-filter [filter]="profileDataFilter" title="Profile"></app-column-filter>                
+            </th>
             <td mat-cell *matCellDef="let element">{{element.profileStr.value}}</td>
         </ng-container>
 

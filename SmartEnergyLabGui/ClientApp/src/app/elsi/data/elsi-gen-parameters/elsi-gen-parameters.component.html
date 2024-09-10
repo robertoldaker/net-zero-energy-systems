@@ -1,6 +1,6 @@
-<app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)"></app-table-paginator>
+<app-table-paginator [dataFilter]="dataFilter" [allowAdd]="false" (onFilter)="filterTable($event)"></app-table-paginator>
 <app-div-auto-scroller>
-    <table style="width: 100%;" #table mat-table [dataSource]="tableData" [trackBy]="getId" matSort matSortActive="typeStr" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
+    <table style="width: 100%;" #table mat-table [dataSource]="data" [trackBy]="getDataId" matSort matSortActive="typeStr" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
 
         <!-- Type Column -->
         <ng-container matColumnDef="typeStr">

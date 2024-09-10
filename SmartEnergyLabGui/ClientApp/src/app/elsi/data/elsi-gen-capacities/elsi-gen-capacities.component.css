@@ -1,6 +1,15 @@
 .mat-column-zoneStr {
-    width: 8rem;
+    width: 10%;
 }
+
+.mat-column-genTypeStr {
+    width: 10%;
+}
+
+.mat-column-profileStr {
+    width: 10%;
+}
+
 .mat-column-communityRenewables {
     text-align: right;
     width: 15rem;
