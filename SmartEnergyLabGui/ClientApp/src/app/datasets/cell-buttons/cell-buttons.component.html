@@ -1,7 +1,7 @@
 <div *ngIf="datasetsService.isEditable" class="buttonContainer" [ngClass]="{isLocalEdit: isLocalEdit}">
     <div *ngIf="!(element && element._isDeleted)">
-        <app-mini-icon-button title="Edit" (click)="edit()" iconName="edit" style="margin-right: 0.2rem"></app-mini-icon-button>
-        <app-mini-icon-button title="Delete" (click)="delete()" iconName="delete_forever" [disabled]="disableDelete"></app-mini-icon-button>
+        <app-mini-icon-button title="Edit" (click)="edit()" iconName="edit" style="margin-left: 0.3rem"></app-mini-icon-button>
+        <app-mini-icon-button title="Delete" (click)="delete()" iconName="delete_forever" style="margin-left: 0.2rem" [disabled]="disableDelete"></app-mini-icon-button>
     </div>
     <div *ngIf="element && element._isDeleted">
         <app-mini-icon-button title="Undelete" (click)="unDelete()" iconName="restore_from_trash" [disabled]="disableDelete">restore_from_trash</app-mini-icon-button>

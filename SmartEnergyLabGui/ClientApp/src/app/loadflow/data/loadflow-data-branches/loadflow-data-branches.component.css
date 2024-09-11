@@ -15,34 +15,34 @@
 }
 
 .mat-column-region {
-    width: 50px;
+   /* width: 50px;*/
 }
 
 .mat-column-x {
-    width: 100px;
+   /* width: 100px;*/
     text-align: right;
     padding-right: 1rem   
 }
 
 .mat-column-cap {
-    width: 100px;
+  /*  width: 100px;*/
     text-align: right;
     padding-right: 2rem;
 }
 
 .mat-column-type {
-    width: 80px;
+    /*width: 80px;*/
 }
 
 .mat-column-freePower {
-    width: 100px;
+    /*width: 100px;*/
     text-align: right;
     font-style: italic;
     color: green;
 }
 
 .mat-column-powerFlow {
-    width: 100px;
+    /* width: 100px; */
     text-align: right;
     font-style: italic;
     color: green;
