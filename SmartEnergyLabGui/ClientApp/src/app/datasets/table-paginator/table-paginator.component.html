@@ -1,11 +1,7 @@
 <div class="outerContainer">
     <div class="search">
-        <button *ngIf="datasetsService.isEditable && allowAdd" mat-icon-button aria-label="Add" [title]="addTitle"  (click)="raiseAddEvent()">
-            <mat-icon>add</mat-icon>
-        </button>
-        <button mat-icon-button aria-label="Search" disabled>
-            <mat-icon>search</mat-icon>
-        </button>
+        <mat-icon style="vertical-align: middle; margin-left: 0;" *ngIf="datasetsService.isEditable && allowAdd" class="iconLink" (click)="raiseAddEvent()" [title]="addTitle">add</mat-icon>
+        <mat-icon style="vertical-align: middle; margin-left: 0.5rem; opacity:0.5">search</mat-icon>
         <input class="searchInput" type="text" placeholder="Search for row" [(ngModel)]="dataFilter.searchStr" (keyup)="filter($event)"/>
         <button class="clear" mat-icon-button aria-label="Search" (click)="clear()" title="Clear search">
             <mat-icon [inline]="true">close</mat-icon>

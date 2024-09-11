@@ -15,6 +15,7 @@ div.buttonContainer {
 
 .matIconButton:hover {
     opacity: 1;
+    color: blue;
 }
 
 .matIconButton.disabled:hover {

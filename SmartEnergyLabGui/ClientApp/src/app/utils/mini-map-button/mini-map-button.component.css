@@ -25,7 +25,8 @@
 }
 
 :not(.miniMapButton.disabled):hover {
-    background: #eee;
+    background: #eee; 
+    color: blue;
 }
 
 .miniMapButton:nth-child(0) {
