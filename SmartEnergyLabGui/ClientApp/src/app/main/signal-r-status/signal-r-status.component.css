@@ -1,17 +1,20 @@
 div.signalRStatus {
     position: fixed;
-    bottom: 10px;
-    right: 10px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    border: 1px solid grey
+    bottom: 0px;
+    right: 0px;
+    width: 0px;
+    height: 0px;
+    box-sizing:content-box;
+    z-index: 100;
+    border: 5px solid transparent
 }
 
 div.signalRStatus.disconnected {
-    background-color: red;
+    border-bottom-color: darkred;
+    border-right-color: darkred;
 }
 
 div.signalRStatus.connected {
-    background-color: green;
+    border-bottom-color: green;
+    border-right-color: green;
 }
