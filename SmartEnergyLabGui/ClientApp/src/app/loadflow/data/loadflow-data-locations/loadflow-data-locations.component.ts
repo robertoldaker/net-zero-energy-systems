@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
 import { GridSubstationLocation, GridSubstationLocationSource, LoadflowCtrlType } from 'src/app/data/app.data';
 import { LoadflowDataService } from 'src/app/loadflow/loadflow-data-service.service';
-import { ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
+import { ColumnDataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { DataTableBaseComponent } from '../../../datasets/data-table-base/data-table-base.component';
-import { IDeleteItem } from 'src/app/datasets/cell-buttons/cell-buttons.component';
 
 @Component({
     selector: 'app-loadflow-data-locations',
@@ -19,6 +18,10 @@ export class LoadflowDataLocationsComponent extends DataTableBaseComponent<GridS
         ) {
         super()
         this.dataFilter.sort = { active: 'reference', direction: 'asc'};
+
+        this.sourceDataFilter = new ColumnDataFilter(this,"source",undefined,GridSubstationLocationSource)
+        this.dataFilter.columnFilterMap.set(this.sourceDataFilter.columnName, this.sourceDataFilter)
+
         this.createDataSource(this.dataService.dataset,this.dataService.networkData.locations);        
         this.displayedColumns = ['buttons','reference','name','latitude','longitude','source']
         this.addSub(dataService.NetworkDataLoaded.subscribe( (results) => {
@@ -27,10 +30,7 @@ export class LoadflowDataLocationsComponent extends DataTableBaseComponent<GridS
     }
 
     typeName: string = "GridSubstationLocation"
-
-    getTypeStr(type: LoadflowCtrlType) {
-        return LoadflowCtrlType[type];
-    }
+    sourceDataFilter: ColumnDataFilter
 
     getSource(src: GridSubstationLocationSource) {
         return GridSubstationLocationSource[src]

@@ -44,7 +44,9 @@
             
         <!-- source -->
         <ng-container matColumnDef="source">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Source</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <app-column-filter [filter]="sourceDataFilter" title="Source"></app-column-filter>
+            </th>
             <td mat-cell *matCellDef="let element">
                 {{getSource(element.source.value)}}
             </td>
