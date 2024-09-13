@@ -283,14 +283,16 @@ export class DataFilter {
     private filterDataByColumn(items: any[], columnNames: string[] ):any[] {
         // look for columns that have an enabled filter
         let colNames = columnNames.filter( m=>this.columnFilterMap.get(m)?.enabled )
-        console.log('filterDataByColumn')
         if ( colNames.length>0 ) {
             items = items.filter(item=>{
-                let filter = false;
+                let filter = true;
                 colNames.forEach(col=>{
                     let colFilter = this.columnFilterMap.get(col)
-                    if ( colFilter?.value == item[col] ) {
-                        filter = true
+                    let result = colFilter?.filterFcn(item,colFilter)
+                    if ( filter && result ) {
+                        filter = true;
+                    } else {
+                        filter = false                        
                     }
                 })
                 return filter
@@ -407,6 +409,7 @@ export class ColumnDataFilter {
     auto: boolean = true
     values: any[] = []
     enumerator: any // enumeration type to map value to a string representation
+    filterFcn: (item: any, colFilter: ColumnDataFilter)=>boolean = (item,colFilter) => (colFilter.value == item[colFilter.columnName])
     enable(value: any) {
         if ( this.enumerator ) {
             this.value = this.enumerator[value]
@@ -414,7 +417,7 @@ export class ColumnDataFilter {
             this.value = value
         }
         this.enabled = true
-        this.baseComponent.filterTable()
+        this.baseComponent.newFilterTable()
     }
     get selectedValue():any {
         if ( this.enumerator ) {
@@ -426,7 +429,7 @@ export class ColumnDataFilter {
     
     disable() {
         this.enabled = false
-        this.baseComponent.filterTable()
+        this.baseComponent.newFilterTable()
     }
 
     genValues(items: any[]) {
