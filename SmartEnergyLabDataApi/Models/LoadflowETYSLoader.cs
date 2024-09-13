@@ -178,7 +178,7 @@ public class LoadflowETYSLoader
                     */
                     if ( !node.Ext && codesDict.ContainsKey(locCode)) {
                         var sc = codesDict[locCode];
-                        if ( sc.Owner == SubstationOwner.NGET || sc.Owner == SubstationOwner.SHET) {
+                        if ( sc.Owner == SubstationOwner.NGET || sc.Owner == SubstationOwner.SHET || sc.Owner == SubstationOwner.SPT ) {
                             if ( !notFoundCodesDict.ContainsKey(sc) ) {
                                 notFoundCodesDict.Add(sc,new List<Node>());
                             }
