@@ -63,10 +63,11 @@ namespace SmartEnergyLabDataApi.Data
             List();
         }
 
-        public void SetNodeVoltages(int datasetId) {
+        public void SetNodeVoltagesAndLocations(int datasetId) {
             var nodes = Session.QueryOver<Node>().Where( m=>m.Dataset.Id == datasetId).List();
             foreach( var node in nodes) {
                 node.SetVoltage();
+                node.SetLocation(this.DataAccess);
             }
         } 
 

@@ -271,18 +271,18 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
-        /// Set any missing voltages for loadflow nodes
+        /// Set any missing voltages and locations for loadflow nodes
         /// </summary>
         /// <param name="datasetName">Name of dataset</param>
         [HttpPost]
-        [Route("Nodes/SetVoltages")]
+        [Route("Nodes/SetLocationsAndVoltages")]
         public void SetNodeVoltages(string datasetName) {
             using( var da = new DataAccess()) {
                 var dataset = da.Datasets.GetDataset(DatasetType.Loadflow, datasetName);
                 if ( dataset==null ) {
                     throw new Exception($"Cannot find loadflow dataset with name [{datasetName}]");
                 }
-                da.Loadflow.SetNodeVoltages(dataset.Id);
+                da.Loadflow.SetNodeVoltagesAndLocations(dataset.Id);
                 da.CommitChanges();
             }
         }
