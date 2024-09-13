@@ -70,4 +70,8 @@ export class DataTableBaseComponent<T extends IId> extends DialogBase  {
         this.createDataSource()
     }
 
+    newFilterTable() {
+        this.tablePaginator?.firstPage()
+        this.createDataSource()
+    }
 }

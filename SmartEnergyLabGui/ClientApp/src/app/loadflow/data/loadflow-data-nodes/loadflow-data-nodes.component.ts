@@ -18,8 +18,25 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
      ) {
         super();
         this.dataFilter.sort = { active: 'code', direction: 'asc'};
+
+        // code filter
+        this.codeDataFilter = new ColumnDataFilter(this,"code",['All','No location','With location'])
+        this.codeDataFilter.filterFcn = (item,colFilter) => {
+            if ( colFilter.value == 'All') {
+                return true
+            } else if ( colFilter.value == 'No location') {
+                return !item.location
+            } else if ( colFilter.value == 'With location') {
+                return item.location
+            } else {
+                throw "unexpected value for code column filter"
+            }
+        }
+        this.dataFilter.columnFilterMap.set(this.codeDataFilter.columnName, this.codeDataFilter)
+        // voltage filter
         this.voltageDataFilter = new ColumnDataFilter(this,"voltage")
         this.dataFilter.columnFilterMap.set(this.voltageDataFilter.columnName, this.voltageDataFilter)
+        // zone filter
         this.zoneDataFilter = new ColumnDataFilter(this,"zoneName")
         this.dataFilter.columnFilterMap.set(this.zoneDataFilter.columnName, this.zoneDataFilter)
 
@@ -42,6 +59,7 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         this.dialogService.showLoadflowNodeDialog();
     }
 
+    codeDataFilter: ColumnDataFilter
     voltageDataFilter: ColumnDataFilter 
     zoneDataFilter: ColumnDataFilter 
 

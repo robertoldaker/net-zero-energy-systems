@@ -156,7 +156,7 @@ export class LoadflowDataService {
 
     searchLocations(str: string, maxResults: number):ILoadflowLocation[]  {
         let lowerStr = str.toLocaleLowerCase();
-        var searchResults = this.locationData.locations.filter(m=>m.name.toLocaleLowerCase().includes(lowerStr)).slice(0,maxResults)
+        var searchResults = this.locationData.locations.filter(m=>m.name && m.name.toLocaleLowerCase().includes(lowerStr)).slice(0,maxResults)
         return searchResults;
     }
 

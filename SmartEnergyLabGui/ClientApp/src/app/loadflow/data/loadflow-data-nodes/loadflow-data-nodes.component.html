@@ -13,7 +13,9 @@
         </ng-container>
         <!-- Code Column -->
         <ng-container matColumnDef="code">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Code</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <app-column-filter [filter]="codeDataFilter" title="Code"></app-column-filter>
+            </th>
             <td mat-cell *matCellDef="let element">
                 <div>{{element.code.value}}</div>
                 <div *ngIf="element.name.value" class="nodeName">({{element.name.value}})</div>
