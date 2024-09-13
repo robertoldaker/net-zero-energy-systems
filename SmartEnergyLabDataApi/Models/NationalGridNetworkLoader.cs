@@ -8,6 +8,7 @@ using System.Web;
 using CommonInterfaces.Models;
 using HaloSoft.EventLogger;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
 using NHibernate.Util;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Loadflow;
@@ -22,6 +23,10 @@ namespace SmartEnergyLabDataApi.Models
         private readonly UriBuilder _sseSuperGridBuilder = new UriBuilder("https://ssentransmission.opendatasoft.com/api/explore/v2.1/catalog/datasets/substation-site-supergrid/exports/json?lang=en&timezone=GMT");
         private readonly UriBuilder _sseGridBuilder = new UriBuilder("https://ssentransmission.opendatasoft.com/api/explore/v2.1/catalog/datasets/substation-site-grid/exports/json?lang=en&timezone=GMT");
         private const string SSE_KEY = "d7abb9519f874dbf5094f63d6daa5e50b2e43977f4ee2a250fed0147";
+        // SP networks url
+        private readonly UriBuilder _SPShapefileInfoUrl = new UriBuilder("https://spenergynetworks.opendatasoft.com/api/explore/v2.1/catalog/datasets/gis-shapefiles-excluding-lv/records");
+        private const string SP_KEY = "f35d7b18b9e425f34c37fa5d08d25c8ba7ea99692084815feef0a54c";
+
         private readonly Dictionary<string,string> _sseSiteAliases = new Dictionary<string, string>() {
             {"BRIDGE OF DUNN","BRIDGE OF DUN"},
             {"MILLENNIUM","MILLENNIUM EAST"},
@@ -57,15 +62,191 @@ namespace SmartEnergyLabDataApi.Models
             { "RICHX", new InterConnector("NEMO", new LatLng() {Lat=51.142778, Lng= 2.86376}) },
             { "GRAIX", new InterConnector("BritNed", new LatLng() {Lat=51.527152, Lng= 3.56688}) }, 
             { "CONQX", new InterConnector("EWLink", new LatLng() {Lat=53.714219, Lng=-6.21094}) },  
-            { "BLYTX", new InterConnector("NorNed", new LatLng() {Lat=58.35708, Lng=6.92481}) },  
+            { "BLYTX", new InterConnector("NorNed", new LatLng() {Lat=58.35708, Lng=6.92481}) },
+            { "AUCHX", new InterConnector("Moyle", new LatLng() {Lat=55.11766, Lng=-6.06103})}  
         };
 
 
         public void Load() {
+            //
+            updateInterConnectors();
+            // SP Networks
+            loadSPNetworks(_SPShapefileInfoUrl);
             // NGET
-            loadNGET();
+            //??loadNGET();
             // SHET
-            loadSSE();
+            //??loadSSE();
+        }
+
+        private void updateInterConnectors() {
+            using( var da = new DataAccess() ) {
+                // these are locations for the interconnectors
+                foreach( var code in _nodeInterConnectors.Keys) {
+                    var ic = _nodeInterConnectors[code];
+                    var loc = da.NationalGrid.GetGridSubstationLocation(code);
+                    if ( loc==null ) {
+                        loc = GridSubstationLocation.Create(code, GridSubstationLocationSource.Estimated, null); 
+                        da.NationalGrid.Add(loc);  
+                        Logger.Instance.LogInfoEvent($"Added new inter-connector end point [{code}]");
+                    }
+                    loc.Name = ic.Name;
+                    loc.GISData.Latitude = ic.LatLng.Lat;
+                    loc.GISData.Longitude = ic.LatLng.Lng;
+                }                
+                // add new ones found
+                da.CommitChanges();
+            }
+        }
+
+        private class SPShapefileInfo {
+            public class Info {
+                public class Download {
+                    public string url {get; set;}
+                }
+                public string asset_type {get; set;}
+                public string voltage {get; set;}
+                public Download shapefiles_click_to_download {get; set;}
+            }
+            public Info[] results {get; set;}
+        }
+
+        private void loadSPNetworks(UriBuilder uriBuilder) {
+            var geoJsonFile = loadSPShapefile(uriBuilder);
+            //
+            processSPGeojsonFile(geoJsonFile);
+
+        }
+
+        private string loadSPShapefile(UriBuilder uriBuilder) {
+
+            var client = getHttpClient();
+            //
+            var query = HttpUtility.ParseQueryString(string.Empty);
+            query["apikey"] = SP_KEY;
+            uriBuilder.Query = query.ToString();
+            var url = uriBuilder.ToString();
+            //
+            // Download info about shapefiles available
+            using (HttpRequestMessage message = getRequestMessage(HttpMethod.Get, url)) {
+                var response = client.SendAsync(message).Result;
+                //
+                if ( response.IsSuccessStatusCode) {
+                    var str = response.Content.ReadAsStringAsync().Result;
+                    var info = JsonSerializer.Deserialize<SPShapefileInfo>(str);
+                    foreach( var result in info.results) {
+                        if ( result.asset_type == "Ground Mounted Substations") {
+                            return loadSPShapefile(result.shapefiles_click_to_download.url);
+                        }
+                    }
+                    throw new Exception($"Could not find asset of type \"Ground Mounted Substations\" in list of shape files");
+                } else {
+                    throw new Exception($"Problem obtaining SP shapefile info [{response.StatusCode}] [{response.ReasonPhrase}]");
+                }
+            }
+            //
+
+        }
+
+        private string loadSPShapefile(string uri) {
+
+            var uriBuilder = new UriBuilder(uri);
+            var query = HttpUtility.ParseQueryString(string.Empty);
+            query["apikey"] = SP_KEY;
+            uriBuilder.Query = query.ToString();
+            var url = uriBuilder.ToString();
+            //
+            // Download json
+            var client = getHttpClient();
+            using (HttpRequestMessage message = getRequestMessage(HttpMethod.Get, url)) {
+                var response = client.SendAsync(message).Result;
+                //
+                if ( response.IsSuccessStatusCode) {
+                    var stream = response.Content.ReadAsStream();
+                    var cd = response.Content.Headers.ContentDisposition;                    
+                    if ( stream!=null && cd!=null && cd.FileName!=null) {
+                        string fn = Path.Combine(AppFolders.Instance.Temp,cd.FileName);
+                        fn=fn.Replace("\"","");
+                        saveToFile(stream, fn);
+                        string outFolder = Path.GetFileNameWithoutExtension(fn);                        
+                        extractZip(AppFolders.Instance.Temp,cd.FileName, outFolder);
+                        //
+
+                        var zipContentsFolder = Path.Combine(AppFolders.Instance.Temp,outFolder);
+                        //
+                        var files = Directory.GetFiles(zipContentsFolder,"*.shp");
+                        if ( files.Length>0 ) {
+                            //
+                            var geoJsonFile = files[0].Replace(".shp",".geojson");
+                            convertToGeoJson(files[0],geoJsonFile);
+                            return geoJsonFile;
+                        } else {
+                            throw new Exception($"No shape files found in folder [{zipContentsFolder}]");
+                        }
+                    } else {
+                        throw new Exception("Unexpected response downloading SP shapefile info");
+                    }
+                } else {
+                    throw new Exception($"Problem obtaining SP shapefile info [{response.StatusCode}] [{response.ReasonPhrase}]");
+                }
+            }
+
+        }
+
+        private void processSPGeojsonFile(string geoJsonFile) {
+            using( var da = new DataAccess()) {
+
+                GeoJson<SPSubstationProps> geoJson;
+                using( var fs = new FileStream(geoJsonFile,FileMode.Open)) {
+                    geoJson = JsonSerializer.Deserialize<GeoJson<SPSubstationProps>>(fs);
+                    Logger.Instance.LogInfoEvent($"Found [{geoJson.features.Length}] features");                    
+                }
+                Regex nameRegEx1 = new Regex(@"^TS-([A-Z\-]{4})\d\s?([\w\-\s]*?)\s?([\d\s\/kKvV]+|SealingEnd|)$");
+                Regex nameRegEx2 = new Regex(@"^([A-Z]{4})[\d]+$");
+                var locDict = new Dictionary<string,List<GridSubstationLocation>>();
+                int nAdded=0;
+                int nFailed=0;
+                foreach( var feature in geoJson.features) {
+                    if (int.TryParse(feature.properties.PRIM_VOLT,out int voltage)) {
+                        if ( voltage>=132 ) {
+                            var m=nameRegEx1.Match(feature.properties.SPNAME);
+                            string code = "";
+                            string name = "";
+                            if ( m.Success ) {
+                                code = m.Groups[1].Value;
+                                name = m.Groups[2].Value;
+                            } else {
+                                m=nameRegEx2.Match(feature.properties.SPNAME);
+                                if ( m.Success) {
+                                    code = m.Groups[1].Value;
+                                } else {
+                                    Logger.Instance.LogInfoEvent($"Cannot find match for name = [{feature.properties.SPNAME}]");
+                                    nFailed++;
+                                }
+                            }
+                            if ( !string.IsNullOrEmpty(code)) {
+                                var loc = da.NationalGrid.GetGridSubstationLocation(code);
+                                if ( loc==null ) {
+                                    loc = GridSubstationLocation.Create(code, GridSubstationLocationSource.SPT, null); 
+                                    da.NationalGrid.Add(loc);
+                                    nAdded++;
+                                }
+                                if ( !string.IsNullOrEmpty(name) ) {
+                                    loc.Name = name;
+                                }
+                                var coords = feature.geometry.coordinates.Deserialize<double[]>();
+                                loc.GISData.Latitude = coords[1];
+                                loc.GISData.Longitude = coords[0];
+                                //
+                            }
+                        }
+                    }
+                }
+                da.CommitChanges();
+                Logger.Instance.LogInfoEvent($"Finished loading SP Netwrork substation, num added=[{nAdded}], failed=[{nFailed}]");
+            }
+
+            //
+
         }
 
         private void loadSSE() {
@@ -221,10 +402,10 @@ namespace SmartEnergyLabDataApi.Models
                 }
             }
             if ( substationsGeoJsonFile!=null) {
-                processSubstationsGeoJson(substationsGeoJsonFile);
+                processNGETSubstationsGeoJson(substationsGeoJsonFile);
             }
             if ( ohlGeoJsonFile!=null) {
-                processOhlGeoJson(ohlGeoJsonFile);
+                processNGETOhlGeoJson(ohlGeoJsonFile);
             }
         }
 
@@ -317,7 +498,7 @@ namespace SmartEnergyLabDataApi.Models
            
         }
 
-        private void processSubstationsGeoJson(string geoJsonFile) {
+        private void processNGETSubstationsGeoJson(string geoJsonFile) {
             using( var da = new DataAccess()) {
 
                 GeoJson<SubstationProps> geoJson;
@@ -395,7 +576,7 @@ namespace SmartEnergyLabDataApi.Models
             }
         }
 
-        private void processOhlGeoJson(string geoJsonFile) {
+        private void processNGETOhlGeoJson(string geoJsonFile) {
 
             var lineLoader = new GISLineLoader();
 
@@ -551,6 +732,12 @@ namespace SmartEnergyLabDataApi.Models
             public string STATUS {get; set;}
             public string Substation {get; set;}
             public string OWNER_FLAG {get; set;}
+        }
+
+        public class SPSubstationProps {
+            public string PRIM_VOLT {get; set;}
+            public string SPNAME {get; set;}
+            public string STATUS {get; set;}
         }
 
         public class OHLProps {
