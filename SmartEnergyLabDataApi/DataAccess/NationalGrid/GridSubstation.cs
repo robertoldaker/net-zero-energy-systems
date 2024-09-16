@@ -60,5 +60,17 @@ namespace SmartEnergyLabDataApi.Data
         [ManyToOne(Column = "GISDataId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
         public virtual GISData GISData { get; set; }
 
+        public static GridSubstationSource? getSource(GridSubstationLocationSource locSource) {
+            if ( locSource == GridSubstationLocationSource.NGET) {
+                return GridSubstationSource.NGET;
+            } else if ( locSource == GridSubstationLocationSource.SHET) {
+                return GridSubstationSource.SHET;
+            } else if ( locSource == GridSubstationLocationSource.SPT) {
+                return GridSubstationSource.SPT;
+            } else {
+                return null;
+            }
+        }
+
     }
 }

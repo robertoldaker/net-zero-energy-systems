@@ -161,6 +161,8 @@ import { MiniMapButtonComponent } from './utils/mini-map-button/mini-map-button.
 import { LoadflowMapButtonsComponent } from './loadflow/loadflow-map/loadflow-map-buttons/loadflow-map-buttons.component';
 import { MiniIconButtonComponent } from './utils/mini-icon-button/mini-icon-button.component';
 import { ColumnFilterComponent } from './datasets/column-filter/column-filter.component';
+import { DistDataComponent } from './admin/admin-data/dist-data/dist-data.component';
+import { TransDataComponent } from './admin/admin-data/trans-data/trans-data.component';
 
 
 @NgModule({
@@ -277,6 +279,8 @@ import { ColumnFilterComponent } from './datasets/column-filter/column-filter.co
         LoadflowMapButtonsComponent,
         MiniIconButtonComponent,
         ColumnFilterComponent,
+        DistDataComponent,
+        TransDataComponent,
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

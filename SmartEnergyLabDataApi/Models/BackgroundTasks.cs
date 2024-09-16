@@ -182,13 +182,13 @@ namespace SmartEnergyLabDataApi.Models
 
     public enum LoadNetworkDataSource {All,NGED,UKPower,NPG,SSEN}
 
-    public class LoadNetworkDataBackgroundTask : BackgroundTaskBase
+    public class LoadDistributionDataBackgroundTask : BackgroundTaskBase
     {
         private TaskRunner _ctTask;
         private LoadNetworkDataSource _source;
         private const string NAME="Network data load";
 
-        protected LoadNetworkDataBackgroundTask(IBackgroundTasks tasks) : base(tasks) {
+        protected LoadDistributionDataBackgroundTask(IBackgroundTasks tasks) : base(tasks) {
             _ctTask = new TaskRunner( (taskRunner) =>
             {
                 stateUpdate(TaskState.RunningState.Running, $"{NAME} started", 0);
@@ -241,7 +241,7 @@ namespace SmartEnergyLabDataApi.Models
         }
 
         public static void Register(IBackgroundTasks tasks) {
-            var instance = new LoadNetworkDataBackgroundTask(tasks);
+            var instance = new LoadDistributionDataBackgroundTask(tasks);
             Id = instance._id;
         }
 

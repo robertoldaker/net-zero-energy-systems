@@ -1,0 +1,21 @@
+table.data {
+    width: 100%;
+}
+
+.sourceImg {
+    width: 50px;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+div.toolbar {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+div.toolbar > button {    
+    margin-top: 1rem;
+    margin-right: 0.5rem;
+}

@@ -836,9 +836,16 @@ export interface ResetPassword {
 }
 
 export interface DataModel {
-    rows: DataRow[];
     size: string;
     diskUsage: DiskUsage;
+}
+
+export interface DistributionData {
+    rows: DistributionDataRow[];
+}
+
+export interface TransmissionData {
+    rows: TransmissionDataRow[];
 }
 
 export interface DiskUsage {
@@ -848,7 +855,7 @@ export interface DiskUsage {
     available: number    
 }
 
-export interface DataRow {
+export interface DistributionDataRow {
     geoGraphicalAreaId: number,
     geoGraphicalArea: string;
     dno: string;
@@ -858,7 +865,17 @@ export interface DataRow {
     numDist: number;
 }
 
+export interface TransmissionDataRow {    
+    source : GridSubstationLocationSource
+    sourceStr: string;
+    sourceIconUrl: string;
+    numLocations: number;
+    numSubstations: number;
+}
+
 /* National grid */
+export enum NationalGridNetworkSource {All, NGET, SSE, SPT}
+
 export interface GridSubstation {
     id: number,
     name: string,

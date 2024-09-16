@@ -15,6 +15,8 @@ export class AdminHomeComponent implements OnInit {
 
     show(tab: string) {
         this.currentTab = tab
+        // dispatch this so that app-div-auto-scroller can detect size change
+        window.setTimeout(()=>{window.dispatchEvent(new Event('resize'))},0);        
     }
 
     isCurrent(tab: string):boolean {

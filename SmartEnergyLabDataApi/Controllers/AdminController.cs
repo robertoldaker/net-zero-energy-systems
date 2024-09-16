@@ -10,7 +10,7 @@ using System.Text.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace EnergySystemLabDataApi.SubStations
+namespace EnergySystemLabDataApi.Controllers
 {
     /// <summary>
     /// Api to support admin operations
@@ -21,13 +21,13 @@ namespace EnergySystemLabDataApi.SubStations
     {
         private IBackgroundTasks _backgroundTasks;
         private DatabaseBackupBackgroundTask _backupDbTask;
-        private LoadNetworkDataBackgroundTask _loadNetworkDataTask;
+        private LoadDistributionDataBackgroundTask _loadDistributionDataTask;
 
         public AdminController(IBackgroundTasks backgroundTasks)
         {
             _backgroundTasks = backgroundTasks;
             _backupDbTask = backgroundTasks.GetTask<DatabaseBackupBackgroundTask>(DatabaseBackupBackgroundTask.Id);
-            _loadNetworkDataTask = backgroundTasks.GetTask<LoadNetworkDataBackgroundTask>(LoadNetworkDataBackgroundTask.Id);
+            _loadDistributionDataTask = backgroundTasks.GetTask<LoadDistributionDataBackgroundTask>(LoadDistributionDataBackgroundTask.Id);
         }
 
         /// <summary>
@@ -118,15 +118,37 @@ namespace EnergySystemLabDataApi.SubStations
         /// <param name="source">Either 0 for all network providers, 1 for NGED or 2 for UKPower for UK Power networks</param>
         /// <returns></returns>
         [HttpGet]
-        [Route("LoadNetworkData")]
-        public IActionResult LoadNetworkData(LoadNetworkDataSource source=LoadNetworkDataSource.All) {
+        [Route("LoadDistributionData")]
+        public IActionResult LoadDistributionData(LoadNetworkDataSource source=LoadNetworkDataSource.All) {
             try {
                 //
-                _loadNetworkDataTask.Run(source);
+                _loadDistributionDataTask.Run(source);
                 return this.Ok();
             } catch( Exception e) {
                 return this.StatusCode(500,e.Message);
             }
+        }
+
+        /// <summary>
+        /// Returns data about distribution data available
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("DistributionData")]
+        public DistributionData GetDistributionData() {
+            var m = new DistributionData();
+            return m;
+        }
+
+        /// <summary>
+        /// Returns data about transmission data available
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("TransmissionData")]
+        public TransmissionData GetTransmissionData() {
+            var m = new TransmissionData();
+            return m;
         }
 
         /// <summary>
@@ -147,7 +169,7 @@ namespace EnergySystemLabDataApi.SubStations
         }
 
         /// <summary>
-        /// Returns data about the low voltage network
+        /// Returns data about the current database usage
         /// </summary>
         /// <returns></returns>
         [HttpGet]

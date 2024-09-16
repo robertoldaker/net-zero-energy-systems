@@ -7,6 +7,7 @@ using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Loadflow;
 using static SmartEnergyLabDataApi.Models.GoogleMapsGISFinder;
 using System.Text.RegularExpressions;
+using static SmartEnergyLabDataApi.Models.NationalGridNetworkLoader;
 
 namespace SmartEnergyLabDataApi.Controllers
 {
@@ -25,10 +26,25 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]        
         [Route("LoadNetwork")]
-        public void LoadNetwork() {
+        public void LoadNetwork(NationalGridNetworkSource source) {
             try {
                 var m = new NationalGridNetworkLoader();
-                m.Load();
+                m.Load(source);
+            } catch ( Exception e) {                
+                Logger.Instance.LogErrorEvent($"Error: loading national grid network [{e.Message}]");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Loads network data from NationalGrid's website
+        /// </summary>
+        [HttpPost]        
+        [Route("DeleteNetwork")]
+        public void DeleteNetwork(GridSubstationLocationSource source) {
+            try {
+                var m = new NationalGridNetworkLoader();
+                m.Delete(source);
             } catch ( Exception e) {                
                 Logger.Instance.LogErrorEvent($"Error: loading national grid network [{e.Message}]");
                 throw;

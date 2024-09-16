@@ -10,20 +10,15 @@ namespace EnergySystemLabDataApi
     public class DataModel {
 
         public void Load() {
-            Rows = new List<DataRow>();
             using (var da = new DataAccess() ) {
                 DataAccess.RunPostgreSQLQuery("SELECT pg_size_pretty(pg_database_size('smart_energy_lab'));",(row)=>{
                     this.Size = row[0].ToString();
                 });
                 var geos = da.Organisations.GetGeographicalAreas();
-                foreach( var geo in geos) {
-                    Rows.Add( new DataRow(da,geo));
-                }
             }
             DiskUsage = new DiskUsage();
         }
 
-        public List<DataRow> Rows {get; private set;}
         public string Size {get; private set;}
         public int DiskSpaceUsed {get; private set;}
         public DiskUsage DiskUsage {get; private set;}
@@ -65,8 +60,86 @@ namespace EnergySystemLabDataApi
         public int Total {get; private set;}
     }
 
-    public class DataRow {
-        public DataRow(DataAccess da, GeographicalArea geo) {
+    public class TransmissionData {
+        public TransmissionData() {
+            Rows = new List<TransmissionDataRow>();
+            using (var da = new DataAccess() ) {
+                foreach( var src in Enum.GetValues(typeof(GridSubstationLocationSource))) {
+                    Rows.Add( new TransmissionDataRow(da, (GridSubstationLocationSource) src));
+                }
+            }
+        }
+
+        public List<TransmissionDataRow> Rows {get; private set;}
+    }
+
+    public class TransmissionDataRow {
+        public TransmissionDataRow(DataAccess da, GridSubstationLocationSource source) {
+            Source = source;
+            SourceIconUrl = getIconUrl(source);
+            SourceStr = source.ToString();
+            NumLocations = da.NationalGrid.GetNumGridSubstationLocations(source);
+            var gs = getSubstationSource(source);
+            if ( gs!=null ) {
+                NumSubstations = da.NationalGrid.GetNumGridSubstations((GridSubstationSource) gs);
+            } else {
+                NumSubstations = 0;
+            }
+        }
+
+        GridSubstationSource? getSubstationSource(GridSubstationLocationSource locSrc) {
+            if ( locSrc == GridSubstationLocationSource.NGET) {
+                return GridSubstationSource.NGET;
+            } else if ( locSrc == GridSubstationLocationSource.SHET) {
+                return GridSubstationSource.SHET;
+            } else if ( locSrc == GridSubstationLocationSource.SPT) {
+                return GridSubstationSource.SPT;
+            } else {
+                return null;
+            }
+        }
+
+        private string getIconUrl(GridSubstationLocationSource source) {
+            string root = "/assets/images/";
+            if (  source == GridSubstationLocationSource.NGET) {
+                return root + "national-grid-icon.png";
+            } else if ( source == GridSubstationLocationSource.SHET ) {
+                return root + "scottish-and-southern-electricity-networks-icon.png";
+            } else if ( source == GridSubstationLocationSource.SPT) {
+                return root + "sp-electricity-networks-icon.png";
+            } else if ( source == GridSubstationLocationSource.Estimated) {
+                return "";
+            } else if ( source == GridSubstationLocationSource.GoogleMaps) {
+                return "";
+            } else if ( source == GridSubstationLocationSource.UserDefined) {
+                return "";
+            } else {
+                throw new Exception($"Unexpected location source [{source}]");
+            }
+        }
+        public GridSubstationLocationSource Source {get; set;}
+        public string SourceStr {get; set;}
+        public string SourceIconUrl {get; set;}
+        public int NumLocations {get; set;}
+        public int NumSubstations {get; set;}
+    }
+
+    public class DistributionData {
+        public DistributionData() {
+            Rows = new List<DistributionDataRow>();
+            using (var da = new DataAccess() ) {
+                var geos = da.Organisations.GetGeographicalAreas();
+                foreach( var geo in geos) {
+                    Rows.Add( new DistributionDataRow(da,geo));
+                }
+            }
+        }
+
+        public List<DistributionDataRow> Rows {get; private set;}
+    }
+
+    public class DistributionDataRow {
+        public DistributionDataRow(DataAccess da, GeographicalArea geo) {
             GeoGraphicalAreaId = geo.Id;
             GeoGraphicalArea = geo.Name;
             DNOIconUrl = getIconUrl(geo.DistributionNetworkOperator);
@@ -103,5 +176,5 @@ namespace EnergySystemLabDataApi
         public int NumDist {get; set;}
     }
 
-    
+     
 }

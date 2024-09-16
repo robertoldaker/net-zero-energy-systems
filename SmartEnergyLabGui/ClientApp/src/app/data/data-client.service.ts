@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType, DatasetData, EditItem } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType, DatasetData, EditItem, DistributionData, TransmissionData, NationalGridNetworkSource, GridSubstationLocationSource } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { DialogService } from '../dialogs/dialog.service';
@@ -477,8 +477,8 @@ export class DataClientService implements ILogs {
         this.getBasicRequest('/Admin/BackupDb', onComplete);
     }
 
-    LoadNetworkData(source: LoadNetworkDataSource, onComplete: (resp: any)=> void | undefined) {
-        this.getBasicRequest(`/Admin/LoadNetworkData?source=${source}`, onComplete);
+    LoadDistributionData(source: LoadNetworkDataSource, onComplete: (resp: any)=> void | undefined) {
+        this.getBasicRequest(`/Admin/LoadDistributionData?source=${source}`, onComplete);
     }
 
     Logs(onComplete: (resp: any)=> void | undefined, onError: (resp:any)=>void) {
@@ -493,8 +493,16 @@ export class DataClientService implements ILogs {
         this.getBasicRequest(`/Admin/Cancel?taskId=${taskId}`, onComplete)
     }
 
-    DataModel(onComplete: (resp: DataModel)=>void | undefined) {
+    GetDataModel(onComplete: (resp: DataModel)=>void | undefined) {
         this.getRequest<DataModel>('/Admin/DataModel',onComplete);
+    }
+
+    GetDistributionData(onComplete: (resp: DistributionData)=>void | undefined) {
+        this.getRequest<DistributionData>('/Admin/DistributionData',onComplete);
+    }
+
+    GetTransmissionData(onComplete: (resp: TransmissionData)=>void | undefined) {
+        this.getRequest<TransmissionData>('/Admin/TransmissionData',onComplete);
     }
 
     PerformCleanup(onComplete: (resp: any)=>void | undefined) {
@@ -516,6 +524,16 @@ export class DataClientService implements ILogs {
                 onLoad(result)
             }
         }, error => this.logErrorMessage(error));        
+    }
+
+    NationalGridLoadNetwork( source: NationalGridNetworkSource, onComplete: (resp: any)=> void | undefined) {
+        let msg = "Loading National Grid network data ..."
+        this.postRequestWithMessage(msg, `/NationalGrid/LoadNetwork?source=${source}`,null,onComplete)
+    }
+
+    NationalGridDeleteNetwork( source: GridSubstationLocationSource, onComplete: (resp: any)=> void | undefined) {
+        let msg = "Deleting National Grid network data ..."
+        this.postRequestWithMessage(msg, `/NationalGrid/DeleteNetwork?source=${source}`,null,onComplete)
     }
 
     /* EV Demand tool */

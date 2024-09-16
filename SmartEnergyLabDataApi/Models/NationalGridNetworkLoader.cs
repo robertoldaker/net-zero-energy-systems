@@ -10,12 +10,15 @@ using HaloSoft.EventLogger;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using NHibernate.Util;
+using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Loadflow;
 
 namespace SmartEnergyLabDataApi.Models
 {
     public class NationalGridNetworkLoader {
+
+        public enum NationalGridNetworkSource {All, NGET, SSE, SPT}
 
         // NGET urls
         private const string ALL_DATA_URL = "https://www.nationalgrid.com/electricity-transmission/document/81201/download";
@@ -66,16 +69,32 @@ namespace SmartEnergyLabDataApi.Models
             { "AUCHX", new InterConnector("Moyle", new LatLng() {Lat=55.11766, Lng=-6.06103})}  
         };
 
+        public void Delete(GridSubstationLocationSource source) {
+            using ( var da = new DataAccess() ) {
+                da.NationalGrid.DeleteLocations(source);
+                var subSource = GridSubstation.getSource(source);
+                if ( subSource!=null ) {
+                    da.NationalGrid.DeleteSubstations((GridSubstationSource) subSource);
+                }
+                //
+                da.CommitChanges();
+            }
+        }
 
-        public void Load() {
+
+        public void Load(NationalGridNetworkSource source) {
             //
             updateInterConnectors();
             // SP Networks
-            loadSPNetworks(_SPShapefileInfoUrl);
-            // NGET
-            //??loadNGET();
-            // SHET
-            //??loadSSE();
+            if ( source == NationalGridNetworkSource.All || source == NationalGridNetworkSource.SPT ) {
+                loadSPNetworks();
+            }
+            if ( source == NationalGridNetworkSource.All || source == NationalGridNetworkSource.NGET ) {
+                loadNGET();
+            }
+            if ( source == NationalGridNetworkSource.All || source == NationalGridNetworkSource.SSE ) {
+                loadSSE();
+            }
         }
 
         private void updateInterConnectors() {
@@ -110,7 +129,9 @@ namespace SmartEnergyLabDataApi.Models
             public Info[] results {get; set;}
         }
 
-        private void loadSPNetworks(UriBuilder uriBuilder) {
+        private void loadSPNetworks() {
+            //
+            var uriBuilder = _SPShapefileInfoUrl;
             var geoJsonFile = loadSPShapefile(uriBuilder);
             //
             processSPGeojsonFile(geoJsonFile);
@@ -507,6 +528,10 @@ namespace SmartEnergyLabDataApi.Models
                     Logger.Instance.LogInfoEvent($"Found [{geoJson.features.Length}] features");                    
                 }
                 foreach( var feature in geoJson.features) {
+                    if ( feature.properties.SUBSTATION == null ) {
+                        Logger.Instance.LogInfoEvent("SUBSTATION is null");
+                        continue;
+                    }
                     var gs=da.NationalGrid.GetGridSubstation(feature.properties.SUBSTATION);
                     if ( gs==null) {
                         gs = GridSubstation.Create(feature.properties.SUBSTATION,GridSubstationSource.NGET);

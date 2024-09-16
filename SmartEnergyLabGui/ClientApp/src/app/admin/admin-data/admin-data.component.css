@@ -1,23 +1,12 @@
-div.tableContainer {
+div.header {
+    display: flex;
+    justify-content: space-between;
 }
 
 div.size {
-    margin-bottom: 1rem;
     font-size: 0.8rem;
-    float: right;
     text-align: right;
-}
-
-table.data {
-    margin-top: 1rem;
-    width: 100%;
-}
-
-.dnoImg {
-    width: 50px;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-    margin-right: 0.5rem;
+    justify-items: right;
 }
 
 div.toolbar > button {    

@@ -1,0 +1,78 @@
+<div style="margin-bottom: 1rem">
+    <div class="toolbar">
+        <div>
+            <button mat-stroked-button color="primary" [matMenuTriggerFor]="loadNetworkDataMenu">
+                Load data
+                <mat-icon>keyboard_arrow_down</mat-icon>
+            </button>
+            <mat-menu #loadNetworkDataMenu="matMenu" >
+                <button mat-menu-item (click)="loadNetworkData(Source.All)">
+                    <div class="sourceImg" style="display:inline-block">&nbsp;</div>
+                    <span>All</span>
+                </button>
+                <mat-divider></mat-divider>
+                <button mat-menu-item (click)="loadNetworkData(Source.NGET)">
+                    <img class="sourceImg" src="assets/images/national-grid-icon.png"/>
+                    <span>National Grid Electricity Transmission</span>
+                </button>
+                <button mat-menu-item (click)="loadNetworkData(Source.SSE)">
+                    <img class="sourceImg" src="assets/images/scottish-and-southern-electricity-networks-icon.png"/>
+                    <span>Scottish and Southern Electricity Networks</span>
+                </button>
+                <button mat-menu-item (click)="loadNetworkData(Source.SPT)">
+                    <img class="sourceImg" src="assets/images/sp-electricity-networks-icon.png"/>                    
+                    <span>SP Energy Transmission</span>
+                </button>
+            </mat-menu>                              
+        </div>
+        <div>
+            <button mat-stroked-button color="secondary" (click)="refresh()">
+                <mat-icon>refresh</mat-icon>
+            </button>    
+        </div>
+    </div>
+</div>
+
+<app-div-auto-scroller name="dist-data">
+
+    <table class="data" #table mat-table [dataSource]="tableData" matSort>
+
+        <!-- Operator -->
+        <ng-container matColumnDef="sourceStr">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Source</th>
+            <td mat-cell *matCellDef="let element"><img class="sourceImg" [src]="element.sourceIconUrl">{{element.sourceStr}}</td>
+        </ng-container>
+
+        <!-- Locations -->
+        <ng-container matColumnDef="numLocations">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Locations</th>
+            <td mat-cell *matCellDef="let element">{{element.numLocations}}</td>
+        </ng-container>
+
+        <!-- Substations -->
+        <ng-container matColumnDef="numSubstations">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Substations</th>
+            <td mat-cell *matCellDef="let element">{{element.numSubstations}}</td>
+        </ng-container>
+
+        <!-- buttons -->
+        <ng-container matColumnDef="buttons">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
+            <td mat-cell *matCellDef="let element">
+                <button mat-icon-button aria-label="Commands" [matMenuTriggerFor]="menu">
+                    <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #menu="matMenu">
+                    <button mat-menu-item>
+                        <span (click)="deleteAll(element)">Delete all</span>
+                    </button>
+                </mat-menu>                
+            </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+    </table>
+
+</app-div-auto-scroller>

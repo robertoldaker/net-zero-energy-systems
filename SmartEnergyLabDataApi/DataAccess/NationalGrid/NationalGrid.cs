@@ -42,6 +42,21 @@ namespace SmartEnergyLabDataApi.Data
 
         public IList<GridSubstation> GetGridSubstations() {
             return Session.QueryOver<GridSubstation>().Fetch(SelectMode.Fetch, m=>m.GISData).List();
+        }        
+
+        public int GetNumGridSubstations(GridSubstationSource source) {
+            return Session.QueryOver<GridSubstation>().
+                And( m=>m.Source == source).
+                RowCount();
+        }
+
+        public void DeleteSubstations(GridSubstationSource source) {
+            var subs = Session.QueryOver<GridSubstation>().
+                Where( m=>m.Source == source).
+                List();
+            foreach ( var sub in subs) {
+                Session.Delete(sub);
+            }
         }
 
         public void Delete(GridOverheadLine ohl)
@@ -92,6 +107,13 @@ namespace SmartEnergyLabDataApi.Data
                 List();
         }
 
+        public int GetNumGridSubstationLocations(GridSubstationLocationSource source) {
+            return Session.QueryOver<GridSubstationLocation>().
+                Where( m=>m.Dataset == null).
+                And( m=>m.Source == source).
+                RowCount();
+        }
+
         public IList<GridSubstationLocation> GetGridSubstationLocationsBySource(GridSubstationLocationSource source) {
             //
             var q = Session.QueryOver<GridSubstationLocation>().Where( m=>m.Source == source);
@@ -117,9 +139,12 @@ namespace SmartEnergyLabDataApi.Data
         }
 
         public void DeleteLocations(GridSubstationLocationSource source) {
-            var locs = GetGridSubstationLocationsBySource(source);
-            foreach( var loc in locs) {
-                Delete(loc);
+            var locs = Session.QueryOver<GridSubstationLocation>().
+                Where(m=>m.Dataset == null).
+                Where( m=>m.Source == source).
+                List();
+            foreach ( var loc in locs) {
+                Session.Delete(loc);
             }
         }
 
