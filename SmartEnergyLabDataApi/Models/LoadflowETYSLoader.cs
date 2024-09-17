@@ -32,7 +32,7 @@ public class LoadflowETYSLoader
     private GoogleMapsGISFinder _gisFinder = new GoogleMapsGISFinder();
 
     
-    public LoadflowETYSLoader(LoadOptions loadOptions)
+    public LoadflowETYSLoader(LoadOptions loadOptions=LoadOptions.OnlyHighVoltageCircuits)
     {
         _loadOptions = loadOptions;
     }
@@ -54,7 +54,8 @@ public class LoadflowETYSLoader
 
         }
         // set node locations
-        updateNodeLocations(codesDict);
+        //?? now done via LoadflowLocationUpdater via HTTP call
+        //??updateNodeLocations(codesDict);
     }
 
     private bool updateNodeZones() {

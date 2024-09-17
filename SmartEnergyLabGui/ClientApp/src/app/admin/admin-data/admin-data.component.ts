@@ -41,6 +41,11 @@ export class AdminDataComponent extends ComponentBase {
         });
     }
 
+    tabChange(e: any) {
+        // dispatch this so that app-div-auto-scroller can detect size change
+        window.setTimeout(()=>{window.dispatchEvent(new Event('resize'))},0)
+    }
+
     inCleanup: boolean
 
 }

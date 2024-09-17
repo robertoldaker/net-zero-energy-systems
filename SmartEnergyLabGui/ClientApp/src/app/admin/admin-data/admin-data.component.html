@@ -19,7 +19,7 @@
     </div>
 </div>
 <div>
-    <mat-tab-group [preserveContent]="true">
+    <mat-tab-group [preserveContent]="true" (selectedTabChange)="tabChange($event)">
         <mat-tab label="Transmission network">
             <app-trans-data></app-trans-data>
         </mat-tab>

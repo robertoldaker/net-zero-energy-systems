@@ -209,8 +209,9 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
 
+        /// <summary>
         /// Stores Loadflow base reference from spreadsheet
-        /// /// </summary>
+        /// </summary>
         /// <param name="file"></param>
         [HttpPost]
         [Route("Reference/UploadBase")]
@@ -219,8 +220,9 @@ namespace SmartEnergyLabDataApi.Controllers
             m.LoadBase(file);
         }
 
+        /// <summary>
         /// Stores Loadflow Boundary B8 reference from spreadsheet
-        /// /// </summary>
+        /// </summary>
         /// <param name="file"></param>
         [HttpPost]
         [Route("Reference/UploadB8")]
@@ -286,5 +288,23 @@ namespace SmartEnergyLabDataApi.Controllers
                 da.CommitChanges();
             }
         }
+
+        /// <summary>
+        /// Create missing locations for a loadflow dataset
+        /// </summary>
+        /// <param name="datasetName">Name of dataset</param>
+        [HttpPost]
+        [Route("Nodes/UpdateLocations")]
+        public void UpdateLocations(string datasetName) {
+            using( var da = new DataAccess()) {
+                var dataset = da.Datasets.GetDataset(DatasetType.Loadflow, datasetName);
+                if ( dataset==null ) {
+                    throw new Exception($"Cannot find loadflow dataset with name [{datasetName}]");
+                }
+                var locUpdater = new LoadflowLocationUpdater();
+                locUpdater.Update(dataset.Id);
+            }
+        }
+
     }
 }
