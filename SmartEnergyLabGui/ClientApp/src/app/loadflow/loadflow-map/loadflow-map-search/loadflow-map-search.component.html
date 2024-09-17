@@ -10,7 +10,7 @@
         <mat-autocomplete #auto (optionSelected)="searchOptionSelected($event)" (opened)="autoCompleteOpened()" (closed)="autoCompleteClosed()" [displayWith]="display">
             <mat-option *ngFor="let option of searchOptions" [value]="option.id">
                 <!--<img class="substationIcon" [src]="getImageSrc(option.type)" />-->
-                <span>{{option.name}}</span>
+                <span>{{getDisplayStr(option)}}</span>
             </mat-option>
         </mat-autocomplete>
     </span> 

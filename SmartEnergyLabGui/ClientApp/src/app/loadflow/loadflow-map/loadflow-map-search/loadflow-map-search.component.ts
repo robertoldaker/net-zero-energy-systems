@@ -76,12 +76,13 @@ export class LoadflowMapSearchComponent implements OnInit {
     }
 
     display(id: any) {
-        if (this.searchOptions) {
-            let obj = this.searchOptions.find(m => m.id == id);
-            return obj ? obj.name : "";
-        } else {
-            return "";
-        }
+        // this pointer is not valid so cannot look up value
+        return "";
+    }
+
+    getDisplayStr(loc: ILoadflowLocation) {
+        let str = `(${loc.reference}) ${loc.name}`
+        return str;
     }
 
     resetZoom() {
