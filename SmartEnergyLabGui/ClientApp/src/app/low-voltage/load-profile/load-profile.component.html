@@ -4,8 +4,8 @@
         <span>{{title}}</span>            
     </span>
     <span style="font-size: 1.2rem">
-        <mat-icon [inline]="true" class="expander" *ngIf="isExpanded" (click)="expand(false)">keyboard_arrow_down</mat-icon>
-        <mat-icon [inline]="true" class="expander" *ngIf="!isExpanded" (click)="expand(true)">keyboard_arrow_up</mat-icon>
+        <mat-icon [inline]="true" class="expander" *ngIf="isExpanded" (click)="expand(false)">keyboard_arrow_up</mat-icon>
+        <mat-icon [inline]="true" class="expander" *ngIf="!isExpanded" (click)="expand(true)">keyboard_arrow_down</mat-icon>
     </span>
 </div>
 <app-e-charts-wrapper [options]="this.chartOptions" (chartInit)="onChartInit($event)"
