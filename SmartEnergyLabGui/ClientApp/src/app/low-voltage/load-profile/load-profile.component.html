@@ -1,6 +1,12 @@
-<div style="background: #eee; font-size: 0.85em; font-weight: bold; padding: 3px">
-    <img src="{{imgSrc}}" style="width: 16px; margin-right: 6px"/>
-    <span>{{title}}</span>
+<div class="header">
+    <span>
+        <img src="{{imgSrc}}" style="width: 16px; margin-right: 6px"/>
+        <span>{{title}}</span>            
+    </span>
+    <span style="font-size: 1.2rem">
+        <mat-icon [inline]="true" class="expander" *ngIf="isExpanded" (click)="expand(false)">keyboard_arrow_down</mat-icon>
+        <mat-icon [inline]="true" class="expander" *ngIf="!isExpanded" (click)="expand(true)">keyboard_arrow_up</mat-icon>
+    </span>
 </div>
 <app-e-charts-wrapper [options]="this.chartOptions" (chartInit)="onChartInit($event)"
 [styles]="{height: 'calc(100% - 28px)'}"></app-e-charts-wrapper>

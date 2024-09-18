@@ -68,7 +68,7 @@ export class MapPowerService {
             if (distSubstation.substationData) {
                 this.NumberOfCustomers = distSubstation.substationData.numCustomers
             }
-            this.clearlPsLoaded()
+            this.clearLpsMap()
             this.loadProfileSources.forEach(source=>{
                 this.DataClientService.GetDistributionSubstationLoadProfiles(distSubstation.id, source, this.year, (loadProfiles) => {
                     this.loadProfilesLoaded(loadProfiles, source)
@@ -84,9 +84,11 @@ export class MapPowerService {
         this.fireObjectSelectedEvent()
     }
 
-    private clearlPsLoaded() {
-        this.NumberOfEVs=undefined;
-        this.NumberOfHPs=undefined;
+    private clearLpsMap() {
+        this.NumberOfEVs=undefined
+        this.NumberOfHPs=undefined
+        this.LoadProfileMap.clear()
+        this.LoadProfilesLoaded.emit()
     }
 
     setSelectedVehicleChargingStation(chargingStation: VehicleChargingStation| undefined) {
@@ -121,13 +123,17 @@ export class MapPowerService {
                 if ( this.NumberOfCustomers!=undefined) {
                     for(let i:number=0;i<lp.data.length;i++) {
                         lp.data[i]/=this.NumberOfCustomers
-                    }    
-                    for(let i:number=0;i<lp.carbon.length;i++) {
-                        lp.carbon[i]/=this.NumberOfCustomers
-                    }    
-                    for(let i:number=0;i<lp.cost.length;i++) {
-                        lp.cost[i]/=this.NumberOfCustomers
-                    }    
+                    }
+                    if ( lp.carbon ) {
+                        for(let i:number=0;i<lp.carbon.length;i++) {
+                            lp.carbon[i]/=this.NumberOfCustomers
+                        }       
+                    }
+                    if ( lp.cost ) {
+                        for(let i:number=0;i<lp.cost.length;i++) {
+                            lp.cost[i]/=this.NumberOfCustomers
+                        }        
+                    }
                 }
             });    
         }
@@ -148,7 +154,7 @@ export class MapPowerService {
             });
             this.DataClientService.GetCustomersForGridSupplyPoint(gsp.id,(numCustomers)=> {
                 this.NumberOfCustomers = numCustomers
-                this.clearlPsLoaded();
+                this.clearLpsMap();
                 this.loadProfileSources.forEach(source=>{
                     this.DataClientService.GetGridSupplyPointLoadProfiles(gsp.id,  source, this.year, (loadProfiles) => {
                         this.loadProfilesLoaded(loadProfiles,source)
@@ -220,7 +226,7 @@ export class MapPowerService {
             });
             this.DataClientService.GetCustomersForPrimarySubstation(pss.id,(numCustomers)=> {
                 this.NumberOfCustomers = numCustomers
-                this.clearlPsLoaded();
+                this.clearLpsMap();
                 this.loadProfileSources.forEach(source=>{
                     this.DataClientService.GetPrimarySubstationLoadProfiles(pss.id, source, this.year, (loadProfiles) => {
                         this.loadProfilesLoaded(loadProfiles, source)
@@ -351,7 +357,7 @@ export class MapPowerService {
                     this.GridSupplyPointsLoaded.emit(gsps)
                 });    
             }
-            this.clearlPsLoaded();
+            this.clearLpsMap();
             this.loadProfileSources.forEach(source=>{
                 if ( this.geographicalArea!=undefined) {
                     this.DataClientService.GetGeographicalAreaLoadProfiles(this.geographicalArea.id,  source, this.year, (loadProfiles) => {
@@ -438,6 +444,76 @@ export class MapPowerService {
         return this.LoadProfileMap.get(source)
     }
 
+    getTotalLoadProfile():SubstationLoadProfile[]|undefined {
+        let lps:SubstationLoadProfile[] = []
+        let base = this.LoadProfileMap.get(LoadProfileSource.LV_Spreadsheet);
+        if ( base ) {
+            for( var lpb of base) {
+                let lp = Object.assign({},lpb)
+                lp.data = Array.from(lpb.data)
+                if ( lpb.carbon ) {
+                    lp.carbon = Array.from(lpb.carbon)
+                }
+                if ( lpb.cost ) {
+                    lp.cost = Array.from(lpb.cost)
+                }
+                lps.push(lp)
+            }
+            let evs = this.LoadProfileMap.get(LoadProfileSource.EV_Pred);
+            let hps = this.LoadProfileMap.get(LoadProfileSource.HP_Pred);
+            if ( lps && evs) {
+                addLoadProfile(lps,evs)
+            }
+            if ( lps && hps) {
+                addLoadProfile(lps,hps)
+            }        
+        }
+        function addLoadProfile(s: SubstationLoadProfile[], t: SubstationLoadProfile[]) {
+            if ( s.length != t.length) {
+                console.log('lengths disagree!')
+            }
+            for( let i=0; i<s.length;i++) {
+                if ( i<t.length) {
+                    let lps = s[i]
+                    let lpt = t[i]
+                    if ( lpt.monthNumber!==lps.monthNumber ) {
+                        console.log('monthnumbers disagree!')
+                    }
+                    if ( lpt.day!==lps.day ) {
+                        console.log('days disagree!')
+                    }
+                    // data
+                    for ( let j=0;j<lps.data.length;j++) {
+                        if ( j<lpt.data.length ) {
+                            lps.data[j] += lpt.data[j]
+                        }
+                    }
+                    // carbon
+                    if ( lps.carbon && lpt.carbon ) {
+                        for ( let j=0;j<lps.carbon.length;j++) {
+                            if ( j<lpt.carbon.length ) {
+                                lps.carbon[j] += lpt.carbon[j]
+                            }
+                        }    
+                    }
+                    // cost
+                    if ( lps.cost && lpt.cost ) {
+                        for ( let j=0;j<lps.cost.length;j++) {
+                            if ( j<lpt.cost.length ) {
+                                lps.cost[j] += lpt.cost[j]
+                            }
+                        }        
+                    }
+                }
+            }
+        }
+        return lps;
+    }
+
+
+
+
+
     gspMarkersReady() {
         this.GridSupplyPointsMarkersReady.emit()
     }
@@ -463,7 +539,7 @@ export class MapPowerService {
     PrimarySubstationsLoaded = new EventEmitter<PrimarySubstation[] | undefined>()
     DistributionSubstationsLoaded = new EventEmitter<DistributionSubstation[] | undefined>()
     VehicleChargingStationsLoaded = new EventEmitter<VehicleChargingStation[] | undefined>()
-    LoadProfilesLoaded = new EventEmitter<LoadProfileSource>()
+    LoadProfilesLoaded = new EventEmitter<LoadProfileSource | undefined>()
     ClassificationsLoaded = new EventEmitter<SubstationClassification[] | undefined>()
     LoadProfileSourceChanged = new EventEmitter()
     SolarInstallationsLoaded = new EventEmitter<SolarInstallation[]>()

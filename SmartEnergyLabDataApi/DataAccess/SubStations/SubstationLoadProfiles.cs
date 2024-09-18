@@ -55,7 +55,9 @@ namespace SmartEnergyLabDataApi.Data
         {
             var q = Session.QueryOver<SubstationLoadProfile>().
                 Where(m=>m.DistributionSubstation.Id == id).
-                And(m=>m.Source == source);
+                And(m=>m.Source == source).
+                OrderBy(m=>m.MonthNumber).Asc.
+                ThenBy(m=>m.Day).Asc;
             var list = q.List();
             if ( source == LoadProfileSource.EV_Pred || source == LoadProfileSource.HP_Pred) {
                 // adjust load profiles so they give the correct data for the given year
@@ -417,6 +419,8 @@ namespace SmartEnergyLabDataApi.Data
                 }
                 list.Add(lp);
             }
+            //
+            list = list.OrderBy(m=>m.MonthNumber).ThenBy(m=>m.Day).ToList();
             //
             return list;
         }

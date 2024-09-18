@@ -1,10 +1,11 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, OnInit, Output, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { EChartsOption } from 'echarts';
 import { NameValuePair, SubstationLoadProfile, Season, LoadProfileSource } from '../../data/app.data';
 import { MapPowerService } from '../map-power.service';
+import { LoadProfileComponent } from '../load-profile/load-profile.component';
 
 export enum ShowLoadProfilesBy {Month, DayOfWeek, Season} 
-export enum LoadProfileType {Base, VehicleCharging, HeatPumps}
+export enum LoadProfileType { Base, VehicleCharging, HeatPumps, Total}
 export enum ShowDataType {Load, Carbon, Cost}
 
 @Component({
@@ -12,14 +13,14 @@ export enum ShowDataType {Load, Carbon, Cost}
     templateUrl: './load-profiles.component.html',
     styleUrls: ['./load-profiles.component.css']
 })  
-export class LoadProfilesComponent implements OnInit, OnDestroy {
+export class LoadProfilesComponent implements OnInit, OnDestroy, AfterViewInit{
 
     private subs1: any
     private subs2: any
     constructor(public mapPowerService: MapPowerService) {
         //
         this.subs1 = this.mapPowerService.LoadProfilesLoaded.subscribe(source => {
-           this.redrawSource(source);
+           this.redraw(source);
         })
         //
         this.subs2 = this.mapPowerService.LoadProfileSourceChanged.subscribe( ()=> {
@@ -32,6 +33,11 @@ export class LoadProfilesComponent implements OnInit, OnDestroy {
             this.years.push({ name: y.toString(), value: y});
         });
         this.year = this.mapPowerService.year;
+    }
+    ngAfterViewInit(): void {
+        if ( this.children) {
+            console.log(this.children)
+        }
     }
 
     get chartContainerHeight():string {
@@ -51,6 +57,35 @@ export class LoadProfilesComponent implements OnInit, OnDestroy {
     reload() {
         this.mapPowerService.year = this.year;
         this.mapPowerService.reloadLoadProfiles();
+    }
+
+    @ViewChildren('lp', { read:  LoadProfileComponent}) 
+    children: QueryList<LoadProfileComponent> | undefined
+    gridTemplateRows:string = 'auto 0.25fr 0.25fr 0.25fr 0.25fr'
+    childExpanded() {
+        if ( this.children) {
+            let profiles = this.children.toArray()
+            let numExpanded = profiles.filter(m=>m.isExpanded).length;
+            let gridTemplate = 'auto';
+            let prop = 0;
+            if ( numExpanded>0) {
+                prop = 1/numExpanded
+            }
+            for( let p of profiles) {
+                let propStr:string
+                if ( p.isExpanded ) {
+                    propStr = ` ${prop.toFixed(3)}fr`
+                } else {
+                    propStr = ' 0fr'
+                }
+                gridTemplate+=propStr;
+            }
+            this.gridTemplateRows = gridTemplate;
+            //
+            window.setTimeout(()=>{
+                window.dispatchEvent(new Event('resize'))
+            },0)
+        }
     }
 
     @Input()
@@ -123,12 +158,8 @@ export class LoadProfilesComponent implements OnInit, OnDestroy {
         this.redraw();
     }
 
-    redraw() {
-        this.Redraw.emit()
-    }
-
-    redrawSource(source: LoadProfileSource) {
-        this.Redraw.emit(source);
+    redraw(source?: LoadProfileSource) {
+        this.Redraw.emit(source)
     }
 
     get selector():string {

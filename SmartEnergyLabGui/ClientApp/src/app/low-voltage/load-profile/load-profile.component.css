@@ -1,0 +1,13 @@
+div.header {
+    background: #eee; 
+    font-size: 0.85em; 
+    font-weight: bold; 
+    padding: 3px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.mat-icon.expander {
+    cursor: pointer;
+    vertical-align: middle;
+}

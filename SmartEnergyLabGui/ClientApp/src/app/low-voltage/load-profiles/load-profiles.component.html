@@ -1,4 +1,4 @@
-<div class="chartContainer" [style]="{height: chartContainerHeight}">
+<div class="chartContainer" [style]="{height: chartContainerHeight, gridTemplateRows: gridTemplateRows}">
     <div class="chartHeader borderBottom">
         <div class="selectContainer">
             <div class="label">Year</div>
@@ -61,12 +61,15 @@
         </div>
     </div>
     <div class="borderBottom loadProfilePlot">
-        <app-load-profile [type]="loadProfileTypes.Base"></app-load-profile>
-    </div>
+        <app-load-profile #lp [type]="loadProfileTypes.Total"></app-load-profile>
+    </div>        
+    <div class="borderBottom loadProfilePlot">
+        <app-load-profile #lp [type]="loadProfileTypes.Base"></app-load-profile>
+    </div>        
     <div class="borderBottom  loadProfilePlot" >
-        <app-load-profile [type]="loadProfileTypes.VehicleCharging"></app-load-profile>
+        <app-load-profile #lp [type]="loadProfileTypes.VehicleCharging"></app-load-profile>
     </div>
     <div class="loadProfilePlot">
-        <app-load-profile [type]="loadProfileTypes.HeatPumps"></app-load-profile>
+        <app-load-profile #lp [type]="loadProfileTypes.HeatPumps"></app-load-profile>
     </div>
 </div>    

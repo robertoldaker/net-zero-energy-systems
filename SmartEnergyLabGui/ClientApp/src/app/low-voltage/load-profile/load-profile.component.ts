@@ -15,11 +15,25 @@ export class LoadProfileComponent implements OnInit {
         //
         this.chartOptions = {};
         parent.Redraw.subscribe((source)=>{
-            let configuredSource = this.getLoadProfileSource();
-            if ( source==undefined || configuredSource == source) {
+            if ( source == undefined ) {
                 this.redraw();
+            } else {
+                if ( this.type == LoadProfileType.Total ) {
+                    if ( this.mapPowerService.LoadProfileMap.size == 3 ) {
+                        this.redraw();
+                    }
+                } else if ( this.getLoadProfileSource() == source) {
+                    this.redraw();
+                }
             }
         });
+    }
+
+    isExpanded = true
+
+    expand( exp: boolean) {
+        this.isExpanded = exp;
+        this.parent.childExpanded()
     }
 
 
@@ -61,10 +75,12 @@ export class LoadProfileComponent implements OnInit {
                 title+=` (EVs: ${this.mapPowerService.NumberOfEVs?.toFixed(0)})`
             }
         } else if ( this.type == LoadProfileType.HeatPumps ) {
-            title=`Heat pumps `
+            title='Heat pumps'
             if ( !this.mapPowerService.PerCustomerLoadProfiles && this.mapPowerService.NumberOfHPs!==undefined) {
                 title+=` (HPs: ${this.mapPowerService.NumberOfHPs?.toFixed(0)})`
             }
+        } else if ( this.type == LoadProfileType.Total ) {
+            title='Total'
         } else {
             throw Error(`Unexpected load profile type [${this.type}]`);
         }
@@ -81,6 +97,8 @@ export class LoadProfileComponent implements OnInit {
             return "/assets/images/charging-station.png"
         } else if (this.type == LoadProfileType.HeatPumps) {
             return "/assets/images/geothermal-energy.png"
+        } else if (this.type == LoadProfileType.Total) {
+            return "/assets/images/icons8-sigma-100.png"
         } else {
             throw Error(`Unexpected load profile type [${this.type}]`);
         }
@@ -142,11 +160,15 @@ export class LoadProfileComponent implements OnInit {
     }
 
     private getLoadProfile():SubstationLoadProfile[]|undefined {
-        let source = this.getLoadProfileSource()
-        return this.mapPowerService.getLoadProfile(source);
+        if ( this.type == LoadProfileType.Total) {
+            return this.mapPowerService.getTotalLoadProfile();
+        } else {
+            let source = this.getLoadProfileSource()
+            return this.mapPowerService.getLoadProfile(source);    
+        }
     }
 
-    private getLoadProfileSource() {
+    private getLoadProfileSource():LoadProfileSource  {
         let source = LoadProfileSource.LV_Spreadsheet
         if ( this.type == LoadProfileType.VehicleCharging) {
             source = LoadProfileSource.EV_Pred
@@ -254,7 +276,7 @@ export class LoadProfileComponent implements OnInit {
         let title="";
         if ( this.type == LoadProfileType.Base ) {
             title = 'Actual '
-        } else if ( this.type == LoadProfileType.VehicleCharging || this.type == LoadProfileType.HeatPumps) {
+        } else if ( this.type == LoadProfileType.VehicleCharging || this.type == LoadProfileType.HeatPumps || LoadProfileType.Total) {
             title =  'Predicted '
         } else {
             throw Error("Unexpected path in loadProfileTitle");
