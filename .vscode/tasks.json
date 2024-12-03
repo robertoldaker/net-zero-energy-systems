@@ -70,6 +70,11 @@
             "problemMatcher": [],
             "label": "npm: build - SmartEnergyLabGui/ClientApp",
             "detail": "ng build"
+        },
+        {
+            "label": "killNgServe",
+            "type": "shell",
+            "command": "pkill -f \"ng serve\"",
         }
         
     ]

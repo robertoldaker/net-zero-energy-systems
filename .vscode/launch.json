@@ -40,7 +40,8 @@
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"
-            }
+            },
+            "postDebugTask": "killNgServe"
         },
         {
             "name": "EV Demand API",
