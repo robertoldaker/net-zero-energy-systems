@@ -31,10 +31,10 @@ namespace SmartEnergyLabDataApi.Models
 
             var now = DateTime.Now;
             var ts = now.ToString("yyyy-MMM-dd-HH-mm-ss");
-            var filename = $"{dbName}-{ts}.sql";
+            var filename = $"{dbName}-{ts}.dump";
 
             var backup = new Execute();
-            var args = $"--clean --if-exists -f \"{filename}\" {dbName}";
+            var args = $"-Fc -f \"{filename}\" {dbName}";
             // explicitly using /usr/bin to ensure it picks up v14.
             // installing gdal brings in postgres12 which then means "pg_dump" is v12
             var exitCode = backup.Run("/usr/bin/pg_dump",args,LOCAL_PATH);
@@ -131,14 +131,15 @@ namespace SmartEnergyLabDataApi.Models
         private static SftpClient getSFtpClient()
         {
             string hostName = "ftpsqlbackup1.angelbooks.biz";
-            var connectionInfo = new Renci.SshNet.ConnectionInfo(hostName,
+            int port = 2360;
+            var connectionInfo = new Renci.SshNet.ConnectionInfo(hostName, port,
                                                     "angelbooks",
                                                     new PasswordAuthenticationMethod("angelbooks", "pleasant12A"),
                                                     new PrivateKeyAuthenticationMethod("rsa.key"));
             var client = new SftpClient(connectionInfo);
 
             return client;
-        }
+        }        
 
         private static void removeDirectory(SftpClient client, string path)
         {
