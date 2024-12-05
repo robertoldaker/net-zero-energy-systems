@@ -86,12 +86,13 @@ namespace EnergySystemLabDataApi.Controllers
         /// <summary>
         /// Backsup database locally
         /// </summary>
+        /// <param name="appGroup">The application group to backup</param>
         /// <returns></returns>
         [HttpGet]
         [Route("BackupDbLocally")]
-        public IActionResult BackupDbLocally() {
+        public IActionResult BackupDbLocally(ApplicationGroup appGroup = ApplicationGroup.All) {
             var m = new DatabaseBackup(null);
-            var sr = m.BackupToStream(out string filename);
+            var sr = m.BackupToStream(out string filename, appGroup);
             var fsr = new FileStreamResult(sr.BaseStream, "application/sql");
 			fsr.FileDownloadName = filename;
 			return fsr;

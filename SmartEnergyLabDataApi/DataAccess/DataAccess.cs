@@ -71,6 +71,16 @@ namespace SmartEnergyLabDataApi.Data
             if ( oldVersion<60) {
                 updateElsiScenarioData();
             }
+            if ( oldVersion<61) {
+                removeGISColumns();
+            }
+        }
+
+        private static void removeGISColumns() {
+            DataAccessBase.DeleteColumn("gis_data","GeographicalAreaId");
+            DataAccessBase.DeleteColumn("gis_data","DistributionSubstationId");
+            DataAccessBase.DeleteColumn("gis_data","PrimarySubstationId");
+            DataAccessBase.DeleteColumn("gis_data","VehicleChargingStationId");                
         }
 
         private static void updateElsiScenarioData() {

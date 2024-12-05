@@ -3,6 +3,7 @@ import { DataModel } from 'src/app/data/app.data';
 import { DataClientService } from 'src/app/data/data-client.service';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { ComponentBase } from 'src/app/utils/component-base';
+import { ApplicationGroup } from 'src/app/data/app.data';
 
 @Component({
   selector: 'app-admin-data',
@@ -24,8 +25,8 @@ export class AdminDataComponent extends ComponentBase {
         })
     }
 
-    backupDbLocally() {
-        window.location.href = `${this.baseUrl}/Admin/BackupDbLocally`
+    backupDbLocally(appGroup: ApplicationGroup) {
+        window.location.href = `${this.baseUrl}/Admin/BackupDbLocally?appGroup=${appGroup}`;
     }
 
     performCleanup() {
@@ -47,5 +48,7 @@ export class AdminDataComponent extends ComponentBase {
     }
 
     inCleanup: boolean
+    ApplicationGroup = ApplicationGroup;
+    ElsiAndLoadflow = ApplicationGroup.Elsi | ApplicationGroup.Loadflow;
 
 }

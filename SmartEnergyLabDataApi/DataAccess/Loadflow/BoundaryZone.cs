@@ -3,7 +3,7 @@ using NHibernate.Mapping.Attributes;
 
 namespace SmartEnergyLabDataApi.Data
 {
-
+    [ApplicationGroup(ApplicationGroup.Loadflow)]
     [Class(0, Table = "loadflow_boundary_zones")]
     public class BoundaryZone : IId, IDataset
     {

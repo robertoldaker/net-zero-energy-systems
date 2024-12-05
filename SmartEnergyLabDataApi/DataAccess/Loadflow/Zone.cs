@@ -4,7 +4,7 @@ using NHibernate.Mapping.Attributes;
 
 namespace SmartEnergyLabDataApi.Data
 {
-
+    [ApplicationGroup(ApplicationGroup.Loadflow)]
     [Class(0, Table = "loadflow_zones")]
     public class Zone : IId, IDataset, ILifecycle
     {

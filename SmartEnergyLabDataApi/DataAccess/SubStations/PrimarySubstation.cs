@@ -18,7 +18,7 @@ namespace SmartEnergyLabDataApi.Data
             ExternalId = externalId;
             ExternalId2 = externalId2;
             SetGSP(gsp);
-            GISData = new GISData(this);
+            GISData = new GISData();
         }
 
         private void SetGSP(GridSupplyPoint gsp) {
@@ -128,9 +128,6 @@ namespace SmartEnergyLabDataApi.Data
 
         public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
         {
-            if ( this.GISData!=null ) {
-                this.GISData.PrimarySubstation = null;
-            }
             return LifecycleVeto.NoVeto;
         }
 

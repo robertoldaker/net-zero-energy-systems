@@ -23,7 +23,7 @@ namespace SmartEnergyLabDataApi.Data
             PrimarySubstation = primarySubstation;
             GridSupplyPoint = primarySubstation.GridSupplyPoint;
             GeographicalArea = primarySubstation.GeographicalArea;
-            GISData = new GISData(this);
+            GISData = new GISData();
             SubstationParams = new SubstationParams(this);
             SubstationData = new DistributionSubstationData(this);
         }
@@ -148,9 +148,6 @@ namespace SmartEnergyLabDataApi.Data
         }
 
         public virtual void Unlink() {
-            if( this.GISData!=null) {
-                this.GISData.DistributionSubstation = null;
-            }
             if ( this.SubstationParams!=null) {
                 this.SubstationParams.DistributionSubstation = null;
             }

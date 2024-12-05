@@ -17,7 +17,7 @@ namespace SmartEnergyLabDataApi.Data
         public VehicleChargingStation(string externalId, PrimarySubstation? primarySubstation)
         {
             ExternalId = externalId;
-            GISData = new GISData(this);
+            GISData = new GISData();
             PrimarySubstation = primarySubstation;
             Connections = new List<VehicleChargingConnection>();
         }

@@ -7,7 +7,7 @@ namespace SmartEnergyLabDataApi.Data
     public enum LoadflowCtrlType {  QB, // Quad Booster
                                     HVDC // High-voltage DC
                                                             }
-
+    [ApplicationGroup(ApplicationGroup.Loadflow)]
     [Class(0, Table = "loadflow_ctrls")]
     public class Ctrl : IId, IDataset
     {

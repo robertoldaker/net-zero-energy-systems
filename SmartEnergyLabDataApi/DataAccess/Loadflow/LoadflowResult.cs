@@ -5,7 +5,8 @@ using NHibernate.Mapping.Attributes;
 using SmartEnergyLabDataApi.Loadflow;
 
 namespace SmartEnergyLabDataApi.Data
-{    
+{
+    [ApplicationGroup(ApplicationGroup.Loadflow)]
     [Class(0, Table = "loadflow_results")]
     public class LoadflowResult
     {

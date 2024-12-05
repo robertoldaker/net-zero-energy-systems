@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace SmartEnergyLabDataApi.Data;
 [ValidateNever] // required as using this class in model binding and without it will get errors for any missing fields
+[ApplicationGroup(ApplicationGroup.Elsi, ApplicationGroup.Loadflow)]
 [Class(0, Table = "user_edits")]
 public class UserEdit
 {

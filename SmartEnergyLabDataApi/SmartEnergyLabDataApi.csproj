@@ -20,7 +20,7 @@
         <PackageReference Include="alglib.net" Version="3.18.2" />
         <PackageReference Include="ExcelDataReader" Version="3.7.0-develop00310" />
         <PackageReference Include="Google.Apis.Sheets.v4" Version="1.56.0.2608" />
-        <PackageReference Include="NHibernate" Version="5.3.10" />
+        <PackageReference Include="NHibernate" Version="5.5.2" />
         <PackageReference Include="NHibernate.Mapping.Attributes" Version="5.1.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
         <PackageReference Include="SSH.NET" Version="2020.0.2" />

@@ -156,10 +156,12 @@ namespace SmartEnergyLabDataApi.Data
         }
 
         public IList<GISBoundary> GetPrimaryBoundaries(ImportSource source) {
-            PrimarySubstation pss=null;
+            GISData gisData=null;
 
-            var gisIds = Session.QueryOver<GISData>().Left.JoinAlias(m=>m.PrimarySubstation,()=>pss).
-                    Where(m=>m.PrimarySubstation!=null && pss.Source == source).Select(m=>m.Id).List<int>().ToArray();
+            //??var gisIds = Session.QueryOver<GISData>().Left.JoinAlias(m=>m.PrimarySubstation,()=>pss).
+            //??        Where(m=>m.PrimarySubstation!=null && pss.Source == source).Select(m=>m.Id).List<int>().ToArray();
+            var gisIds = Session.QueryOver<PrimarySubstation>().Left.JoinAlias(m=>m.GISData,()=>gisData).
+                    Where(m=>m.Source == source && m.GISData!=null).Select(m=>m.GISData.Id).List<int>().ToArray();
 
             var list = Session.QueryOver<GISBoundary>().Where( m=>m.GISData.Id.IsIn(gisIds)).Fetch(SelectMode.Fetch,m=>m.GISData).List();
             return list;

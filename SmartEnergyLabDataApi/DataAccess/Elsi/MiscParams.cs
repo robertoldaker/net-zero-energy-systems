@@ -4,6 +4,7 @@ using NHibernate.Mapping.Attributes;
 namespace SmartEnergyLabDataApi.Data
 {
 
+    [ApplicationGroup(ApplicationGroup.Elsi)]
     [Class(0, Table = "elsi_misc_params")]
     public class MiscParams : IDataset, IId
     {

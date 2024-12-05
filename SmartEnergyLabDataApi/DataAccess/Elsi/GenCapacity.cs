@@ -3,7 +3,7 @@ using NHibernate.Mapping.Attributes;
 
 namespace SmartEnergyLabDataApi.Data
 {
-
+    [ApplicationGroup(ApplicationGroup.Elsi)]
     [Class(0, Table = "elsi_gen_capacities")]
     public class GenCapacity : IDataset, IId
     {

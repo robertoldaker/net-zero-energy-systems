@@ -2,6 +2,7 @@ using System.Diagnostics;
 using CommonInterfaces.Models;
 using HaloSoft.EventLogger;
 using Renci.SshNet;
+using SmartEnergyLabDataApi.Data;
 
 namespace SmartEnergyLabDataApi.Models
 {
@@ -150,13 +151,24 @@ namespace SmartEnergyLabDataApi.Models
             client.DeleteDirectory(path);
         }
 
-        public StreamReader BackupToStream(out string filename) {
+        public StreamReader BackupToStream(out string filename, ApplicationGroup appGroup=ApplicationGroup.All) {
+
+            List<string> classNames = null;
+            if ( appGroup != ApplicationGroup.All) {
+                classNames = ApplicationGroupAttribute.GetClassNames(appGroup);
+            }
 
             var dbName = "smart_energy_lab";
-            var args = $"--clean --if-exists {dbName}";
+            var args = $"-Fc {dbName} ";
+            if ( classNames!=null) {
+                args+=" --table=";
+                args += string.Join(" --table=",classNames);
+            }
+
             var now = DateTime.Now;
             var ts = now.ToString("yyyy-MMM-dd-HH-mm-ss");
-            filename = $"{dbName}-{ts}.sql";
+            var append = appGroup==ApplicationGroup.All ? "": $" ({appGroup})";
+            filename = $"{dbName}-{ts}{append}.dump";
 
             // explicitly using /usr/bin to ensure it picks up v14.
             // installing gdal brings in postgres12 which then means "pg_dump" is v12

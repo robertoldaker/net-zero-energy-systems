@@ -574,7 +574,7 @@ namespace SmartEnergyLabDataApi.Models
                             pss.ExternalId2 = feature.properties.PRIM_NRID.ToString();
                         }
                         if ( pss.GISData==null) {
-                            pss.GISData = new GISData(pss);
+                            pss.GISData = new GISData();
                         }
                         //
                         boundaryLoader.AddGISData(da,pss.GISData,feature);

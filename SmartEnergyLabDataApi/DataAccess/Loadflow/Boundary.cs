@@ -5,7 +5,7 @@ using NHibernate.Mapping.Attributes;
 
 namespace SmartEnergyLabDataApi.Data
 {
-
+    [ApplicationGroup(ApplicationGroup.Loadflow)]
     [Class(0, Table = "loadflow_boundaries")]
     public class Boundary : IId, IDataset, ILifecycle
     {

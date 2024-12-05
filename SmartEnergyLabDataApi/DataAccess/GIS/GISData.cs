@@ -5,7 +5,7 @@ using MySqlX.XDevAPI;
 
 namespace SmartEnergyLabDataApi.Data
 {
-
+    [ApplicationGroup(ApplicationGroup.Loadflow)]
     [Class(0, Table = "gis_data")]
     public class GISData : ILifecycle
     {
@@ -14,26 +14,6 @@ namespace SmartEnergyLabDataApi.Data
 
         }
         
-        public GISData(VehicleChargingStation chargingStation)
-        {
-            VehicleChargingStation = chargingStation;
-        }
-
-        public GISData(GeographicalArea geographicalArea)
-        {
-            GeographicalArea = geographicalArea;
-        }
-
-        public GISData(DistributionSubstation distributionSubstation)
-        {
-            DistributionSubstation = distributionSubstation;
-        }
-
-        public GISData(PrimarySubstation primarySubstation)
-        {
-            PrimarySubstation = primarySubstation;
-        }
-
         /// <summary>
         /// Database identifier
         /// </summary>
@@ -50,21 +30,21 @@ namespace SmartEnergyLabDataApi.Data
         [Property(Formula = "( select count(*) from gis_boundaries gb where gb.gisdataid = id )")]
         public virtual int NumBoundaries {get; set;}
 
-        [JsonIgnore]
-        [ManyToOne(Column = "GeographicalAreaId", Cascade = "none")]
-        public virtual GeographicalArea GeographicalArea { get; set; }
+        //??[JsonIgnore]
+        //??[ManyToOne(Column = "GeographicalAreaId", Cascade = "none")]
+        //??public virtual GeographicalArea GeographicalArea { get; set; }
 
-        [JsonIgnore]
-        [ManyToOne(Column = "DistributionSubstationId", Cascade = "none")]
-        public virtual DistributionSubstation DistributionSubstation { get; set; }
+        //??[JsonIgnore]
+        //??[ManyToOne(Column = "DistributionSubstationId", Cascade = "none")]
+        //??public virtual DistributionSubstation DistributionSubstation { get; set; }
 
-        [JsonIgnore]
-        [ManyToOne(Column = "PrimarySubstationId", Cascade = "none")]
-        public virtual PrimarySubstation PrimarySubstation { get; set; }
+        //??[JsonIgnore]
+        //??[ManyToOne(Column = "PrimarySubstationId", Cascade = "none")]
+        //??public virtual PrimarySubstation PrimarySubstation { get; set; }
 
-        [JsonIgnore]
-        [ManyToOne(Column = "VehicleChargingStationId", Cascade = "none")]
-        public virtual VehicleChargingStation VehicleChargingStation { get; set; }
+        //??[JsonIgnore]
+        //??[ManyToOne(Column = "VehicleChargingStationId", Cascade = "none")]
+        //??public virtual VehicleChargingStation VehicleChargingStation { get; set; }
 
         public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
         {

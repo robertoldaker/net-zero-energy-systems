@@ -1,10 +1,18 @@
 <div class="header">
     <div class="toolbar">
         <button mat-raised-button color="primary" (click)="backupDb()">Backup database to server</button>
-        <button mat-raised-button color="primary" (click)="backupDbLocally()">
+        <button mat-raised-button color="primary" [matMenuTriggerFor]="loadNetworkDataMenu">
             Backup database locally
-            <mat-icon>arrow_downward</mat-icon>
+            <mat-icon>keyboard_arrow_down</mat-icon>
         </button>
+        <mat-menu #loadNetworkDataMenu="matMenu" >
+            <button mat-menu-item (click)="backupDbLocally(ApplicationGroup.All)">
+                <span>All</span>
+            </button>
+            <button mat-menu-item (click)="backupDbLocally(ElsiAndLoadflow)">
+                <span>Loadflow and Elsi only</span>
+            </button>
+        </mat-menu>     
         <button mat-raised-button color="primary" (click)="performCleanup()" disabled="{{inCleanup}}">            
             <div *ngIf="inCleanup" style="display: inline-block">
                 <mat-spinner diameter="20"></mat-spinner>

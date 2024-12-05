@@ -54,6 +54,9 @@ namespace HaloSoft.DataAccess
             // Check startup script
             using (var dab = new DataAccessBase()) {
                 var dbVersion = dab.Configuration.GetDbVersion();
+                if ( dbVersion.ScriptVersion == 0) {
+                    dbVersion.ScriptVersion = DbConnection.ScriptVersion;
+                }
                 var curScriptVersion = dbVersion.ScriptVersion;
                 var newScriptVersion = DbConnection.ScriptVersion;
                 if (curScriptVersion != newScriptVersion) {
@@ -390,6 +393,60 @@ namespace HaloSoft.DataAccess
             public string Name {get; set;}
         }
 
+        public static void DeleteColumn(string tableName, string columnName) {
+            if ( _dbConnection.DbProvider == DbProvider.PostgreSQL) {
+                var indexes = getIndexesPostgreSql(tableName,columnName);
+                foreach( var index in indexes) {
+                    runPostgreSQL($"DROP INDEX {index}");
+                }
+                var constraints = getForeignKeyContraintsPostgreSql(tableName,columnName);
+                foreach( var constraint in constraints) {
+                    runPostgreSQL($"ALTER TABLE {tableName} DROP CONSTRAINT {constraint}");
+                }
+                runPostgreSQL($"ALTER TABLE {tableName} DROP COLUMN IF EXISTS {columnName}");
+            } else {
+                throw new NotImplementedException($"DeleteColumn found unexpected dbProvider {_dbConnection.DbProvider}");
+            }
+        }
+
+        private static List<string> getForeignKeyContraintsPostgreSql(string tableName, string columnName) {
+
+            var sql = @$"
+SELECT
+    conname AS constraint_name,
+    conrelid::regclass AS table_name,
+    a.attname AS column_name,
+    confrelid::regclass AS foreign_table_name,
+    af.attname AS foreign_column_name
+FROM
+    pg_constraint AS c
+JOIN
+    pg_attribute AS a ON a.attnum = ANY(c.conkey) AND a.attrelid = c.conrelid
+JOIN
+    pg_attribute AS af ON af.attnum = ANY(c.confkey) AND af.attrelid = c.confrelid
+WHERE
+    c.contype = 'f'
+    AND a.attname = '{columnName}'
+    AND a.attrelid = '{tableName}'::regclass;
+";
+            var constraints = new List<string>();
+            RunPostgreSQLQuery(sql,(row)=>{
+                var constraintName = row[0].ToString();
+                constraints.Add(constraintName);
+            });
+            return constraints;
+        }
+
+        private static List<string> getIndexesPostgreSql(string tableName, string columnName) {
+            var sql = $"SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'gis_data' AND indexdef LIKE '%distributionsubstationid%';";
+            var indexes = new List<string>();
+            RunPostgreSQLQuery(sql,(row)=>{
+                var indexName = row[0].ToString();
+                indexes.Add(indexName);
+            });
+            return indexes;
+        }        
+        
         public static List<DbIndex> CreateIndexesIfNotExist(List<DbIndex> indexes) {
             if ( _dbConnection.DbProvider != DbProvider.PostgreSQL ) {
                 throw new Exception("CreateIndexesIfNotExist is only available for postgresql");

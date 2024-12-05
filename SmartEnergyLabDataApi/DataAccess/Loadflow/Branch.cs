@@ -8,7 +8,8 @@ namespace SmartEnergyLabDataApi.Data
 {
 
     public enum BranchType {Other, HVDC, OHL, Cable, Composite, Transformer, QB, SSSC, SeriesCapacitor, SeriesReactor}
-
+    
+    [ApplicationGroup(ApplicationGroup.Loadflow)]
     [Class(0, Table = "loadflow_branches")]
     public class Branch : IId, IDataset, ILifecycle
     {

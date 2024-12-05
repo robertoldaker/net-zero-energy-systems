@@ -1,6 +1,8 @@
 /**
  * Data definitions for Admin
  */
+export enum ApplicationGroup { All=0, Loadflow=1, Elsi=2 }
+
 export interface SystemInfo {
     processorCount: number,
     maintenanceMode: boolean

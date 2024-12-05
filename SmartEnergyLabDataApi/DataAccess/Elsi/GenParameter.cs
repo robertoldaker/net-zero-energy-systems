@@ -61,6 +61,7 @@ namespace SmartEnergyLabDataApi.Data
                             Tr // night time trough demand
                             }
 
+    [ApplicationGroup(ApplicationGroup.Elsi)]
     [Class(0, Table = "elsi_gen_parameters")]
     public class GenParameter : IDataset, IId
     {

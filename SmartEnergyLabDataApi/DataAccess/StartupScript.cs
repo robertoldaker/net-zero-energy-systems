@@ -12,7 +12,7 @@ namespace SmartEnergyLabDataApi.Data
             // distribution_substations
             new DataAccessBase.DbIndex("ix_external_id","distribution_substations","externalid"),
             new DataAccessBase.DbIndex("ix_dss_source_externalId","distribution_substations","source","externalid"),
-            new DataAccessBase.DbIndex("ix_dss_source_externalId2","istribution_substations","source","externalid2"),
+            new DataAccessBase.DbIndex("ix_dss_source_externalId2","distribution_substations","source","externalid2"),
             new DataAccessBase.DbIndex("ix_dss_source_name","distribution_substations","source","name"),
             new DataAccessBase.DbIndex("ix_distribution_substations_substationDataId","distribution_substations","distributionsubstationdataid"),
             new DataAccessBase.DbIndex("ix_distribution_substations_gisDataId","distribution_substations","gisdataid"),
@@ -53,9 +53,6 @@ namespace SmartEnergyLabDataApi.Data
             // gis_boundaries
             new DataAccessBase.DbIndex("ix_gis_boundaries_gisDataId","gis_boundaries","gisdataid"),
 
-            // gis_data
-            new DataAccessBase.DbIndex("ix_gis_data_primarySubstationId","gis_data","primarysubstationid"),
-            new DataAccessBase.DbIndex("ix_gis_data_distributionSubstationId","gis_data","distributionsubstationid"),
         };
 
         public static void RunNewVersion(int oldVersion, int newVersion)

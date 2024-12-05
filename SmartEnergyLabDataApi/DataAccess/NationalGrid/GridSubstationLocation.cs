@@ -7,6 +7,7 @@ namespace SmartEnergyLabDataApi.Data
 {
     public enum GridSubstationLocationSource { NGET, SHET, SPT, GoogleMaps, Estimated, UserDefined}
     
+    [ApplicationGroup(ApplicationGroup.Loadflow)]
     [Class(0, Table = "grid_substation_locations")]
     public class GridSubstationLocation : IId, IDataset, ILifecycle
     {
