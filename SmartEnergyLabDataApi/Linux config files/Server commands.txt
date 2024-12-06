@@ -129,6 +129,11 @@ sudo service postfix restart
 # sudo cat /var/log/mail.err
 # postqueue -p
 
+# add crontab enry to backup db daily
+cronteb -e
+# add
+00 04 * * * wget http://localhost:5020/Admin/BackupDb
+
 
 
 
