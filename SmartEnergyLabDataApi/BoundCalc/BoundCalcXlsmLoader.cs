@@ -1,0 +1,467 @@
+using System.Diagnostics;
+using ExcelDataReader;
+using HaloSoft.DataAccess;
+using HaloSoft.EventLogger;
+using Org.BouncyCastle.Bcpg;
+using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Data.BoundCalc;
+
+namespace SmartEnergyLabDataApi.BoundCalc
+{
+    public class BoundCalcXlsmLoader
+    {
+        private DataAccess _da;
+        private Dataset _dataset;
+
+        private ObjectCache<BoundCalcNode> _nodeCache;
+        private ObjectCache<BoundCalcZone> _zoneCache;
+        private ObjectCache<BoundCalcBranch> _branchCache;
+        private ObjectCache<BoundCalcCtrl> _ctrlCache;
+        private ObjectCache<BoundCalcBoundary> _boundaryCache;
+        private ObjectCache<BoundCalcBoundaryZone> _boundaryZoneCache;
+        public BoundCalcXlsmLoader()
+        {
+        }
+
+        public string Load(IFormFile formFile) {
+            string msg = "";
+            using( _da = new DataAccess() ) {
+                var name = "GB network";
+                _dataset = _da.Datasets.GetDataset(DatasetType.BoundCalc,name);
+                if ( _dataset==null) {
+                    var root = _da.Datasets.GetRootDataset(DatasetType.BoundCalc);
+                    _dataset = new Dataset() { Type = DatasetType.BoundCalc, Parent = root, Name = name };                
+                    _da.Datasets.Add(_dataset);
+                }
+                // Caches of existing objects
+                var existingNodes = _da.BoundCalc.GetNodes(_dataset);
+                _nodeCache = new ObjectCache<BoundCalcNode>(_da, existingNodes, m=>m.Code, (m,code)=>m.Code=code );
+                //
+                var existingZones = _da.BoundCalc.GetZones(_dataset);
+                _zoneCache = new ObjectCache<BoundCalcZone>(_da, existingZones, m=>m.Code, (m,code)=>m.Code=code );
+                //
+                var existingBranches = _da.BoundCalc.GetBranches(_dataset);
+                _branchCache = new ObjectCache<BoundCalcBranch>(_da, existingBranches, m=>m.GetKey(), (m,key)=>m.SetCode(key) );
+                //
+                var existingCtrls = _da.BoundCalc.GetCtrls(_dataset);
+                _ctrlCache = new ObjectCache<BoundCalcCtrl>(_da, existingCtrls, m=>m.Code, (m,code)=>{} );
+
+                var existingBoundaries = _da.BoundCalc.GetBoundaries(_dataset);
+                _boundaryCache = new ObjectCache<BoundCalcBoundary>(_da, existingBoundaries, m=>m.Code, (m,code)=>m.Code=code );
+                //
+                var existingBoundaryZones = _da.BoundCalc.GetBoundaryZones(_dataset);
+                _boundaryZoneCache = new ObjectCache<BoundCalcBoundaryZone>(_da, existingBoundaryZones, m=>$"{m.Boundary.Code}:{m.Zone.Code}", (m,key)=>{
+                    var cpnts = key.Split(':');
+                    var boundaryCode = cpnts[0];
+                    var zoneCode = cpnts[1];
+                    m.Boundary = _boundaryCache.GetOrCreate(boundaryCode, out bool created);
+                    if ( created ) {
+                        m.Boundary.Dataset = _dataset;
+                    }
+                    m.Zone = _zoneCache.GetOrCreate(zoneCode, out created);
+                    if ( created ) {
+                        m.Zone.Dataset = _dataset;
+                    }
+                } );
+
+                msg+=loadNodes(formFile) + "\n";
+                msg+=loadBranches(formFile) + "\n";
+                msg+=loadCtrls(formFile) + "\n";
+                msg+=loadBoundaries(formFile) + "\n";
+                //
+                _da.CommitChanges();
+            }
+            return msg;
+        }
+
+        private string loadNodes(IFormFile file) {
+            using (var stream = file.OpenReadStream()) {
+                using (var reader = ExcelReaderFactory.CreateReader(stream)) {
+                    do {
+                        var name = reader.Name;
+                        //
+                        if ( name=="Inputs") {
+                            return loadNodeData(reader);
+                        }
+                    } while (reader.NextResult());
+                }
+            }
+            throw new Exception("Could not find \"Inputs\" sheet");
+        }
+
+        private string loadNodeData(IExcelDataReader reader) {
+            int branchIndex, ctrlIndex, nodeIndex, boundaryIndex;
+            moveToStartRow(reader, out nodeIndex,  out branchIndex, out ctrlIndex, out boundaryIndex);
+            return readNodes(reader, nodeIndex);
+        }
+
+        private void moveToStartRow(IExcelDataReader reader, out int nodeIndex, out int branchIndex, out int ctrlIndex, out int boundaryIndex) {
+            while (reader.Read()) {
+                nodeIndex =0;
+                branchIndex = 0;
+                ctrlIndex = 0;
+                boundaryIndex = 0;
+                for( int i=1;i<reader.FieldCount;i++) {
+                    var value = reader.GetValue(i);
+                    if ( value is string) {
+                        string columnHeader = (string) value;
+                        if ( columnHeader=="Node") {
+                            nodeIndex = i;
+                        } else if ( columnHeader=="Region") {
+                            if ( branchIndex==0 ) {
+                                branchIndex = i;
+                            } else {
+                                ctrlIndex = i;
+                            }
+                        } else if ( columnHeader=="Boundary") {
+                            boundaryIndex = i;
+                        }
+                    }
+                }
+                // If we have found them then return
+                if ( nodeIndex>=0 && branchIndex>0 && ctrlIndex>0 && boundaryIndex>0) {
+                    return;
+                }
+            }
+            throw new Exception("Could not find start row to load data");
+        }
+
+        private string readNodes(IExcelDataReader reader, int nodeIndex) {
+            Logger.Instance.LogInfoEvent("Start reading nodes");
+            int numNodesAdded = 0;
+            int numNodesUpdated = 0;
+            int numZonesAdded = 0;
+            while (reader.Read()) {
+                var code = reader.GetString(nodeIndex);
+                if ( string.IsNullOrEmpty(code)) {
+                    break;
+                }
+                var demand = reader.GetDouble(nodeIndex+1);
+                var genA = reader.GetDouble(nodeIndex+2);
+                var genB = reader.GetDouble(nodeIndex+3);
+                var zoneCode = reader.GetString(nodeIndex+5);
+                int? gen_zone;
+                try {
+                    gen_zone = (int?) reader.GetDouble(nodeIndex+6);
+                } catch( Exception e) {
+                    gen_zone = null;
+                }
+                int? dem_zone;
+                try {
+                    dem_zone = (int?) reader.GetDouble(nodeIndex+7);
+                } catch( Exception e) {
+                    dem_zone = null;
+                }
+                var ext = reader.GetBoolean(nodeIndex+8);
+                //
+                var node = _nodeCache.GetOrCreate(code, out bool created);
+                if ( created ) {
+                    node.Dataset = _dataset;
+                    node.SetVoltage();
+                    node.SetLocation(_da);
+                    numNodesAdded++;
+                } else {
+                    numNodesUpdated++;
+                }
+                var zone = _zoneCache.GetOrCreate(zoneCode, out created);
+                if ( created ) {
+                    zone.Dataset = _dataset;
+                    numZonesAdded++;
+                } 
+                node.Demand = demand;
+                node.Generation_A = genA;
+                node.Generation_B = genB;
+                node.Zone = zone;
+                node.Gen_Zone = gen_zone;
+                node.Dem_zone = dem_zone;
+                node.Ext = ext;
+                //                
+            }
+            string msg = $"{numNodesAdded} nodes added, {numNodesUpdated} nodes updated, {numZonesAdded} zones added";
+            Logger.Instance.LogInfoEvent($"End reading nodes, {msg}");
+            return msg;
+        }
+
+        private string loadBranches(IFormFile file) {
+            using (var stream = file.OpenReadStream()) {
+                using (var reader = ExcelReaderFactory.CreateReader(stream)) {
+                    do {
+                        var name = reader.Name;
+                        //
+                        if ( name=="Inputs") {
+                            return loadBranchData(reader);
+                        }
+                    } while (reader.NextResult());
+                }
+            }
+            throw new Exception("Could not find \"Inputs\" sheet");
+        }
+
+        private string loadCtrls(IFormFile file) {
+            using (var stream = file.OpenReadStream()) {
+                using (var reader = ExcelReaderFactory.CreateReader(stream)) {
+                    do {
+                        var name = reader.Name;
+                        //
+                        if ( name=="Inputs") {
+                            return loadCtrlData(reader);
+                        }
+                    } while (reader.NextResult());
+                }
+            }
+            throw new Exception("Could not find \"Inputs\" sheet");
+        }
+
+        private string loadBoundaries(IFormFile file) {
+            using (var stream = file.OpenReadStream()) {
+                using (var reader = ExcelReaderFactory.CreateReader(stream)) {
+                    do {
+                        var name = reader.Name;
+                        //
+                        if ( name=="Inputs") {
+                            return loadBoundaryData(reader);
+                        }
+                    } while (reader.NextResult());
+                }
+            }
+            throw new Exception("Could not find \"Inputs\" sheet");
+        }
+
+        private string loadBranchData(IExcelDataReader reader) {
+            int branchIndex, ctrlIndex, nodeIndex, boundaryIndex;
+            moveToStartRow(reader, out nodeIndex, out branchIndex, out ctrlIndex, out boundaryIndex);
+            return readBranches(reader, branchIndex);
+        }
+
+        private string loadCtrlData(IExcelDataReader reader) {
+            int branchIndex, ctrlIndex, nodeIndex, boundaryIndex;
+            moveToStartRow(reader, out nodeIndex, out branchIndex, out ctrlIndex, out boundaryIndex);
+            return readCtrls(reader, ctrlIndex);
+        }
+
+        private string readBranches(IExcelDataReader reader, int branchIndex)
+        {
+            Logger.Instance.LogInfoEvent("Start reading branches");
+            //
+            int numBranchesAdded = 0;
+            int numBranchesUpdated = 0;
+            //
+            // Read data by row
+            while (reader.Read()) {
+                var region = reader.GetString(branchIndex);
+                if ( string.IsNullOrEmpty(region)) {
+                    break;
+                }
+                var node1Code = reader.GetString(branchIndex+1);
+                var node2Code = reader.GetString(branchIndex+2);
+                var code = reader.GetString(branchIndex+3);
+                var r = reader.GetDouble(branchIndex+4);
+                var x = reader.GetDouble(branchIndex+5);
+                var ohl = reader.GetDouble(branchIndex+6);
+                var cap = reader.GetDouble(branchIndex+8);
+                var linkType = reader.GetString(branchIndex+9);
+                // node1
+                if ( !_nodeCache.TryGetValue(node1Code, out BoundCalcNode node1)) {
+                    throw new Exception($"Cannot find node [{node1Code}]");
+                }
+                // node2
+                if ( !_nodeCache.TryGetValue(node2Code, out BoundCalcNode node2)) {
+                    throw new Exception($"Cannot find node [{node2Code}]");
+                }
+                // branches
+                var branch = _branchCache.GetOrCreate($"{node1Code}-{node2Code}:{code}", out bool created);
+                if ( created ) {
+                    branch.Dataset = _dataset;
+                    numBranchesAdded++;
+                } else {
+                    numBranchesUpdated++;
+                }
+                branch.Cap = cap;
+                branch.LinkType = linkType;
+                branch.Node1 = node1;
+                branch.Node2 = node2;
+                branch.OHL = ohl;
+                branch.R = r;
+                branch.X = x;
+                branch.Region = region;
+                if ( created ) {
+                    branch.SetType();
+                }
+            }
+            string msg = $"{numBranchesAdded} branches added, {numBranchesUpdated} branches updated";
+            Logger.Instance.LogInfoEvent($"End reading branches, {msg}");
+            return msg;
+        }
+
+        private string loadBoundaryData(IExcelDataReader reader) {
+            int branchIndex, ctrlIndex, nodeIndex, boundaryIndex;
+            moveToStartRow(reader, out nodeIndex, out branchIndex, out ctrlIndex, out boundaryIndex);
+            return readBoundaries(reader, boundaryIndex);
+        }
+
+
+        private string readBoundaries(IExcelDataReader reader, int boundaryIndex)
+        {
+            Logger.Instance.LogInfoEvent("Start reading boundaries");
+            //
+            int numBoundariesAdded = 0;
+            int numZonesAdded = 0;
+            int numBoundaryZonesUpdated = 0;
+            //
+
+            //
+            //??reader.Read(); // Eat first row
+            //?? reader.Read();
+            //??var zoneStr = reader.GetString(boundaryIndex);
+            //??if ( zoneStr!="Zone") {
+            //??    throw new Exception($"Unexpected first header cell found [{zoneStr}], expecting [\"Zone\"]");
+            //??}
+            // Zone codes are the header names
+            var zoneCodes = new List<string>();
+            for( int i=boundaryIndex+1; i<reader.FieldCount;i++) {
+                var zoneCode = reader.GetString(i);
+                if ( string.IsNullOrEmpty(zoneCode) || zoneCode=="Trips") {
+                    break;
+                }
+                // B8 has a trailing space - so trim all 
+                zoneCode = zoneCode.Trim();
+                var zone = _zoneCache.GetOrCreate(zoneCode, out bool created);
+                if ( created ) {
+                    zone.Dataset = _dataset;
+                    numZonesAdded++;
+                }
+                zoneCodes.Add(zoneCode);
+            }
+
+            // Read data by row
+            while (reader.Read()) {
+                var boundaryCode = reader.GetString(boundaryIndex);
+                if (string.IsNullOrEmpty(boundaryCode)) {
+                    break;
+                }
+                // node
+                var boundary = _boundaryCache.GetOrCreate(boundaryCode, out bool created);
+                if ( created ) {
+                    boundary.Dataset = _dataset;
+                    numBoundariesAdded++;
+                }
+                //
+                for( int i=0; i<zoneCodes.Count;i++ ) {
+                    double entry;
+                    try {
+                        entry = reader.GetDouble(boundaryIndex+i+1);
+                    }catch(Exception e) {
+                        break;
+                    }
+                    var zoneCode = zoneCodes[i];
+                    var key=$"{boundaryCode}:{zoneCode}";
+                    if ( entry==1) {
+                        // Create it if it doesn't exist
+                        var bz = _boundaryZoneCache.GetOrCreate(key, out bool bzCreated);
+                        if ( bzCreated ) {
+                            bz.Dataset = _dataset;
+                            numBoundaryZonesUpdated++;
+                        }
+                    } else if ( entry == 0) {
+                        // Delete it if it exists
+                        if ( _boundaryZoneCache.TryGetValue(key, out BoundCalcBoundaryZone bz) ) {
+                            _da.BoundCalc.Delete(bz);
+                            numBoundaryZonesUpdated++;
+                        }
+                    } 
+                }
+            }
+            string msg = $"{numBoundariesAdded} boundaries added, {numBoundaryZonesUpdated} boundary/zones entries updated";
+            Logger.Instance.LogInfoEvent($"End reading boundaries, {msg}");
+            return msg;
+        }
+
+        private string readCtrls(IExcelDataReader reader, int ctrlIndex) 
+        {
+            Logger.Instance.LogInfoEvent("Start reading ctrls");
+            string msg="";
+            //
+            int numCtrlsAdded = 0;
+            int numCtrlsUpdated = 0;
+            //
+            // Caches of existing objects
+            var existingNodes = _da.BoundCalc.GetNodes(_dataset);
+            var nodeCache = new ObjectCache<BoundCalcNode>(_da, existingNodes, m=>m.Code, (m,code)=>m.Code=code );
+            //
+            // Read data by row
+            while (reader.Read()) {
+                var region = reader.GetString(ctrlIndex+0);
+                if ( string.IsNullOrEmpty(region) ) {
+                    break;
+                }
+                var node1Code = reader.GetString(ctrlIndex+1);
+                var node2Code = reader.GetString(ctrlIndex+2);
+                var code = reader.GetString(ctrlIndex+3);
+                var type = (BoundCalcCtrlType) Enum.Parse(typeof(BoundCalcCtrlType),reader.GetString(ctrlIndex+4));
+                var minCtrl = reader.GetDouble(ctrlIndex+5);
+                var maxCtrl = reader.GetDouble(ctrlIndex+6);
+                var cost = reader.GetDouble(ctrlIndex+11);
+                // 
+                var ctrl = _ctrlCache.GetOrCreate(code, out bool created);
+                if ( created ) {
+                    ctrl.Dataset = _dataset;
+                    var key = $"{node1Code}-{node2Code}:{code}";
+                    if ( _branchCache.TryGetValue(key, out BoundCalcBranch b) ) {
+                        ctrl.Branch = b;
+                    } else {
+                        var m= $"Could not find branch for ctrl [{key}]";
+                        Logger.Instance.LogInfoEvent(m);
+                        msg+=m;
+                    }
+                    numCtrlsAdded++;
+                } else {
+                    numCtrlsUpdated++;
+                }
+                ctrl.Region = region;
+                ctrl.Type = type;
+                ctrl.MinCtrl = minCtrl;
+                ctrl.MaxCtrl = maxCtrl;
+                ctrl.Cost = cost;
+                if ( created && ctrl.Branch!=null ) {
+                        ctrl.Branch.SetCtrl(ctrl);
+                }
+            }
+            var mm=$"{numCtrlsAdded} ctrls added, {numCtrlsUpdated} ctrls updated";
+            Logger.Instance.LogInfoEvent($"End reading ctrls {mm}");
+            msg+=mm;
+            return msg;
+        }
+
+        public class CsvHeaders {
+            public CsvHeaders() {
+                Headers = new List<CsvHeader>();
+            }
+            public void Add(string name, int index) {
+                Headers.Add( new CsvHeader(name, index));
+            }
+            public List<CsvHeader> Headers {get; set;}
+            public void Check(IExcelDataReader reader) {
+                // read header
+                reader.Read();
+                if ( reader.FieldCount!=Headers.Count ) {
+                    throw new Exception($"Found {reader.FieldCount} columns but expecting {Headers.Count}");
+                }
+                for(int i=0; i<reader.FieldCount;i++) {
+                    if ( reader.GetString(i)!=Headers[i].Name ) {
+                        throw new Exception($"Unexpected header [{reader.GetString(i)}] found at index [{i}] but expecting [{Headers[i].Name}]");
+                    }
+                }
+            }
+        }
+
+        public class CsvHeader {
+            public CsvHeader( string name, int index) {
+                Name = name;
+                Index = index;
+            }
+            public string Name {get; set;}
+            public int Index {get; set;}
+        }
+
+   }
+} 

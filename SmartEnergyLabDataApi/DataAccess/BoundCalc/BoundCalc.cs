@@ -10,6 +10,7 @@ using HaloSoft.EventLogger;
 using Microsoft.AspNetCore.Mvc;
 using NHibernate;
 using NHibernate.Criterion;
+using SmartEnergyLabDataApi.BoundCalc;
 using SmartEnergyLabDataApi.Loadflow;
 using SmartEnergyLabDataApi.Models;
 
@@ -373,7 +374,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         public string LoadFromXlsm(IFormFile formFile) {
             using ( var da = new DataAccess() ) {
-                var loader = new LoadflowXlsmLoader();
+                var loader = new BoundCalcXlsmLoader();
                 return loader.Load(formFile);
             }
         }
