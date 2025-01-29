@@ -5,6 +5,7 @@ using HaloSoft.DataAccess;
 using NHibernate;
 using NHibernate.Criterion;
 using NHibernate.Mapping;
+using SmartEnergyLabDataApi.Data.Loadflow;
 
 namespace SmartEnergyLabDataApi.Data;
 

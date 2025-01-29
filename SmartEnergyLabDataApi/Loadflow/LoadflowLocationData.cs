@@ -2,6 +2,7 @@ using System.Linq;
 using Microsoft.Extensions.ObjectPool;
 using NHibernate.Criterion;
 using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Data.Loadflow;
 using SmartEnergyLabDataApi.Models;
 
 namespace SmartEnergyLabDataApi.Loadflow

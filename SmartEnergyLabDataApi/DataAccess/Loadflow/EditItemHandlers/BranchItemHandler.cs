@@ -3,7 +3,7 @@ using Microsoft.Extensions.ObjectPool;
 using NHibernate;
 using NHibernate.Driver;
 
-namespace SmartEnergyLabDataApi.Data;
+namespace SmartEnergyLabDataApi.Data.Loadflow;
 
 public class BranchItemHandler : BaseEditItemHandler
 {

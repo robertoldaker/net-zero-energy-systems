@@ -3,6 +3,7 @@ using HaloSoft.EventLogger;
 using NHibernate;
 using NHibernate.Dialect.Schema;
 using NHibernate.Util;
+using SmartEnergyLabDataApi.Data.Loadflow;
 
 namespace SmartEnergyLabDataApi.Data
 {

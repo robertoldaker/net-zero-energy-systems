@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using NHibernate.Mapping.Attributes;
 using SmartEnergyLabDataApi.Loadflow;
 
-namespace SmartEnergyLabDataApi.Data
+namespace SmartEnergyLabDataApi.Data.Loadflow
 {
     [ApplicationGroup(ApplicationGroup.Loadflow)]
     [Class(0, Table = "loadflow_results")]

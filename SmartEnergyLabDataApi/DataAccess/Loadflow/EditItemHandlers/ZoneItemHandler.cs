@@ -1,5 +1,5 @@
 
-namespace SmartEnergyLabDataApi.Data;
+namespace SmartEnergyLabDataApi.Data.Loadflow;
 
 
 public class ZoneItemHandler : BaseEditItemHandler

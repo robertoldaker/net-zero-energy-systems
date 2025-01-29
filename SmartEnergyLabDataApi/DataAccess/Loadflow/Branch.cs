@@ -4,7 +4,7 @@ using MySqlX.XDevAPI;
 using NHibernate.Classic;
 using NHibernate.Mapping.Attributes;
 
-namespace SmartEnergyLabDataApi.Data
+namespace SmartEnergyLabDataApi.Data.Loadflow
 {
 
     public enum BranchType {Other, HVDC, OHL, Cable, Composite, Transformer, QB, SSSC, SeriesCapacitor, SeriesReactor}

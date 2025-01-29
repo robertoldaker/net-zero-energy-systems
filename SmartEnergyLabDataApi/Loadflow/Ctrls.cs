@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using NHibernate;
 using Org.BouncyCastle.Asn1.Cms;
 using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Data.Loadflow;
 
 namespace SmartEnergyLabDataApi.Loadflow
 {

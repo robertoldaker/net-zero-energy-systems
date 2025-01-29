@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using System.Xml.Linq;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Data.Loadflow;
 using static SmartEnergyLabDataApi.Loadflow.BoundaryTrips;
 
 namespace SmartEnergyLabDataApi.Loadflow

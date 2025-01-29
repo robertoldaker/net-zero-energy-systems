@@ -2,6 +2,7 @@ using System.Linq;
 using Microsoft.Extensions.ObjectPool;
 using SmartEnergyLabDataApi.Common;
 using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Data.Loadflow;
 
 namespace SmartEnergyLabDataApi.Loadflow
 {
@@ -14,7 +15,7 @@ namespace SmartEnergyLabDataApi.Loadflow
         private double[] _btfr;
         private Branches _branches;
         private Ctrls _ctrls;        
-        private DatasetData<Data.Boundary> _boundaries;
+        private DatasetData<Data.Loadflow.Boundary> _boundaries;
         private DatasetData<Zone> _zones;
 
 
@@ -95,7 +96,7 @@ namespace SmartEnergyLabDataApi.Loadflow
             }
         }
 
-        public DatasetData<Data.Boundary> Boundaries {
+        public DatasetData<Data.Loadflow.Boundary> Boundaries {
             get {
                 return _boundaries;
             }
@@ -231,7 +232,7 @@ namespace SmartEnergyLabDataApi.Loadflow
             return true;
         }
 
-        public NodeBoundaryData GetNodeBoundaryData(Data.Boundary bndry) {
+        public NodeBoundaryData GetNodeBoundaryData(Data.Loadflow.Boundary bndry) {
             NodeBoundaryData nbd=null;
             nbd = new NodeBoundaryData(bndry.Zones);
             return nbd;
@@ -261,9 +262,9 @@ namespace SmartEnergyLabDataApi.Loadflow
             } while( chng);
         }
 
-        private DatasetData<Data.Boundary> loadBoundaries(DataAccess da, int datasetId) {
-            var q = da.Session.QueryOver<Data.Boundary>();
-            var ds = new DatasetData<Data.Boundary>(da, datasetId,m=>m.Id.ToString(),q);
+        private DatasetData<Data.Loadflow.Boundary> loadBoundaries(DataAccess da, int datasetId) {
+            var q = da.Session.QueryOver<Data.Loadflow.Boundary>();
+            var ds = new DatasetData<Data.Loadflow.Boundary>(da, datasetId,m=>m.Id.ToString(),q);
             // add zones they belong to
             var boundDict = da.Loadflow.GetBoundaryZoneDict(ds.Data);
             foreach( var b in ds.Data) {

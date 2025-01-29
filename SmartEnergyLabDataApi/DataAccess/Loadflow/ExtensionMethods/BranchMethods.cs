@@ -1,7 +1,7 @@
 using HaloSoft.EventLogger;
 using NHibernate.Mapping.Attributes;
 
-namespace SmartEnergyLabDataApi.Data
+namespace SmartEnergyLabDataApi.Data.Loadflow
 {
     public static class BranchMethods {
         public static string GetKey(this Branch b) {

@@ -5,7 +5,7 @@ using NHibernate;
 using NHibernate.Criterion;
 using NHibernate.Util;
 
-namespace SmartEnergyLabDataApi.Data;
+namespace SmartEnergyLabDataApi.Data.Loadflow;
 
 public class GridSubstationLocationItemHandler : BaseEditItemHandler
 {

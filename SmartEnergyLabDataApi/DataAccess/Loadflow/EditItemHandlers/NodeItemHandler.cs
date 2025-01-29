@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 using NHibernate;
 using NHibernate.AdoNet.Util;
 
-namespace SmartEnergyLabDataApi.Data;
+namespace SmartEnergyLabDataApi.Data.Loadflow;
 
 public class NodeItemHandler : BaseEditItemHandler
 {

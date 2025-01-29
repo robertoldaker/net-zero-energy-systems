@@ -2,7 +2,7 @@ using HaloSoft.EventLogger;
 using Npgsql.Replication;
 using SmartEnergyLabDataApi.Models;
 
-namespace SmartEnergyLabDataApi.Data
+namespace SmartEnergyLabDataApi.Data.Loadflow
 {
     public static class NodeMethods {
         private static Dictionary<string,int> _nodeVoltageDict = new Dictionary<string, int>() {

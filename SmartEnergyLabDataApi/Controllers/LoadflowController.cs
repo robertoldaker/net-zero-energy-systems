@@ -9,6 +9,7 @@ using static SmartEnergyLabDataApi.Models.LoadflowReference;
 using Org.BouncyCastle.Crypto.Signers;
 using System.Text.Json;
 using System.Linq.Expressions;
+using SmartEnergyLabDataApi.Data.Loadflow;
 
 namespace SmartEnergyLabDataApi.Controllers
 {
@@ -41,10 +42,10 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <returns>List of boundaries</returns>
         [HttpGet]
         [Route("Boundaries")]
-        public DatasetData<Data.Boundary> Boundaries(int datasetId) {
+        public DatasetData<Data.Loadflow.Boundary> Boundaries(int datasetId) {
             using ( var da = new DataAccess() ) {
-                var q = da.Session.QueryOver<Data.Boundary>();
-                var ds = new DatasetData<Data.Boundary>(da, datasetId,m=>m.Id.ToString(),q);
+                var q = da.Session.QueryOver<Data.Loadflow.Boundary>();
+                var ds = new DatasetData<Data.Loadflow.Boundary>(da, datasetId,m=>m.Id.ToString(),q);
                 // add zones they belong to
                 var boundDict = da.Loadflow.GetBoundaryZoneDict(ds.Data);
                 foreach( var b in ds.Data) {

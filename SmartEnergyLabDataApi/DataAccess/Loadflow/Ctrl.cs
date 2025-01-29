@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using NHibernate.Mapping.Attributes;
 
-namespace SmartEnergyLabDataApi.Data
+namespace SmartEnergyLabDataApi.Data.Loadflow
 {
 
     public enum LoadflowCtrlType {  QB, // Quad Booster

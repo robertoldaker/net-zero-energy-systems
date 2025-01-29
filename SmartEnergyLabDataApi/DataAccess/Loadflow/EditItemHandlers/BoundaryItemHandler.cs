@@ -1,4 +1,4 @@
-namespace SmartEnergyLabDataApi.Data;
+namespace SmartEnergyLabDataApi.Data.Loadflow;
 
 public class BoundaryItemHandler : BaseEditItemHandler
 {

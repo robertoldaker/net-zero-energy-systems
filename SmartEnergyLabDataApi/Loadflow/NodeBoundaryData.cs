@@ -1,4 +1,5 @@
 using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Data.Loadflow;
 using SmartEnergyLabDataApi.Elsi;
 
 namespace SmartEnergyLabDataApi.Loadflow

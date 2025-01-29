@@ -1,5 +1,6 @@
 using NHibernate;
 using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Data.Loadflow;
 
 namespace SmartEnergyLabDataApi.Loadflow
 {

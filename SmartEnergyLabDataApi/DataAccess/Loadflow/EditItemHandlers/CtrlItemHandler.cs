@@ -3,7 +3,7 @@ using NHibernate;
 using NHibernate.Criterion;
 using NHibernate.Driver;
 
-namespace SmartEnergyLabDataApi.Data;
+namespace SmartEnergyLabDataApi.Data.Loadflow;
 
 public class CtrlItemHandler : BaseEditItemHandler
 {

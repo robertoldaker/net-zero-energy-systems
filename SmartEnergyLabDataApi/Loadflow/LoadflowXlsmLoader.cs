@@ -3,6 +3,7 @@ using ExcelDataReader;
 using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Data.Loadflow;
 
 namespace SmartEnergyLabDataApi.Loadflow
 {
@@ -15,7 +16,7 @@ namespace SmartEnergyLabDataApi.Loadflow
         private ObjectCache<Zone> _zoneCache;
         private ObjectCache<Branch> _branchCache;
         private ObjectCache<Ctrl> _ctrlCache;
-        private ObjectCache<Data.Boundary> _boundaryCache;
+        private ObjectCache<Data.Loadflow.Boundary> _boundaryCache;
         private ObjectCache<BoundaryZone> _boundaryZoneCache;
         public LoadflowXlsmLoader()
         {
@@ -45,7 +46,7 @@ namespace SmartEnergyLabDataApi.Loadflow
                 _ctrlCache = new ObjectCache<Ctrl>(_da, existingCtrls, m=>m.Code, (m,code)=>{} );
 
                 var existingBoundaries = _da.Loadflow.GetBoundaries(_dataset);
-                _boundaryCache = new ObjectCache<Data.Boundary>(_da, existingBoundaries, m=>m.Code, (m,code)=>m.Code=code );
+                _boundaryCache = new ObjectCache<Data.Loadflow.Boundary>(_da, existingBoundaries, m=>m.Code, (m,code)=>m.Code=code );
                 //
                 var existingBoundaryZones = _da.Loadflow.GetBoundaryZones(_dataset);
                 _boundaryZoneCache = new ObjectCache<BoundaryZone>(_da, existingBoundaryZones, m=>$"{m.Boundary.Code}:{m.Zone.Code}", (m,key)=>{

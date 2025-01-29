@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.TagHelpers;
 using NHibernate.Util;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Data.Loadflow;
 using SmartEnergyLabDataApi.Loadflow;
 
 namespace SmartEnergyLabDataApi.Models

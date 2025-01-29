@@ -7,6 +7,7 @@ using NHibernate.Dialect.Function;
 using NHibernate.Util;
 using Org.BouncyCastle.Crypto.Signers;
 using Remotion.Linq.Parsing.Structure.IntermediateModel;
+using SmartEnergyLabDataApi.Data.Loadflow;
 using SmartEnergyLabDataApi.Loadflow;
 
 namespace SmartEnergyLabDataApi.Data
@@ -23,7 +24,7 @@ namespace SmartEnergyLabDataApi.Data
             SubstationLoadProfiles = new SubstationLoadProfiles(this);
             SubstationClassifications = new SubstationClassifications(this);
             VehicleCharging = new VehicleCharging(this);
-            Loadflow = new Loadflow(this);
+            Loadflow = new LoadflowDS(this);
             Elsi = new Elsi(this);
             Users = new Users(this);
             Admin = new Admin(this);
@@ -40,7 +41,7 @@ namespace SmartEnergyLabDataApi.Data
         public Organisations Organisations { get; private set; }
         public SupplyPoints SupplyPoints { get; private set; }
         public VehicleCharging VehicleCharging { get; private set; }
-        public Loadflow Loadflow { get; private set; }
+        public LoadflowDS Loadflow { get; private set; }
         public Elsi Elsi { get; private set; }
         public Users Users {get; private set;}
         public Admin Admin {get; private set;}

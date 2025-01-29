@@ -13,11 +13,11 @@ using NHibernate.Criterion;
 using SmartEnergyLabDataApi.Loadflow;
 using SmartEnergyLabDataApi.Models;
 
-namespace SmartEnergyLabDataApi.Data
+namespace SmartEnergyLabDataApi.Data.Loadflow
 {
-    public class Loadflow : DataSet
+    public class LoadflowDS : DataSet
     {
-        public Loadflow(DataAccess da) : base(da)
+        public LoadflowDS(DataAccess da) : base(da)
         {
 
         }

@@ -12,6 +12,7 @@ using Org.BouncyCastle.Asn1.Mozilla;
 using Org.BouncyCastle.Crypto.Signers;
 using Renci.SshNet.Security;
 using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Data.Loadflow;
 using SmartEnergyLabDataApi.Models;
 using static SmartEnergyLabDataApi.Models.GoogleMapsGISFinder;
 
@@ -940,9 +941,9 @@ public class LoadflowETYSLoader
             newZones.Add(nz);
         }
         var boundaries = da.Loadflow.GetBoundaries(ds);
-        var newBoundaries = new List<Data.Boundary>();
+        var newBoundaries = new List<Data.Loadflow.Boundary>();
         foreach( var b in boundaries ) {
-            var nb = new Data.Boundary() {
+            var nb = new Data.Loadflow.Boundary() {
                 Code = b.Code,
                 Dataset = dataset
             };

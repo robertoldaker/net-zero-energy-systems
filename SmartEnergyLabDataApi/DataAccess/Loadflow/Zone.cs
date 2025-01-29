@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using NHibernate.Classic;
 using NHibernate.Mapping.Attributes;
 
-namespace SmartEnergyLabDataApi.Data
+namespace SmartEnergyLabDataApi.Data.Loadflow
 {
     [ApplicationGroup(ApplicationGroup.Loadflow)]
     [Class(0, Table = "loadflow_zones")]

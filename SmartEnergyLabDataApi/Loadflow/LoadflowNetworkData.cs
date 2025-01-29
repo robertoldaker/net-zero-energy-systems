@@ -2,6 +2,7 @@ using System.Linq;
 using Org.BouncyCastle.Asn1.Icao;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Data.Loadflow;
 
 namespace SmartEnergyLabDataApi.Loadflow
 {
@@ -28,7 +29,7 @@ namespace SmartEnergyLabDataApi.Loadflow
         public DatasetData<Node> Nodes {get; private set;}
         public DatasetData<Branch> Branches {get; private set;}        
         public DatasetData<Ctrl> Ctrls {get; private set;}
-        public DatasetData<Data.Boundary> Boundaries {get; private set;}
+        public DatasetData<Data.Loadflow.Boundary> Boundaries {get; private set;}
         public DatasetData<Zone> Zones {get; private set;}
         public DatasetData<GridSubstationLocation> Locations {get; private set;}
 

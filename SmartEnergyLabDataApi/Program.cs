@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Data.Loadflow;
 using SmartEnergyLabDataApi.Models;
 
 public static class Program
