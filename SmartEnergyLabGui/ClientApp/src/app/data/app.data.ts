@@ -495,7 +495,7 @@ export enum ModificationTypeEnum  {Enhancement, Bug}
  /**
   * Datasets
   */
- export enum DatasetType {Elsi,Loadflow}
+ export enum DatasetType {Elsi, Loadflow, BoundCalc}
 
 export interface IId {
     id: number

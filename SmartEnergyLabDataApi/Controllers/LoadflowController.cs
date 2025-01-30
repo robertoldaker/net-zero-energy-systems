@@ -64,8 +64,8 @@ namespace SmartEnergyLabDataApi.Controllers
         /// Runs a base load flow
         /// </summary>
         [HttpPost]
-        [Route("RunBaseLoadflow")]
-        public IActionResult RunBaseLoadflow(int datasetId)
+        [Route("RunBase")]
+        public IActionResult RunBase(int datasetId)
         {
             using( var lf = new Loadflow.Loadflow(datasetId) ) {
                 lf.RunBaseCase("Auto");

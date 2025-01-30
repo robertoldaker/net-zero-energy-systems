@@ -39,6 +39,9 @@ export class LoadflowDataService {
         this.signalRService.hubConnection.on('Loadflow_AllTripsProgress', (data) => {
             this.AllTripsProgress.emit(data);
         })
+        this.signalRService.hubConnection.on('BoundCalc_AllTripsProgress', (data) => {
+            this.AllTripsProgress.emit(data);
+        })
         //
         this.selectedMapItem = null
     }

@@ -266,8 +266,10 @@ export class DataClientService implements ILogs {
     /**
      *  Loadflow 
      */
+    //controller='Loadflow'
+    controller='BoundCalc'
     GetNetworkData( datasetId: number, onLoad: (networkData: NetworkData)=> void | undefined) {
-        this.http.get<NetworkData>(this.baseUrl + `/Loadflow/NetworkData?datasetId=${datasetId}`).subscribe( result => {
+        this.http.get<NetworkData>(this.baseUrl + `/${this.controller}/NetworkData?datasetId=${datasetId}`).subscribe( result => {
             if ( onLoad ) {
                 onLoad(result)
             }
@@ -275,7 +277,7 @@ export class DataClientService implements ILogs {
     }
 
     GetLocationData( datasetId: number, onLoad: (locationData: LocationData)=> void | undefined) {
-        this.http.get<LocationData>(this.baseUrl + `/Loadflow/LocationData?datasetId=${datasetId}`).subscribe( result => {
+        this.http.get<LocationData>(this.baseUrl + `/${this.controller}/LocationData?datasetId=${datasetId}`).subscribe( result => {
             if ( onLoad ) {
                 onLoad(result)
             }
@@ -283,7 +285,7 @@ export class DataClientService implements ILogs {
     }
 
     GetBoundaries( datasetId: number, onLoad: (boundaryData: DatasetData<Boundary>)=> void | undefined) {
-        this.http.get<DatasetData<Boundary>>(this.baseUrl + `/Loadflow/Boundaries?datasetId=${datasetId}`).subscribe( result => {
+        this.http.get<DatasetData<Boundary>>(this.baseUrl + `/${this.controller}/Boundaries?datasetId=${datasetId}`).subscribe( result => {
             if ( onLoad ) {
                 onLoad(result)
             }
@@ -292,7 +294,7 @@ export class DataClientService implements ILogs {
 
     RunBaseLoadflow( datasetId: number,onLoad: (results: LoadflowResults)=> void | undefined) {
         this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/Loadflow/RunBaseLoadflow?datasetId=${datasetId}`,{}).subscribe( result => {
+        this.http.post<LoadflowResults>(this.baseUrl + `/${this.controller}/RunBase?datasetId=${datasetId}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
                 onLoad(result)
@@ -302,7 +304,7 @@ export class DataClientService implements ILogs {
 
     SetBound( datasetId: number, boundaryName:string, onLoad: (results: LoadflowResults)=> void | undefined) {
         this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/Loadflow/SetBound?datasetId=${datasetId}&boundaryName=${boundaryName}`,{}).subscribe( result => {
+        this.http.post<LoadflowResults>(this.baseUrl + `/${this.controller}/SetBound?datasetId=${datasetId}&boundaryName=${boundaryName}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
                 onLoad(result)
@@ -312,7 +314,7 @@ export class DataClientService implements ILogs {
 
     RunBoundaryTrip( datasetId: number, boundaryName: string, tripName: string, onLoad: (results: LoadflowResults)=> void | undefined) {
         this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/Loadflow/RunBoundaryTrip?datasetId=${datasetId}&boundaryName=${boundaryName}&tripName=${tripName}`,{}).subscribe( result => {
+        this.http.post<LoadflowResults>(this.baseUrl + `/${this.controller}/RunBoundaryTrip?datasetId=${datasetId}&boundaryName=${boundaryName}&tripName=${tripName}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
                 onLoad(result)
@@ -323,7 +325,7 @@ export class DataClientService implements ILogs {
     RunAllBoundaryTrips( datasetId: number, boundaryName: string,  onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/Loadflow/RunAllBoundaryTrips?datasetId=${datasetId}&boundaryName=${boundaryName}&connectionId=${connectionId}`,{}).subscribe( result => {
+        this.http.post<LoadflowResults>(this.baseUrl + `/${this.controller}/RunAllBoundaryTrips?datasetId=${datasetId}&boundaryName=${boundaryName}&connectionId=${connectionId}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
                 onLoad(result)

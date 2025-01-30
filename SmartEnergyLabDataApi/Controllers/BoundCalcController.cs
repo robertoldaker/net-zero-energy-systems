@@ -64,8 +64,8 @@ namespace SmartEnergyLabDataApi.Controllers
         /// Runs a base load flow
         /// </summary>
         [HttpPost]
-        [Route("RunBaseBoundCalc")]
-        public IActionResult RunBaseBoundCalc(int datasetId)
+        [Route("RunBase")]
+        public IActionResult RunBase(int datasetId)
         {
             using( var lf = new BoundCalc.BoundCalc(datasetId) ) {
                 lf.RunBaseCase("Auto");
