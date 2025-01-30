@@ -71,8 +71,8 @@ public class BranchItemHandler : BaseEditItemHandler
         }
         var type = m.CheckInt("type");
         if ( type!=null ) {
-            var branchType = (BranchType) type;            
-            if ( branchType == BranchType.QB || branchType == BranchType.HVDC ) {
+            var branchType = (BoundCalcBranchType) type;            
+            if ( branchType == BoundCalcBranchType.QB || branchType == BoundCalcBranchType.HVDC ) {
                 var minCtrl = m.CheckDouble("minCtrl");
                 if ( minCtrl == null ) {
                     m.AddError("minCtrl","Please set min ctrl");
@@ -140,13 +140,13 @@ public class BranchItemHandler : BaseEditItemHandler
         //
         var type = m.CheckInt("type");
         if ( type!=null && b.Id ==0 ) {
-            var branchType = (BranchType) type;
+            var branchType = (BoundCalcBranchType) type;
             b.Type = branchType;
-            if ( branchType == BranchType.QB || branchType == BranchType.HVDC ) {
+            if ( branchType == BoundCalcBranchType.QB || branchType == BoundCalcBranchType.HVDC ) {
                 BoundCalcCtrlType ctrlType;
-                if ( branchType == BranchType.QB) {
+                if ( branchType == BoundCalcBranchType.QB) {
                     ctrlType = BoundCalcCtrlType.QB;
-                } else if ( branchType == BranchType.HVDC) {
+                } else if ( branchType == BoundCalcBranchType.HVDC) {
                     ctrlType = BoundCalcCtrlType.HVDC;
                 } else {
                     throw new Exception($"Unexpected branch type found [{branchType}]");

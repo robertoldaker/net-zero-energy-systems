@@ -16,9 +16,9 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             branch.Ctrl = ctrl;
             //
             if ( ctrl.Type == BoundCalcCtrlType.HVDC) {
-                branch.Type = BranchType.HVDC;
+                branch.Type = BoundCalcBranchType.HVDC;
             } else if ( ctrl.Type == BoundCalcCtrlType.QB) {
-                branch.Type = BranchType.QB;
+                branch.Type = BoundCalcBranchType.QB;
             }
         }
 
@@ -26,31 +26,31 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             if ( string.IsNullOrEmpty(b.LinkType) ) {
                 return;
             }
-            if ( b.Type!=BranchType.Other) {
+            if ( b.Type!=BoundCalcBranchType.Other) {
                 return;
             }
             if ( string.Compare(b.LinkType,"SSSC") == 0 ) {
-                b.Type = BranchType.SSSC;
+                b.Type = BoundCalcBranchType.SSSC;
             } else if ( string.Compare(b.LinkType,"Series Capacitor",true) == 0 ) {
-                b.Type = BranchType.SeriesCapacitor;
+                b.Type = BoundCalcBranchType.SeriesCapacitor;
             } else if ( string.Compare(b.LinkType,"Series Reactor",true) == 0 ) {
-                b.Type = BranchType.SeriesReactor;
+                b.Type = BoundCalcBranchType.SeriesReactor;
             } else if ( string.Compare(b.LinkType,"Transformer",true) == 0 ) {
-                b.Type = BranchType.Transformer;
+                b.Type = BoundCalcBranchType.Transformer;
             } else if ( string.Compare(b.LinkType,"cable",true) == 0 ) {
-                b.Type = BranchType.Cable;
+                b.Type = BoundCalcBranchType.Cable;
             } else if ( b.LinkType.ToLower().Contains("composite") ) {
-                b.Type = BranchType.Composite;
+                b.Type = BoundCalcBranchType.Composite;
             } else if ( b.LinkType.ToLower().Contains("ohl") ) {
-                b.Type = BranchType.OHL;
+                b.Type = BoundCalcBranchType.OHL;
             } else if ( b.LinkType.ToLower().Contains("transformer") ) {
-                b.Type = BranchType.Transformer;
+                b.Type = BoundCalcBranchType.Transformer;
             } else if ( b.LinkType.ToLower().Contains("hvdc") ) {
-                b.Type = BranchType.HVDC;
+                b.Type = BoundCalcBranchType.HVDC;
             } else if ( string.Compare(b.LinkType,"construct",true)==0 ) {
-                b.Type = BranchType.Other;
+                b.Type = BoundCalcBranchType.Other;
             } else if ( string.Compare(b.LinkType,"Zero Length",true)==0 ) {
-                b.Type = BranchType.Other;
+                b.Type = BoundCalcBranchType.Other;
             } else {
                 Logger.Instance.LogInfoEvent($"Unexpected link type found [{b.LinkType}]");
             }

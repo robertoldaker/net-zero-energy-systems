@@ -7,7 +7,7 @@ using NHibernate.Mapping.Attributes;
 namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
 
-    public enum BranchType {Other, HVDC, OHL, Cable, Composite, Transformer, QB, SSSC, SeriesCapacitor, SeriesReactor}
+    public enum BoundCalcBranchType {Other, HVDC, OHL, Cable, Composite, Transformer, QB, SSSC, SeriesCapacitor, SeriesReactor}
     
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_branches")]
@@ -71,7 +71,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         [Property()]
         [Column(Name = "type", Default = "0")]
-        public virtual BranchType Type {get; set;}
+        public virtual BoundCalcBranchType Type {get; set;}
 
         public virtual string TypeStr {
             get {

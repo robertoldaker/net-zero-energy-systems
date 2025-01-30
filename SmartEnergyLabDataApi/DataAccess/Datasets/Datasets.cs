@@ -267,11 +267,19 @@ public class Datasets : DataSet
     }
 
     public Dataset GetRootDataset(DatasetType type) {
-        return Session.QueryOver<Dataset>().
+        var rootDs = Session.QueryOver<Dataset>().
             And(m=>m.Type ==type).
             And(m=>m.User==null).
             And(m=>m.Parent==null).
             Take(1).SingleOrDefault();
+        if ( rootDs == null ) {
+            rootDs = new Dataset() {
+                Name = "Empty",
+                Type = type
+            };
+            DataAccess.Datasets.Add(rootDs);
+        }
+        return rootDs;
     }
 
     public IList<Dataset> GetDatasets( DatasetType type, int userId) {

@@ -4,12 +4,11 @@ using Microsoft.AspNetCore.SignalR;
 using SmartEnergyLabDataApi.Models;
 using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
-using SmartEnergyLabDataApi.Loadflow;
+using SmartEnergyLabDataApi.BoundCalc;
 using static SmartEnergyLabDataApi.Models.LoadflowReference;
 using Org.BouncyCastle.Crypto.Signers;
 using System.Text.Json;
 using System.Linq.Expressions;
-using SmartEnergyLabDataApi.Data.Loadflow;
 using SmartEnergyLabDataApi.Data.BoundCalc;
 
 namespace SmartEnergyLabDataApi.Controllers
@@ -68,13 +67,11 @@ namespace SmartEnergyLabDataApi.Controllers
         [Route("RunBaseBoundCalc")]
         public IActionResult RunBaseBoundCalc(int datasetId)
         {
-            //?? needs updating for BoundCalc
-            /*using( var lf = new Loadflow.Loadflow(datasetId) ) {
+            using( var lf = new BoundCalc.BoundCalc(datasetId) ) {
                 lf.RunBaseCase("Auto");
-                var resp = new LoadflowResults(lf);
+                var resp = new BoundCalcResults(lf);
                 return this.Ok(resp);
-            }*/
-            return Ok();
+            }
         }
 
         /// <summary>
@@ -85,16 +82,14 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("RunTripBoundCalc")]
-        public IActionResult RunTripBoundCalc(int datasetId,List<string> linkNames) {
-            //?? needs updating
-            /*if ( linkNames==null ) {
+        public BoundCalcResults RunTripBoundCalc(int datasetId,List<string> linkNames) {
+            if ( linkNames==null ) {
                 linkNames = new List<string>() { "ABH4A4:EXET40:A833"};
             }
-            using( var lf = new Loadflow.Loadflow(datasetId) ) {
+            using( var lf = new BoundCalc.BoundCalc(datasetId) ) {
                 lf.RunTrip(linkNames);
-                return new LoadflowResults(lf);
-            }*/
-            return Ok();
+                return new BoundCalcResults(lf);
+            }
         }
 
         /// <summary>
@@ -143,18 +138,16 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
-        /// Gets loadflow network data
+        /// Gets BoundCalc network data
         /// </summary>
         /// <param name="datasetId">Id of dataset</param>
         /// /// <returns></returns>
         [HttpGet]
         [Route("NetworkData")]
-        public IActionResult NetworkData(int datasetId) {
-            //?? Needs updating for BoundCalc
-            /*using( var lf = new Loadflow.Loadflow(datasetId) ) {
-                return new LoadflowNetworkData(lf);
-            }*/
-            return Ok();
+        public BoundCalcNetworkData NetworkData(int datasetId) {
+            using( var lf = new BoundCalc.BoundCalc(datasetId) ) {
+                return new BoundCalcNetworkData(lf);
+            }
         }
 
         /// <summary>
@@ -165,17 +158,14 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("SetBound")]
-        public IActionResult SetBound(int datasetId, string boundaryName) {
-            //?? Needs updating
-            /*
-            using( var lf = new Loadflow.Loadflow(datasetId) ) {
+        public BoundCalcResults SetBound(int datasetId, string boundaryName) {
+            using( var lf = new BoundCalc.BoundCalc(datasetId) ) {
                 var bfr = lf.Boundary.SetBound(boundaryName);
-                var lfr = new LoadflowResults(lf,bfr,lf.Boundary.BoundaryTrips);
+                var lfr = new BoundCalcResults(lf,bfr,lf.Boundary.BoundaryTrips);
                 //?? No saving yet as waiting for new version to be implemented
                 //?? lfr.Save();
                 return lfr;
-            }*/
-            return Ok();
+            }
         }
 
         /// <summary>
@@ -187,21 +177,19 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("RunAllBoundaryTrips")]
-        public IActionResult RunAllBoundaryTrips(int datasetId, string boundaryName, string? connectionId=null) {
-            //?? Needs updating
-            /*using( var lf = new Loadflow.Loadflow(datasetId) ) {
+        public BoundCalcResults RunAllBoundaryTrips(int datasetId, string boundaryName, string? connectionId=null) {
+            using( var lf = new BoundCalc.BoundCalc(datasetId) ) {
                 if ( connectionId!=null ) {
                     lf.Boundary.AllTripsProgress+=(t,p)=>{                    
-                        _hubContext.Clients.Client(connectionId).SendAsync("Loadflow_AllTripsProgress",new {trip=t,percent=p});
+                        _hubContext.Clients.Client(connectionId).SendAsync("BoundCalc_AllTripsProgress",new {trip=t,percent=p});
                     };
                 }
-                var bfr = lf.Boundary.RunAllBoundaryTrips(boundaryName, out List<AllTripsResult> singleTrips, out List<AllTripsResult> doubleTrips);
-                var results = new LoadflowResults(lf,bfr);
+                var bfr = lf.Boundary.RunAllBoundaryTrips(boundaryName, out List<BoundCalcAllTripsResult> singleTrips, out List<BoundCalcAllTripsResult> doubleTrips);
+                var results = new BoundCalcResults(lf,bfr);
                 results.SingleTrips = singleTrips;
                 results.DoubleTrips = doubleTrips;
                 return results;
-            }*/
-            return Ok();
+            }
         }
 
         /// <summary>
@@ -213,14 +201,11 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("RunBoundaryTrip")]
-        public IActionResult RunBoundTrip(int datasetId, string boundaryName,string tripName) {
-            //?? Needs updating for BoundCalc
-            /*
-            using( var lf = new Loadflow.Loadflow(datasetId) ) {
+        public BoundCalcResults RunBoundTrip(int datasetId, string boundaryName,string tripName) {
+            using( var lf = new BoundCalc.BoundCalc(datasetId) ) {
                 var bfr = lf.Boundary.RunBoundaryTrip(boundaryName, tripName);
-                return new LoadflowResults(lf, bfr);
-            }*/
-            return Ok();
+                return new BoundCalcResults(lf, bfr);
+            }
         }
 
 
@@ -286,12 +271,10 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <param name="loadOptions"> (0-All circuits, 1-only high voltage)</param>
         [HttpPost]
         [Route("Load/ETYS")]
-        public void LoadETYS(LoadflowETYSLoader.LoadOptions loadOptions = LoadflowETYSLoader.LoadOptions.OnlyHighVoltageCircuits) {
-            //?? Neeeds updating for BoundCalc
-            /*
-            var m=new LoadflowETYSLoader(loadOptions);
+        public void LoadETYS(BoundCalcETYSLoader.BoundCalcLoadOptions loadOptions = BoundCalcETYSLoader.BoundCalcLoadOptions.OnlyHighVoltageCircuits) {
+            var m=new BoundCalcETYSLoader(loadOptions);
             m.Load();
-            */
+            
         }
 
         /// <summary>
@@ -299,12 +282,9 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("FixMissingZones")]
-        public void FixMissingZones(LoadflowETYSLoader.LoadOptions loadOptions = LoadflowETYSLoader.LoadOptions.OnlyHighVoltageCircuits) {
-            //?? Neeeds updating for BoundCalc
-            /*
-            var m=new LoadflowETYSLoader(loadOptions);
+        public void FixMissingZones(BoundCalcETYSLoader.BoundCalcLoadOptions loadOptions = BoundCalcETYSLoader.BoundCalcLoadOptions.OnlyHighVoltageCircuits) {
+            var m=new BoundCalcETYSLoader(loadOptions);
             m.FixMissingZones();
-            */
         }
 
         /// <summary>
@@ -314,17 +294,14 @@ namespace SmartEnergyLabDataApi.Controllers
         [HttpPost]
         [Route("Nodes/SetLocationsAndVoltages")]
         public void SetNodeVoltages(string datasetName) {
-            //?? Neeeds updating for BoundCalc
-            /*
             using( var da = new DataAccess()) {
-                var dataset = da.Datasets.GetDataset(DatasetType.Loadflow, datasetName);
+                var dataset = da.Datasets.GetDataset(DatasetType.BoundCalc, datasetName);
                 if ( dataset==null ) {
                     throw new Exception($"Cannot find loadflow dataset with name [{datasetName}]");
                 }
-                da.Loadflow.SetNodeVoltagesAndLocations(dataset.Id);
+                da.BoundCalc.SetNodeVoltagesAndLocations(dataset.Id);
                 da.CommitChanges();
             }
-            */
         }
 
         /// <summary>
