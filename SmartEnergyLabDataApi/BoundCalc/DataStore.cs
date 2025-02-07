@@ -20,6 +20,10 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 _dictIndex.Add(key, _idx++);
         }
 
+        public bool Exists(string key) {
+            return _dict.ContainsKey(key);
+        }
+
         public T get(string key) {
             return _dict[key];            
         }

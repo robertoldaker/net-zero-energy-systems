@@ -1,22 +1,31 @@
+#define LF
+
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 using NHibernate;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.BoundCalc;
 
+
 namespace SmartEnergyLabDataApi.BoundCalc
 {
 
     public class Branches : DataStore<BranchWrapper> {
+
         public Branches(DataAccess da, int datasetId, Nodes nodes) {
             var q = da.Session.QueryOver<BoundCalcBranch>();
-            var di = new DatasetData<BoundCalcBranch>(da,datasetId,m=>m.Id.ToString(),q);            
-            foreach( var b in di.Data) {
+            var di = new DatasetData<BoundCalcBranch>(da,datasetId,m=>m.Id.ToString(),q);
+            int index=1;
+            //?? need to order by Id ??
+            var diData = di.Data.OrderBy(m=>m.Id);
+            //??foreach( var b in di.Data) {
+            foreach( var b in diData) {
                 b.Node1 = nodes.DatasetData.GetItem(b.Node1Id);
                 b.Node2 = nodes.DatasetData.GetItem(b.Node2Id);
                 var key = b.LineName;
-                var objWrapper = new BranchWrapper(b,nodes);
+                var objWrapper = new BranchWrapper(b,index,nodes);
                 base.add(key,objWrapper);
+                index++;
             }
             DatasetData = di;
         }
@@ -59,9 +68,94 @@ namespace SmartEnergyLabDataApi.BoundCalc
     }
 
     public class BranchWrapper : ObjectWrapper<BoundCalcBranch> {
-        public BranchWrapper(BoundCalcBranch obj,  Nodes nodes) : base(obj) {
+        private static Dictionary<string,Dictionary<int,double>> _kmScalingOHL = new Dictionary<string, Dictionary<int, double>>() 
+        {
+            {
+                "NGC",new Dictionary<int, double>() 
+                { 
+                    {400, 1 },
+                    {275, 1.2},
+                    {132, 2.87}
+                }
+            },
+            {
+                "SP",new Dictionary<int, double>() 
+                { 
+                    {400, 1 },
+                    {275, 1.2},
+                    {132, 2.87}
+                }
+            },            
+            {
+                "SSE",new Dictionary<int, double>() 
+                { 
+                    {400, 1 },
+                    {275, 1.2},
+                    {132, 2.59}
+                }
+            },            
+        };
+
+        private Dictionary<string,Dictionary<int,double>> _kmScalingCable = new Dictionary<string, Dictionary<int, double>>() 
+        {
+            {
+                "NGC",new Dictionary<int, double>() 
+                { 
+                    {400, 10.2 },
+                    {275, 11.45},
+                    {132, 22.58}
+                }
+            },
+            {
+                "SP",new Dictionary<int, double>() 
+                { 
+                    {400, 10.2 },
+                    {275, 11.45},
+                    {132, 22.58}
+                }
+            },            
+            {
+                "SSE",new Dictionary<int, double>() 
+                { 
+                    {400, 10.2 },
+                    {275, 11.45},
+                    {132, 22.77}
+                }
+            },            
+        };
+
+        public BranchWrapper(BoundCalcBranch obj, int index, Nodes nodes) : base(obj,index) {
             Node1 = nodes.get(obj.Node1.Code);
             Node2 = nodes.get(obj.Node2.Code);
+            setKm();
+            if ( Obj.X!=0) {
+                y = BoundCalc.PUCONV / Obj.X;
+            }
+        }
+
+        private void setKm() {
+            // non transformer with non-zero cable or OHL length
+            if ( Node1.Obj.Voltage == Node2.Obj.Voltage && (Obj.OHL>0 || Obj.CableLength>0) ) {
+                double scalingOHL, scalingCable;
+                Dictionary<int,double> voltageDict;
+                if ( _kmScalingOHL.TryGetValue(Obj.Region,out voltageDict)) {
+                    if ( !voltageDict.TryGetValue(Node1.Obj.Voltage, out  scalingOHL)) {
+                        throw new Exception($"Cannot find OHL scaling factor for node [{Node1.Obj.Name}], voltage [{Node1.Obj.Voltage}]");
+                    }
+                } else {
+                    throw new Exception($"Cannot find OHL scaling factor for branch [{Obj.Code}], region [{Obj.Region}]");
+                }
+                if ( _kmScalingCable.TryGetValue(Obj.Region,out voltageDict)) {
+                    if ( !voltageDict.TryGetValue(Node1.Obj.Voltage, out scalingCable)) {
+                        throw new Exception($"Cannot find OHL scaling factor for node [{Node1.Obj.Name}], voltage [{Node1.Obj.Voltage}]");
+                    }
+                } else {
+                    throw new Exception($"Cannot find OHL scaling factor for branch [{Obj.Code}], region [{Obj.Region}]");
+                }
+                km = Obj.OHL * scalingOHL + Obj.CableLength * scalingCable;
+            } else {
+                km =0;
+            }
         }
 
         // Line code name (lcstr)
@@ -126,6 +220,50 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
             set {
                 Obj.FreePower = value;
+            }
+        }
+
+        public int pn1 {get; set;} // Row/column position of node1 and node2 in admittance matrix
+        public int pn2 {get; set;}
+        public double km {get; set;}
+        public double y; // admittance in 1MVA base
+        public bool BOut {get; set;} = false;
+
+        public double flow(double[] vang, int setptmd, bool outages) {
+            double f;
+            if ( BOut && outages) {
+                f = 0;
+#if LF
+            } else if ( this.Ctrl == null ) {
+                f = (vang[pn1] - vang[pn2]) * y; // uncontrolled ac branch
+            } else {
+                switch( this.Ctrl.Obj.Type) {
+                    case BoundCalcCtrlType.QB:
+                        f = (vang[pn1] - vang[pn2] + this.Ctrl.GetSetPoint(setptmd))*y;
+                        break;
+                    case BoundCalcCtrlType.HVDC:
+                        f = this.Ctrl.GetSetPoint(setptmd);
+                        break;
+                    default:
+                        throw new Exception($"Unknown control type {this.Ctrl.Obj.Type}");
+                }
+            }
+#else
+            } else if ( this.Obj.X !=0 ) {
+                f = (vang[pn1] - vang[pn2]) * y;
+            } else {
+                f =0;
+            }
+#endif
+            return f;
+        }
+
+        // calculate flow direction given vang
+        public double Dirn(double[] vang) {
+            if ( vang[pn1] >= vang[pn2] ) {
+                return 1;
+            } else {
+                return -1;
             }
         }
     }

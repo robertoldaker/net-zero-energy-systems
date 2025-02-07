@@ -6,11 +6,12 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public int nz;               // Original non-zeros (for upper diagonal only)
         public int fz;               // Final nz count
         public int nn;               // Upper bound of connected nodes
-        private int[] nord;          // Order position (0..n) of node i (i=0..n)
+        private int[] nord;          // Order position (0..n) of node index i (i=0..n)
         private int[] npos;          // Position of ith node
         private int[,] bitmap;        // Bit per nz element
 
         public NodeOrder(Nodes nodes, Branches branches) {
+
             nn = nodes.Count - 1;   // assume all nodes ac connected
             var nw = nn / BPL;
             bitmap = new int[nn+1,nw+1];
@@ -22,12 +23,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
             int n1, n2;
             foreach( var branch in branches.Objs ) {
                 if ( branch.Obj.X != 0) {
-                    n1 = nodes.getIndex(branch.Obj.Node1.Code);
-                    n2 = nodes.getIndex(branch.Obj.Node2.Code);
-                    var maskN1 = Mask(n1);
-                    var maskN2 = Mask(n2);
-                    var mwordN1 = MWord(n1);
-                    var mwordN2 = MWord(n2);
+                    n1 = branch.Node1.Index - 1;
+                    n2 = branch.Node2.Index - 1;
+
                     bitmap[n1, MWord(n1)] = bitmap[n1, MWord(n1)] | Mask(n1);
                     bitmap[n1, MWord(n2)] = bitmap[n1, MWord(n2)] | Mask(n2);
                     bitmap[n2, MWord(n2)] = bitmap[n2, MWord(n2)] | Mask(n2);
@@ -101,13 +99,13 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        private int MWord(int n) {
-            return n / BPL;
-        }
-
         private int Mask(int n) {
             var nn = n % BPL;
             return 1 << nn;
+        }
+
+        private int MWord(int n) {
+            return n / BPL;
         }
 
         private int CountBits(int v) {            
@@ -119,6 +117,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
             return r;
         }
+
+        // Simulate guassian elimination subtract
+
         private int SimSubRow( int p, int t) {
             int nz=0, i;
             for ( i=0; i<bitmap.GetLength(1); i++) {
@@ -133,7 +134,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         }
 
         public int NodePos(int nid) {
-            return npos[nid];
+            return npos[nid - 1];
         }
     }
 }

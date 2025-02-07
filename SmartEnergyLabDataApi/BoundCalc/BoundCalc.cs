@@ -1,8 +1,21 @@
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Security.Cryptography.Xml;
+using System.Xml.Linq;
+using Antlr.Runtime;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2.Flows;
 using Microsoft.Extensions.ObjectPool;
+using NHibernate.Linq.Functions;
+using NLog.LayoutRenderers;
+using Org.BouncyCastle.Asn1.X509;
+using Org.BouncyCastle.Bcpg;
+using Org.BouncyCastle.Crypto.Tls;
+using Org.BouncyCastle.Math.EC.Multiplier;
 using SmartEnergyLabDataApi.Common;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.BoundCalc;
+using SmartEnergyLabDataApi.Data.Loadflow;
 
 namespace SmartEnergyLabDataApi.BoundCalc
 {
@@ -11,34 +24,52 @@ namespace SmartEnergyLabDataApi.BoundCalc
         // Data from the database - nodes, branches and controls
         private DataAccess _da;
         private Dataset _dataset;
+        
         private Nodes _nodes;
         private double[] _btfr;
         private Branches _branches;
         private Ctrls _ctrls;        
-        private DatasetData<BoundCalcBoundary> _boundaries;
+        private Boundaries _boundaries;
         private DatasetData<BoundCalcZone> _zones;
+        private NodeOrder _nord;
+        public SparseMatrix admat;
+        public SolveLinSym _ufac;
 
+        public double[] btfer;                  // Base node transfers
+        public double[] itfer;                  // Boundary interconnection transfers
+        public double[] mism;                   // Mismatch results
+        public double[] km;                     // Marginal km result
+        public double[] tlf;                    // Marginal tlf result
+        public double[] flow;                   // flow results
+        public double[] free;                   // free capacity
+        public int[] ord;                       // order of free capacity
+        public double[]?[] civang;              // voltage angles for base intact case, max controls and boundary interconnection
+
+        public double[] bc;                     // boundary capacity determined by free capacity on circuit
+        public int[] mord;                      // order of bc
+
+        public BoundaryWrapper? ActiveBound;
+        public Trip? ActiveTrip;
+        public double[]?[] tcvang;               // trip control voltage angles
+        public Trip WorstTrip;
+        public double WTCapacity;
+
+        public int setptmode;
+        //
+        public const int SPZero = 0;          // controls at zero cost points
+        public const int SPMan = 1;           // given by ISetPt input data
+        public const int SPAuto = 2;          // determined by optimiser values
+        public const int SPBLANK = -1;        // do not display
+
+        public const double PUCONV = 10000;   // Conversion for % on 100MVA to pu on 1MVA
+        public const double SCAP = 1;         // Ignore branches with cap < 1 MW
+        public const double OVRLD = -0.05;
+        public const int MAXCPI = 20;         // Maximum cct constraints added per iteration
+        public const int LRGCAP = 50000;
 
         // Used to store results        
         private BoundCalcStageResults _stageResults;
-
-        //
         private Optimiser opt;
-        private Boundary bo;
-        //
-        public const double PUCONV = 10000; // Conversion for % on 100MVA to pu on 1MVA
-        public const double MINCAP = 1;     // Branch flows ignored if cap below MINCAP        
-
-        public SparseMatrix admat;
-        public SolveLinSym _ufac;
-        private NodeOrder _nord;
-
-        public const int BPL= 31;  // bits per long
-        public const double MINFREE = 1; 
-        public const double SCAP = 1;           // Ignore branches with cap < 1 MW
-        public const double CSENS = 0.001;      // Require MW flow for max action
-        public const double OVRLD = -0.05;
-
 
         public BoundCalc(int datasetId) {
             _da = new DataAccess();
@@ -47,18 +78,25 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 throw new Exception($"Cannot find dataset with id=[{datasetId}]");
             }
             _stageResults = new BoundCalcStageResults();
-            bo = new Boundary(this);
             // create nodes wrapper
             var locDi = _da.NationalGrid.GetLocationDatasetData(_dataset.Id);
             _nodes = new Nodes(_da,_dataset.Id,locDi);
             // create branches wrapper
             _branches = new Branches(_da,_dataset.Id,_nodes);
             // create ctrl wrapper
-            _ctrls = new Ctrls(_da,_dataset.Id,_branches);
-            // boundaries
-            _boundaries = loadBoundaries(_da,datasetId);
+            _ctrls = new Ctrls(_da,_dataset.Id,this);
             // zones
-            _zones = loadZones(_da,datasetId);
+            _zones = loadZones(_da,datasetId,_nodes);
+            // boundaries
+            Trip.BoundCalc = this;
+            _boundaries = new Boundaries(_da,_dataset.Id,this);
+            //
+            if (NetCheck()) {
+                opt = Optimiser.BuildOptimiser(this);
+            } else {
+                throw new Exception("Unspecified problem checking network");
+            }
+
         }
 
         public void Dispose()
@@ -96,7 +134,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        public DatasetData<BoundCalcBoundary> Boundaries {
+        public Boundaries Boundaries {
             get {
                 return _boundaries;
             }
@@ -105,12 +143,6 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public DatasetData<BoundCalcZone> Zones {
             get {
                 return _zones;
-            }
-        }
-
-        public Boundary Boundary {
-            get {
-                return bo;
             }
         }
 
@@ -139,110 +171,13 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 return _btfr;
             }
         }
-        
 
-        public bool NetCheck() {
-
-            BoundCalcStageResult sr=null;
-            try {
-                sr = _stageResults.NewStage("Link to nodes table");
-                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Pass, $"Count {_nodes.Count}");
-
-                sr = _stageResults.NewStage("Link to branches table");
-                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Pass, $"Count {_branches.Count}");
-
-                sr = _stageResults.NewStage("Link to controls table");
-                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Pass, $"Count {_ctrls.Count}");
-                // No nodes or branches then return
-                if ( _nodes.Count==0 || _branches.Count==0 )                 {
-                    return false;
-                }
-
-            } catch ( Exception e) {
-                if ( sr!=null ) {
-                    _stageResults.StageResult(sr,BoundCalcStageResultEnum.Fail,e.Message);
-                }
-                throw;
-            }
-
-    
-            // Check network
-            sr = _stageResults.NewStage("Network connected");
-            if ( _branches.IsDisconnected(_nodes) ) {
-                var msg = $"Disconnected network detected";
-                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Fail, msg);
-                return false;
-            } else {
-                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Pass, "");
-            }
-
-            // 
-            sr = _stageResults.NewStage("Node order");
-            _nord = new NodeOrder(_nodes, _branches);
-            if ( _nord.nn<0) {
-                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Fail, "Failed to find reference node");
-                return false;
-            }
-            foreach( var branch in _branches.Objs) {
-                branch.Node1Index = _nord.NodePos(_nodes.getIndex(branch.Obj.Node1.Code));
-                branch.Node2Index = _nord.NodePos(_nodes.getIndex(branch.Obj.Node2.Code));
-            }
-            var avNonZeroPerRow = ((double) _nord.nz)/ _nodes.Count;
-            var fillIn = 100*((double) _nord.fz - (double) _nord.nz) / (double) _nord.nz;
-            _stageResults.StageResult(sr, BoundCalcStageResultEnum.Pass, $"Av non-zero per row = {avNonZeroPerRow:f2}, Fill-in = {fillIn:f1}%");
-
-            //
-            sr = _stageResults.NewStage("Build admittance matrix and factorise");
-            var admat = AdmittanceMat();
-
-            //
-            _ufac = new SolveLinSym(admat, false);
-            var refNodeId = _nord.NodeId(_nord.nn);
-            _stageResults.StageResult(sr,BoundCalcStageResultEnum.Pass, $"Reference node = {_nodes.get(refNodeId).Obj.Code}");
-
-            //
-            sr = _stageResults.NewStage("Base case load flow (ac part)");
-            //
-            BaseTransfers(ref _btfr);
-            var mism = Utilities.CopyArray(_btfr);
-
-            double[] bvang=null;
-            _ufac.Solve(_btfr, ref bvang);
-            CalcACFlows(bvang, mism);
-
-            //
-            var mm = mism[_nord.nn];
-            _stageResults.StageResult(sr, BoundCalcStageResultEnum.Pass, $"No control mismatch at ref node {mm:F1}");
-
-            //
-            sr = _stageResults.NewStage("Calculate control sensitivities");
-            _ctrls.BaseCVang = bvang;
-            foreach(var ctrl in _ctrls.Objs) {
-                CtrlSensitivity(ctrl);
-            }
-
-            //
-            opt = new Optimiser(this,bo);
-
-            //
-            opt.BuildOptimiser();
-
-            _stageResults.StageResult(sr, BoundCalcStageResultEnum.Pass, $"");
-
-            return true;
-        }
-
-        public NodeBoundaryData GetNodeBoundaryData(BoundCalcBoundary bndry) {
-            NodeBoundaryData nbd=null;
-            nbd = new NodeBoundaryData(bndry.Zones);
-            return nbd;
-        }
-
-        public void Subnets(int[] snet) {
+        public (int,BoundCalcNode?) Subnets() {
             int i, j1, j2;
             bool chng;
 
-            for(i=1;i<snet.Length;i++) {
+            var snet = new int[_nodes.Count];
+            for(i=0;i<snet.Length;i++) {
                 snet[i] = i;
             }
 
@@ -260,195 +195,231 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     }
                 }
             } while( chng);
-        }
 
-        private DatasetData<BoundCalcBoundary> loadBoundaries(DataAccess da, int datasetId) {
-            var q = da.Session.QueryOver<BoundCalcBoundary>();
-            var ds = new DatasetData<BoundCalcBoundary>(da, datasetId,m=>m.Id.ToString(),q);
-            // add zones they belong to
-            var boundDict = da.BoundCalc.GetBoundaryZoneDict(ds.Data);
-            foreach( var b in ds.Data) {
-                if ( boundDict.ContainsKey(b) ) {
-                    b.Zones = boundDict[b];
-                } else {
-                    b.Zones = new List<BoundCalcZone>();
+            for( i=0; i<snet.Length; i++) {
+                if ( snet[i] != 0) {
+                    return (i,_nodes.DatasetData.Data[i]);                    
                 }
             }
-            return ds;
+            return (0,null);
         }
 
-        private DatasetData<BoundCalcZone> loadZones(DataAccess da, int datasetId) {
-            var q = da.Session.QueryOver<BoundCalcZone>();
-            var ds = new DatasetData<BoundCalcZone>(da, datasetId,m=>m.Id.ToString(),q);
-            return ds;
-        }
-
-        // Set up admittance matrix
-        // Default lf=true selects most non-zero row as reference
+        // Create intact network admittance matrix
+        // Sets up node ordering object
         private SparseMatrix AdmittanceMat( bool lf=true) {
-            int nupb, nr, nc;
+            int i, nupb, nr, nc;
+            int n1, n2;
             double y;
+
+            _nord = new NodeOrder(_nodes,_branches);
+
             if ( lf ) {
                 nupb = _nord.nn-1; // exclude reference node
             } else {
                 nupb = _nord.nn;
             }
-            double epr = ((double) _nord.fz) / (nupb+1);
-            SparseMatrix adm = new SparseMatrix(nupb, nupb, epr);
 
-            foreach( var b in _branches.Objs) {
-                if ( b.Obj.X!=0 ) {
-                    y = PUCONV / b.Obj.X;
-                    if ( b.Node1Index > b.Node2Index ) { // ensure upper diagonal
-                        nr = b.Node2Index;
-                        nc = b.Node1Index;
+            foreach( var nd in _nodes.Objs) {
+                nd.Pn = _nord.NodePos(nd.Index); // cache node positions in admittance matrix
+            }
+
+            var adm = new SparseMatrix(nupb, nupb, Nord.fz / (nupb + 1));
+
+            foreach( var br in _branches.Objs) {
+                br.pn1 = br.Node1.Pn;            // cache node 1 and node2 positons in admittance matrix
+                br.pn2 = br.Node2.Pn;
+                if ( br.Obj.X !=0 ) {
+                    y = PUCONV / br.Obj.X;
+                    if ( br.pn1 > br.pn2 ) {     // ensure upper diagonal
+                        nr = br.pn2;
+                        nc = br.pn1;
                     } else {
-                        nr = b.Node1Index;
-                        nc = b.Node2Index;
+                        nr = br.pn1;
+                        nc = br.pn2;
                     }
-                    //
-                    adm.Addin(nr,nr,y);
-                    if ( nc <= nupb ) {
-                        adm.Addin(nc, nc, y);
-                        adm.Addin(nr, nc, -y);
+                    adm.Addin(nr,nr, y);
+                    if ( nc <= nupb ) {          // ensure not reference
+                        adm.Addin(nc,nc,y);
+                        adm.Addin(nr,nc,-y);
                     }
                 }
             }
+
             return adm;
-        }
+        } 
 
         // Setup transfer vector
-        public void BaseTransfers(double[] tvec) {
-            int i, p;
+        private void BaseTransfers(out double[] tvec) {
+            int i;
             tvec = new double[_nodes.Count];
-            i=1;
+
             foreach( var node in _nodes.Objs) {
-                p = _nord.NodePos(i);
-                tvec[p] = node.Obj.Generation - node.Obj.Demand;
-                i++;
+                tvec[node.Pn] = node.Obj.Generation - node.Obj.Demand;
             }
+
         }
 
-        // Calculate ac flows and associated mismatches
-        // call with mism = transfers
-        public void CalcACFlows(double[]? vang, double[] mism) {
-            int nupb;
-            double y, v1, v2, f;
+        // Calcuate base transfer plus interconnection
+        // isf scales interconnection allowance used in itfr
+        public void CalcTransfers(double isf, out double[] tfr) {
+            int i;
+            tfr = Utilities.CopyArray(btfer);
 
-            nupb = _nord.nn;
-            foreach( var b in _branches.Objs) {
-                if ( b.Obj.X!=0 && !b.Outaged) { // ac branch
-                    y = PUCONV / b.Obj.X;
-                    v1 = vang[b.Node1Index];
-                    v2 = vang[b.Node2Index];
-                    f = (v1 - v2) * y;
-                    mism[b.Node1Index] = mism[b.Node1Index] - f;
-                    mism[b.Node2Index] = mism[b.Node2Index] + f;
-                    b.BFlow=f;
+            if ( isf!=0 ) {
+                for( i=0; i<tfr.Length;i++) {
+                    tfr[i] = tfr[i] + isf * itfer[i];
                 }
             }
         }
 
         // Calculate all flows and mismatches from vangs and setpoints
         // call with mism = transfers
-        public void CalcFlows(double[]? vang,  double[] mism) {
-            int nupb;
-            double y, v1, v2, f;
+        // outages=falase ensures intact network calculation irrespective of ActiveTrip
+        public void CalcFlows(double[] vang, int setptmd, bool outages, out double[] lflow, double[] mism)
+        {
+            double f;
+            lflow = new double[_branches.Count];
 
-            nupb = _nord.nn;
-            foreach(var b in _branches.Objs) {
-                if ( b.Outaged ) {
-                    f = 0;
-                } else if ( b.Ctrl == null ) {// Uncontrolled ac branch
-                    y = PUCONV / b.Obj.X;
-                    v1 = vang[b.Node1Index];
-                    v2 = vang[b.Node2Index];
-                    f = (v1 - v2) * y;
+            foreach( var br in _branches.Objs ) {
+                f = br.flow(vang, setptmd, outages);
+                lflow[br.Index -1] = f;
+                mism[br.pn1]-= f;
+                mism[br.pn2]+= f;
+                //
+                br.PowerFlow=f;
+            }
+        }
+
+        private int CalcIntactVang() {
+            double[] tvec, vang=null;
+
+            civang = new double[_ctrls.Count+2][]; // index 0 is base vang, 1 .. n are controls and n+1 is boundary transfer
+
+            foreach( var ct in _ctrls.Objs) {
+                tvec = new double[_nodes.Count];
+                var br = ct.Branch;
+                if ( br.pn1 <= _nord.nn  || br.pn2 <= _nord.nn) {
+                    tvec[br.pn1] = -ct.InjMax;
+                    tvec[br.pn2] =  ct.InjMax;
+                    _ufac.Solve(tvec, ref vang);
+                    civang[ct.Index] = vang;
                 } else {
-                    switch( b.Ctrl.Obj.Type ) {
-                        case BoundCalcCtrlType.QB: {
-                            y = PUCONV / b.Obj.X;
-                            v1 = vang[b.Node1Index];
-                            v2 = vang[b.Node2Index];
-                            f = (v1 - v2 + (double) b.Ctrl.SetPoint) * y;
-                            break;
-                        }
-                        case BoundCalcCtrlType.HVDC: {
-                            f = (double) b.Ctrl.SetPoint;
-                            break;
-                        }
-                        default: {
-                            throw new Exception("Unknown control type");
-                        }
-                    }
-                }
-                mism[b.Node1Index] = mism[b.Node1Index] - f;
-                mism[b.Node2Index] = mism[b.Node2Index] + f;
-                b.PowerFlow = f;
-            }
-
-            // Store mismatches in node wrappers
-            for( int i=0;i<mism.Length;i++) {
-                int index = _nord.NodeId(i);
-                var nodeWrapper = _nodes.get(index);
-                nodeWrapper.Mismatch = mism[i];
-            }
-        }
-
-        public void CalcNodeCol(double[] nquant, double[] tquant) {
-            tquant = new double[_nodes.Count];
-            int i=1,j;
-            foreach( var node in _nodes.Objs) {
-                j = _nord.NodePos(i);
-                tquant[i] = nquant[i];
-            }
-        }
-
-        public void CalcBranchCol(double[] nquant, double[] tquant) {
-            tquant = new double[_branches.Count];
-            int i=1,j;
-            foreach( var b in _branches.Objs) {
-                if ( nquant[i] < 9999 ) {
-                    tquant[i] = nquant[i];
+                    civang[ct.Index] = null;
                 }
             }
+
+            BaseTransfers(out btfer);
+            mism = Utilities.CopyArray(btfer);
+            _ufac.Solve(btfer, ref vang);
+            civang[0] = vang;
+            CalcFlows( vang, SPZero, false, out flow, mism);
+            return _nord.NodeId(_nord.nn); // Index of refnode
+        }        
+
+        public bool NetCheck() {
+
+            double tgen=0, tdem=0, timp=0;
+
+            BoundCalcStageResult sr=null;
+            try {
+                sr = _stageResults.NewStage("#nodes");
+                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Pass, $"{_nodes.Count}");
+
+                sr = _stageResults.NewStage("#zones");
+                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Pass, $"{_zones.Data.Count}");
+
+                sr = _stageResults.NewStage("#branches");
+                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Pass, $"{_branches.Count}");
+
+                sr = _stageResults.NewStage("#controls");
+                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Pass, $"{_ctrls.Count}");
+
+                sr = _stageResults.NewStage("#boundaries");
+                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Pass, $"{_boundaries.Count}");
+                // No nodes or branches then return
+                if ( _nodes.Count==0 || _branches.Count==0 )                 {
+                    return false;
+                }
+
+            } catch ( Exception e) {
+                if ( sr!=null ) {
+                    _stageResults.StageResult(sr,BoundCalcStageResultEnum.Fail,e.Message);
+                }
+                throw;
+            }
+
+            foreach ( var zn in _zones.Data) {
+                tgen+=zn.TGeneration;
+                tdem+=zn.Tdemand;
+                timp+=zn.UnscaleGen - zn.UnscaleDem;
+            }
+
+            MiscReport("Generation", tgen.ToString("f1"));
+            MiscReport("Demand", tdem.ToString("f1"));
+            MiscReport("Imports", timp.ToString("f1"));
+
+            (int res, BoundCalcNode? node) = Subnets();
+            if ( res!=0) {
+                throw new Exception($"Disconnected network detected at node {node?.Name}");
+            }
+
+            //
+            var admat = AdmittanceMat(true);
+
+            MiscReport("HVDC nodes", $"{_nodes.Count - _nord.nn -1}" );
+            MiscReport("NZ per row", $"{(double) _nord.nz / _nord.nn:F4}");
+            MiscReport("FZ per row", $"{(double) _nord.fz / _nord.nn:F4}");
+
+            _ufac = new SolveLinSym(admat, false);
+            var refIndex = CalcIntactVang();
+
+            var nd = _nodes.get(refIndex);
+
+            MiscReport("RefNode",nd.Obj.Code);
+            MiscReport("No Ctrl Mismatch", $"{mism[nd.Pn]:F0}");
+
+            ActiveBound = null;
+            ActiveTrip = null;
+    
+            return true;
         }
 
-        // Calculate total vang using control setpoints
-        // iasf scales the interconnection allowance used in ctrlva(0)
-        public void CalcVang(double isaf, CVang ctrlva, ref double[]? vang) {
-            int i, j;
+        // Calculate total vang using control setpoints and interconnection scaling factor iasf
+        // iasf scales the interconnection allowance used to compute ctrlva(upb)
+        public void CalcVang(double isaf, double[]?[] ctrlva, out double[] vang) {
+            int i, j, n;
+            double sf2, sp;
             double[] tv;
-            double sf2;
 
-            vang = Utilities.CopyArray(ctrlva.Base);
+            n = _ctrls.Count + 1;            
+            vang = Utilities.CopyArray(ctrlva[0]);    // base vangs
 
-            if ( isaf!=0 && ctrlva.Boundary!=null ) {
-                tv = ctrlva.Boundary;
-                for(i=0;i<vang.Length;i++) {
+            if ( isaf!=0 && ctrlva[n]!=null) {
+                tv = ctrlva[n];
+                for( i=0; i<vang.Length; i++) {
                     vang[i] = vang[i] + tv[i] * isaf;
                 }
             }
 
-            foreach( var ctrl in _ctrls.Objs) {
-                if ( ctrl.SetPoint!=0 && ctrlva.Get(ctrl)!=null ) {
-                    tv = ctrlva.Get(ctrl);
-                    sf2 = (double) ctrl.SetPoint / ctrl.Obj.MaxCtrl;
-                    if ( vang!=null ) {                        
-                        for(j=0;j<vang.Length;j++) {
-                            vang[j] = vang[j] + tv[j] * sf2;
-                        }
+            foreach( var ct in _ctrls.Objs) {
+                sp = ct.GetSetPoint(setptmode);
+                if ( sp!=0 && ctrlva[ct.Index]!=null ) {
+                    tv = ctrlva[ct.Index];
+                    sf2 = sp / ct.Obj.MaxCtrl;
+                    for ( j=0; j < vang.Length;j++) {
+                        vang[j] = vang[j] + tv[j] * sf2;
                     }
                 }
-            }
+            }            
         }
 
-        public int MaxMismatch(double[] mism) {
-            int i;
-            double maxm=0, amism;
-            int maxi=0;
+        // Return node position of largest mismatch
 
-            for(i=0;i<mism.Length;i++) {
+        public int MaxMismatch(double[] mism) {
+            int i, maxi=0;
+            double maxm=0, amism;
+
+            for( i=0;i<mism.Length;i++) {
                 amism = Math.Abs(mism[i]);
                 if ( amism > maxm) {
                     maxm = amism;
@@ -458,670 +429,543 @@ namespace SmartEnergyLabDataApi.BoundCalc
             return maxi;
         }
 
-        public string LineName(int i) {
-            var branch = _branches.get(i);
-            return branch.LineName;
-        }
+        // calc mwkm and loss results
 
-        public CVang GetCVang() {
-            var cvang = new CVang();
-            cvang.Base = _ctrls.BaseCVang;
-            int i=1;
-            foreach( var ctrl in _ctrls.Objs ) {
-                cvang.Set(ctrl, ctrl.CVang);
-                i++;
-            }
-            cvang.Boundary = _ctrls.BoundaryCVang;
-            return cvang;
-        }
+        public void CalcBranchAux(double[] lflow, out double[] mwkm, out double[] loss) {
+            int n;
+            double f;
+            n = _branches.Count - 1;
+            mwkm = new double[n+1];
+            loss = new double[n+1];
 
-        // Calc intact network sensitivites to max controls
-        private void CtrlSensitivity(CtrlWrapper ctrl) {
-            double[] tvec,vang=null;
-
-            tvec = new double[_nodes.Count];
-            if ( ctrl.Branch.Node1Index<=_nord.nn || ctrl.Branch.Node2Index<=_nord.nn) {
-                tvec[ctrl.Branch.Node1Index] = -ctrl.InjMax;
-                tvec[ctrl.Branch.Node2Index] = ctrl.InjMax;
-                _ufac.Solve(tvec,ref vang);
-                ctrl.CVang = vang;
-            } else {
-                ctrl.CVang = null;
+            foreach( var br in _branches.Objs)  {
+                f = lflow[br.Index - 1];
+                mwkm[br.Index - 1] = Math.Abs(f * br.km);
+                loss[br.Node1Index - 1] = (f * f * br.Obj.R ) / PUCONV;
             }
         }
 
-        // Calculate cct free capacity
-        public void CalcFree(ref double[] free, ref int[] ord) {
+        // Calculate cct free capacity in direction of flow
+
+        public void CalcMinFree(double[] flow) {
             int i, n;
-            double si;
 
-            n = _branches.Objs.Count;
+            n = _branches.Count - 1;
             free = new double[n+1];
             ord = new int[n+1];
-            i = 1;
-            foreach(var b in _branches.Objs) {
-                if ( b.PowerFlow < 0 ) {
-                    si = -1;
-                } else {
-                    si = 1;
-                }
-                if ( (b.Obj.Cap > SCAP) && b.PowerFlow!=null) {
-                    free[i] = b.Obj.Cap - (double)b.PowerFlow*si;
+
+            foreach( var br in _branches.Objs) {
+                i = br.Index - 1;
+                if ( br.Obj.Cap > SCAP) {
+                    free[i] = br.Obj.Cap - Math.Abs(flow[i]);
                 } else {
                     free[i] = 99999;
                 }
+                ord[i] = i;
                 // Store in branch wrapper
-                b.FreePower = free[i];
-                ord[i] = i;
-                i++;
+                br.FreePower = free[i];
             }
-            // False means its no zerobased index
-            LPhdr.MergeSortFlt(free, ord, n, 0, false);
+            LPhdr.MergeSortFlt(free,ord, n+1);
+
+            //
+
         }
 
-        public void CalcFreeDir(out double[] free, out int[] ord) {
-            int i, n;
-            double si;
+        // Calculate cct free capcity in flow direction given by vang
 
-            n = _branches.Objs.Count;
+        public void CalcDirFree(double[] flow, double[] vang) {
+            int i,n;
+
+            n = _branches.Count - 1;
             free = new double[n+1];
             ord = new int[n+1];
-            i = 1;
-            foreach(var b in _branches.Objs) {
 
-                if ( b.BFlow < 0 ) {
-                    si = -1;
-                } else {
-                    si = 1;
-                }
-                if ( b.Obj.Cap > SCAP && b.PowerFlow!=null) {
-                    free[i] = b.Obj.Cap - (double) b.PowerFlow*si;
+            foreach( var br in _branches.Objs) {
+                i = br.Index - 1;
+                if ( br.Obj.Cap > SCAP) {
+                    free[i] = br.Obj.Cap - flow[i] * br.Dirn(vang);
                 } else {
                     free[i] = 99999;
                 }
                 ord[i] = i;
-                i++;
+                //
+                br.FreePower = free[i];
             }
-            LPhdr.MergeSortFlt(free, ord, n, 0 , false);
+            LPhdr.MergeSortFlt(free,ord, n+1);
         }
 
-        
-        public int RunPlannedTransfer( CVang cva, bool save = true) {
-            int i;
-            int mi;
-            double mm;
+        // Calculate the boundary scaling factor at which given flows will reach capapcity
+        // Calculate boundcap implied by each circuit assuming flows correspond to specified transfer
+
+        public double CalcSF(double[] mflow, double[] ivang, double tfer, double ia) {
+            int i, n;
+            double mfree, iflow;
+
+            n = _branches.Count - 1;
+            mord = new int[n+1];
+            bc = new double[n+1];
+
+            foreach( var br in _branches.Objs) {
+                i = br.Index - 1;
+                iflow = br.flow(ivang, SPZero, true); // the flow resulting from interconnection
+                if ( br.Obj.Cap > SCAP) {
+                    mfree = br.Obj.Cap - mflow[i] * Math.Sign(iflow);
+                } else {
+                    mfree = 99999;                    
+                }
+                if ( Math.Abs(iflow) < LPhdr.lpEpsilon) {
+                    bc[i] = 99999;
+                } else {
+                    bc[i] = tfer + ia * mfree / Math.Abs(iflow);
+                }
+                mord[i] = i;
+            }
+
+            LPhdr.MergeSortFlt(bc,mord, n+1);
+            i = mord[0];
+            var brr = _branches.get(i+1);
+            iflow = brr.flow(ivang, SPZero, true);
+
+            if ( brr.Obj.Cap > SCAP ) {
+                mfree = brr.Obj.Cap - mflow[i] * Math.Sign(iflow);
+            } else {
+                mfree = 99999;
+            }
+
+            if ( Math.Abs(iflow) < LPhdr.lpEpsilon ) {
+                throw new Exception("Unable to calculate boundary capacity as interconnection flow too small");
+            } else {
+                return mfree / Math.Abs(iflow);
+            }
+        }
+
+        // Calculate the loadflow with interconnection and control setpoints
+        // setpoints depend on setptmode global
+        // returns node index with largest mismatch
+        public void CalcLoadFlow(double[]?[] cvang, double isaf, out double[] lflow, bool save = true) {
+            double[] tfr, vang;
+
+            //??lflow = new double[_branches.Count];
+            CalcTransfers(isaf, out tfr);
+            mism = Utilities.CopyArray(tfr);
+            CalcVang(isaf, cvang, out vang);
+            CalcFlows( vang, setptmode, true, out lflow, mism);
+            //
+            // Store mismatches in node wrappers
+            for( int i=0;i<mism.Length;i++) {
+                int index = _nord.NodeId(i);
+                var nodeWrapper = _nodes.get(index);
+                nodeWrapper.Mismatch = mism[i];
+            }
+        }
+
+        public void SaveLFResults( double[] lflow) {
+
+            var mi = MaxMismatch(mism);
+            var mm = mism[mi];
+            var nd = _nodes.get(_nord.NodeId(mi));
+            MiscReport($"Max mismatch [{nd.Obj.Code}]", $"{mm:E5}");
+        }
+
+        public void CalcBoundLF(double[]?[] cvang, out double[] lflow, bool save = false) {
+            double[] mflow;
+            double[] ivang;
+            double iasf;
+            bool pt;
+            double pfer;
+
+            pt = ActiveBound == null;
+            CalcLoadFlow(cvang,0,out mflow, false);
+            if ( !pt ) {
+                if ( ActiveTrip==null) {
+                    ivang = civang[_ctrls.Count+1]; // get ivang from intact volt angles
+                } else {
+                    ivang = tcvang[_ctrls.Count+1]; // get ivang from trip volt angles
+                }
+                iasf = CalcSF(mflow, ivang, Math.Abs(ActiveBound.PlannedTransfer), Math.Abs(ActiveBound.InterconAllowance)); // Small scalling factor
+
+                CalcLoadFlow(cvang, iasf, out lflow, save);
+                MiscReport("Boundary capacity", $"{bc[mord[0]]:0.00}");
+            } else {
+                lflow = mflow;
+                if (save) {
+                    SaveLFResults(mflow);
+                }
+            }
+        }
+
+        public void ClearOutages() {
+            foreach( var br in _branches.Objs) {
+                br.BOut = false;
+            }
+        }
+
+        // Balance HV nodes
+
+        public int BalanceHVDC() {
             int r1, r2=0;
-            double[] mism;
-            int[] ord=null;
-            double[] free=null;
-            double[] vang=null;
-
-            var sr = _stageResults.NewStage("Balance hvdc nodes");
+            string title = "Balance HVDC";
             opt.ResetLP();
-            r1 = bo.CtrlLp.SolveLP(ref r2);
-
-            if ( r1 == LPhdr.lpOptimum ) {
-                _stageResults.StageResult(sr, BoundCalcStageResultEnum.Pass,$"Control cost = {bo.CtrlLp.Slack(opt.bounzc.Id) - bo.CtrlLp.Objective():F2}");
+            r1 = opt.ctrllp.SolveLP(ref r2);
+            if ( r1 == LPhdr.lpOptimum) {
+                MiscReport(title,$"Ctrl cost: {opt.ControlCost():0.00}");
             } else {
                 if ( r1 == LPhdr.lpInfeasible ) {
-                    _stageResults.StageResult(sr, BoundCalcStageResultEnum.Fail, $"Unresolvable constraint {bo.CtrlLp.GetCname(r2)}");
+                    MiscReport(title,$"Unresolvable constraint {opt.ctrllp.GetCname(r2)}");
                 } else {
-                    _stageResults.StageResult(sr, BoundCalcStageResultEnum.Fail, $"Uknown optimiser fail");
+                    MiscReport(title,"Unknown optimiser fail");
                 }
             }
+            return r1;
+        }
 
-            sr = _stageResults.NewStage("Minimum control load flow");
-            // Calc loadflow
-            opt.CalcSetPoints();
-            mism = Utilities.CopyArray(_btfr);
+        // Optimise the loadflow
+        // if activebound is nothing then optimise how planned transfer condition
+        // else add boundary circuits pluc overloads and optimise with sensitivitieses to the boundary transfer variable
 
-            CalcVang(0,cva,ref vang);
-            CalcFlows(vang, mism);
-            CalcFree(ref free, ref ord);
-            mi = MaxMismatch(mism);
-            mm = mism[mi];
-            var node = _nodes.get(_nord.NodeId(mi));
-            if ( Math.Abs(mm) < 0.1) {
-                _stageResults.StageResult(sr,BoundCalcStageResultEnum.Pass, $"Max mismatch {mm:#.#E+00} at {node.Obj.Code}");
-            } else {
-                _stageResults.StageResult(sr,BoundCalcStageResultEnum.Warn, $"Max mismatch {mm:#.#} at {node.Obj.Code}");
-            }
+        public int OptimiseLoadflow( double[]?[] cva, out double[] lflow, bool save = true) {
+            int i, iter=0, xa, r1,r2=0;
+            string title;
+            double[] ivang=null;
+            bool pt;
+            double iasf=0;
 
-            if ( r1!=LPhdr.lpOptimum) {
-                // output diagnosis results
-                ReportOverloads(free,ord);
+            setptmode = SPAuto;
+            pt = ActiveBound == null;
+            r1 = BalanceHVDC();
+            CalcLoadFlow(cva, 0, out lflow, r1!= LPhdr.lpOptimum); // start at planned transfer
+
+            if ( r1 != LPhdr.lpOptimum) {
                 return r1;
             }
 
-            sr = _stageResults.NewStage("Resolve AC constraints");
-            do {
-                i = 1;
-                while( free[ord[i]] < OVRLD ) {
-                    var b = _branches.get(ord[i]);
-                    Console.WriteLine($"{LineName(ord[i])}, {free[ord[i]]:#.#}");
-                    opt.PopulateConstraint(b,free[ord[i]], 0, cva, true);
-                    i = i + 1;
+            xa = cva.Length - 1;
+            if (!pt) { // add boundary circuits with free calculated in direction of interconnection
+                ivang = cva[xa];
+                CalcDirFree(lflow, ivang);
+                foreach( var br in ActiveBound.BoundCcts.Items) {
+                    opt.PopulateConstraint(br, free[br.Index - 1], br.Dirn(ivang), iasf, cva, false);
                 }
 
-                if ( i == 1) {
-                    break;
-                }
-
-                r1 = bo.CtrlLp.SolveLP(ref r2);
-                opt.CalcSetPoints();
-                mism = _btfr;
-                CalcVang(0,cva,ref vang);
-                CalcFlows(vang,mism);
-                CalcFree(ref free, ref ord);
-
-                if ( r1 != LPhdr.lpOptimum ) {
+                title = "Capacity of boundary circuits";
+                r1 = opt.ctrllp.SolveLP(ref r2);
+                
+                if ( r1 == LPhdr.lpOptimum) {
+                    iasf = opt.boun.Value(opt.ctrllp) / Math.Abs( ActiveBound.InterconAllowance);
+                    MiscReport(title, $"{opt.BoundCap():0.00}");                    
+                } else {
                     if ( r1 == LPhdr.lpInfeasible ) {
-                        _stageResults.StageResult(sr, BoundCalcStageResultEnum.Fail, $"Unresolvable constraint {bo.CtrlLp.GetCname(r2)}");
+                        MiscReport(title, $"Unresolvable constraint ${opt.ctrllp.GetCname(r2)}");
                     } else {
-                        _stageResults.StageResult(sr, BoundCalcStageResultEnum.Fail, $"Unknown optimiser fail");
+                        MiscReport(title, "Unknown optimiser fail");
                     }
-                    opt.ReportConstraints(BoundCalcStageResultEnum.Warn);
-                    ReportOverloads(free, ord);
+                }
+
+                CalcLoadFlow(cva, iasf, out lflow, r1!=LPhdr.lpOptimum);
+
+                if ( r1!= LPhdr.lpOptimum ) {
                     return r1;
                 }
-            } while( true);
-            _stageResults.StageResult(sr, BoundCalcStageResultEnum.Pass,$"Control cost = {bo.CtrlLp.Slack(opt.bounzc.Id) - bo.CtrlLp.Objective()}");
-
-            sr = _stageResults.NewStage("Planned transfer load flow");
-
-            mi = MaxMismatch(mism);
-            mm = mism[mi];
-            node = _nodes.get(_nord.NodeId(mi));
-            if ( Math.Abs(mm) < 0.1) {
-                _stageResults.StageResult(sr,BoundCalcStageResultEnum.Pass, $"Max mismatch {mm:#.#E+00} at {node.Obj.Code}");
-            } else {
-                _stageResults.StageResult(sr,BoundCalcStageResultEnum.Warn, $"Max mismatch {mm:#.#} at {node.Obj.Code}");
             }
 
-            opt.ReportConstraints();
-            ReportOverloads(free, ord);
+            do {
+                iter++;
 
-            return r1;
-
-        }
-
-        public void RunLoadFlow(CVang cva, bool save=true) {
-            double[] mism, vang=null, free=null;
-            object[] tout;
-            int i, mi, st;
-            int[] ord=null;
-            double mm;
-
-            var sr = _stageResults.NewStage($"Run loadflow");
-
-            mism = _btfr;
-            CalcVang(0,cva,ref vang);
-            CalcFlows(vang, mism);
-            CalcFree(ref free, ref ord);
-
-            mi = MaxMismatch(mism);
-            mm = mism[mi];
-
-            var node = _nodes.get(_nord.NodeId(mi));
-            if ( Math.Abs(mm) < 0.1) {
-                _stageResults.StageResult(sr,BoundCalcStageResultEnum.Pass, $"Max mismatch {mm:#.#E+00} at {node.Obj.Code}");
-            } else {
-                _stageResults.StageResult(sr,BoundCalcStageResultEnum.Warn, $"Max mismatch {mm:#.#} at {node.Obj.Code}");
-            }
-
-            ReportOverloads(free, ord);
-
-        }
-
-        public void ReportOverloads(double[] free, int[] ord) {
-            int i;
-            BoundCalcStageResult sr;
-            i = 1;
-            while( free[ord[i]] < OVRLD ) {
-                var b = _branches.get(ord[i]);
-                sr = _stageResults.NewStage(b.LineName);
-                _stageResults.StageResult(sr, BoundCalcStageResultEnum.Fail, $"Overload {free[ord[i]]:#.#} on capacity {b.Obj.Cap:#.#}");
-                i = i + 1;
-            }
-        }
-
-        // Process base case
-        public void RunBaseCase(string setPnm) {
-
-            #if DEBUG
-            RunTests();
-            Console.WriteLine("All tests passed!!");
-            #endif
-
-
-            // Check network
-            var sr = _stageResults.NewStage("Check network");
-            var result = NetCheck();
-            if ( result ) {
-                _stageResults.StageResult(sr,BoundCalcStageResultEnum.Pass,"");
-            } else {
-                _stageResults.StageResult(sr,BoundCalcStageResultEnum.Fail,"Base network not valid");
-                return;
-            }
-            CVang cva = GetCVang();
-            //
-            if ( setPnm == "Auto" ) {
-                RunPlannedTransfer(cva);
-            } else {
-                RunLoadFlow();
-            }
-        }
-
-/*
-Public Sub RunTrip(fname As String, setpnm As String)
-    Dim ccts() As Long
-    Dim n As Long, st As Long
-    Dim sm() As Double, tcva() As Variant
-    Dim pflow() As Variant, csp() As Variant
-    
-    st = ControlForm.Newstage("Check network")
-    
-    If Not NetCheck() Then
-        ControlForm.StageResult st, STFAIL, "Base network not valid"
-        Exit Sub
-    Else
-        ControlForm.StageResult st, STPASS, ""
-    End If
-    
-    st = ControlForm.Newstage("Setup trip " & fname)
-    
-    n = SelectedCcts(ccts)
-    
-    If n = 0 Then
-        ControlForm.StageResult st, STFAIL, "No trip circuits selected"
-        Exit Sub
-    End If
-    
-    If Not TripVectors(ccts, tcva) Then
-        If Countac(ccts) > 0 Then
-            ControlForm.StageResult st, STFAIL, "Invalid trip - node disconnected?"
-            Exit Sub
-        End If
-    End If
-    ControlForm.StageResult st, STPASS, CStr(n) & " circuits"
-    
-    If setpnm = "Auto" Then
-        RunPlannedTransfer fname, tcva, pflow
-    Else
-        ctab.GetColumn setpnm, csp
-        RunLoadFlow fname, tcva, csp, pflow
-    End If
-End Sub
-*/
-        public void RunTrip(List<string> linkNames, string setpnm="Auto") {
-
-            int[] ccts;
-            CVang tcva;
-
-            var sr = _stageResults.NewStage("Check network");
-
-            if ( !NetCheck() ) {
-                _stageResults.StageResult(sr, BoundCalcStageResultEnum.Fail, "Base network not valid");
-                return;
-            } else {
-                _stageResults.StageResult(sr, BoundCalcStageResultEnum.Pass, "");                
-            }
-
-            sr = _stageResults.NewStage("Setup trip");
-
-            var tripList = GetTripList(linkNames,out ccts);
-            var n = ccts.Length;
-
-            if ( tripList.Count==0 ) {
-                _stageResults.StageResult(sr, BoundCalcStageResultEnum.Fail,"No trip circuits defined");
-                return;
-            }
-
-            if ( !TripVectors(ccts, out tcva)) {
-                if ( Countac(ccts) > 0) {
-                    _stageResults.StageResult(sr,BoundCalcStageResultEnum.Fail,"Invalid trip - node disconnected?");
-                    return;
+                if ( pt ) {
+                    CalcMinFree( lflow);
+                } else {
+                    CalcDirFree(lflow, ivang); // free in direction of interconnection transfer
                 }
-            }
 
-            _stageResults.StageResult(sr,BoundCalcStageResultEnum.Pass,$"{n} circuits");
-
-            if ( setpnm == "Auto") {
-                RunPlannedTransfer(tcva);
-            }
-
-
-        }
-
-        
-        // Setup transfer vector
-        private void BaseTransfers(ref double[] tvec) {
-            int i, p, vupb;
-            vupb = _nodes.Count;
-            tvec = new double[vupb];
-
-            i=0;
-            foreach( var node in _nodes.Objs) {
-                p = _nord.NodePos(i);
-                tvec[p] = node.Obj.Generation - node.Obj.Demand;
-                i++;
-            }
-
-        }       
-
-        public void RunLoadFlow() {
-            
-        }
-
-        public List<BranchWrapper> GetTripList(List<string> linkNames, out int[] ccts) {
-            _branches.ResetOutaged();
-            var tripList = new List<BranchWrapper>();
-            foreach( var ln in linkNames) {
-                var bw = _branches.get(ln);
-                if ( bw!=null) {
-                    bw.Outaged = true;
-                    tripList.Add(bw);
-                }
-            }
-            ccts = new int[tripList.Count];
-            int i=0;
-            foreach( var bw in tripList) {
-                ccts[i] = _branches.getIndex(bw.Obj.LineName)+1;
-                i++;
-            }
-            //
-            return tripList;
-        }
-
-        /*
-' Calculate Trip base and contrl vectors from intact versions
-' Return true if vectors different from base case
-
-Public Function TripVectors(ccts() As Long, tcvang() As Variant) As Boolean
-    Dim i As Long
-    Dim tv() As Double, ntv() As Double
-    Dim sensmat() As Double
-    
-    ReDim tcvang(UBound(cvang, 1)) As Variant
-    
-    If Not CalcSensMat(ccts, sensmat) Then ' Might be dc ccts
-                
-        For i = 0 To UBound(cvang, 1)
-            tcvang(i) = cvang(i)
-        Next i
-        TripVectors = False
-        Exit Function
-        
-    Else
-        For i = 0 To UBound(cvang, 1)
-            If IsArray(cvang(i)) Then
-                tv = cvang(i)
-                TripSolve ccts, sensmat, tv, ntv
-                tcvang(i) = ntv
-            Else
-                tcvang(i) = cvang(i)
-            End If
-        Next i
-    End If
-    TripVectors = True
-End Function
-        */
-        public bool TripVectors(int[] ccts, out CVang tcvang) {
-            double[,] sensmat;
-            double[] tv, ntv;
-
-
-            if ( !CalcSensMat(ccts, out sensmat)) { // might be dc ccts
-                tcvang = GetCVang();
-                return false;                
-            } else {
-                // Base
-                tcvang = new CVang();
-                if ( _ctrls.BaseCVang!=null ) {
-                    tv = _ctrls.BaseCVang;
-                    TripSolve(ccts, sensmat, tv, out ntv);
-                    tcvang.Base = ntv;
-                }
-                // Ctrls
-                int i=0;
-                foreach( var ctrl in _ctrls.Objs) {
-                    if ( ctrl.CVang!=null ) {
-                        tv = ctrl.CVang;
-                        TripSolve(ccts, sensmat, tv, out ntv);
-                        tcvang.Set(ctrl,ntv);
+                i = 0;
+                while ( (free[ord[i]] < OVRLD) && (i<=MAXCPI )) {
+                    var br = _branches.get(ord[i] + 1);
+                    if ( pt ) {
+                        opt.PopulateConstraint(br, free[ord[i]], lflow[ord[i]], 0, cva, pt);
                     } else {
-                        tcvang.Set(ctrl,ctrl.CVang);
+                        opt.PopulateConstraint(br, free[ord[i]], br.Dirn(ivang), iasf, cva, pt);
                     }
                     i++;
                 }
-                // Boundary
-                if ( _ctrls.BoundaryCVang!=null) {
-                    tv = _ctrls.BoundaryCVang;
-                    TripSolve(ccts, sensmat, tv, out ntv);
-                    tcvang.Boundary = ntv;
+
+                if ( i==0 ) {
+                    break;
                 }
+
+                MiscReport($"Iter {iter}", $"Ovrlds: {i-1}");
+
+                r1 = opt.ctrllp.SolveLP(ref r2);
+
+                if ( !pt) {
+                    iasf = opt.boun.Value(opt.ctrllp) / Math.Abs(ActiveBound.InterconAllowance);
+                }
+
+                CalcLoadFlow(cva, iasf, out lflow, r1!=LPhdr.lpOptimum);
+
+                if ( r1!= LPhdr.lpOptimum ) {
+                    if ( r1 == LPhdr.lpInfeasible ) {
+                        MiscReport("Optimiser",$"Unresolvable constraint {opt.ctrllp.GetCname(r2)}");
+                    } else {
+                        MiscReport("Optimiser", "Unknown optimiser fail");
+                    }
+                    return r1;
+                }
+
+            } while(true);
+
+            if ( !pt ) {
+                MiscReport("Boundary capacity (all circuits)", $"{opt.BoundCap():0.00}");
             }
-            return true;
+
+            var mi = MaxMismatch(mism);
+            var mm = mism[mi];
+            var nd = _nodes.get(Nord.NodeId(mi));
+            MiscReport($"Max mismatch {nd.Obj.Code}",$"{mm:E5}");
+            MiscReport("Boundary optimisation",$"Ctrl cost: {opt.ControlCost():0.00}");
+            //
+
+            return r1;
         }
 
-/*
-' Calc injection matrix = (I - Fsens)^-1 for ac elements
-' Returns false if (I-Fsens) is singular or no ac ccts
+        // Calculate nodal loss and mwkm sensitivities
+        // Based n base flows and bflow()
 
-Private Function CalcSensMat(ccts() As Long, sensmat() As Double) As Boolean
-    Dim tvec() As Double
-    Dim mat() As Double
-    Dim res As Variant
-    Dim i As Long, j As Long, n As Long
-    Dim c As Long, d As Double
-    
-    n = Countac(ccts)
-    
-    If n = 0 Then
-        CalcSensMat = False
-        Exit Function
-    End If
-    
-    ReDim mat(n - 1, n - 1) As Double
-    ReDim sensmat(n - 1, n - 1) As Double
-    
-    For j = 0 To n - 1
-        ReDim tvec(UBound(gen, 1) - 1) As Double
-        c = ccts(j)
-        tvec(bn1(c)) = 1#
-        tvec(bn2(c)) = -1#
-        ufac.Solve tvec, tvec
-        For i = 0 To n - 1
-            c = ccts(i)
-            If i = j Then
-                mat(i, j) = 1#
-            End If
-            mat(i, j) = mat(i, j) - (tvec(bn1(c)) - tvec(bn2(c))) * PUCONV / xval(c, 1)
-        Next i
-    Next j
-    d = Excel.WorksheetFunction.MDeterm(mat)
-    If Abs(d) <= lpEpsilon Then
-        CalcSensMat = False
-        Exit Function
-    End If
-    
-    res = Excel.WorksheetFunction.MInverse(mat)
-    
-    If n = 1 Then
-        sensmat(0, 0) = res(1)
-    Else
-        For i = 0 To n - 1
-            For j = 0 To n - 1
-                sensmat(i, j) = res(i + 1, j + 1)
-            Next j
-        Next i
-    End If
-    CalcSensMat = True
-End Function
-*/
-        private bool CalcSensMat(int[] ccts, out double[,] sensmat) {
+        public void CalcNodeMarginals(double[] bflow) {
+            double[] tv, va=null, sflow;
+            int i, j;
 
-            var n = Countac(ccts);
+            tlf = new double[_nodes.Count];
+            km = new double[_nodes.Count];
 
-            if ( n == 0 ) {
-                sensmat = new double[0,0];
+            for( i=0; i<_nord.nn; i++) { // for each node excluding refnode and hvdc nodes
+                tv = new double[_nodes.Count];
+                tv[i] = 1;
+                _ufac.Solve(tv, ref va);
+                CalcFlows(va, SPZero, true, out sflow, tv);
+
+                foreach( var br in _branches.Objs) {
+                    j = br.Index - 1;
+                    tlf[i] = tlf[i] + 2 * bflow[j] * sflow[j] * br.Obj.R / PUCONV;
+                    if ( bflow[j] * sflow[j] < 0) {
+                        km[i] = km[i] - Math.Abs(sflow[j] * br.km);
+                    } else {
+                        km[i] = km[i] + Math.Abs(sflow[j] * br.km);
+                    }
+                }
+            }
+
+        }
+
+        // Set active boundary always clearing any active trip
+
+        public void SetActiveBoundary(BoundaryWrapper bnd) {
+            double[] iflow, ivang=null;
+            int mi;
+            double mm;
+
+            if ( !(ActiveBound == bnd)) {
+                ActiveBound = bnd;
+
+                if (ActiveTrip!=null) {
+                    ActiveTrip.Deactivate();
+                    ActiveTrip = null;
+                }
+
+                if ( bnd!=null ) {
+                    // calc interconnection vang for new boundary
+                    bnd.InterconnectionTransfers(out itfer,_nodes);
+                    mism = Utilities.CopyArray(itfer);
+                    _ufac.Solve(itfer, ref ivang);
+                    civang[_ctrls.Count+1] = ivang;
+                    CalcFlows(ivang,SPZero, false, out iflow, mism);
+                    mi = MaxMismatch(mism);
+                    mm = mism[mi];
+                    var nd = _nodes.get(_nord.NodeId(mi));
+                    MiscReport($"{bnd.name} setup mismatch {nd.Obj.Code}",mm);
+                    MiscReport("Planned Transfer", $"{bnd.PlannedTransfer:0.00}");
+                    MiscReport("Interconnection Allowance",$"{bnd.InterconAllowance:0.00}");                
+                } else {
+                    civang[_ctrls.Count+1] = null;
+                    MiscReport("Boundary unspecified","");
+                }
+            } else {
+                // nothing to do
+            }
+        }
+
+        // Set a trip to be active
+        // Sets trip voltage angles tcvang if successful
+
+        public bool SetActiveTrip(Trip tr) {
+
+            if ( ActiveTrip == tr) {        // nothing to do - note trip no reactiviated
+                return true;
+            }
+
+            if ( ActiveTrip!=null ) {       // deactivate current trip
+                ActiveTrip.Deactivate();
+                ActiveTrip = null;
+            }
+
+            if ( tr == null ) {             // nothing to do
+                return true;
+            }
+
+            if ( tr.TripVectors(civang, out tcvang)) {
+                MiscReport($"Setup Trip {tr.name}", tr.TripDescription());
+                ActiveTrip = tr;
+                return true;
+            } else {
+                MiscReport($"Trip {tr.name}","splits AC network");
                 return false;
             }
+        }
 
-            var mat = new double[n,n];
-            sensmat = new double[n,n];
+        // Run calculater
+        // If bound is nothing then run planned transfer case
+        // If bound is not already active then setup itfer and civang
+        // Optionally save boundary max transfer or planned transfer loadflows
+        // Optionally undertake nodemarginals calc for planned transfer only
+        public int RunBoundCalc(BoundaryWrapper bound, Trip tr, int setptmd, bool nodemarginals, bool save = false) {
+            double[] vang;
+            double[]?[] cvang;
+            int mi,res;
+            double mm;
 
-            double[] tvec;
-            int c;
-            BranchWrapper bw;
-            for(int j=0;j<n;j++) {
-                tvec = new double[_nodes.Count];
-                bw = _branches.get(ccts[j]);
-                tvec[bw.Node1Index] = 1;
-                tvec[bw.Node2Index] = -1;
-                _ufac.Solve(tvec, ref tvec);
-                for (int i=0;i<n;i++) {
-                    c = ccts[i];
-                    bw = _branches.get(c);
-                    if ( i==j ) {
-                        mat[i,j] = 1;
+            SetActiveBoundary(bound);
+            if ( !SetActiveTrip(tr) ) {
+                return LPhdr.lpZeroPivot;
+            }
+
+            if ( ActiveTrip == null ) {
+                cvang = civang;
+            } else {
+                cvang = tcvang;
+            }
+
+            if ( setptmd == SPAuto) {
+                setptmd = SPAuto;
+                res = OptimiseLoadflow(cvang, out flow, save);
+                if ( res!= LPhdr.lpOptimum) {
+                    return res;
+                }
+                if ( ActiveBound!=null) {
+                    if ( Math.Abs(opt.BoundCap()) < WTCapacity) {
+                        WorstTrip = tr;
+                        WTCapacity = Math.Abs(opt.BoundCap());
                     }
-                    mat[i,j] = mat[i,j] - (tvec[bw.Node1Index] - tvec[bw.Node2Index]) * PUCONV / bw.Obj.X;
                 }
-            }
-            //
-            double d = Utilities.Determinant(mat);
-            if ( Math.Abs(d)<=LPhdr.lpEpsilon) {
-                return false;
-            }
-            //
-            var res = Utilities.MatrixInverse(mat);
-
-            for( int i=0;i<n;i++) {
-                for( int j=0;j<n;j++) {
-                    sensmat[i,j] = res[i,j];
+                if ( save ) {
+                    //??
                 }
-            }
-            //
-            return true;
-        }
-
-        // Count number of ac circuits
-        public int Countac(List<BranchWrapper> trips) {
-            int n = 0;
-            foreach( var trip in trips) {
-                if ( trip.Obj.X != 0 ) { // Count ac ccts
-                    n = n + 1;
-                }
-            }                   
-            return n;
-        }
-
-        // Count number of ac circuits
-        public int Countac(int[] ccts) {
-            int n = 0;
-            for(int i=0;i<ccts.Length;i++) {
-                var bw = _branches.get(ccts[i]);
-                if ( bw.Obj.X != 0 ) { // Count ac ccts
-                    n = n + 1;
-                }
-            }                   
-            return n;
-        }
-
-        /*
-        ' Calculate trip tvang from intact ovang
-
-Private Sub TripSolve(ccts() As Long, sensmat() As Double, ovang() As Double, tvang() As Double)
-    Dim nupb As Long, n As Long
-    Dim c As Long, i As Long, j As Long
-    Dim f() As Double, inj() As Double
-    Dim tvec() As Double
-    
-    
-    nupb = UBound(sensmat, 1)
-    ReDim f(nupb) As Double
-    ReDim inj(nupb) As Double
-    ReDim tvec(UBound(ovang)) As Double
-    
-    ' Calc original flows
-    n = 0
-    For i = 0 To UBound(ccts)
-        c = ccts(i)
-        If xval(c, 1) <> 0# Then
-            f(n) = (ovang(bn1(c)) - ovang(bn2(c))) * PUCONV / xval(c, 1)
-            n = n + 1
-        End If
-    Next i
-    
-    ' Calc injections
-    n = 0
-    For i = 0 To UBound(ccts)
-        c = ccts(i)
-        If xval(c, 1) <> 0# Then
-            For j = 0 To nupb
-                inj(n) = inj(n) + sensmat(n, j) * f(j)
-            Next j
-            tvec(bn1(c)) = tvec(bn1(c)) + inj(n)
-            tvec(bn2(c)) = tvec(bn2(c)) - inj(n)
-            n = n + 1
-        End If
-    Next i
-    
-    ufac.Solve tvec, tvec
-    
-    tvang = ovang
-    
-    For i = 0 To UBound(ovang)
-        tvang(i) = tvang(i) + tvec(i)
-    Next i
-End Sub
-
-        */
-
-        public void TripSolve(int[] ccts, double[,] sensmat, double[] ovang, out double[] tvang) {
-            int nupb, n, c, i, j;
-            double[] f, inj, tvec;
-
-            nupb = sensmat.GetLength(0)-1;
-            f=new double[nupb+1];
-            inj = new double[nupb+1];
-            tvec = new double[ovang.Length];
-
-            // Calc original flows
-            n = 0;
-            BranchWrapper bw;
-            for(i=0;i<ccts.Length;i++) {
-                c = ccts[i];
-                bw = _branches.get(c);
-                if (bw.Obj.X!=0) {
-                    f[n] = (ovang[bw.Node1Index] - ovang[bw.Node2Index]) * PUCONV / bw.Obj.X;
-                    n = n + 1;
-                }
-            }
-
-            // Calc injections
-            n=0;
-            for( i=0;i<ccts.Length;i++) {
-                c = ccts[i];
-                bw = _branches.get(c);
-                if (bw.Obj.X!=0) {
-                    for(j=0;j<=nupb;j++) {
-                        inj[n] = inj[n] + sensmat[n,j] * f[j];
+            } else {
+                setptmode = SPMan;
+                CalcBoundLF( cvang, out flow, save);
+                if ( ActiveBound!=null ) {
+                    if ( bc[mord[0]] < WTCapacity ) {
+                        WorstTrip = tr;
+                        WTCapacity = bc[mord[0]];
                     }
-                    tvec[bw.Node1Index] = tvec[bw.Node1Index] + inj[n];
-                    tvec[bw.Node2Index] = tvec[bw.Node2Index] - inj[n];
-                    n = n + 1;
+                }
+                if ( save ) {
+                    //??
                 }
             }
 
-            //
-            _ufac.Solve(tvec, ref tvec);
-            tvang = Utilities.CopyArray(ovang);
-
-            for (i=0;i<ovang.Length;i++) {
-                tvang[i] = tvang[i] + tvec[i];
+            if ( bound == null && nodemarginals ) {
+                CalcNodeMarginals(flow);
+                //??
+            } else {
+                //??
             }
+
+            return LPhdr.lpOptimum;
+        }
+
+        // Run trip case and fill in relevent TopN tables
+        public void RunTrip(BoundaryWrapper bn, Trip tr, int setptmd, bool save=false)
+        {
+            List<string> limccts;
+            int res;
+            if ( tr == null ) { // intact network case
+                res = RunBoundCalc(bn, null, setptmd, false, save);
+                if ( res!=LPhdr.lpOptimum) {
+                    //??
+                } else {
+                    if ( setptmd == SPAuto ) {
+                        limccts = opt.Limitccts();
+                    }
+                    //??
+                }
+            } else {
+                if ( tr.name.Substring(0,1) == "S" ) { // single circuit trip
+                    res = RunBoundCalc(bn, tr, setptmd, false, save);
+                    if ( res!=LPhdr.lpOptimum) {
+                        //??
+                    } else {
+                        if ( setptmd == SPAuto) {
+                            limccts = opt.Limitccts();
+                        }
+                        //??
+                    }
+                } else {
+                    res = RunBoundCalc(bn, tr, setptmd, false, save);
+                    if ( res!=LPhdr.lpOptimum) {
+                        //??
+                    } else {
+                        if ( setptmd == SPAuto ) {
+                            limccts = opt.Limitccts();
+                        }
+                    }
+                }
+            }
+        }
+
+        // Run trip collection
+        // Boundary must be specified
+        public void RunTripSet(BoundaryWrapper bn, Collection<Trip> trips, int setptmd) {
+            foreach( var tr in trips.Items) {
+                RunTrip(bn, tr, setptmd, false);
+            }
+            //?? output results
+        }
+
+        public void RunAllTrips(BoundaryWrapper bn, int setptmd) {
+            WTCapacity = 99999;
+            RunTrip(bn, null, setptmd, true);
+            RunTripSet(bn, bn.STripList, setptmd);
+            RunTripSet(bn, bn.DTripList, setptmd);
+            MiscReport("Worst Case Trip",$"{WTCapacity:0.00}");
+            RunBoundCalc(bn, WorstTrip, setptmd, false, true);
+        }
+
+
+        public void MiscReport(string msg, object result) {
+            var sr = _stageResults.NewStage(msg);
+            _stageResults.StageResult(sr,BoundCalcStageResultEnum.Pass,$"{result}");
+        }
+
+        public NodeBoundaryData GetNodeBoundaryData(BoundCalcBoundary bndry) {
+            NodeBoundaryData nbd=null;
+            nbd = new NodeBoundaryData(bndry.Zones);
+            return nbd;
+        }
+
+        private DatasetData<BoundCalcZone> loadZones(DataAccess da, int datasetId, Nodes nodes) {
+            var q = da.Session.QueryOver<BoundCalcZone>();
+            var ds = new DatasetData<BoundCalcZone>(da, datasetId,m=>m.Id.ToString(),q);
+            //
+            foreach( var nd in nodes.DatasetData.Data) {
+                if ( nd.Ext) {
+                    nd.Zone.UnscaleDem+=nd.Demand;
+                    nd.Zone.UnscaleGen+=nd.Generation;
+                } else {
+                    nd.Zone.Tdemand+=nd.Demand;
+                    nd.Zone.TGeneration+=nd.Generation;
+                }
+            }
+            //
+            return ds;
         }
 
         public static void RunTests() {
@@ -1155,27 +999,4 @@ End Sub
         }
     }
 
-    public class CVang {
-        
-        private Dictionary<CtrlWrapper,double[]?> _dict;
-
-        public CVang() {
-            _dict = new Dictionary<CtrlWrapper, double[]?>();
-        }
-
-        public double[]? Base {get; set;}        
-
-        public double[]? Get(CtrlWrapper ctrl) {
-            return _dict[ctrl];
-        }
-
-        public void Set(CtrlWrapper ctrl, double[]? vang) {
-            if ( !_dict.ContainsKey(ctrl) ) {
-                _dict.Add(ctrl,vang);
-            } else {
-                _dict[ctrl] = vang;
-            }
-        }
-        public double[]? Boundary {get; set;}
-    }
 }

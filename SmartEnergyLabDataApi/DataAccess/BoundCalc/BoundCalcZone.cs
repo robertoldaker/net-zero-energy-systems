@@ -10,7 +10,10 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
     {
         public BoundCalcZone()
         {
-
+            TGeneration = 0;
+            Tdemand = 0;
+            UnscaleDem = 0;
+            UnscaleGen = 0;
         }
 
         public BoundCalcZone(Dataset dataset)
@@ -37,6 +40,14 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 return Dataset.Id;
             }
         }
+
+        public virtual double TGeneration {get; set;}
+
+        public virtual double Tdemand {get; set;}
+
+        public virtual double UnscaleGen {get; set;}
+
+        public virtual double UnscaleDem {get; set;}
 
         public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
         {

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json.Serialization;
 using NHibernate;
 using Org.BouncyCastle.Asn1.Cms;
@@ -7,18 +8,20 @@ using SmartEnergyLabDataApi.Data.BoundCalc;
 namespace SmartEnergyLabDataApi.BoundCalc
 {
      public class Ctrls : DataStore<CtrlWrapper> {
-        public Ctrls(DataAccess da, int datasetId, Branches branches)  {
+        public Ctrls(DataAccess da, int datasetId, BoundCalc boundCalc)  {
             var q = da.Session.QueryOver<BoundCalcCtrl>();
             q = q.Fetch(SelectMode.Fetch,m=>m.Node1);
             q = q.Fetch(SelectMode.Fetch,m=>m.Node2);            
-            var di = new DatasetData<BoundCalcCtrl>(da,datasetId,m=>m.Id.ToString(),q);            
+            var di = new DatasetData<BoundCalcCtrl>(da,datasetId,m=>m.Id.ToString(),q);
+            int index=1;
             foreach( var c in di.Data) {
                 var key = c.LineName;
-                var branchWrapper = branches.get(key);
+                var branchWrapper = boundCalc.Branches.get(key);
                 var branch = branchWrapper;
-                var ctrl = new CtrlWrapper(c, branch);
+                var ctrl = new CtrlWrapper(c, index, branch, boundCalc);
                 branch.Ctrl = ctrl;
                 base.add(key,ctrl);
+                index++;
             }
 
             DatasetData = di;
@@ -39,8 +42,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
     }
 
     public class CtrlWrapper : ObjectWrapper<BoundCalcCtrl> {
-        public CtrlWrapper(BoundCalcCtrl obj, BranchWrapper branchWrapper) : base(obj) {
+        public CtrlWrapper(BoundCalcCtrl obj, int index, BranchWrapper branchWrapper, BoundCalc boundCalc) : base(obj, index) {
             Branch = branchWrapper;            
+            BoundCalc = boundCalc;
             if ( obj.Type == BoundCalcCtrlType.QB) {
                 InjMax = BoundCalc.PUCONV * Obj.MaxCtrl / branchWrapper.Obj.X;
             } else if ( obj.Type == BoundCalcCtrlType.HVDC) {
@@ -51,7 +55,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         }
 
         // Branch that it controls (cbid
-        public BranchWrapper Branch {get; private set;}
+        public BranchWrapper Branch {get; private set;}        
 
         // Max control injection (injmax)
         public double InjMax {get; private set; }
@@ -67,6 +71,24 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
             set {
                 Obj.SetPoint = value;
+            }
+        }
+
+        public BoundCalc BoundCalc {get; set;}
+
+        public LPVarDef CtVar {get; set;}
+
+        public double GetSetPoint(int spt) {
+            double v = this.Obj.MaxCtrl / InjMax;
+            switch( spt) {
+                case BoundCalc.SPAuto:
+                    return v * CtVar.Value(BoundCalc.Optimiser.ctrllp);
+                case BoundCalc.SPMan:
+                    return (double) Obj.SetPoint;
+                case BoundCalc.SPZero:
+                    return 0;
+                default:
+                    throw new Exception($"Unknown setpoint type request [{spt}]");
             }
         }
 

@@ -22,7 +22,12 @@ namespace SmartEnergyLabDataApi.BoundCalc
             Branches = lf.Branches.DatasetData;
             // Controls
             Ctrls = lf.Ctrls.DatasetData;
-            
+            if ( lf.setptmode==BoundCalc.SPAuto) {
+                foreach( var ct in lf.Ctrls.Objs) {
+                    ct.SetPoint = ct.GetSetPoint(lf.setptmode);
+                }
+            }
+
             BoundaryFlowResult = bfr;
             BoundaryTrips = bts;
 

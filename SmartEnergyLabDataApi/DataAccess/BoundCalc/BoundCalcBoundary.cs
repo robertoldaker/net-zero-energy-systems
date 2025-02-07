@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using MySqlX.XDevAPI;
 using NHibernate.Classic;
 using NHibernate.Mapping.Attributes;
+using SmartEnergyLabDataApi.BoundCalc;
 
 namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
@@ -65,5 +66,6 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         {
             return LifecycleVeto.NoVeto;
         }
+
     }
 }

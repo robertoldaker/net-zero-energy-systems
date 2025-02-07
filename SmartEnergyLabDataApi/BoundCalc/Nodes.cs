@@ -16,10 +16,16 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     node.Location = locDatasetData.GetItem(node.Location.Id);
                 }
             }
-            foreach( var node in di.Data) {                
+            int index=1;
+            //?? Not sure why this is necessary??
+            //?? Without it get a different ref. node?
+            var diData = di.Data.OrderBy(m=>m.Id);
+            foreach( var node in diData) {                
+            //??foreach( var node in di.Data) {                
                 var key = node.Code;
-                var objWrapper = new NodeWrapper(node);
+                var objWrapper = new NodeWrapper(node,index);
                 base.add(key,objWrapper);
+                index++;
             }
             DatasetData = di;
         }
@@ -29,9 +35,11 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
 
     public class NodeWrapper : ObjectWrapper<BoundCalcNode> {
-        public NodeWrapper(BoundCalcNode obj) : base(obj) {
+        public NodeWrapper(BoundCalcNode obj, int index) : base(obj, index) {
 
         }
+
+        public int Pn {get; set;} // Row/Column position of node in admittance matrix
 
         public double? Mismatch { 
             get {

@@ -15,7 +15,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             // Controls
             Ctrls = lf.Ctrls.DatasetData;
             // Boundaries
-            Boundaries = lf.Boundaries;
+            Boundaries = lf.Boundaries.DatasetData;
             // Zones
             Zones = lf.Zones;
             // Locations

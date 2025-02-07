@@ -68,7 +68,8 @@ namespace SmartEnergyLabDataApi.Controllers
         public IActionResult RunBase(int datasetId)
         {
             using( var lf = new BoundCalc.BoundCalc(datasetId) ) {
-                lf.RunBaseCase("Auto");
+                //lf.RunBaseCase("Auto");
+                lf.RunBoundCalc(null,null,BoundCalc.BoundCalc.SPAuto,false, false);
                 var resp = new BoundCalcResults(lf);
                 return this.Ok(resp);
             }
@@ -87,7 +88,7 @@ namespace SmartEnergyLabDataApi.Controllers
                 linkNames = new List<string>() { "ABH4A4:EXET40:A833"};
             }
             using( var lf = new BoundCalc.BoundCalc(datasetId) ) {
-                lf.RunTrip(linkNames);
+                //??lf.RunTrip(linkNames);
                 return new BoundCalcResults(lf);
             }
         }
@@ -149,65 +150,6 @@ namespace SmartEnergyLabDataApi.Controllers
                 return new BoundCalcNetworkData(lf);
             }
         }
-
-        /// <summary>
-        /// Setup boundary data prior to trip analysis
-        /// </summary>
-        /// <param name="datasetId">Dataset id to use</param>
-        /// <param name="boundaryName">Name of boundary</param>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("SetBound")]
-        public BoundCalcResults SetBound(int datasetId, string boundaryName) {
-            using( var lf = new BoundCalc.BoundCalc(datasetId) ) {
-                var bfr = lf.Boundary.SetBound(boundaryName);
-                var lfr = new BoundCalcResults(lf,bfr,lf.Boundary.BoundaryTrips);
-                //?? No saving yet as waiting for new version to be implemented
-                //?? lfr.Save();
-                return lfr;
-            }
-        }
-
-        /// <summary>
-        /// Run all boundary trips.
-        /// </summary>
-        /// <param name="datasetId">Dataset id to use</param>
-        /// <param name="boundaryName">Name of boundary</param>
-        /// <param name="connectionId">SignalR connection id to receive progress messages</param>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("RunAllBoundaryTrips")]
-        public BoundCalcResults RunAllBoundaryTrips(int datasetId, string boundaryName, string? connectionId=null) {
-            using( var lf = new BoundCalc.BoundCalc(datasetId) ) {
-                if ( connectionId!=null ) {
-                    lf.Boundary.AllTripsProgress+=(t,p)=>{                    
-                        _hubContext.Clients.Client(connectionId).SendAsync("BoundCalc_AllTripsProgress",new {trip=t,percent=p});
-                    };
-                }
-                var bfr = lf.Boundary.RunAllBoundaryTrips(boundaryName, out List<BoundCalcAllTripsResult> singleTrips, out List<BoundCalcAllTripsResult> doubleTrips);
-                var results = new BoundCalcResults(lf,bfr);
-                results.SingleTrips = singleTrips;
-                results.DoubleTrips = doubleTrips;
-                return results;
-            }
-        }
-
-        /// <summary>
-        /// Run a single boundary trip
-        /// </summary>
-        /// <param name="datasetId">Dataset id to use</param>
-        /// <param name="boundaryName">Name of boundary</param>
-        /// <param name="tripName">Name of trip</param>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("RunBoundaryTrip")]
-        public BoundCalcResults RunBoundTrip(int datasetId, string boundaryName,string tripName) {
-            using( var lf = new BoundCalc.BoundCalc(datasetId) ) {
-                var bfr = lf.Boundary.RunBoundaryTrip(boundaryName, tripName);
-                return new BoundCalcResults(lf, bfr);
-            }
-        }
-
 
         /// <summary>
         /// Stores Loadflow base reference from spreadsheet

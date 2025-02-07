@@ -19,7 +19,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
     // Y (and At) will need to be augmented by slack variables Ys to achieve the equalities
     // The value of the primal variables X at the optimum can be derived from D (shadows of Y)
     // Primal equality constraints can be flagged using EQ() as bool (means constraint not removed from basis but does not force initialisation into basis)
-    // Primal constraints can be skipped using Skip()as bool
+    // Primal constraints can be skipped using Skip()as bool    
     public class LP {
         private const int FASTCOUNT = -2; // the number of constraint candidates to be considered for basis entry.  Make -ve to consider all constraints
         //

@@ -150,7 +150,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             int k;
             double v=0;
 
-            maxc = sm.size -1;
+            maxs = sm.size -1;
             maxr = sm.Cupb;
             maxc = sm.Rupb;
             myepr = ((double) (maxs + 1)) / ((double) (maxr + 1));

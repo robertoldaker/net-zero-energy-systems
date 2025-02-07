@@ -38,11 +38,11 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         public virtual double Generation {
             get {
-                return Generation_A;
+                return Generation_B;
             }
 
             set {
-                Generation_A = value;
+                Generation_B = value;
             }
         }
 
