@@ -258,6 +258,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 var r = reader.GetDouble(branchIndex+4);
                 var x = reader.GetDouble(branchIndex+5);
                 var ohl = reader.GetDouble(branchIndex+6);
+                var cableLength = reader.GetDouble(branchIndex+7);
                 var cap = reader.GetDouble(branchIndex+8);
                 var linkType = reader.GetString(branchIndex+9);
                 // node1
@@ -281,6 +282,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 branch.Node1 = node1;
                 branch.Node2 = node2;
                 branch.OHL = ohl;
+                branch.CableLength = cableLength;
                 branch.R = r;
                 branch.X = x;
                 branch.Region = region;

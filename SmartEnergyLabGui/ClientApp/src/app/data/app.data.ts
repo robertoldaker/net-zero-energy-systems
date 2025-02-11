@@ -262,6 +262,7 @@ export interface LoadflowResults {
     boundaryTrips: BoundaryTrips,
     singleTrips: AllTripResult[],
     doubleTrips: AllTripResult[]
+    intactTrips: AllTripResult[]
 }
 
 export interface Boundary {
@@ -370,9 +371,12 @@ export interface Branch {
     node1GISData: GISData | null
     node2GISData: GISData | null
     outaged: boolean
-    powerFlow: number | null
+    powerFlow: number | null    
     bFlow: number
     freePower: number | null
+    km: number
+    mwkm: number
+    loss: number
 }
 
 export enum LoadflowCtrlType {  QB=0,  // Quad booster
@@ -461,7 +465,7 @@ export interface ILoadflowLink {
 export interface AllTripResult {
     surplus: number
     capacity: number
-    trip: BoundaryTrip
+    trip: BoundaryTrip | null
     limCCt: string[]
     ctrls: CtrlResult[]
 }

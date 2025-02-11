@@ -1,6 +1,6 @@
 namespace SmartEnergyLabDataApi.BoundCalc
 {
-    public enum BoundCalcBoundaryTripType { Single, Double }
+    public enum BoundCalcBoundaryTripType { Single, Double, Multi }
 
     public class BoundCalcBoundaryTrips {
 
@@ -61,22 +61,26 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public double TotalCapacity {get; private set;}
 
         public class BoundCalcBoundaryTrip {
-            private BranchWrapper _branch1;
-            private BranchWrapper _branch2;
-            public BoundCalcBoundaryTrip(int index,BranchWrapper bw1) {
+            private List<BranchWrapper> _branches;
+            public BoundCalcBoundaryTrip(int index,BranchWrapper bw1, BranchWrapper bw2=null) {
                 Index = index;
-                Type=BoundCalcBoundaryTripType.Single;
-                _branch1 = bw1;
-                LineNames = new List<string>() {_branch1.LineName};
-                BranchIds = new List<int> {_branch1.Obj.Id};
+                _branches = new List<BranchWrapper>() { bw1 };
+                if ( bw2!=null) {
+                    _branches.Add(bw2);
+                    Type=BoundCalcBoundaryTripType.Double;
+                } else {
+                    Type=BoundCalcBoundaryTripType.Single;
+                }
+                LineNames = _branches.Select(m=>m.LineName).ToList<string>();
+                BranchIds = _branches.Select(m=>m.Obj.Id).ToList<int>();
             }
-            public BoundCalcBoundaryTrip(int index,BranchWrapper bw1, BranchWrapper bw2) {
+
+            public BoundCalcBoundaryTrip(int index, Trip trip) {
                 Index = index;
-                Type=BoundCalcBoundaryTripType.Double;
-                _branch1 = bw1;
-                _branch2 = bw2;
-                LineNames = new List<string>() {_branch1.LineName,_branch2.LineName};
-                BranchIds = new List<int> {_branch1.Obj.Id,_branch2.Obj.Id};
+                Type=BoundCalcBoundaryTripType.Multi;
+                _branches = new List<BranchWrapper>(trip.Branches);
+                LineNames = _branches.Select(m=>m.LineName).ToList<string>();
+                BranchIds = _branches.Select(m=>m.Obj.Id).ToList<int>();                
             }
             public int Index {get; private set;}
             public BoundCalcBoundaryTripType Type {get; set;}

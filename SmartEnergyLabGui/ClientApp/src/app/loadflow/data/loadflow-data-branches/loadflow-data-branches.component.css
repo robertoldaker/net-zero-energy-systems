@@ -4,14 +4,14 @@
 }
 
 .mat-column-node1Code {
-    min-width: 150px;
-    width: 25%;    
+    min-width: 100px;
+    width: 15%;    
 }
 
 
 .mat-column-node2Code {
-    min-width: 150px;
-    width: 25%;    
+    min-width: 100px;
+    width: 15%;    
 }
 
 .mat-column-region {
@@ -42,6 +42,27 @@
 }
 
 .mat-column-powerFlow {
+    /* width: 100px; */
+    text-align: right;
+    font-style: italic;
+    color: green;
+}
+
+.mat-column-km {
+    /* width: 100px; */
+    text-align: right;
+    font-style: italic;
+    color: green;
+}
+
+.mat-column-mwkm {
+    /* width: 100px; */
+    text-align: right;
+    font-style: italic;
+    color: green;
+}
+
+.mat-column-loss {
     /* width: 100px; */
     text-align: right;
     font-style: italic;

@@ -17,9 +17,11 @@ export class LoadflowTripResultsComponent implements OnInit, OnDestroy, AfterVie
         if ( dataService.loadFlowResults ) {
             this.singleTrips = this.createDataSource(dataService.loadFlowResults.singleTrips)
             this.doubleTrips = this.createDataSource(dataService.loadFlowResults.doubleTrips)
+            this.intactTrips = this.createDataSource(dataService.loadFlowResults.intactTrips)
         } else {
             this.singleTrips = this.createDataSource([])
             this.doubleTrips = this.createDataSource([])
+            this.intactTrips = this.createDataSource([])
         }
         this.subs1 = dataService.ResultsLoaded.subscribe( (results) => {
             if ( results.singleTrips ) {
@@ -27,6 +29,9 @@ export class LoadflowTripResultsComponent implements OnInit, OnDestroy, AfterVie
             }
             if ( results.doubleTrips ) {
                 this.doubleTrips = this.createDataSource(results.doubleTrips)
+            }
+            if ( results.intactTrips ) {
+                this.intactTrips = this.createDataSource(results.intactTrips)
             }
         })
     }
@@ -49,5 +54,6 @@ export class LoadflowTripResultsComponent implements OnInit, OnDestroy, AfterVie
 
     singleTrips: MatTableDataSource<AllTripResult>
     doubleTrips: MatTableDataSource<AllTripResult>
+    intactTrips: MatTableDataSource<AllTripResult>
 
 }

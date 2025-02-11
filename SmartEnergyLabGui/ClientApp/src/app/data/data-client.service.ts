@@ -292,6 +292,16 @@ export class DataClientService implements ILogs {
         }, error => this.logErrorMessage(error));        
     }
 
+    RunBoundCalc( datasetId: number, boundaryName: string, boundaryTrips: boolean, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
+        this.showMessageService.showMessage("Calculating ...");
+        this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/Run?datasetId=${datasetId}&boundaryName=${boundaryName}&boundaryTrips=${boundaryTrips}&tripStr=${tripStr}`,{}).subscribe( result => {
+            this.showMessageService.clearMessage()
+            if ( onLoad ) {
+                onLoad(result)
+            }
+        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
+    }
+
     RunBaseLoadflow( datasetId: number,onLoad: (results: LoadflowResults)=> void | undefined) {
         this.showMessageService.showMessage("Calculating ...");
         this.http.post<LoadflowResults>(this.baseUrl + `/${this.controller}/RunBase?datasetId=${datasetId}`,{}).subscribe( result => {
@@ -331,6 +341,14 @@ export class DataClientService implements ILogs {
                 onLoad(result)
             }
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
+    }
+
+    GetBranchNames( datasetId: number, onLoad: (branchNames: string[])=> void | undefined) {
+        this.http.get<string[]>(this.baseUrl + `/${this.controller}/BranchNames?datasetId=${datasetId}`).subscribe( result => {
+            if ( onLoad ) {
+                onLoad(result)
+            }
+        }, error => this.logErrorMessage(error));        
     }
 
     /**

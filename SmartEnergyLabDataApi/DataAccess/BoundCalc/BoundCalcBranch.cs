@@ -203,6 +203,29 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         public virtual double? FreePower {get; set;}
 
+        public virtual double? km {get; set;}
+
+        public virtual double? mwkm {
+            get {
+                if ( this.PowerFlow!=null && this.km!=null ) {
+                    return Math.Abs((double)this.PowerFlow * (double) this.km);
+                } else {
+                    return null;
+                }
+            }
+        }
+
+        public virtual double? loss {
+            get {
+                if ( this.PowerFlow!=null ) {
+                    return (((double) this.PowerFlow* (double) this.PowerFlow) * this.R)/SmartEnergyLabDataApi.BoundCalc.BoundCalc.PUCONV;
+                } else {
+                    return null;
+                }
+            }
+        }
+
+
         public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
         {
             // Delete ctrls pointing at this branch

@@ -5,6 +5,7 @@ td.mat-column-comment {
     padding-left: 1rem;
     font-size: 0.8rem;
     font-style: italic;
+    text-align: right;
 }
 th.mat-column-comment {
     padding-left: 1rem;

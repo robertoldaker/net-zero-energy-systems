@@ -71,7 +71,12 @@ namespace SmartEnergyLabDataApi.BoundCalc
         private BoundCalcStageResults _stageResults;
         private Optimiser opt;
 
-        public BoundCalc(int datasetId) {
+        public List<BoundCalcAllTripsResult> IntactTrips;
+        public List<BoundCalcAllTripsResult> SingleTrips;
+        public List<BoundCalcAllTripsResult> DoubleTrips;
+
+
+        public BoundCalc(int datasetId, bool buildOptimiser=false) {
             _da = new DataAccess();
             _dataset = _da.Datasets.GetDataset(datasetId);
             if ( _dataset == null) {
@@ -82,7 +87,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             var locDi = _da.NationalGrid.GetLocationDatasetData(_dataset.Id);
             _nodes = new Nodes(_da,_dataset.Id,locDi);
             // create branches wrapper
-            _branches = new Branches(_da,_dataset.Id,_nodes);
+            _branches = new Branches(_da,_dataset.Id,_nodes, buildOptimiser);
             // create ctrl wrapper
             _ctrls = new Ctrls(_da,_dataset.Id,this);
             // zones
@@ -91,10 +96,16 @@ namespace SmartEnergyLabDataApi.BoundCalc
             Trip.BoundCalc = this;
             _boundaries = new Boundaries(_da,_dataset.Id,this);
             //
-            if (NetCheck()) {
-                opt = Optimiser.BuildOptimiser(this);
-            } else {
-                throw new Exception("Unspecified problem checking network");
+            IntactTrips = new List<BoundCalcAllTripsResult>();
+            SingleTrips = new List<BoundCalcAllTripsResult>();
+            DoubleTrips = new List<BoundCalcAllTripsResult>();
+            //
+            if ( buildOptimiser ) {
+                if (NetCheck()) {
+                    opt = Optimiser.BuildOptimiser(this);
+                } else {
+                    throw new Exception("Unspecified problem checking network");
+                }
             }
 
         }
@@ -429,22 +440,6 @@ namespace SmartEnergyLabDataApi.BoundCalc
             return maxi;
         }
 
-        // calc mwkm and loss results
-
-        public void CalcBranchAux(double[] lflow, out double[] mwkm, out double[] loss) {
-            int n;
-            double f;
-            n = _branches.Count - 1;
-            mwkm = new double[n+1];
-            loss = new double[n+1];
-
-            foreach( var br in _branches.Objs)  {
-                f = lflow[br.Index - 1];
-                mwkm[br.Index - 1] = Math.Abs(f * br.km);
-                loss[br.Node1Index - 1] = (f * f * br.Obj.R ) / PUCONV;
-            }
-        }
-
         // Calculate cct free capacity in direction of flow
 
         public void CalcMinFree(double[] flow) {
@@ -545,26 +540,25 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public void CalcLoadFlow(double[]?[] cvang, double isaf, out double[] lflow, bool save = true) {
             double[] tfr, vang;
 
-            //??lflow = new double[_branches.Count];
             CalcTransfers(isaf, out tfr);
             mism = Utilities.CopyArray(tfr);
             CalcVang(isaf, cvang, out vang);
             CalcFlows( vang, setptmode, true, out lflow, mism);
             //
             // Store mismatches in node wrappers
-            for( int i=0;i<mism.Length;i++) {
-                int index = _nord.NodeId(i);
-                var nodeWrapper = _nodes.get(index);
-                nodeWrapper.Mismatch = mism[i];
+            foreach( var nd in _nodes.Objs) {
+                nd.Mismatch = mism[nd.Pn];
             }
         }
 
         public void SaveLFResults( double[] lflow) {
 
+            CalcMinFree(lflow);
+            //
             var mi = MaxMismatch(mism);
             var mm = mism[mi];
             var nd = _nodes.get(_nord.NodeId(mi));
-            MiscReport($"Max mismatch [{nd.Obj.Code}]", $"{mm:E5}");
+            MiscReport($"Max mismatch [{nd.Obj.Code}]", $"{mm:g5}");
         }
 
         public void CalcBoundLF(double[]?[] cvang, out double[] lflow, bool save = false) {
@@ -715,13 +709,13 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
             if ( !pt ) {
                 MiscReport("Boundary capacity (all circuits)", $"{opt.BoundCap():0.00}");
+                CalcSF(lflow,ivang,Math.Abs(opt.BoundCap()),Math.Abs(ActiveBound.InterconAllowance));
             }
 
-            var mi = MaxMismatch(mism);
-            var mm = mism[mi];
-            var nd = _nodes.get(Nord.NodeId(mi));
-            MiscReport($"Max mismatch {nd.Obj.Code}",$"{mm:E5}");
-            MiscReport("Boundary optimisation",$"Ctrl cost: {opt.ControlCost():0.00}");
+            if ( save ) {
+                SaveLFResults(lflow);
+                MiscReport("Boundary optimisation",$"Ctrl cost: {opt.ControlCost():0.00}");
+            }
             //
 
             return r1;
@@ -746,10 +740,10 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 foreach( var br in _branches.Objs) {
                     j = br.Index - 1;
                     tlf[i] = tlf[i] + 2 * bflow[j] * sflow[j] * br.Obj.R / PUCONV;
-                    if ( bflow[j] * sflow[j] < 0) {
-                        km[i] = km[i] - Math.Abs(sflow[j] * br.km);
-                    } else {
-                        km[i] = km[i] + Math.Abs(sflow[j] * br.km);
+                    if ( bflow[j] * sflow[j] < 0 && br.km!=null) {
+                        km[i] = km[i] - Math.Abs(sflow[j] * (double) br.km);
+                    } else if ( br.km!=null ) {
+                        km[i] = km[i] + Math.Abs(sflow[j] * (double) br.km);
                     }
                 }
             }
@@ -774,14 +768,14 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 if ( bnd!=null ) {
                     // calc interconnection vang for new boundary
                     bnd.InterconnectionTransfers(out itfer,_nodes);
-                    mism = Utilities.CopyArray(itfer);
+                    mism = Utilities.CopyArray(itfer);                    
                     _ufac.Solve(itfer, ref ivang);
                     civang[_ctrls.Count+1] = ivang;
                     CalcFlows(ivang,SPZero, false, out iflow, mism);
                     mi = MaxMismatch(mism);
                     mm = mism[mi];
                     var nd = _nodes.get(_nord.NodeId(mi));
-                    MiscReport($"{bnd.name} setup mismatch {nd.Obj.Code}",mm);
+                    MiscReport($"{bnd.name} setup mismatch {nd.Obj.Code}",$"{mm:g5}");
                     MiscReport("Planned Transfer", $"{bnd.PlannedTransfer:0.00}");
                     MiscReport("Interconnection Allowance",$"{bnd.InterconAllowance:0.00}");                
                 } else {
@@ -844,7 +838,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
 
             if ( setptmd == SPAuto) {
-                setptmd = SPAuto;
+                setptmd = SPAuto;                
                 res = OptimiseLoadflow(cvang, out flow, save);
                 if ( res!= LPhdr.lpOptimum) {
                     return res;
@@ -855,9 +849,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                         WTCapacity = Math.Abs(opt.BoundCap());
                     }
                 }
-                if ( save ) {
-                    //??
-                }
+
             } else {
                 setptmode = SPMan;
                 CalcBoundLF( cvang, out flow, save);
@@ -885,7 +877,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         // Run trip case and fill in relevent TopN tables
         public void RunTrip(BoundaryWrapper bn, Trip tr, int setptmd, bool save=false)
         {
-            List<string> limccts;
+            List<string> limccts = new List<string>();;
             int res;
             if ( tr == null ) { // intact network case
                 res = RunBoundCalc(bn, null, setptmd, false, save);
@@ -895,7 +887,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     if ( setptmd == SPAuto ) {
                         limccts = opt.Limitccts();
                     }
-                    //??
+                    this.IntactTrips = CreateAllTripsList(20,bn,bn.PlannedTransfer + bn.InterconAllowance,null,bc,mord,limccts);
                 }
             } else {
                 if ( tr.name.Substring(0,1) == "S" ) { // single circuit trip
@@ -919,6 +911,87 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     }
                 }
             }
+        }
+
+        private List<BoundCalcAllTripsResult> CreateAllTripsList( int nsz, BoundaryWrapper bnd, double rtfer, Trip trip, double[] bndcap, int[] mord, List<string> limitccts ) {
+            int i, j, m, spm, limits=0;
+            double limitsu=0, su;
+            bool first;
+            string bn;
+
+            var list = new List<BoundCalcAllTripsResult>();
+
+            first = true;        // signals first row of trip  must be output with setpoints
+            j=0;
+            if (limitccts.Count > 0 ) {
+                spm = BoundCalc.SPAuto;
+                limits = 1;      // signals limitccts must be output, 2 = check if cct in limitccts, 3 = ignore
+            } else {
+                spm = BoundCalc.SPMan;
+            }
+
+            for( i=1; i<=nsz;i++ ) {
+                var tripResult = new BoundCalcAllTripsResult();
+                list.Add(tripResult);
+                m = mord[j];
+                su = Math.Abs(bndcap[m]) - Math.Abs(rtfer);
+                if ( limits == 2) {
+                    if ( Math.Abs(su - limitsu) < 50 ) {
+                        var br1 = _branches.get(m+1);
+                        bn = br1.LineName;
+                        if ( limitccts.Contains(bn) ) {
+                            j++;
+                            m = mord[j];
+                            su = bndcap[m] - Math.Abs(rtfer);
+                        }
+                    } else {
+                        limits = 3;
+                    }
+                }
+                //
+                tripResult.Capacity = bndcap[m] * Math.Sign(rtfer);
+                tripResult.Surplus = su;
+                if ( trip == null ) {
+                    tripResult.Trip = null;
+                } else {
+                    tripResult.Trip = new BoundCalcBoundaryTrips.BoundCalcBoundaryTrip(i,trip);
+                }
+                if ( first ) {
+                    tripResult.Ctrls = new List<BoundCalcCtrlResult>();
+                    foreach( var ctrl in _ctrls.Objs) {
+                        tripResult.Ctrls.Add(new BoundCalcCtrlResult(ctrl, ctrl.GetSetPoint(spm)));
+                    }
+                    first = false;
+                }
+                var br = _branches.get(m+1);
+                bn = br.LineName;
+                if ( limits == 1) {
+                    if ( limitccts.Contains(bn) ) {
+                        limits = 2;
+                        limitsu = su;
+                        tripResult.LimCct = limitccts;
+                        do {
+                            j++;
+                            if ( j>=mord.Length ) {
+                                break;
+                            }
+                            br = _branches.get(mord[j] + 1);
+                            bn = br.LineName;
+                        } while(limitccts.Contains(bn));
+                    } else {
+                        tripResult.LimCct = new List<string>() { bn };
+                        j++;
+                    }
+                } else {
+                    tripResult.LimCct = new List<string>() { bn };
+                    j++;
+                }
+                if ( j >= mord.Length) {
+                    break;
+                }
+            }
+
+            return list;
         }
 
         // Run trip collection

@@ -75,6 +75,24 @@
             <td mat-cell *matCellDef="let element">{{element.powerFlow?.value?.toFixed(0)}}</td>
         </ng-container>
 
+        <!-- km -->
+        <ng-container matColumnDef="km">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Km</th>
+            <td mat-cell *matCellDef="let element">{{element.km?.value?.toFixed(0)}}</td>
+        </ng-container>
+
+        <!-- km -->
+        <ng-container matColumnDef="mwkm">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">MW.Km</th>
+            <td mat-cell *matCellDef="let element">{{element.mwkm?.value?.toFixed(0)}}</td>
+        </ng-container>
+
+        <!-- loss -->
+        <ng-container matColumnDef="loss">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Loss</th>
+            <td mat-cell *matCellDef="let element">{{element.loss?.value?.toFixed(0)}}</td>
+        </ng-container>
+
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{isDeleted: row._isDeleted}"></tr>
     </table>            

@@ -10,6 +10,9 @@ using Org.BouncyCastle.Crypto.Signers;
 using System.Text.Json;
 using System.Linq.Expressions;
 using SmartEnergyLabDataApi.Data.BoundCalc;
+using Org.BouncyCastle.Asn1.Ntt;
+using Org.BouncyCastle.Crypto.Modes.Gcm;
+using NHibernate.Loader.Custom;
 
 namespace SmartEnergyLabDataApi.Controllers
 {
@@ -59,19 +62,62 @@ namespace SmartEnergyLabDataApi.Controllers
             }
         }
 
+        /// <summary>
+        /// Get list of branch names
+        /// </summary>
+        /// <param name="datasetId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("BranchNames")]
+        public List<string> BranchNames(int datasetId) {
+            using ( var da = new DataAccess() ) {
+                var q = da.Session.QueryOver<BoundCalcBranch>();
+                var ds = new DatasetData<BoundCalcBranch>(da, datasetId,m=>m.Id.ToString(),q);
+                var bns = ds.Data.Select(m=>m.LineName).ToList<string>();
+                return bns;
+            }
+        }
         
         /// <summary>
-        /// Runs a base load flow
+        /// Runs boundCalc
         /// </summary>
         [HttpPost]
-        [Route("RunBase")]
-        public IActionResult RunBase(int datasetId)
+        [Route("Run")]
+        public IActionResult Run(int datasetId, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null )
         {
-            using( var lf = new BoundCalc.BoundCalc(datasetId) ) {
-                //lf.RunBaseCase("Auto");
-                lf.RunBoundCalc(null,null,BoundCalc.BoundCalc.SPAuto,false, false);
-                var resp = new BoundCalcResults(lf);
-                return this.Ok(resp);
+            try {
+                using( var bc = new BoundCalc.BoundCalc(datasetId, true) ) {
+                    BoundaryWrapper? bnd = null;
+                    if ( string.IsNullOrEmpty(boundaryName) ) {
+                        Trip tr = null;
+                        if ( !string.IsNullOrEmpty(tripStr)) {
+                            tr = new Trip("T1",tripStr,bc.Branches);
+                        }
+                        bc.RunBoundCalc(null,tr,BoundCalc.BoundCalc.SPAuto,false,true); 
+                    } else {
+                        bnd = bc.Boundaries.GetBoundary(boundaryName);
+                        if ( bnd == null ) {
+                            throw new Exception($"Cannot find boundary with name [{boundaryName}]");
+                        }
+                        if ( boundaryTrips) {
+                            bc.RunAllTrips(bnd, BoundCalc.BoundCalc.SPAuto);
+                        } else {
+                            Trip tr = null;
+                            if ( !string.IsNullOrEmpty(tripStr) ) {
+                                if ( tripStr.Contains(',')) {
+                                    tr = new Trip("T1",tripStr,bc.Branches);
+                                } else {
+                                    tr = new Trip("S1",tripStr,bc.Branches);
+                                }
+                            }
+                            bc.RunTrip(bnd,tr,BoundCalc.BoundCalc.SPAuto,true);
+                        }
+                    }
+                    var resp = new BoundCalcResults(bc);
+                    return this.Ok(resp);
+                }
+            } catch( Exception e) {
+                return this.Ok(new BoundCalcResults(e.Message));
             }
         }
 

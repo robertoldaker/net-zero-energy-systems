@@ -184,6 +184,8 @@ public class EditItemModel : DbModel {
             _da.Elsi.DeleteResults(_dataset.Id);
         } else if ( _dataset.Type == DatasetType.Loadflow) {
             _da.Loadflow.DeleteResults(_dataset.Id);
+        } else if ( _dataset.Type == DatasetType.BoundCalc) {
+            _da.BoundCalc.DeleteResults(_dataset.Id);
         } else {
             throw new Exception($"Unexpected dataset type [{_dataset.Type}]");
         }

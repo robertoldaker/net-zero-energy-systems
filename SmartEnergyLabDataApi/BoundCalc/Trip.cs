@@ -49,6 +49,12 @@ public class Trip {
         nac = b-1;
     }
 
+    public BranchWrapper[] Branches{
+        get {
+            return _ccts;
+        }
+    }
+
     public BranchWrapper GetCircuit(int n) {
         return _ccts[n];        
     }

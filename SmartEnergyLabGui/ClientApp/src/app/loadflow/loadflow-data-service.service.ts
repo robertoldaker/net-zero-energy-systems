@@ -97,6 +97,15 @@ export class LoadflowDataService {
         })
     }
 
+    runBoundCalc(boundaryName: string, boundaryTrips: boolean, tripStr: string) {
+        this.inRun = true;
+        this.dataClientService.RunBoundCalc( this.dataset.id, boundaryName, boundaryTrips, tripStr, (results) => {
+            this.inRun = false;
+            this.loadFlowResults = results;
+            this.ResultsLoaded.emit(results);
+        });
+    }
+
     runBaseLoadflow() {
         this.inRun = true;
         this.dataClientService.RunBaseLoadflow( this.dataset.id, (results) => {

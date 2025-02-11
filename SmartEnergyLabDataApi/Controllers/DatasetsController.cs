@@ -88,11 +88,13 @@ public class DatasetsController : ControllerBase
                     return da.Elsi.GetResultCount(datasetId);
                 } else if ( dataset.Type == DatasetType.Loadflow) {
                     return da.Loadflow.GetResultCount(datasetId);
+                } else if ( dataset.Type == DatasetType.BoundCalc) {
+                    return da.BoundCalc.GetResultCount(datasetId);
                 } else {
                     throw new Exception($"Unexpected dataset type found [{dataset.Type}]");
                 }
             } else {
-                throw new Exception($"Coulnd not find dataset for id=[{datasetId}]");
+                throw new Exception($"Could not find dataset for id=[{datasetId}]");
             }
         }
     }

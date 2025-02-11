@@ -1,3 +1,4 @@
+using NLog.LayoutRenderers;
 using SmartEnergyLabDataApi.Common;
 
 namespace SmartEnergyLabDataApi.BoundCalc
@@ -427,6 +428,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
                     if ( xv>-1 ) {
                         ev = BestReplacementVar(xv);
+#if DEBUG
+    Console.WriteLine($"LP {Id} Variable({vn[xv]})= {Math.Round(yv[xv],2)}");
+#endif 
 
                         if ( ev==-1) {
                             Console.WriteLine($" fail: basis variable {vn[xv]} negative");
@@ -439,19 +443,28 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
                         if ( ev!=-1) {
                             xv = FindExitVar();
-
+#if DEBUG
+    Console.WriteLine($"LP {Id} Constraint({cn[cm[ev]]})= {Math.Round(dv[cm[ev]],1)}");
+#endif 
                             if ( xv==-1 ) {
                                 Console.WriteLine($" fail: unsolvable infringed constraint {cn[cm[ev]]}");
                                 Return2 = cm[ev];
                                 return LPhdr.lpInfeasible;
                             }
                         } else {
-                            #if DEBUG
-                                PrintFile.PrintVars($"Solved {iter} iterations");
-                            #endif
+#if DEBUG
+    Console.WriteLine($"Solved {iter} iteractions");
+    PrintFile.PrintVars($"Solved {iter} iterations");
+#endif
                             return LPhdr.lpOptimum;
                         }
                     }
+
+                    // xv is the most restrictive (or negatine) basis row
+                    // ev is the variable (primal constrain) to enter the basis
+#if DEBUG
+    Console.WriteLine($" Enter constraint {cn[cm[ev]]} for {cn[cm[xv]]}");
+#endif 
 
                     UpdateBasis(xv, cm[ev]);
                     dv[cm[ev]] = 0;

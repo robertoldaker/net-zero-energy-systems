@@ -19,7 +19,7 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
         this.dataFilter.columnFilterMap.set(this.typeDataFilter.columnName, this.typeDataFilter)
 
         this.createDataSource(dataService.dataset,dataService.networkData.branches)
-        this.displayedColumns = ['buttons','code','node1Code','node2Code','typeStr','x','cap','freePower','powerFlow']
+        this.displayedColumns = ['buttons','code','node1Code','node2Code','typeStr','x','cap','freePower','powerFlow','km','mwkm','loss']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.createDataSource(dataService.dataset,results.branches)
         }))

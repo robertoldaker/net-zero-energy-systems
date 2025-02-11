@@ -12,7 +12,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
     public class Branches : DataStore<BranchWrapper> {
 
-        public Branches(DataAccess da, int datasetId, Nodes nodes) {
+        public Branches(DataAccess da, int datasetId, Nodes nodes, bool buildOptimiser) {
             var q = da.Session.QueryOver<BoundCalcBranch>();
             var di = new DatasetData<BoundCalcBranch>(da,datasetId,m=>m.Id.ToString(),q);
             int index=1;
@@ -23,7 +23,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 b.Node1 = nodes.DatasetData.GetItem(b.Node1Id);
                 b.Node2 = nodes.DatasetData.GetItem(b.Node2Id);
                 var key = b.LineName;
-                var objWrapper = new BranchWrapper(b,index,nodes);
+                var objWrapper = new BranchWrapper(b,index,nodes, buildOptimiser);
                 base.add(key,objWrapper);
                 index++;
             }
@@ -124,12 +124,14 @@ namespace SmartEnergyLabDataApi.BoundCalc
             },            
         };
 
-        public BranchWrapper(BoundCalcBranch obj, int index, Nodes nodes) : base(obj,index) {
+        public BranchWrapper(BoundCalcBranch obj, int index, Nodes nodes, bool buildOptimiser) : base(obj,index) {
             Node1 = nodes.get(obj.Node1.Code);
             Node2 = nodes.get(obj.Node2.Code);
-            setKm();
-            if ( Obj.X!=0) {
-                y = BoundCalc.PUCONV / Obj.X;
+            if ( buildOptimiser ) {
+                setKm();
+                if ( Obj.X!=0) {
+                    y = BoundCalc.PUCONV / Obj.X;
+                }
             }
         }
 
@@ -152,10 +154,11 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 } else {
                     throw new Exception($"Cannot find OHL scaling factor for branch [{Obj.Code}], region [{Obj.Region}]");
                 }
+                if ( Obj.Code == "C1AD") {
+                    Console.WriteLine("!!");
+                }
                 km = Obj.OHL * scalingOHL + Obj.CableLength * scalingCable;
-            } else {
-                km =0;
-            }
+            } 
         }
 
         // Line code name (lcstr)
@@ -224,9 +227,20 @@ namespace SmartEnergyLabDataApi.BoundCalc
         }
 
         public int pn1 {get; set;} // Row/column position of node1 and node2 in admittance matrix
+
         public int pn2 {get; set;}
-        public double km {get; set;}
+
+        public double? km { 
+            get {
+                return Obj.km;
+            }
+            set {
+                Obj.km = value;
+            }
+        }
+
         public double y; // admittance in 1MVA base
+
         public bool BOut {get; set;} = false;
 
         public double flow(double[] vang, int setptmd, bool outages) {

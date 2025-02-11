@@ -1,8 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Boundary, BoundaryFlowResult, BoundaryTrip, Dataset, DatasetType, LoadflowResults } from '../../data/app.data';
+import { Boundary, BoundaryFlowResult, BoundaryTrip, Branch, Dataset, DatasetType, LoadflowResults } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
 import { ComponentBase } from 'src/app/utils/component-base';
+import { DataClientService } from 'src/app/data/data-client.service';
 
 @Component({
     selector: 'app-loadflow-dialog',
@@ -15,14 +16,16 @@ export class LoadflowDialogComponent extends ComponentBase {
     constructor(private dataService: LoadflowDataService) { 
         super()
         this.boundaries = dataService.networkData.boundaries.data;
+        this.branches = dataService.networkData.branches.data;
         this.trips = []
-        this.boundaryName=""        
+        this.boundaryName="Unspecified"        
         this.selectedTrip=""
         this.currentTrip="";
         this.percent = 0;
         this.flowResult = this.clearFlowResult;
         this.addSub(dataService.NetworkDataLoaded.subscribe((results=>{
-            this.boundaries = results.boundaries.data;
+            this.boundaries = results.boundaries.data
+            this.branches = results.branches.data
         })))
         this.addSub(dataService.ResultsLoaded.subscribe((results)=>{
             if ( results.boundaryTrips ) {
@@ -42,12 +45,20 @@ export class LoadflowDialogComponent extends ComponentBase {
         }))
     }
 
+    calc() {
+        let bn:string = this.boundaryName;
+        if ( bn == "Unspecified") {
+            bn = "";
+        }
+        this.dataService.runBoundCalc(bn,false,"");
+    }
+
     runBaseLoadflow() {
         this.dataService.runBaseLoadflow();
     }
 
     setBound() {
-        this.dataService.setBound(this.boundaryName);
+        //??this.dataService.setBound(this.boundaryName);
     }
 
     runSingleTrip() {
@@ -78,6 +89,7 @@ export class LoadflowDialogComponent extends ComponentBase {
     percent: number
     selectedTrip: string
     boundaries: Boundary[]
+    branches: any;
     boundaryName: string
     trips: BoundaryTrip[]
     flowResult: BoundaryFlowResult

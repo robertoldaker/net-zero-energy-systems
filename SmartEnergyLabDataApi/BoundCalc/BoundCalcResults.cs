@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.BoundCalc;
+using SmartEnergyLabDataApi.Loadflow;
 using static SmartEnergyLabDataApi.BoundCalc.BoundCalcBoundaryTrips;
 
 namespace SmartEnergyLabDataApi.BoundCalc
@@ -31,6 +32,16 @@ namespace SmartEnergyLabDataApi.BoundCalc
             BoundaryFlowResult = bfr;
             BoundaryTrips = bts;
 
+            IntactTrips = lf.IntactTrips;
+            SingleTrips = lf.SingleTrips;
+            DoubleTrips = lf.DoubleTrips;
+        }
+
+        public BoundCalcResults(string errorMsg) {
+            StageResults = new BoundCalcStageResults();
+            var sr = new BoundCalcStageResult("Error");
+            sr.Finish(BoundCalcStageResultEnum.Fail,errorMsg);
+            StageResults.Results.Add(sr);
         }
 
         public Dataset Dataset {get; set;}
@@ -42,6 +53,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public BoundCalcBoundaryFlowResult? BoundaryFlowResult {get; private set;}
         public BoundCalcBoundaryTrips? BoundaryTrips {get; private set;}
 
+        public List<BoundCalcAllTripsResult> IntactTrips {get; set;}
         public List<BoundCalcAllTripsResult> SingleTrips {get; set;}
         public List<BoundCalcAllTripsResult> DoubleTrips {get; set;}
 
@@ -88,10 +100,14 @@ namespace SmartEnergyLabDataApi.BoundCalc
     }
 
     public class BoundCalcCtrlResult {
-        public BoundCalcCtrlResult( CtrlWrapper cw) {
+        public BoundCalcCtrlResult( CtrlWrapper cw, double? sp=null) {
             Id = cw.Obj.Id;
             Code = cw.Obj.Code;
-            SetPoint = cw.SetPoint;
+            if ( sp!=null ) {
+                SetPoint = sp;
+            } else {
+                SetPoint = cw.SetPoint;
+            }
         }
         public int Id {get; set;}
         public string Code {get; set;}
@@ -115,6 +131,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
     }
 
     public class BoundCalcAllTripsResult {
+
         public double Surplus {get; set;}
         public double Capacity {get; set;}
         public BoundCalcBoundaryTrip Trip {get; set;}

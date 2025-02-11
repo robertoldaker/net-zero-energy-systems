@@ -43,7 +43,7 @@ export class LoadflowTripTableComponent implements OnInit, AfterViewInit, OnDest
     }
 
     getTripName(index: number, item: AllTripResult) {
-        return item.trip.text
+        return (item.trip != null ) ? item.trip.text : "Intact"
     }
 
     displayedColumns: string[]

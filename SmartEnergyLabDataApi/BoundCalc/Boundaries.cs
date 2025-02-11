@@ -28,6 +28,10 @@ public class Boundaries : DataStore<BoundaryWrapper> {
     }
     public DatasetData<BoundCalcBoundary> DatasetData {get; private set;}
 
+    public BoundaryWrapper? GetBoundary(string boundaryName) {
+        return this.Objs.Where( m=>m.Obj.Code == boundaryName).FirstOrDefault();
+    }
+
 }
 
 public class BoundaryWrapper : ObjectWrapper<BoundCalcBoundary> {
@@ -72,7 +76,7 @@ public class BoundaryWrapper : ObjectWrapper<BoundCalcBoundary> {
                 _demOutUS += z.UnscaleDem;
             }
         }
-        PlannedTransfer = _genIn + _genOut - _demIn - _demOut;
+        PlannedTransfer = _genIn + _genInUS - _demIn - _demInUS;
         InterconAllowance = InterconnectionAllowance(_genIn + _genInUS, _demIn + _demInUS, _demIn + _demInUS + _demOut + _demOutUS);
 
         if ( PlannedTransfer < 0) {
@@ -113,8 +117,9 @@ public class BoundaryWrapper : ObjectWrapper<BoundCalcBoundary> {
         }
 
         x = 0.5 * x / dtot;
-        t1 = 1.0 - ((x - 0.5) / 0.5415);
-        t = t1*t1;
+
+        t1 = (x - 0.5) / 0.5415;
+        t = 1 - t1*t1;
         y = Math.Sqrt(t) * 0.0633 - 0.0243;
         return y * dtot;
     }
@@ -125,10 +130,12 @@ public class BoundaryWrapper : ObjectWrapper<BoundCalcBoundary> {
         foreach( var nd in nodes.Objs) {
             p = nd.Pn;
             var zn = nd.Obj.Zone;
-            if ( Obj.Zones.FirstOrDefault(m=>m.Id == zn.Id)!=null) {
-                itfr[p] = kgin * nd.Obj.Generation - kdin * nd.Obj.Demand;
-            } else {
-                itfr[p] = kgout * nd.Obj.Generation - kdout * nd.Obj.Demand;
+            if ( !nd.Obj.Ext ) {
+                if ( Obj.Zones.FirstOrDefault(m=>m.Id == zn.Id)!=null) {
+                    itfr[p] = kgin * nd.Obj.Generation - kdin * nd.Obj.Demand;
+                } else {
+                    itfr[p] = kgout * nd.Obj.Generation - kdout * nd.Obj.Demand;
+                }
             }
         }
     }
@@ -165,6 +172,5 @@ public class BoundaryWrapper : ObjectWrapper<BoundCalcBoundary> {
             }
         }
     }
-
 
 }

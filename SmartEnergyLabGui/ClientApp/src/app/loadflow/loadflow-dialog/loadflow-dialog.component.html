@@ -10,6 +10,7 @@
                 <mat-form-field appearance="fill" [color]="'primary'">
                     <mat-label>Boundary</mat-label>
                     <mat-select (selectionChange)="setBound()" [(ngModel)]="boundaryName">
+                        <mat-option [value]="'Unspecified'">Unspecified</mat-option>
                         <mat-option *ngFor="let b of boundaries" [value]="b.code">{{b.code}}</mat-option>
                     </mat-select>
                 </mat-form-field>
@@ -17,20 +18,18 @@
             <td style="vertical-align: top;" rowspan="2">
                 <mat-form-field appearance="fill" [color]="'primary'">
                     <mat-label>Trip</mat-label>
-                    <mat-select [(ngModel)]="selectedTrip" (selectionChange)="tripSelected($event)">
-                        <mat-option *ngFor="let t of trips" [value]="t.text">
-                            <span>{{t.text}}</span>
-                            <div style="display: inline-block; font-size: 0.7em; margin-left: 5px">                                
-                                {{getLineNames(t)}}
-                            </div>
+                    <mat-select (selectionChange)="tripSelected($event)">
+                        <mat-option *ngFor="let br of branches" [value]="br.id">
+                            <span>{{br.displayName}}</span>
                         </mat-option>
                     </mat-select>
-                </mat-form-field>    
+                </mat-form-field>
+                
             </td>
         </tr>
         <tr>
             <td style="vertical-align: top" >
-                <div style="font-weight: bold">Power flow (Gw)</div>
+            <!--<div style="font-weight: bold">Power flow (Gw)</div>
                 <table style="">
                     <tr>
                         <td>Inside</td>
@@ -48,14 +47,13 @@
                         <td>IA <b>{{flowResult.ia.toFixed(0)}}</b></td>
                     </tr>
                 </table>
+            -->
             </td>
         </tr>
         <tr>
             <td colspan="2">
                 <div style="padding-top: 1rem">
-                    <button mat-stroked-button (click)="runBaseLoadflow()">Base</button>
-                    <button mat-stroked-button style="margin-left: 3rem" (click)="runSingleTrip()" [disabled]="!this.selectedTrip || !this.boundaryName">Single trip</button>
-                    <button mat-stroked-button style="margin-left: 3rem" (click)="runAllTrips()" [disabled]="!this.boundaryName">All trips</button>
+                    <button mat-stroked-button (click)="calc()">Calc</button>
                 </div>
             </td>
         </tr>

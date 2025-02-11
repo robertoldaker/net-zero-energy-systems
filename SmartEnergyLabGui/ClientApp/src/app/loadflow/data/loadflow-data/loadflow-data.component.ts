@@ -17,7 +17,7 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
         this.showAllTripResults = false;
         this.selected = new FormControl(0);
         this.addSub( dataService.ResultsLoaded.subscribe( (results) => {
-            this.showAllTripResults = results.singleTrips!=null || results.doubleTrips!=null
+            this.showAllTripResults = results.singleTrips!=null || results.doubleTrips!=null || results.intactTrips!=null
         }))
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results)=>{
             this.showAllTripResults = false;
