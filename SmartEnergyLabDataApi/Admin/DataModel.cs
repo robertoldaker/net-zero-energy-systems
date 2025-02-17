@@ -26,6 +26,24 @@ namespace EnergySystemLabDataApi
 
     public class DiskUsage {
         public DiskUsage() {
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
+                getDiskUsageWindows();
+            } else {
+                getDiskUsageLinux();
+            }
+        }
+
+        private void getDiskUsageWindows() {
+            // Get the drive information of the current drive (you can specify a different drive letter if needed)
+            DriveInfo drive = new DriveInfo(Environment.CurrentDirectory);
+
+            Total = (int) (drive.TotalSize / (1024*1024*1024));
+            Available = (int) (drive.AvailableFreeSpace / (1024*1024*1024));
+            Used = Total - Available;
+            Found = true;
+        }
+
+        private void getDiskUsageLinux() {
             var com = new Execute();
             int resp =com.Run("df","");
             Found = false;
@@ -53,7 +71,7 @@ namespace EnergySystemLabDataApi
                     }
                 }
             }
-        }
+        } 
         public bool Found {get; private set;}
         public int Used {get; private set;}
         public int Available {get; private set;}

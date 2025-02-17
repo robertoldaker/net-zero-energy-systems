@@ -17,7 +17,7 @@ export class LoadflowTripTableComponent implements OnInit, AfterViewInit, OnDest
         this.sort = null
         this.ctrls=[]
         this.parentWidth = 'calc(100vw - 495px)';
-        this.displayedColumns = ['surplus', 'capacity', 'trip', 'limCct']
+        this.displayedColumns = ['capacity', 'surplus', 'trip', 'limCct']
         this.trips = new MatTableDataSource();
         this.subs1 = splitService.SplitChange.subscribe( (splitData)=> {
             let clientWidth = splitData.left + 45

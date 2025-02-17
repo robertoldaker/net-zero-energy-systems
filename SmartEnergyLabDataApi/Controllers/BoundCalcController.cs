@@ -83,22 +83,34 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("Run")]
-        public IActionResult Run(int datasetId, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null )
+        public IActionResult Run(int datasetId, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null )
         {
             try {
                 using( var bc = new BoundCalc.BoundCalc(datasetId, true) ) {
+                    if ( connectionId!=null ) {
+                        bc.ProgressManager.ProgressUpdate+=(m,p)=>{                    
+                        _hubContext.Clients.Client(connectionId).SendAsync("BoundCalc_AllTripsProgress",new {msg=m,percent=p});
+                        };
+                    }
                     BoundaryWrapper? bnd = null;
-                    if ( string.IsNullOrEmpty(boundaryName) ) {
+                    if ( !string.IsNullOrEmpty(boundaryName) ) {
+                        bnd = bc.Boundaries.GetBoundary(boundaryName);
+                        if ( bnd == null ) {
+                            throw new Exception($"Cannot find boundary with name [{boundaryName}]");
+                        }
+                    }
+                    // work out ncycles for the progress manager
+                    int nCycles = (bnd != null) ? bnd.STripList.Count + bnd.DTripList.Count + 2 : 1;
+                    bc.ProgressManager.Start("Calculating",nCycles);
+
+
+                    if ( bnd == null ) {
                         Trip tr = null;
                         if ( !string.IsNullOrEmpty(tripStr)) {
                             tr = new Trip("T1",tripStr,bc.Branches);
                         }
                         bc.RunBoundCalc(null,tr,BoundCalc.BoundCalc.SPAuto,false,true); 
                     } else {
-                        bnd = bc.Boundaries.GetBoundary(boundaryName);
-                        if ( bnd == null ) {
-                            throw new Exception($"Cannot find boundary with name [{boundaryName}]");
-                        }
                         if ( boundaryTrips) {
                             bc.RunAllTrips(bnd, BoundCalc.BoundCalc.SPAuto);
                         } else {
@@ -114,6 +126,7 @@ namespace SmartEnergyLabDataApi.Controllers
                         }
                     }
                     var resp = new BoundCalcResults(bc);
+                    bc.ProgressManager.Finish();
                     return this.Ok(resp);
                 }
             } catch( Exception e) {
@@ -304,9 +317,8 @@ namespace SmartEnergyLabDataApi.Controllers
                 if ( dataset==null ) {
                     throw new Exception($"Cannot find loadflow dataset with name [{datasetName}]");
                 }
-                //?? Needs updating for boundCalc
-                //??var locUpdater = new LoadflowLocationUpdater();
-                //??locUpdater.Update(dataset.Id);
+                var locUpdater = new BoundCalcLocationUpdater();
+                locUpdater.Update(dataset.Id);
             }
         }
 

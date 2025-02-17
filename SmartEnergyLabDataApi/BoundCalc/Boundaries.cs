@@ -156,7 +156,7 @@ public class BoundaryWrapper : ObjectWrapper<BoundCalcBoundary> {
         for( a=1; a<BoundCcts.Count; a++) { // create all 2 boundary circuit combinations
             for ( b=a+1; b<=BoundCcts.Count;b++) {
                 var tr = new Trip();
-                nm = $"D{a}{b}";
+                nm = $"D{a},{b}";
                 tr.Join(nm,STripList.Item(a),STripList.Item(b));
                 DTripList.Add(tr,nm);
             }

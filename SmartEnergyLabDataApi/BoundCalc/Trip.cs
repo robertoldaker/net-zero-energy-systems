@@ -96,6 +96,16 @@ public class Trip {
                 t--;
             }
         }
+        for( i=0;i<=trip2.nbr;i++) {
+            br = trip2.GetCircuit(i);
+            if ( br.Obj.X!=0) {
+                _ccts[b] = br;
+                b++;
+            } else {
+                _ccts[t] = br;
+                t--;
+            }
+        }
         nac = b - 1;
         return true;
     }
@@ -146,8 +156,8 @@ public class Trip {
             return false;
         }
 
-        mat = new double[nac,nac];
-        sensmat = new double[nac,nac];
+        mat = new double[nac+1,nac+1];
+        sensmat = new double[nac+1,nac+1];
 
         for(j=0;j<=nac;j++) {
             tvec = new double[BoundCalc.Nodes.Count - 1];
@@ -207,7 +217,7 @@ public class Trip {
                 inj[i] = inj[i] + sensmat[i,j] * f[j];
             }
             tvec[bw.pn1] = tvec[bw.pn1] + inj[i];
-            tvec[bw.pn1] = tvec[bw.pn2] - inj[i];
+            tvec[bw.pn2] = tvec[bw.pn2] - inj[i];
         }
 
         //
@@ -228,7 +238,7 @@ public class Trip {
 
         nc = civang.Length-1; // upb of controls + ia sensitivity
 
-        tcvang = new double[nc][];
+        tcvang = new double[nc+1][];
 
         if ( !Activate(out sensmat)) { // might be dc ccts
             if ( nac>=0 ) {

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -9,6 +10,7 @@ using CommonInterfaces.Models;
 using HaloSoft.EventLogger;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
+using Microsoft.AspNetCore.WebUtilities;
 using NHibernate.Util;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
@@ -284,8 +286,11 @@ namespace SmartEnergyLabDataApi.Models
             int nGridAdded=0;
             int nLocAdded=0;
             using( var da = new DataAccess() ) {
-                foreach ( var gridItem in gridItems) {
+                foreach ( var gridItem in gridItems) {                    
                     // look for name in substationCodes that get read from appendix B of ETYS
+                    if ( gridItem.name == null ) {
+                        continue;
+                    }
                     var name = getGridItemName(gridItem);
                     var sc = substationCodes.Values.Where( m=>isNameMatch(m,name) && m.Owner == LoadflowETYSLoader.SubstationOwner.SHET).SingleOrDefault();
                     if ( sc==null) {
@@ -454,6 +459,9 @@ namespace SmartEnergyLabDataApi.Models
             // Can't get the service to pick up ogr2ogr so have to mention it explicitly
             if ( AppEnvironment.Instance.Context == Context.Production) {
                 processStartInfo.FileName = "/home/roberto/anaconda3/bin/ogr2ogr";
+            } else if ( Environment.OSVersion.Platform == PlatformID.Win32NT ) {
+                // to install on windows see "https://www.osgeo.org/projects/osgeo4w/"
+                processStartInfo.FileName = "C:\\OSGeo4W\\bin\\ogr2ogr";
             } else {
                 processStartInfo.FileName = "ogr2ogr";
             }
@@ -499,7 +507,7 @@ namespace SmartEnergyLabDataApi.Models
             }
         }
 
-        private void extractZip(string folder, string fn, string outFolder) {
+        private void _extractZip(string folder, string fn, string outFolder) {
              var processStartInfo = new ProcessStartInfo();
             processStartInfo.CreateNoWindow = true;
             processStartInfo.UseShellExecute = false;
@@ -519,6 +527,17 @@ namespace SmartEnergyLabDataApi.Models
             process.WaitForExit();
            
         }
+
+        private void extractZip(string folder, string fn, string outFolder) {
+            fn = fn.Trim('"');
+            string zipPath = Path.Combine(folder,fn);
+
+            outFolder = Path.Combine(folder,outFolder);
+
+            ZipFile.ExtractToDirectory(zipPath, outFolder, true);
+
+        }
+
 
         private void processNGETSubstationsGeoJson(string geoJsonFile) {
             using( var da = new DataAccess()) {

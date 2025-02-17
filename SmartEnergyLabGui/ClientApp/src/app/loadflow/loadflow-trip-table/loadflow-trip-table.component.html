@@ -1,16 +1,17 @@
 <div class="parent" [ngStyle]="{width: parentWidth}">
     <table style="width: 100%;" mat-table [dataSource]="trips" matSort>
 
-        <ng-container matColumnDef="surplus">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Surplus</th>
-            <td mat-cell *matCellDef="let element">{{element.surplus.toFixed(2)}}</td>
-        </ng-container>
 
         <ng-container matColumnDef="capacity">
             <th mat-header-cell *matHeaderCellDef mat-sort-header  arrowPosition="before">Capacity</th>
             <td mat-cell *matCellDef="let element">{{element.capacity.toFixed(2)}}</td>
         </ng-container>
 
+        <ng-container matColumnDef="surplus">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Surplus</th>
+            <td mat-cell *matCellDef="let element">{{element.surplus.toFixed(2)}}</td>
+        </ng-container>
+        
         <ng-container matColumnDef="trip">
             <th mat-header-cell *matHeaderCellDef>Trip</th>
             <td mat-cell *matCellDef="let element">{{(element.trip != null) ? element.trip.text : "Intact"}}</td>

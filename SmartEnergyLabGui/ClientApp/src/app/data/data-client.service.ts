@@ -293,8 +293,9 @@ export class DataClientService implements ILogs {
     }
 
     RunBoundCalc( datasetId: number, boundaryName: string, boundaryTrips: boolean, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
+        let connectionId = this.signalRService.hubConnection?.connectionId;
         this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/Run?datasetId=${datasetId}&boundaryName=${boundaryName}&boundaryTrips=${boundaryTrips}&tripStr=${tripStr}`,{}).subscribe( result => {
+        this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/Run?datasetId=${datasetId}&boundaryName=${boundaryName}&boundaryTrips=${boundaryTrips}&tripStr=${tripStr}&connectionId=${connectionId}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
                 onLoad(result)

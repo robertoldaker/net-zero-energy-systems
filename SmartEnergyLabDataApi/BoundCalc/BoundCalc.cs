@@ -71,10 +71,17 @@ namespace SmartEnergyLabDataApi.BoundCalc
         private BoundCalcStageResults _stageResults;
         private Optimiser opt;
 
-        public List<BoundCalcAllTripsResult> IntactTrips;
-        public List<BoundCalcAllTripsResult> SingleTrips;
-        public List<BoundCalcAllTripsResult> DoubleTrips;
+        public TopTrips _acctOut;
+        public TopTrips _scctOut;
+        public TopTrips _dcctOut;
 
+        private ProgressManager _progressManager = new ProgressManager();
+
+        public ProgressManager ProgressManager {
+            get {
+                return _progressManager;
+            }
+        }
 
         public BoundCalc(int datasetId, bool buildOptimiser=false) {
             _da = new DataAccess();
@@ -96,9 +103,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
             Trip.BoundCalc = this;
             _boundaries = new Boundaries(_da,_dataset.Id,this);
             //
-            IntactTrips = new List<BoundCalcAllTripsResult>();
-            SingleTrips = new List<BoundCalcAllTripsResult>();
-            DoubleTrips = new List<BoundCalcAllTripsResult>();
+            _acctOut = new TopTrips(this,20);
+            _scctOut = new TopTrips(this,30);
+            _dcctOut = new TopTrips(this,30);
             //
             if ( buildOptimiser ) {
                 if (NetCheck()) {
@@ -183,6 +190,23 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
+        public List<BoundCalcAllTripsResult> IntactTrips {
+            get {
+                return _acctOut.Results;
+            }
+        }
+
+        public List<BoundCalcAllTripsResult> SingleTrips {
+            get {
+                return _scctOut.Results;
+            }
+        }
+
+        public List<BoundCalcAllTripsResult> DoubleTrips {
+            get {
+                return _dcctOut.Results;
+            }
+        }
         public (int,BoundCalcNode?) Subnets() {
             int i, j1, j2;
             bool chng;
@@ -880,6 +904,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             List<string> limccts = new List<string>();;
             int res;
             if ( tr == null ) { // intact network case
+                _acctOut.SetBoundary(bn, bn.PlannedTransfer + bn.InterconAllowance); // use full interconnection for intact case
                 res = RunBoundCalc(bn, null, setptmd, false, save);
                 if ( res!=LPhdr.lpOptimum) {
                     //??
@@ -887,10 +912,11 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     if ( setptmd == SPAuto ) {
                         limccts = opt.Limitccts();
                     }
-                    this.IntactTrips = CreateAllTripsList(20,bn,bn.PlannedTransfer + bn.InterconAllowance,null,bc,mord,limccts);
+                    _acctOut.Insert(null, bc, mord, limccts);
                 }
             } else {
                 if ( tr.name.Substring(0,1) == "S" ) { // single circuit trip
+                    _scctOut.SetBoundary(bn, bn.PlannedTransfer + bn.InterconAllowance); // use full interconnection for since cct trips
                     res = RunBoundCalc(bn, tr, setptmd, false, save);
                     if ( res!=LPhdr.lpOptimum) {
                         //??
@@ -898,9 +924,10 @@ namespace SmartEnergyLabDataApi.BoundCalc
                         if ( setptmd == SPAuto) {
                             limccts = opt.Limitccts();
                         }
-                        //??
+                        _scctOut.Insert( tr, bc, mord, limccts); 
                     }
                 } else {
+                    _dcctOut.SetBoundary(bn, bn.PlannedTransfer + 0.5*bn.InterconAllowance); // use half interconnection for double cct trips 
                     res = RunBoundCalc(bn, tr, setptmd, false, save);
                     if ( res!=LPhdr.lpOptimum) {
                         //??
@@ -908,90 +935,10 @@ namespace SmartEnergyLabDataApi.BoundCalc
                         if ( setptmd == SPAuto ) {
                             limccts = opt.Limitccts();
                         }
+                        _dcctOut.Insert(tr, bc, mord, limccts);
                     }
                 }
             }
-        }
-
-        private List<BoundCalcAllTripsResult> CreateAllTripsList( int nsz, BoundaryWrapper bnd, double rtfer, Trip trip, double[] bndcap, int[] mord, List<string> limitccts ) {
-            int i, j, m, spm, limits=0;
-            double limitsu=0, su;
-            bool first;
-            string bn;
-
-            var list = new List<BoundCalcAllTripsResult>();
-
-            first = true;        // signals first row of trip  must be output with setpoints
-            j=0;
-            if (limitccts.Count > 0 ) {
-                spm = BoundCalc.SPAuto;
-                limits = 1;      // signals limitccts must be output, 2 = check if cct in limitccts, 3 = ignore
-            } else {
-                spm = BoundCalc.SPMan;
-            }
-
-            for( i=1; i<=nsz;i++ ) {
-                var tripResult = new BoundCalcAllTripsResult();
-                list.Add(tripResult);
-                m = mord[j];
-                su = Math.Abs(bndcap[m]) - Math.Abs(rtfer);
-                if ( limits == 2) {
-                    if ( Math.Abs(su - limitsu) < 50 ) {
-                        var br1 = _branches.get(m+1);
-                        bn = br1.LineName;
-                        if ( limitccts.Contains(bn) ) {
-                            j++;
-                            m = mord[j];
-                            su = bndcap[m] - Math.Abs(rtfer);
-                        }
-                    } else {
-                        limits = 3;
-                    }
-                }
-                //
-                tripResult.Capacity = bndcap[m] * Math.Sign(rtfer);
-                tripResult.Surplus = su;
-                if ( trip == null ) {
-                    tripResult.Trip = null;
-                } else {
-                    tripResult.Trip = new BoundCalcBoundaryTrips.BoundCalcBoundaryTrip(i,trip);
-                }
-                if ( first ) {
-                    tripResult.Ctrls = new List<BoundCalcCtrlResult>();
-                    foreach( var ctrl in _ctrls.Objs) {
-                        tripResult.Ctrls.Add(new BoundCalcCtrlResult(ctrl, ctrl.GetSetPoint(spm)));
-                    }
-                    first = false;
-                }
-                var br = _branches.get(m+1);
-                bn = br.LineName;
-                if ( limits == 1) {
-                    if ( limitccts.Contains(bn) ) {
-                        limits = 2;
-                        limitsu = su;
-                        tripResult.LimCct = limitccts;
-                        do {
-                            j++;
-                            if ( j>=mord.Length ) {
-                                break;
-                            }
-                            br = _branches.get(mord[j] + 1);
-                            bn = br.LineName;
-                        } while(limitccts.Contains(bn));
-                    } else {
-                        tripResult.LimCct = new List<string>() { bn };
-                        j++;
-                    }
-                } else {
-                    tripResult.LimCct = new List<string>() { bn };
-                    j++;
-                }
-                if ( j >= mord.Length) {
-                    break;
-                }
-            }
-
-            return list;
         }
 
         // Run trip collection
@@ -999,6 +946,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public void RunTripSet(BoundaryWrapper bn, Collection<Trip> trips, int setptmd) {
             foreach( var tr in trips.Items) {
                 RunTrip(bn, tr, setptmd, false);
+                _progressManager.Update(tr.name);
             }
             //?? output results
         }

@@ -37,7 +37,7 @@ export class LoadflowDialogComponent extends ComponentBase {
             }
         }))
         this.addSub(dataService.AllTripsProgress.subscribe((data)=>{
-            this.currentTrip = data.trip.text;
+            this.currentTrip = data.msg;
             this.percent = data.percent; 
         }))
         this.addSub(dataService.NetworkDataLoaded.subscribe((results)=>{
@@ -50,7 +50,7 @@ export class LoadflowDialogComponent extends ComponentBase {
         if ( bn == "Unspecified") {
             bn = "";
         }
-        this.dataService.runBoundCalc(bn,false,"");
+        this.dataService.runBoundCalc(bn,this.boundaryTrips,"");
     }
 
     runBaseLoadflow() {
@@ -95,5 +95,6 @@ export class LoadflowDialogComponent extends ComponentBase {
     flowResult: BoundaryFlowResult
     clearFlowResult: BoundaryFlowResult = { genInside: 0, genOutside:0, demInside: 0, demOutside: 0, ia: 0 }
     datasetTypes = DatasetType
+    boundaryTrips = false
 
 }
