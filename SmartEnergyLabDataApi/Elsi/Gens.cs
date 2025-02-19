@@ -373,7 +373,7 @@ Public Sub Ipart_Outputs(mlp As LP, dtype As Long, auxdata() As Variant, oparray
 End Sub
 */
 using SmartEnergyLabDataApi.Data;
-using SmartEnergyLabDataApi.Loadflow;
+using SmartEnergyLabDataApi.Elsi.LinearProgramming;
 
 namespace SmartEnergyLabDataApi.Elsi
 {    

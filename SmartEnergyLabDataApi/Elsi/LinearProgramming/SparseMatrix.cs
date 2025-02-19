@@ -1,4 +1,4 @@
-namespace SmartEnergyLabDataApi.Loadflow
+namespace SmartEnergyLabDataApi.Elsi.LinearProgramming
 {
     public class SparseMatrix {
         private double[] val;   // storage for element values

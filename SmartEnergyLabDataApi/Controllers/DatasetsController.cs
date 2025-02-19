@@ -86,8 +86,6 @@ public class DatasetsController : ControllerBase
             if ( dataset!=null ) {
                 if ( dataset.Type == DatasetType.Elsi) {
                     return da.Elsi.GetResultCount(datasetId);
-                } else if ( dataset.Type == DatasetType.Loadflow) {
-                    return da.Loadflow.GetResultCount(datasetId);
                 } else if ( dataset.Type == DatasetType.BoundCalc) {
                     return da.BoundCalc.GetResultCount(datasetId);
                 } else {

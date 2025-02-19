@@ -1,21 +1,6 @@
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Security.Cryptography.Xml;
-using System.Xml.Linq;
-using Antlr.Runtime;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Auth.OAuth2.Flows;
-using Microsoft.Extensions.ObjectPool;
-using NHibernate.Linq.Functions;
-using NLog.LayoutRenderers;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Bcpg;
-using Org.BouncyCastle.Crypto.Tls;
-using Org.BouncyCastle.Math.EC.Multiplier;
 using SmartEnergyLabDataApi.Common;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.BoundCalc;
-using SmartEnergyLabDataApi.Data.Loadflow;
 
 namespace SmartEnergyLabDataApi.BoundCalc
 {

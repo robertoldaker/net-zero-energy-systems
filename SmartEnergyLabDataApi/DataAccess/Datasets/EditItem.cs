@@ -71,8 +71,9 @@ public class EditItemModel : DbModel {
 
     private static Dictionary<string,IEditItemHandler> _handlerDict = new Dictionary<string, IEditItemHandler>();
 
-    public static void AddHandler(string className, IEditItemHandler handler) {
+    public static void AddHandler<T>(IEditItemHandler handler) {
         lock( _handlerDict) {
+            var className = typeof(T).Name;
             if ( _handlerDict.ContainsKey(className) ) {
                 throw new Exception($"EditItemModel already has a handler for className=[{className}]");
             }
@@ -182,8 +183,6 @@ public class EditItemModel : DbModel {
         // Delete all existing results for this dataset and any derived ones
         if ( _dataset.Type == DatasetType.Elsi) {
             _da.Elsi.DeleteResults(_dataset.Id);
-        } else if ( _dataset.Type == DatasetType.Loadflow) {
-            _da.Loadflow.DeleteResults(_dataset.Id);
         } else if ( _dataset.Type == DatasetType.BoundCalc) {
             _da.BoundCalc.DeleteResults(_dataset.Id);
         } else {

@@ -1,12 +1,8 @@
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text.Json;
 using HaloSoft.DataAccess;
 using NHibernate;
 using NHibernate.Criterion;
-using NHibernate.Mapping;
 using SmartEnergyLabDataApi.Data.BoundCalc;
-using SmartEnergyLabDataApi.Data.Loadflow;
 
 namespace SmartEnergyLabDataApi.Data;
 
@@ -204,42 +200,6 @@ public class Datasets : DataSet
             var ers = Session.QueryOver<ElsiResult>().Where( m=>m.Dataset.Id == dataset.Id).List();
             foreach( var er in ers) {
                 Session.Delete(er);
-            }
-        } else if ( dataset.Type == DatasetType.Loadflow ) {
-            // Branches
-            var branches = Session.QueryOver<Branch>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var b in branches) {
-                Session.Delete(b);
-            }
-            // Ctrls
-            var ctrls = Session.QueryOver<Ctrl>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var c in ctrls) {
-                Session.Delete(c);
-            }
-            // Nodes
-            var nodes = Session.QueryOver<Node>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var n in nodes) {
-                Session.Delete(n);
-            }
-            // BoundaryZones
-            var bzs = Session.QueryOver<BoundaryZone>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var bz in bzs) {
-                Session.Delete(bz);
-            }
-            // Boundaries
-            var bs = Session.QueryOver<Boundary>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var b in bs) {
-                Session.Delete(b);
-            }
-            // Zones
-            var zones = Session.QueryOver<Zone>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var z in zones) {
-                Session.Delete(z);
-            }
-            // Locations
-            var locations = Session.QueryOver<GridSubstationLocation>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var l in locations) {
-                Session.Delete(l);
             }
         } else if ( dataset.Type == DatasetType.BoundCalc ) {
             // Branches

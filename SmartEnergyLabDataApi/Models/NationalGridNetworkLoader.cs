@@ -13,9 +13,10 @@ using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.WebUtilities;
 using NHibernate.Util;
 using Org.BouncyCastle.Crypto.Signers;
+using SmartEnergyLabDataApi.BoundCalc;
 using SmartEnergyLabDataApi.Data;
-using SmartEnergyLabDataApi.Data.Loadflow;
-using SmartEnergyLabDataApi.Loadflow;
+using SmartEnergyLabDataApi.Data.BoundCalc;
+//using SmartEnergyLabDataApi.Data.Loadflow;
 
 namespace SmartEnergyLabDataApi.Models
 {
@@ -276,7 +277,7 @@ namespace SmartEnergyLabDataApi.Models
         private void loadSSE() {
 
             // get list of substation codes from ETYS 
-            var etysLoader = new LoadflowETYSLoader(LoadflowETYSLoader.LoadOptions.OnlyHighVoltageCircuits);
+            var etysLoader = new BoundCalcETYSLoader(BoundCalcETYSLoader.BoundCalcLoadOptions.OnlyHighVoltageCircuits);
             var substationCodes = etysLoader.LoadSubstationCodes();
             //
             var gridItems = getSSEGridItems(_sseGridBuilder);
@@ -292,7 +293,7 @@ namespace SmartEnergyLabDataApi.Models
                         continue;
                     }
                     var name = getGridItemName(gridItem);
-                    var sc = substationCodes.Values.Where( m=>isNameMatch(m,name) && m.Owner == LoadflowETYSLoader.SubstationOwner.SHET).SingleOrDefault();
+                    var sc = substationCodes.Values.Where( m=>isNameMatch(m,name) && m.Owner == BoundCalcETYSLoader.SubstationOwner.SHET).SingleOrDefault();
                     if ( sc==null) {
                         Logger.Instance.LogInfoEvent($"Cannot find SSE grid item [{name}]");
                         continue;
@@ -348,7 +349,7 @@ namespace SmartEnergyLabDataApi.Models
         }
 
 
-        private bool isNameMatch(LoadflowETYSLoader.SubstationCode code, string name) {
+        private bool isNameMatch(BoundCalcETYSLoader.SubstationCode code, string name) {
             var etysName = code.Name.
                     Replace(" GRID","").
                     Replace(" HYDRO","").
@@ -747,7 +748,7 @@ namespace SmartEnergyLabDataApi.Models
             }
         }
 
-        private Feature<SubstationProps> getFeature(Node node, Feature<SubstationProps>[] features) {
+        private Feature<SubstationProps> getFeature(BoundCalcNode node, Feature<SubstationProps>[] features) {
             foreach( var feature in features) {
                 if ( node.Code.StartsWith(feature.properties.SUBSTATION)) {
                     return feature;

@@ -3,9 +3,9 @@ using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
 
-namespace SmartEnergyLabDataApi.Loadflow
+namespace SmartEnergyLabDataApi.BoundCalc
 {
-    public class LoadflowXlsmReader
+    public class BoundCalcXlsmReader
     {
 
         private Dictionary<string, NodeResult> _nodeResults;
@@ -14,7 +14,7 @@ namespace SmartEnergyLabDataApi.Loadflow
 
         private Dictionary<string,TripResult> _singleTripResults;
         private Dictionary<string,TripResult> _dualTripResults;
-        public LoadflowXlsmReader()
+        public BoundCalcXlsmReader()
         {
 
         }

@@ -1,6 +1,6 @@
 using SmartEnergyLabDataApi.Common;
 
-namespace SmartEnergyLabDataApi.Loadflow
+namespace SmartEnergyLabDataApi.Elsi.LinearProgramming
 {
     // Linear Programme Object V2
     //

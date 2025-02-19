@@ -1,4 +1,4 @@
-namespace SmartEnergyLabDataApi.Loadflow
+namespace SmartEnergyLabDataApi.Elsi.LinearProgramming
 {
     // Basis inverse manager
     // Encapsulates Initialisation, Column update and Use of a sparse matrix

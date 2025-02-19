@@ -1,6 +1,6 @@
 using SmartEnergyLabDataApi.Common;
 
-namespace SmartEnergyLabDataApi.Loadflow
+namespace SmartEnergyLabDataApi.Elsi.LinearProgramming
 {
     //
     //Describes a part (or all) of a LP model

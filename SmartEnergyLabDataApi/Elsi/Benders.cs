@@ -412,7 +412,7 @@ End Sub
 
 using SmartEnergyLabDataApi.Common;
 using SmartEnergyLabDataApi.Data;
-using SmartEnergyLabDataApi.Loadflow;
+using SmartEnergyLabDataApi.Elsi.LinearProgramming;
 
 namespace SmartEnergyLabDataApi.Elsi
 {

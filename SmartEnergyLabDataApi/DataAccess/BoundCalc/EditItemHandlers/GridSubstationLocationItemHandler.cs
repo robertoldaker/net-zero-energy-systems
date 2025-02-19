@@ -12,7 +12,7 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
 
     public override string BeforeDelete(EditItemModel m, bool isSourceEdit)
     {
-        int numNodes = m.Da.Loadflow.GetNodeCountForLocation(m.ItemId, isSourceEdit);
+        int numNodes = m.Da.BoundCalc.GetNodeCountForLocation(m.ItemId, isSourceEdit);
         if ( numNodes > 0 ) {
             return $"Cannot delete location as used by <b>{numNodes}</b> nodes";
         }
@@ -95,12 +95,12 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
                 list.Add(locDi.getBaseDatasetData());
             } else if ( branchIds.Length==0) {
                 // 
-                var nodeDi = da.Loadflow.GetNodeDatasetData(m.Dataset.Id, m=>m.Location.Id == loc.Id, out var locDi);
+                var nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id, m=>m.Location.Id == loc.Id, out var locDi);
                 list.Add(nodeDi.getBaseDatasetData());
                 list.Add(locDi.getBaseDatasetData());
             } else {
                 // load branches that used the nodes used by the location
-                var branchDi = da.Loadflow.GetBranchDatasetData(m.Dataset.Id, n=>n.Node1.Id.IsIn(nodeIds) || n.Node2.Id.IsIn(nodeIds), out var ctrlDi, out var nodeDi, out var locDi);
+                var branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n=>n.Node1.Id.IsIn(nodeIds) || n.Node2.Id.IsIn(nodeIds), out var ctrlDi, out var nodeDi, out var locDi);
                 // add the datasets returned to the list
                 list.Add(branchDi.getBaseDatasetData()); 
                 list.Add(ctrlDi.getBaseDatasetData());

@@ -19,8 +19,7 @@ Public Sub VarVals(dlp As LP, vvars() As Double)
 End Sub
 
 */
-using SmartEnergyLabDataApi.Data;
-using SmartEnergyLabDataApi.Loadflow;
+using SmartEnergyLabDataApi.Elsi.LinearProgramming;
 
 namespace SmartEnergyLabDataApi.Elsi
 {

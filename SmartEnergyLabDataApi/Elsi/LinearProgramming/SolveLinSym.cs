@@ -1,4 +1,4 @@
-namespace SmartEnergyLabDataApi.Loadflow
+namespace SmartEnergyLabDataApi.Elsi.LinearProgramming
 {
     // Solve A.X = B by factoring sparse A = L.U with partial pivoting
     // Matrix A is symmetrical and includes only upper diagonal

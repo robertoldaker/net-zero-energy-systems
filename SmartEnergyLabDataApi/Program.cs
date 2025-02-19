@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using SmartEnergyLabDataApi.Data;
-using SmartEnergyLabDataApi.Data.Loadflow;
+using SmartEnergyLabDataApi.Data.BoundCalc;
 using SmartEnergyLabDataApi.Models;
 
 public static class Program
@@ -139,19 +139,19 @@ public static class Program
 
         // Needed to read spreadsheets
         System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-        // Loadflow
-        EditItemModel.AddHandler("Node", new NodeItemHandler());
-        EditItemModel.AddHandler("Zone", new ZoneItemHandler());
-        EditItemModel.AddHandler("Boundary", new BoundaryItemHandler());
-        EditItemModel.AddHandler("Branch", new BranchItemHandler());
-        EditItemModel.AddHandler("Ctrl", new CtrlItemHandler());
-        EditItemModel.AddHandler("GridSubstationLocation", new GridSubstationLocationItemHandler());
+        // BoundCalc
+        EditItemModel.AddHandler<BoundCalcNode>(new NodeItemHandler());
+        EditItemModel.AddHandler<BoundCalcZone>(new ZoneItemHandler());
+        EditItemModel.AddHandler<BoundCalcBoundary>(new BoundaryItemHandler());
+        EditItemModel.AddHandler<BoundCalcBranch>(new BranchItemHandler());
+        EditItemModel.AddHandler<BoundCalcCtrl>(new CtrlItemHandler());
+        EditItemModel.AddHandler<GridSubstationLocation>(new GridSubstationLocationItemHandler());
         // Elsi
-        EditItemModel.AddHandler("GenCapacity", new GenCapacityItemHandler());
-        EditItemModel.AddHandler("GenParameter", new GenParameterItemHandler());
-        EditItemModel.AddHandler("Link", new LinkItemHandler());
-        EditItemModel.AddHandler("MiscParams", new MiscParamsItemHandler());
-        EditItemModel.AddHandler("PeakDemand", new PeakDemandItemHandler());
+        EditItemModel.AddHandler<GenCapacity>(new GenCapacityItemHandler());
+        EditItemModel.AddHandler<GenParameter>(new GenParameterItemHandler());
+        EditItemModel.AddHandler<Link>(new LinkItemHandler());
+        EditItemModel.AddHandler<MiscParams>(new MiscParamsItemHandler());
+        EditItemModel.AddHandler<PeakDemand>(new PeakDemandItemHandler());
 
         app.Run();
 

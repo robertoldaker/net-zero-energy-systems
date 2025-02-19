@@ -1,4 +1,4 @@
-namespace SmartEnergyLabDataApi.Loadflow
+namespace SmartEnergyLabDataApi.Elsi.LinearProgramming
 {
 
     public static class LPhdr {

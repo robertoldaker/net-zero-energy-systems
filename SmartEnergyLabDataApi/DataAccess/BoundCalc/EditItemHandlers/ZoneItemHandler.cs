@@ -8,7 +8,7 @@ public class ZoneItemHandler : BaseEditItemHandler
     {
         // code
         if ( m.GetString("code",out string code)) {
-            if ( m.Da.Loadflow.ZoneExists(m.Dataset.Id,code, out Dataset? dataset) ) {
+            if ( m.Da.BoundCalc.ZoneExists(m.Dataset.Id,code, out Dataset? dataset) ) {
                 m.AddError("code",$"Zone already exists in dataset [{dataset?.Name}]");
             }
         } else if ( m.ItemId==0) {
@@ -19,7 +19,7 @@ public class ZoneItemHandler : BaseEditItemHandler
     public override IId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
-        return id>0 ? m.Da.Loadflow.GetZone(id) : new BoundCalcZone(m.Dataset);
+        return id>0 ? m.Da.BoundCalc.GetZone(id) : new BoundCalcZone(m.Dataset);
     }
 
     public override void Save(EditItemModel m)

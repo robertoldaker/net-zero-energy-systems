@@ -5,7 +5,6 @@ using SmartEnergyLabDataApi.Models;
 using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.BoundCalc;
-using static SmartEnergyLabDataApi.Models.LoadflowReference;
 using Org.BouncyCastle.Crypto.Signers;
 using System.Text.Json;
 using System.Linq.Expressions;

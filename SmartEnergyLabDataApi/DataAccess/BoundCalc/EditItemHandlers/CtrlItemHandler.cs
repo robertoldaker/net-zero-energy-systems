@@ -40,7 +40,7 @@ public class CtrlItemHandler : BaseEditItemHandler
         // 
         var bId = m.CheckInt("branchId");
         if (  bId!=null ) {
-            var branch = m.Da.Loadflow.GetBranch((int) bId);
+            var branch = m.Da.BoundCalc.GetBranch((int) bId);
             if ( branch==null ) {
                 m.AddError("branchId",$"Cannot find branch with id [{bId}]");
             }
@@ -50,7 +50,7 @@ public class CtrlItemHandler : BaseEditItemHandler
     public override IId GetItem(EditItemModel model)
     {
         var id = model.ItemId;
-        return id>0 ? model.Da.Loadflow.GetCtrl(id) : new BoundCalcCtrl(model.Dataset, null);
+        return id>0 ? model.Da.BoundCalc.GetCtrl(id) : new BoundCalcCtrl(model.Dataset, null);
     }
 
     public override void Save(EditItemModel m)

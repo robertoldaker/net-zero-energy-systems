@@ -1,15 +1,7 @@
-﻿using System.Collections.Immutable;
-using System.Security.Cryptography;
-using HaloSoft.DataAccess;
+﻿using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
 using NHibernate;
-using NHibernate.Dialect.Function;
-using NHibernate.Util;
-using Org.BouncyCastle.Crypto.Signers;
-using Remotion.Linq.Parsing.Structure.IntermediateModel;
 using SmartEnergyLabDataApi.Data.BoundCalc;
-using SmartEnergyLabDataApi.Data.Loadflow;
-using SmartEnergyLabDataApi.Loadflow;
 
 namespace SmartEnergyLabDataApi.Data
 {
@@ -25,7 +17,6 @@ namespace SmartEnergyLabDataApi.Data
             SubstationLoadProfiles = new SubstationLoadProfiles(this);
             SubstationClassifications = new SubstationClassifications(this);
             VehicleCharging = new VehicleCharging(this);
-            Loadflow = new LoadflowDS(this);
             BoundCalc = new BoundCalcDS(this);
             Elsi = new Elsi(this);
             Users = new Users(this);
@@ -43,7 +34,6 @@ namespace SmartEnergyLabDataApi.Data
         public Organisations Organisations { get; private set; }
         public SupplyPoints SupplyPoints { get; private set; }
         public VehicleCharging VehicleCharging { get; private set; }
-        public LoadflowDS Loadflow { get; private set; }
         public BoundCalcDS BoundCalc { get; private set; }
         public Elsi Elsi { get; private set; }
         public Users Users {get; private set;}
@@ -144,7 +134,7 @@ namespace SmartEnergyLabDataApi.Data
         private static void updateLoadflowBranches() {
             Logger.Instance.LogInfoEvent($"Starting updating branches");
             using( var da = new DataAccess() ) {
-                var ctrls = da.Session.QueryOver<Data.Loadflow.Ctrl>().List();
+                var ctrls = da.Session.QueryOver<BoundCalcCtrl>().List();
                 foreach( var ctrl in ctrls) {
                     if ( ctrl.Branch!=null) {
                         ctrl.Branch.SetCtrl(ctrl);
@@ -156,7 +146,7 @@ namespace SmartEnergyLabDataApi.Data
                 da.CommitChanges();
             }
             using( var da = new DataAccess() ) {
-                var branches = da.Session.QueryOver<Data.Loadflow.Branch>().List();
+                var branches = da.Session.QueryOver<BoundCalcBranch>().List();
                 foreach( var branch in branches) {
                     branch.SetType();
                 }
@@ -169,7 +159,7 @@ namespace SmartEnergyLabDataApi.Data
             using( var da = new DataAccess() ) {
                 var datasets = da.Session.QueryOver<Dataset>().List();
                 foreach( var ds in datasets) {
-                    var nodes = da.Session.QueryOver<Data.Loadflow.Node>().Where( m=>m.Dataset.Id == ds.Id ).List();
+                    var nodes = da.Session.QueryOver<BoundCalcNode>().Where( m=>m.Dataset.Id == ds.Id ).List();
                     var locDict = new Dictionary<int,GridSubstationLocation>();
                     foreach( var n in nodes) {
                         var loc = n.Location;
@@ -194,10 +184,10 @@ namespace SmartEnergyLabDataApi.Data
 
         private static void updateLoadflowCtrls() {
             using ( var da = new DataAccess() ) {
-                var ctrls = da.Session.QueryOver<Data.Loadflow.Ctrl>().List();
+                var ctrls = da.Session.QueryOver<BoundCalcCtrl>().List();
                 foreach ( var c in ctrls) {                    
                     if ( c.Branch==null && !string.IsNullOrEmpty(c.old_Code) ) {
-                        var b = da.Session.QueryOver<Data.Loadflow.Branch>().Where( m=>m.Code == c.old_Code && c.Dataset.Id == m.Dataset.Id).Take(1).SingleOrDefault();
+                        var b = da.Session.QueryOver<BoundCalcBranch>().Where( m=>m.Code == c.old_Code && c.Dataset.Id == m.Dataset.Id).Take(1).SingleOrDefault();
                         if ( b!=null) {
                             c.Branch = b;
                             c.old_Node1 = null;
