@@ -46,9 +46,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         public Dataset Dataset {get; set;}
         public BoundCalcStageResults StageResults {get; private set;}
-        public DatasetData<BoundCalcNode> Nodes {get; private set;}
-        public DatasetData<BoundCalcBranch> Branches {get; private set;}        
-        public DatasetData<BoundCalcCtrl> Ctrls {get; private set;}
+        public DatasetData<Node> Nodes {get; private set;}
+        public DatasetData<Branch> Branches {get; private set;}        
+        public DatasetData<Ctrl> Ctrls {get; private set;}
 
         public BoundCalcBoundaryFlowResult? BoundaryFlowResult {get; private set;}
         public BoundCalcBoundaryTrips? BoundaryTrips {get; private set;}

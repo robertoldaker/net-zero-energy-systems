@@ -18,12 +18,12 @@ public class BoundaryItemHandler : BaseEditItemHandler
     public override IId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
-        return id>0 ? m.Da.BoundCalc.GetBoundary(id) : new BoundCalcBoundary(m.Dataset);
+        return id>0 ? m.Da.BoundCalc.GetBoundary(id) : new Boundary(m.Dataset);
     }
 
     public override void Save(EditItemModel m)
     {
-        BoundCalcBoundary b = (BoundCalcBoundary) m.Item;
+        Boundary b = (Boundary) m.Item;
         //
         if ( m.GetString("code",out string code)) {
             b.Code = code;
@@ -36,14 +36,14 @@ public class BoundaryItemHandler : BaseEditItemHandler
         if ( zoneIds!=null ) {
             // and boundary zones
             var existingBoundaryZones = m.Da.BoundCalc.GetBoundaryZones(b.Id);
-            var newBoundaryZones = new List<BoundCalcBoundaryZone>();
+            var newBoundaryZones = new List<BoundaryZone>();
             // Add new ones
             foreach( var zoneId in zoneIds) {
                 var bz = existingBoundaryZones.Where(m=>m.Zone.Id == zoneId).FirstOrDefault();
                 if ( bz==null) {
                     var zone = m.Da.BoundCalc.GetZone(zoneId);
                     if ( zone!=null ) {
-                        var nbz = new BoundCalcBoundaryZone() {
+                        var nbz = new BoundaryZone() {
                             Boundary = b,
                             Zone = zone,
                             Dataset = m.Dataset
@@ -65,7 +65,7 @@ public class BoundaryItemHandler : BaseEditItemHandler
     {
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
-            var boundary = (BoundCalcBoundary) m.Item;
+            var boundary = (Boundary) m.Item;
             var boundDi = da.BoundCalc.GetBoundaryDatasetData(m.Dataset.Id, m=>m.Id == boundary.Id);
             list.Add(boundDi.getBaseDatasetData());
             return list;

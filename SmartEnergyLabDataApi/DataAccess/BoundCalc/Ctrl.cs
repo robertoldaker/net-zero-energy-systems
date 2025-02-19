@@ -9,14 +9,14 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                                                             }
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_ctrls")]
-    public class BoundCalcCtrl : IId, IDataset
+    public class Ctrl : IId, IDataset
     {
-        public BoundCalcCtrl()
+        public Ctrl()
         {
 
         }
 
-        public BoundCalcCtrl(Dataset dataset, BoundCalcBranch branch)
+        public Ctrl(Dataset dataset, Branch branch)
         {
             Dataset = dataset;
             Branch = branch;
@@ -55,7 +55,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         [JsonIgnore]
         [ManyToOne(Column = "BranchId", Cascade = "none")]
-        public virtual BoundCalcBranch Branch {get; set;}
+        public virtual Branch Branch {get; set;}
 
         public virtual int BranchId {
             get {
@@ -63,7 +63,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
         }
 
-        public virtual BoundCalcNode Node1 {
+        public virtual Node Node1 {
             get {
                 return Branch.Node1;
             }
@@ -71,9 +71,9 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         [JsonIgnore]
         [ManyToOne(Column = "Node1Id", Cascade = "none")]
-        public virtual BoundCalcNode old_Node1 {get; set;}
+        public virtual Node old_Node1 {get; set;}
 
-        public virtual BoundCalcNode Node2 {
+        public virtual Node Node2 {
             get {
                 return Branch.Node2;
             }
@@ -81,7 +81,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         [JsonIgnore]
         [ManyToOne(Column = "Node2Id", Cascade = "none")]
-        public virtual BoundCalcNode old_Node2 {get; set;}
+        public virtual Node old_Node2 {get; set;}
 
         [JsonIgnore()]
         [ManyToOne(Column = "DatasetId", Cascade = "none")]

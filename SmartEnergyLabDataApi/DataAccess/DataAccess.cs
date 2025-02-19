@@ -134,7 +134,7 @@ namespace SmartEnergyLabDataApi.Data
         private static void updateLoadflowBranches() {
             Logger.Instance.LogInfoEvent($"Starting updating branches");
             using( var da = new DataAccess() ) {
-                var ctrls = da.Session.QueryOver<BoundCalcCtrl>().List();
+                var ctrls = da.Session.QueryOver<Ctrl>().List();
                 foreach( var ctrl in ctrls) {
                     if ( ctrl.Branch!=null) {
                         ctrl.Branch.SetCtrl(ctrl);
@@ -146,7 +146,7 @@ namespace SmartEnergyLabDataApi.Data
                 da.CommitChanges();
             }
             using( var da = new DataAccess() ) {
-                var branches = da.Session.QueryOver<BoundCalcBranch>().List();
+                var branches = da.Session.QueryOver<Branch>().List();
                 foreach( var branch in branches) {
                     branch.SetType();
                 }
@@ -159,7 +159,7 @@ namespace SmartEnergyLabDataApi.Data
             using( var da = new DataAccess() ) {
                 var datasets = da.Session.QueryOver<Dataset>().List();
                 foreach( var ds in datasets) {
-                    var nodes = da.Session.QueryOver<BoundCalcNode>().Where( m=>m.Dataset.Id == ds.Id ).List();
+                    var nodes = da.Session.QueryOver<Node>().Where( m=>m.Dataset.Id == ds.Id ).List();
                     var locDict = new Dictionary<int,GridSubstationLocation>();
                     foreach( var n in nodes) {
                         var loc = n.Location;
@@ -184,10 +184,10 @@ namespace SmartEnergyLabDataApi.Data
 
         private static void updateLoadflowCtrls() {
             using ( var da = new DataAccess() ) {
-                var ctrls = da.Session.QueryOver<BoundCalcCtrl>().List();
+                var ctrls = da.Session.QueryOver<Ctrl>().List();
                 foreach ( var c in ctrls) {                    
                     if ( c.Branch==null && !string.IsNullOrEmpty(c.old_Code) ) {
-                        var b = da.Session.QueryOver<BoundCalcBranch>().Where( m=>m.Code == c.old_Code && c.Dataset.Id == m.Dataset.Id).Take(1).SingleOrDefault();
+                        var b = da.Session.QueryOver<Branch>().Where( m=>m.Code == c.old_Code && c.Dataset.Id == m.Dataset.Id).Take(1).SingleOrDefault();
                         if ( b!=null) {
                             c.Branch = b;
                             c.old_Node1 = null;

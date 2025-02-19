@@ -9,7 +9,7 @@ public class BranchItemHandler : BaseEditItemHandler
 {
     public override string BeforeUndelete(EditItemModel m)
     {
-        BoundCalcBranch b = (BoundCalcBranch) m.Item;
+        Branch b = (Branch) m.Item;
         int node1Id = b.Node1.Id;
         // ensure node1 is not deleted
         var ue = m.Da.Datasets.GetDeleteUserEdit(m.Dataset.Id, b.Node1);
@@ -37,7 +37,7 @@ public class BranchItemHandler : BaseEditItemHandler
         if ( isSourceEdit ) {
             // Ctrl should get deleted automatically
         } else {
-            BoundCalcBranch b = (BoundCalcBranch) m.Item;
+            Branch b = (Branch) m.Item;
             if ( b.Ctrl!=null ) {
                 m.Da.Datasets.AddDeleteUserEdit(b.Ctrl,m.Dataset);
             }
@@ -100,7 +100,7 @@ public class BranchItemHandler : BaseEditItemHandler
     public override IId GetItem(EditItemModel model)
     {
         var id = model.ItemId;
-        var branch = id>0 ? model.Da.BoundCalc.GetBranch(id) : new BoundCalcBranch(model.Dataset);
+        var branch = id>0 ? model.Da.BoundCalc.GetBranch(id) : new Branch(model.Dataset);
         if ( branch==null ) {
             throw new Exception($"Cannot find branch with id=[{id}]");
         }
@@ -109,7 +109,7 @@ public class BranchItemHandler : BaseEditItemHandler
 
     public override void Save(EditItemModel m)
     {
-        BoundCalcBranch b = (BoundCalcBranch) m.Item;
+        Branch b = (Branch) m.Item;
         //
         if ( m.GetString("code",out string code)) {
             b.Code = code;
@@ -151,7 +151,7 @@ public class BranchItemHandler : BaseEditItemHandler
                 } else {
                     throw new Exception($"Unexpected branch type found [{branchType}]");
                 }
-                var ctrl = new BoundCalcCtrl(m.Dataset,b);
+                var ctrl = new Ctrl(m.Dataset,b);
                 ctrl.Type = ctrlType; // note needs to be done before SetCtrl
                 b.SetCtrl(ctrl);                
                 b.Ctrl.Type = ctrlType; // also need to reset this as SetCtrl changes branch type
@@ -182,7 +182,7 @@ public class BranchItemHandler : BaseEditItemHandler
         // this save the branch
         base.UpdateUserEdits(m);
         // Also any changes to the control
-        BoundCalcBranch b = (BoundCalcBranch) m.Item;
+        Branch b = (Branch) m.Item;
         if ( b.Ctrl!=null ) {
             m.UpdateUserEditForItem(b.Ctrl);
         }
@@ -192,7 +192,7 @@ public class BranchItemHandler : BaseEditItemHandler
     {
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
-            var branch = (BoundCalcBranch) m.Item;
+            var branch = (Branch) m.Item;
             var branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n=>n.Id == branch.Id, out var ctrlDi, out var nodeDi, out var locDi );
             list.Add(branchDi.getBaseDatasetData());
             list.Add(ctrlDi.getBaseDatasetData());

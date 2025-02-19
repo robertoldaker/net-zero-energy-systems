@@ -44,17 +44,17 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <returns>List of boundaries</returns>
         [HttpGet]
         [Route("Boundaries")]
-        public DatasetData<BoundCalcBoundary> Boundaries(int datasetId) {
+        public DatasetData<Boundary> Boundaries(int datasetId) {
             using ( var da = new DataAccess() ) {
-                var q = da.Session.QueryOver<BoundCalcBoundary>();
-                var ds = new DatasetData<BoundCalcBoundary>(da, datasetId,m=>m.Id.ToString(),q);
+                var q = da.Session.QueryOver<Boundary>();
+                var ds = new DatasetData<Boundary>(da, datasetId,m=>m.Id.ToString(),q);
                 // add zones they belong to
                 var boundDict = da.BoundCalc.GetBoundaryZoneDict(ds.Data);
                 foreach( var b in ds.Data) {
                     if ( boundDict.ContainsKey(b) ) {
                         b.Zones = boundDict[b];
                     } else {
-                        b.Zones = new List<BoundCalcZone>();
+                        b.Zones = new List<Zone>();
                     }
                 }
                 return ds;
@@ -70,8 +70,8 @@ namespace SmartEnergyLabDataApi.Controllers
         [Route("BranchNames")]
         public List<string> BranchNames(int datasetId) {
             using ( var da = new DataAccess() ) {
-                var q = da.Session.QueryOver<BoundCalcBranch>();
-                var ds = new DatasetData<BoundCalcBranch>(da, datasetId,m=>m.Id.ToString(),q);
+                var q = da.Session.QueryOver<Branch>();
+                var ds = new DatasetData<Branch>(da, datasetId,m=>m.Id.ToString(),q);
                 var bns = ds.Data.Select(m=>m.LineName).ToList<string>();
                 return bns;
             }

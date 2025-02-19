@@ -13,8 +13,8 @@ namespace SmartEnergyLabDataApi.BoundCalc
     public class Branches : DataStore<BranchWrapper> {
 
         public Branches(DataAccess da, int datasetId, Nodes nodes, bool buildOptimiser) {
-            var q = da.Session.QueryOver<BoundCalcBranch>();
-            var di = new DatasetData<BoundCalcBranch>(da,datasetId,m=>m.Id.ToString(),q);
+            var q = da.Session.QueryOver<Branch>();
+            var di = new DatasetData<Branch>(da,datasetId,m=>m.Id.ToString(),q);
             int index=1;
             //?? need to order by Id ??
             var diData = di.Data.OrderBy(m=>m.Id);
@@ -29,7 +29,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
             DatasetData = di;
         }
-        public DatasetData<BoundCalcBranch> DatasetData {get; private set;}
+        public DatasetData<Branch> DatasetData {get; private set;}
 
         public bool IsDisconnected(Nodes nodes) {
             var snet = new int[nodes.Count];
@@ -67,7 +67,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
     }
 
-    public class BranchWrapper : ObjectWrapper<BoundCalcBranch> {
+    public class BranchWrapper : ObjectWrapper<Branch> {
         private static Dictionary<string,Dictionary<int,double>> _kmScalingOHL = new Dictionary<string, Dictionary<int, double>>() 
         {
             {
@@ -124,7 +124,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             },            
         };
 
-        public BranchWrapper(BoundCalcBranch obj, int index, Nodes nodes, bool buildOptimiser) : base(obj,index) {
+        public BranchWrapper(Branch obj, int index, Nodes nodes, bool buildOptimiser) : base(obj,index) {
             Node1 = nodes.get(obj.Node1.Code);
             Node2 = nodes.get(obj.Node2.Code);
             if ( buildOptimiser ) {

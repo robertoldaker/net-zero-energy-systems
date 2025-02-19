@@ -7,7 +7,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
     public class NodeBoundaryData {
 
         private Dictionary<int,bool> _zonesIn;
-        public NodeBoundaryData(IList<BoundCalcZone> zones) {
+        public NodeBoundaryData(IList<Zone> zones) {
             _zonesIn = new Dictionary<int, bool>();
             foreach( var bz in zones) {
                 _zonesIn.Add(bz.Id,true);

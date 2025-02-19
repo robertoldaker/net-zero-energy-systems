@@ -13,12 +13,12 @@ namespace SmartEnergyLabDataApi.BoundCalc
         private DataAccess _da;
         private Dataset _dataset;
 
-        private ObjectCache<BoundCalcNode> _nodeCache;
-        private ObjectCache<BoundCalcZone> _zoneCache;
-        private ObjectCache<BoundCalcBranch> _branchCache;
-        private ObjectCache<BoundCalcCtrl> _ctrlCache;
-        private ObjectCache<BoundCalcBoundary> _boundaryCache;
-        private ObjectCache<BoundCalcBoundaryZone> _boundaryZoneCache;
+        private ObjectCache<Node> _nodeCache;
+        private ObjectCache<Zone> _zoneCache;
+        private ObjectCache<Branch> _branchCache;
+        private ObjectCache<Ctrl> _ctrlCache;
+        private ObjectCache<Boundary> _boundaryCache;
+        private ObjectCache<BoundaryZone> _boundaryZoneCache;
         public BoundCalcXlsmLoader()
         {
         }
@@ -35,22 +35,22 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 }
                 // Caches of existing objects
                 var existingNodes = _da.BoundCalc.GetNodes(_dataset);
-                _nodeCache = new ObjectCache<BoundCalcNode>(_da, existingNodes, m=>m.Code, (m,code)=>m.Code=code );
+                _nodeCache = new ObjectCache<Node>(_da, existingNodes, m=>m.Code, (m,code)=>m.Code=code );
                 //
                 var existingZones = _da.BoundCalc.GetZones(_dataset);
-                _zoneCache = new ObjectCache<BoundCalcZone>(_da, existingZones, m=>m.Code, (m,code)=>m.Code=code );
+                _zoneCache = new ObjectCache<Zone>(_da, existingZones, m=>m.Code, (m,code)=>m.Code=code );
                 //
                 var existingBranches = _da.BoundCalc.GetBranches(_dataset);
-                _branchCache = new ObjectCache<BoundCalcBranch>(_da, existingBranches, m=>m.GetKey(), (m,key)=>m.SetCode(key) );
+                _branchCache = new ObjectCache<Branch>(_da, existingBranches, m=>m.GetKey(), (m,key)=>m.SetCode(key) );
                 //
                 var existingCtrls = _da.BoundCalc.GetCtrls(_dataset);
-                _ctrlCache = new ObjectCache<BoundCalcCtrl>(_da, existingCtrls, m=>m.Code, (m,code)=>{} );
+                _ctrlCache = new ObjectCache<Ctrl>(_da, existingCtrls, m=>m.Code, (m,code)=>{} );
 
                 var existingBoundaries = _da.BoundCalc.GetBoundaries(_dataset);
-                _boundaryCache = new ObjectCache<BoundCalcBoundary>(_da, existingBoundaries, m=>m.Code, (m,code)=>m.Code=code );
+                _boundaryCache = new ObjectCache<Boundary>(_da, existingBoundaries, m=>m.Code, (m,code)=>m.Code=code );
                 //
                 var existingBoundaryZones = _da.BoundCalc.GetBoundaryZones(_dataset);
-                _boundaryZoneCache = new ObjectCache<BoundCalcBoundaryZone>(_da, existingBoundaryZones, m=>$"{m.Boundary.Code}:{m.Zone.Code}", (m,key)=>{
+                _boundaryZoneCache = new ObjectCache<BoundaryZone>(_da, existingBoundaryZones, m=>$"{m.Boundary.Code}:{m.Zone.Code}", (m,key)=>{
                     var cpnts = key.Split(':');
                     var boundaryCode = cpnts[0];
                     var zoneCode = cpnts[1];
@@ -262,11 +262,11 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 var cap = reader.GetDouble(branchIndex+8);
                 var linkType = reader.GetString(branchIndex+9);
                 // node1
-                if ( !_nodeCache.TryGetValue(node1Code, out BoundCalcNode node1)) {
+                if ( !_nodeCache.TryGetValue(node1Code, out Node node1)) {
                     throw new Exception($"Cannot find node [{node1Code}]");
                 }
                 // node2
-                if ( !_nodeCache.TryGetValue(node2Code, out BoundCalcNode node2)) {
+                if ( !_nodeCache.TryGetValue(node2Code, out Node node2)) {
                     throw new Exception($"Cannot find node [{node2Code}]");
                 }
                 // branches
@@ -366,7 +366,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                         }
                     } else if ( entry == 0) {
                         // Delete it if it exists
-                        if ( _boundaryZoneCache.TryGetValue(key, out BoundCalcBoundaryZone bz) ) {
+                        if ( _boundaryZoneCache.TryGetValue(key, out BoundaryZone bz) ) {
                             _da.BoundCalc.Delete(bz);
                             numBoundaryZonesUpdated++;
                         }
@@ -388,7 +388,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             //
             // Caches of existing objects
             var existingNodes = _da.BoundCalc.GetNodes(_dataset);
-            var nodeCache = new ObjectCache<BoundCalcNode>(_da, existingNodes, m=>m.Code, (m,code)=>m.Code=code );
+            var nodeCache = new ObjectCache<Node>(_da, existingNodes, m=>m.Code, (m,code)=>m.Code=code );
             //
             // Read data by row
             while (reader.Read()) {
@@ -408,7 +408,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 if ( created ) {
                     ctrl.Dataset = _dataset;
                     var key = $"{node1Code}-{node2Code}:{code}";
-                    if ( _branchCache.TryGetValue(key, out BoundCalcBranch b) ) {
+                    if ( _branchCache.TryGetValue(key, out Branch b) ) {
                         ctrl.Branch = b;
                     } else {
                         var m= $"Could not find branch for ctrl [{key}]";

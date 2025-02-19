@@ -32,7 +32,7 @@ public class BoundCalcLocationUpdater {
 
     private int updateLocations(int datasetId) {
 
-        var notFoundDict = new Dictionary<string,IList<BoundCalcNode>>();
+        var notFoundDict = new Dictionary<string,IList<Node>>();
         using( var da = new DataAccess() ) {
             var dataset = da.Datasets.GetDataset(datasetId);
             if ( dataset==null ) {
@@ -63,7 +63,7 @@ public class BoundCalcLocationUpdater {
                 var loc = node.Location;
                 if ( loc==null && !node.Ext)  {
                     if ( !notFoundDict.ContainsKey(locCode) ) {
-                        notFoundDict.Add(locCode,new List<BoundCalcNode>());
+                        notFoundDict.Add(locCode,new List<Node>());
                     }
                     notFoundDict[locCode].Add(node);
                 } 
@@ -112,7 +112,7 @@ public class BoundCalcLocationUpdater {
         }
     }
 
-    private GridSubstationLocation addEstimatedLocation(string code,IList<BoundCalcBranch> branches, IList<GridSubstationLocation> gridSubstationLocations, Dataset dataset) {
+    private GridSubstationLocation addEstimatedLocation(string code,IList<Branch> branches, IList<GridSubstationLocation> gridSubstationLocations, Dataset dataset) {
         var name = getLocationName(code);
         var connectedNodes = branches.Where(m=>m.Node1.Code.Substring(0,4) == code && m.Node2.Code.Substring(0,4)!=code && m.Node2.Location!=null).Select(m=>m.Node2).ToList();
         var connected2Nodes = branches.Where(m=>m.Node2.Code.Substring(0,4) == code && m.Node1.Code.Substring(0,4)!=code && m.Node1.Location!=null).Select(m=>m.Node1).ToList();

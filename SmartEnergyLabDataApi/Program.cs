@@ -140,11 +140,11 @@ public static class Program
         // Needed to read spreadsheets
         System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
         // BoundCalc
-        EditItemModel.AddHandler<BoundCalcNode>(new NodeItemHandler());
-        EditItemModel.AddHandler<BoundCalcZone>(new ZoneItemHandler());
-        EditItemModel.AddHandler<BoundCalcBoundary>(new BoundaryItemHandler());
-        EditItemModel.AddHandler<BoundCalcBranch>(new BranchItemHandler());
-        EditItemModel.AddHandler<BoundCalcCtrl>(new CtrlItemHandler());
+        EditItemModel.AddHandler<Node>(new NodeItemHandler());
+        EditItemModel.AddHandler<Zone>(new ZoneItemHandler());
+        EditItemModel.AddHandler<Boundary>(new BoundaryItemHandler());
+        EditItemModel.AddHandler<Branch>(new BranchItemHandler());
+        EditItemModel.AddHandler<Ctrl>(new CtrlItemHandler());
         EditItemModel.AddHandler<GridSubstationLocation>(new GridSubstationLocationItemHandler());
         // Elsi
         EditItemModel.AddHandler<GenCapacity>(new GenCapacityItemHandler());

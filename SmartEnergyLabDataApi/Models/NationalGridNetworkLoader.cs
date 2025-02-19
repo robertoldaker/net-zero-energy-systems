@@ -748,7 +748,7 @@ namespace SmartEnergyLabDataApi.Models
             }
         }
 
-        private Feature<SubstationProps> getFeature(BoundCalcNode node, Feature<SubstationProps>[] features) {
+        private Feature<SubstationProps> getFeature(Node node, Feature<SubstationProps>[] features) {
             foreach( var feature in features) {
                 if ( node.Code.StartsWith(feature.properties.SUBSTATION)) {
                     return feature;

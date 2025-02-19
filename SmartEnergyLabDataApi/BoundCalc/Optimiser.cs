@@ -36,7 +36,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             int nn, n1,n2;
             string ctn, dcn;
             double ctmax, ctmin, ctcst, mag;
-            BoundCalcNode node;
+            Node node;
 
             cupb = lf.Ctrls.Count;
             cctlim = new LPConsDef[cupb + NCCT + 1];

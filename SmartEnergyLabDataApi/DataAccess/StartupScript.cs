@@ -172,32 +172,32 @@ namespace SmartEnergyLabDataApi.Data
                     };
                     da.Datasets.Add(ds);
                     // Boundaries
-                    var boundaries = da.BoundCalc.GetRawData<BoundCalcBoundary>(m=>m.Dataset==null);
+                    var boundaries = da.BoundCalc.GetRawData<Boundary>(m=>m.Dataset==null);
                     foreach( var b in boundaries) {
                         b.Dataset = ds;
                     }
                     // Boundary zone
-                    var boundaryZones = da.BoundCalc.GetRawData<BoundCalcBoundaryZone>(m=>m.Dataset==null);
+                    var boundaryZones = da.BoundCalc.GetRawData<BoundaryZone>(m=>m.Dataset==null);
                     foreach( var bz in boundaryZones) {
                         bz.Dataset = ds;
                     }
                     // Branches
-                    var branches = da.BoundCalc.GetRawData<BoundCalcBranch>(m=>m.Dataset==null);
+                    var branches = da.BoundCalc.GetRawData<Branch>(m=>m.Dataset==null);
                     foreach( var b in branches) {
                         b.Dataset = ds;
                     }
                     // Ctrls
-                    var ctrls = da.BoundCalc.GetRawData<BoundCalcCtrl>(m=>m.Dataset==null);
+                    var ctrls = da.BoundCalc.GetRawData<Ctrl>(m=>m.Dataset==null);
                     foreach( var c in ctrls) {
                         c.Dataset = ds;
                     }
                     // Nodes
-                    var nodes = da.BoundCalc.GetRawData<BoundCalcNode>(m=>m.Dataset==null);
+                    var nodes = da.BoundCalc.GetRawData<Node>(m=>m.Dataset==null);
                     foreach( var n in nodes) {
                         n.Dataset = ds;
                     }
                     // Zones
-                    var zones = da.BoundCalc.GetRawData<BoundCalcZone>(m=>m.Dataset==null);
+                    var zones = da.BoundCalc.GetRawData<Zone>(m=>m.Dataset==null);
                     foreach( var z in zones) {
                         z.Dataset = ds;
                     }

@@ -9,8 +9,8 @@ namespace SmartEnergyLabDataApi.BoundCalc;
 public class Boundaries : DataStore<BoundaryWrapper> {
 
     public Boundaries(DataAccess da, int datasetId, BoundCalc boundCalc) {
-        var q = da.Session.QueryOver<BoundCalcBoundary>();
-        var ds = new DatasetData<BoundCalcBoundary>(da, datasetId,m=>m.Id.ToString(),q);
+        var q = da.Session.QueryOver<Boundary>();
+        var ds = new DatasetData<Boundary>(da, datasetId,m=>m.Id.ToString(),q);
         // add zones they belong to
         var boundDict = da.BoundCalc.GetBoundaryZoneDict(ds.Data);
         int index=1;
@@ -18,7 +18,7 @@ public class Boundaries : DataStore<BoundaryWrapper> {
             if ( boundDict.ContainsKey(b) ) {
                 b.Zones = boundDict[b];
             } else {
-                b.Zones = new List<BoundCalcZone>();
+                b.Zones = new List<Zone>();
             }
             var objWrapper = new BoundaryWrapper(b,index, boundCalc);
             base.add(b.Code,objWrapper);
@@ -26,7 +26,7 @@ public class Boundaries : DataStore<BoundaryWrapper> {
         }
         DatasetData = ds;
     }
-    public DatasetData<BoundCalcBoundary> DatasetData {get; private set;}
+    public DatasetData<Boundary> DatasetData {get; private set;}
 
     public BoundaryWrapper? GetBoundary(string boundaryName) {
         return this.Objs.Where( m=>m.Obj.Code == boundaryName).FirstOrDefault();
@@ -34,7 +34,7 @@ public class Boundaries : DataStore<BoundaryWrapper> {
 
 }
 
-public class BoundaryWrapper : ObjectWrapper<BoundCalcBoundary> {
+public class BoundaryWrapper : ObjectWrapper<Boundary> {
 
     public string name {
         get {
@@ -62,7 +62,7 @@ public class BoundaryWrapper : ObjectWrapper<BoundCalcBoundary> {
     private double kdout;
     public Collection<BranchWrapper> BoundCcts {get; private set;}
 
-    public BoundaryWrapper(BoundCalcBoundary b, int index, BoundCalc boundCalc) : base(b, index) {
+    public BoundaryWrapper(Boundary b, int index, BoundCalc boundCalc) : base(b, index) {
         foreach( var z in boundCalc.Zones.Data ) {
             if ( b.Zones.FirstOrDefault(m=>m.Id == z.Id)!=null ) {
                 _genIn += z.TGeneration;

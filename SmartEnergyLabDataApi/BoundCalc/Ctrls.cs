@@ -9,10 +9,10 @@ namespace SmartEnergyLabDataApi.BoundCalc
 {
      public class Ctrls : DataStore<CtrlWrapper> {
         public Ctrls(DataAccess da, int datasetId, BoundCalc boundCalc)  {
-            var q = da.Session.QueryOver<BoundCalcCtrl>();
+            var q = da.Session.QueryOver<Ctrl>();
             q = q.Fetch(SelectMode.Fetch,m=>m.Node1);
             q = q.Fetch(SelectMode.Fetch,m=>m.Node2);            
-            var di = new DatasetData<BoundCalcCtrl>(da,datasetId,m=>m.Id.ToString(),q);
+            var di = new DatasetData<Ctrl>(da,datasetId,m=>m.Id.ToString(),q);
             int index=1;
             foreach( var c in di.Data) {
                 var key = c.LineName;
@@ -27,7 +27,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             DatasetData = di;
 
         }
-        public DatasetData<BoundCalcCtrl> DatasetData {get; private set;}
+        public DatasetData<Ctrl> DatasetData {get; private set;}
 
         // Base
         public double[]? BaseCVang {get; set; }
@@ -41,8 +41,8 @@ namespace SmartEnergyLabDataApi.BoundCalc
         }
     }
 
-    public class CtrlWrapper : ObjectWrapper<BoundCalcCtrl> {
-        public CtrlWrapper(BoundCalcCtrl obj, int index, BranchWrapper branchWrapper, BoundCalc boundCalc) : base(obj, index) {
+    public class CtrlWrapper : ObjectWrapper<Ctrl> {
+        public CtrlWrapper(Ctrl obj, int index, BranchWrapper branchWrapper, BoundCalc boundCalc) : base(obj, index) {
             Branch = branchWrapper;            
             BoundCalc = boundCalc;
             if ( obj.Type == BoundCalcCtrlType.QB) {

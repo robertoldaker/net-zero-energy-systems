@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace SmartEnergyLabDataApi.Data;
 
+// Note even though Loadflow option not used - kept since integer value of enums is stored in db
 public enum DatasetType {Elsi,Loadflow,BoundCalc}
 
 [ValidateNever] // required as using this class in model binding and without it will get errors for any missing fields

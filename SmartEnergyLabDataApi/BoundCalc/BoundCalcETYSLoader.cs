@@ -88,9 +88,9 @@ public class BoundCalcETYSLoader
             //
             foreach( var locCode in nodeLocCodes) {
                 // get node2 zones
-                var nodeZones = branches.Where( m=>m.Node1.Code.Substring(0,4)==locCode && m.Node2.Zone!=null).Select(m=>m.Node2.Zone).Distinct().ToList<BoundCalcZone>();
+                var nodeZones = branches.Where( m=>m.Node1.Code.Substring(0,4)==locCode && m.Node2.Zone!=null).Select(m=>m.Node2.Zone).Distinct().ToList<Zone>();
                 // get node1 zones
-                var node1Zones = branches.Where( m=>m.Node2.Code.Substring(0,4)==locCode && m.Node1.Zone!=null).Select(m=>m.Node1.Zone).Distinct().ToList<BoundCalcZone>();
+                var node1Zones = branches.Where( m=>m.Node2.Code.Substring(0,4)==locCode && m.Node1.Zone!=null).Select(m=>m.Node1.Zone).Distinct().ToList<Zone>();
                 nodeZones.AddRange(node1Zones);
                 //
                 var nodeZoneCodes = nodeZones.Select(m=>m.Code).Distinct().ToList();
@@ -149,7 +149,7 @@ public class BoundCalcETYSLoader
             //
             int nFound=0;
             var notFoundDict = new Dictionary<string,bool>();
-            var notFoundCodesDict = new Dictionary<SubstationCode,IList<BoundCalcNode>>();
+            var notFoundCodesDict = new Dictionary<SubstationCode,IList<Node>>();
             foreach( var node in nodes) {
                 // Lookup grid locations based on first 4 chars of code
                 var locCode = node.Code.Substring(0,4);
@@ -182,7 +182,7 @@ public class BoundCalcETYSLoader
                         var sc = codesDict[locCode];
                         if ( sc.Owner == SubstationOwner.NGET || sc.Owner == SubstationOwner.SHET || sc.Owner == SubstationOwner.SPT ) {
                             if ( !notFoundCodesDict.ContainsKey(sc) ) {
-                                notFoundCodesDict.Add(sc,new List<BoundCalcNode>());
+                                notFoundCodesDict.Add(sc,new List<Node>());
                             }
                             notFoundCodesDict[sc].Add(node);
                         }
@@ -225,7 +225,7 @@ public class BoundCalcETYSLoader
         }
     }
 
-    private GridSubstationLocation addEstimatedLocation(SubstationCode sc,IList<BoundCalcBranch> branches, IList<GridSubstationLocation> gridSubstationLocations, Dataset dataset) {
+    private GridSubstationLocation addEstimatedLocation(SubstationCode sc,IList<Branch> branches, IList<GridSubstationLocation> gridSubstationLocations, Dataset dataset) {
         var code = sc.Code;
         var name = sc.Name;
         var connectedNodes = branches.Where(m=>m.Node1.Code.Substring(0,4) == code && m.Node2.Code.Substring(0,4)!=code && m.Node2.Location!=null).Select(m=>m.Node2).ToList();
@@ -407,11 +407,11 @@ public class BoundCalcETYSLoader
         }
     }
 
-    private IList<BoundCalcNode> findDemandNodes(string name, IList<BoundCalcNode> nodes, IList<BoundCalcBranch> branches) {
+    private IList<Node> findDemandNodes(string name, IList<Node> nodes, IList<Branch> branches) {
         // look for node matching first 4 chars plus voltage index
         if ( name.Length<5 ) {
             Logger.Instance.LogInfoEvent($"Name not long enough [{name}]");
-            return new List<BoundCalcNode>();
+            return new List<Node>();
         } else {
             var shortName = name.Substring(0, 5);
             var ns = nodes.Where(m => m.Code.StartsWith(shortName)).ToList();
@@ -419,9 +419,9 @@ public class BoundCalcETYSLoader
         }
     }
 
-    private IList<BoundCalcNode> _findDemandNodes(string name, IList<BoundCalcNode> nodes, IList<BoundCalcBranch> branches) {
+    private IList<Node> _findDemandNodes(string name, IList<Node> nodes, IList<Branch> branches) {
         var lengths = new int[] {name.Length,6,5,4};
-        var dNodesDict = new Dictionary<BoundCalcNode,Boolean>();
+        var dNodesDict = new Dictionary<Node,Boolean>();
         foreach (var len in lengths)
         {
             if (name.Length >= len)
@@ -454,7 +454,7 @@ public class BoundCalcETYSLoader
         return dNodesDict.Keys.ToList();
     }
 
-    private void addGSPNodes(BoundCalcNode node, Dictionary<BoundCalcNode,Boolean> dNodesDict, IList<BoundCalcBranch> branches) {
+    private void addGSPNodes(Node node, Dictionary<Node,Boolean> dNodesDict, IList<Branch> branches) {
         var nodes = branches.Where(m=>m.Node1.Code==node.Code  && m.LinkType == "Transformer").Select(m=>m.Node2).ToList();
         foreach( var n in nodes) {
             if ( !dNodesDict.ContainsKey(n) ) {
@@ -729,7 +729,7 @@ public class BoundCalcETYSLoader
             if ( ssB!=null ) {
                 var ctrl = existingCtrls.Where(m=>m.Code==ssC.Code).FirstOrDefault();
                 var branch = existingBranches.Where(m=>m.Code==ssB.Code).FirstOrDefault();
-                BoundCalcNode node1=null,node2=null;
+                Node node1=null,node2=null;
                 if ( ctrl ==null ) {
                     node1  = getCtrlNode(da,existingNodes,existingZones,ssC.Node1,dataset);
                     if ( node1==null ) {
@@ -742,7 +742,7 @@ public class BoundCalcETYSLoader
                         continue;
                     }
                     if ( branch == null ) {
-                        branch = new BoundCalcBranch() {
+                        branch = new Branch() {
                             Node1 = node1,
                             Node2 = node2,
                             Code = ssB.Code,
@@ -758,7 +758,7 @@ public class BoundCalcETYSLoader
                         da.BoundCalc.Add(branch);
                         Logger.Instance.LogInfoEvent($"Adding branch [{branch.LineName}]");
                     }
-                    ctrl = new BoundCalcCtrl() {
+                    ctrl = new Ctrl() {
                         Branch = branch,
                         Type = ssC.Type,
                         MinCtrl = ssC.MinCtrl,
@@ -776,8 +776,8 @@ public class BoundCalcETYSLoader
         }
     }
 
-    private BoundCalcNode getCtrlNode(DataAccess da, IList<BoundCalcNode> existingNodes,  IList<BoundCalcZone> existingZones, BoundCalcNode n, Dataset  ds) {
-        BoundCalcNode node;
+    private Node getCtrlNode(DataAccess da, IList<Node> existingNodes,  IList<Zone> existingZones, Node n, Dataset  ds) {
+        Node node;
         // Try full name
         node = existingNodes.Where( m=>m.Code == n.Code).FirstOrDefault();
         if ( node!=null ) {
@@ -785,7 +785,7 @@ public class BoundCalcETYSLoader
         }
         // if is a dummy one to support HVDC links then create
         if ( n.Code[5] == 'X') {
-            node = new BoundCalcNode() {
+            node = new Node() {
                 Code = n.Code,
                 Dataset = ds,
                 Voltage = n.Voltage,
@@ -826,7 +826,7 @@ public class BoundCalcETYSLoader
                 var voltage=b.Node1.Code[4];
                 // Make the codes the same so we can locate the branch
                 b.Code = $"Q{index++}";
-                var ctrl = new BoundCalcCtrl() {
+                var ctrl = new Ctrl() {
                     Branch = b,
                     //
                     MinCtrl = (voltage == '4') ? -0.2 : -0.15,
@@ -888,7 +888,7 @@ public class BoundCalcETYSLoader
             foreach( var nodeName in nodeNames) {
                 var existingNode = existingNodes.Where( m=>m.Code == nodeName).Take(1).FirstOrDefault();
                 if ( existingNode==null ) {
-                    existingNode = new BoundCalcNode() {
+                    existingNode = new Node() {
                         Code = nodeName,
                         Dataset = dataset
                     };
@@ -915,7 +915,7 @@ public class BoundCalcETYSLoader
 
     }
 
-    private bool setZone(BoundCalcNode node, IList<BoundCalcZone> zones, IList<BoundCalcNode> ssNodes) {
+    private bool setZone(Node node, IList<Zone> zones, IList<Node> ssNodes) {
         var code = node.Code.Substring(0,4);
         var ssNode = ssNodes.Where(m=>m.Code.StartsWith(code)).Take(1).FirstOrDefault();
         if ( ssNode==null ) {
@@ -928,12 +928,12 @@ public class BoundCalcETYSLoader
         }
     }
 
-    private IList<BoundCalcZone> copyBoundariesAndZones(DataAccess da, Dataset ds, Dataset dataset) {
+    private IList<Zone> copyBoundariesAndZones(DataAccess da, Dataset ds, Dataset dataset) {
         // copy over zones from original loadflow dataset to new one
         var zones = da.BoundCalc.GetZones(ds);
-        var newZones = new List<BoundCalcZone>();
+        var newZones = new List<Zone>();
         foreach( var zone in zones ) {
-            var nz = new BoundCalcZone() {
+            var nz = new Zone() {
                 Code = zone.Code,
                 Dataset = dataset
             };
@@ -941,9 +941,9 @@ public class BoundCalcETYSLoader
             newZones.Add(nz);
         }
         var boundaries = da.BoundCalc.GetBoundaries(ds);
-        var newBoundaries = new List<BoundCalcBoundary>();
+        var newBoundaries = new List<Boundary>();
         foreach( var b in boundaries ) {
-            var nb = new BoundCalcBoundary() {
+            var nb = new Boundary() {
                 Code = b.Code,
                 Dataset = dataset
             };
@@ -952,11 +952,11 @@ public class BoundCalcETYSLoader
         }
         // and boundary zones
         var boundaryZones = da.BoundCalc.GetBoundaryZones(ds);
-        var newBoundaryZones = new List<BoundCalcBoundaryZone>();
+        var newBoundaryZones = new List<BoundaryZone>();
         foreach( var bz in boundaryZones ) {
             var nb = newBoundaries.Where( m=>m.Code == bz.Boundary.Code).FirstOrDefault();
             var nz = newZones.Where( m=>m.Code == bz.Zone.Code).FirstOrDefault();
-            var nbz = new BoundCalcBoundaryZone() {
+            var nbz = new BoundaryZone() {
                 Boundary = nb,
                 Zone = nz,
                 Dataset = dataset
@@ -1011,7 +1011,7 @@ public class BoundCalcETYSLoader
                         numIgnored++;
                         continue;
                     }
-                    var branch = new BoundCalcBranch() {
+                    var branch = new Branch() {
                          Node1 = existingNode1,
                          Node2 = existingNode2,
                          Dataset = dataset,

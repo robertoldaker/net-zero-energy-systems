@@ -9,7 +9,7 @@ public class NodeItemHandler : BaseEditItemHandler
     public override string BeforeUndelete(EditItemModel m)
     {
         // undelete any location that the node is pointing to
-        var node = (BoundCalcNode) m.Item;
+        var node = (Node) m.Item;
         if ( node.Location!=null) {
             var ue = m.Da.Datasets.GetDeleteUserEdit(m.Dataset.Id, node.Location);
             if ( ue!=null ) {
@@ -56,12 +56,12 @@ public class NodeItemHandler : BaseEditItemHandler
     public override IId GetItem(EditItemModel model)
     {
         var id = model.ItemId;
-        return id>0 ? model.Da.BoundCalc.GetNode(id) : new BoundCalcNode(model.Dataset);
+        return id>0 ? model.Da.BoundCalc.GetNode(id) : new Node(model.Dataset);
     }
 
     public override void Save(EditItemModel m)
     {
-        BoundCalcNode node = (BoundCalcNode) m.Item;
+        Node node = (Node) m.Item;
         //
         if ( m.GetString("code",out string code)) {
             node.Code = code;
@@ -100,7 +100,7 @@ public class NodeItemHandler : BaseEditItemHandler
     {
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
-            var node = (BoundCalcNode) m.Item;
+            var node = (Node) m.Item;
             var nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id,m=>m.Id == node.Id, out var locDi);
             list.Add(nodeDi.getBaseDatasetData());
             list.Add(locDi.getBaseDatasetData()); 

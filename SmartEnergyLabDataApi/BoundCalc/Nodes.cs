@@ -7,10 +7,10 @@ namespace SmartEnergyLabDataApi.BoundCalc
     public class Nodes : DataStore<NodeWrapper> {
         public Nodes(DataAccess da,int datasetId, DatasetData<GridSubstationLocation> locDatasetData) : base() {
             //  
-            var q = da.Session.QueryOver<BoundCalcNode>();
+            var q = da.Session.QueryOver<Node>();
             q = q.Fetch(SelectMode.Fetch,m=>m.Zone);
             q = q.OrderBy(m=>m.Code).Asc;
-            var di = new DatasetData<BoundCalcNode>(da,datasetId,m=>m.Id.ToString(), q);
+            var di = new DatasetData<Node>(da,datasetId,m=>m.Id.ToString(), q);
             foreach( var node in di.Data) {                
                 if ( node.Location!=null ){
                     node.Location = locDatasetData.GetItem(node.Location.Id);
@@ -30,12 +30,12 @@ namespace SmartEnergyLabDataApi.BoundCalc
             DatasetData = di;
         }
 
-        public DatasetData<BoundCalcNode> DatasetData {get; private set;}
+        public DatasetData<Node> DatasetData {get; private set;}
     }
 
 
-    public class NodeWrapper : ObjectWrapper<BoundCalcNode> {
-        public NodeWrapper(BoundCalcNode obj, int index) : base(obj, index) {
+    public class NodeWrapper : ObjectWrapper<Node> {
+        public NodeWrapper(Node obj, int index) : base(obj, index) {
 
         }
 

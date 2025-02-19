@@ -46,7 +46,7 @@ export class LoadflowDataService {
         this.selectedMapItem = null
     }
 
-    dataset: Dataset = {id: 0, type: DatasetType.Loadflow, name: '', parent: null, isReadOnly: true}
+    dataset: Dataset = {id: 0, type: DatasetType.BoundCalc, name: '', parent: null, isReadOnly: true}
     gridSubstations: GridSubstation[]
     networkData: NetworkData
     locationData: LocationData

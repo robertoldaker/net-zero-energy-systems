@@ -12,7 +12,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             {"4",400},
             {"6",66}
         };
-        public static void SetVoltage(this BoundCalcNode n) {
+        public static void SetVoltage(this Node n) {
             if ( n.Code!=null && n.Code.Length>4) {
                 var vc = n.Code[4].ToString();
                 if ( _nodeVoltageDict.ContainsKey(vc) ) {
@@ -22,7 +22,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 }
             }
         }
-        public static void SetLocation(this BoundCalcNode n, DataAccess da) {
+        public static void SetLocation(this Node n, DataAccess da) {
             var locCode = n.Code.Substring(0,4);
             if ( n.Code.EndsWith('X')) {
                 locCode += "X";

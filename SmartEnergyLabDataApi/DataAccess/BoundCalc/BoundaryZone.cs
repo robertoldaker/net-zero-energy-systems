@@ -5,14 +5,14 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_boundary_zones")]
-    public class BoundCalcBoundaryZone : IId, IDataset
+    public class BoundaryZone : IId, IDataset
     {
-        public BoundCalcBoundaryZone()
+        public BoundaryZone()
         {
 
         }
 
-        public BoundCalcBoundaryZone(BoundCalcBoundary b, BoundCalcZone z)
+        public BoundaryZone(Boundary b, Zone z)
         {
             Boundary = b;
             Zone = z;
@@ -25,10 +25,10 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         public virtual int Id { get; set; }
 
         [ManyToOne(Column = "BoundaryId", Cascade = "none")]
-        public virtual BoundCalcBoundary Boundary { get; set; }
+        public virtual Boundary Boundary { get; set; }
 
         [ManyToOne(Column = "ZoneId", Cascade = "none")]
-        public virtual BoundCalcZone Zone { get; set; }
+        public virtual Zone Zone { get; set; }
         
         [JsonIgnore()]
         [ManyToOne(Column = "DatasetId", Cascade = "none")]

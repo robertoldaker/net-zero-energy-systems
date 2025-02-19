@@ -5,14 +5,14 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_nodes")]
-    public class BoundCalcNode : IId, IDataset
+    public class Node : IId, IDataset
     {
-        public BoundCalcNode()
+        public Node()
         {
 
         }
 
-        public BoundCalcNode(Dataset dataset)
+        public Node(Dataset dataset)
         {
             this.Dataset = dataset;
         }
@@ -60,7 +60,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         
 
         [ManyToOne(Column = "ZoneId", Cascade = "none", Fetch = FetchMode.Join)]
-        public virtual BoundCalcZone Zone {get; set;}
+        public virtual Zone Zone {get; set;}
         
 
         /// <summary>

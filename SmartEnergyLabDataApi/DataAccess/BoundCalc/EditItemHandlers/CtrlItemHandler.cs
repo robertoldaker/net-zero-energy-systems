@@ -9,13 +9,13 @@ public class CtrlItemHandler : BaseEditItemHandler
 {
     public override string BeforeUndelete(EditItemModel m)
     {
-        BoundCalcCtrl c = (BoundCalcCtrl) m.Item;
+        Ctrl c = (Ctrl) m.Item;
         
         // see if we already have a ctrl pointing at the branch referenced by this ctrl
-        var q = m.Da.Session.QueryOver<BoundCalcCtrl>();
+        var q = m.Da.Session.QueryOver<Ctrl>();
         q = q.Fetch(SelectMode.Fetch,m=>m.Node1);
         q = q.Fetch(SelectMode.Fetch,m=>m.Node2);            
-        var di = new DatasetData<BoundCalcCtrl>(m.Da,m.Dataset.Id,m=>m.Id.ToString(),q);
+        var di = new DatasetData<Ctrl>(m.Da,m.Dataset.Id,m=>m.Id.ToString(),q);
         //
         var ctrl = di.Data.Where( m=>m.Branch.Id == c.Branch.Id).FirstOrDefault();
         if ( ctrl!=null ) { 
@@ -50,12 +50,12 @@ public class CtrlItemHandler : BaseEditItemHandler
     public override IId GetItem(EditItemModel model)
     {
         var id = model.ItemId;
-        return id>0 ? model.Da.BoundCalc.GetCtrl(id) : new BoundCalcCtrl(model.Dataset, null);
+        return id>0 ? model.Da.BoundCalc.GetCtrl(id) : new Ctrl(model.Dataset, null);
     }
 
     public override void Save(EditItemModel m)
     {
-        BoundCalcCtrl c = (BoundCalcCtrl) m.Item;
+        Ctrl c = (Ctrl) m.Item;
         //
         var branchId = m.CheckInt("branchId");
         if ( c.Id==0 && branchId==null ) {
@@ -99,7 +99,7 @@ public class CtrlItemHandler : BaseEditItemHandler
     {
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
-            var ctrl = (BoundCalcCtrl) m.Item;
+            var ctrl = (Ctrl) m.Item;
             var ctrlDi = da.BoundCalc.GetCtrlDatasetData(m.Dataset.Id,m=>m.Id == ctrl.Id);
             list.Add(ctrlDi.getBaseDatasetData());
             return list;

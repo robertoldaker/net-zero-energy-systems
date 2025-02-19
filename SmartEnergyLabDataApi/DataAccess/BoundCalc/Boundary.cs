@@ -1,26 +1,25 @@
 using System.Text.Json.Serialization;
+using MySqlX.XDevAPI;
 using NHibernate.Classic;
 using NHibernate.Mapping.Attributes;
+using SmartEnergyLabDataApi.BoundCalc;
 
 namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
-    [Class(0, Table = "boundcalc_zones")]
-    public class BoundCalcZone : IId, IDataset, ILifecycle
+    [Class(0, Table = "boundcalc_boundaries")]
+    public class Boundary : IId, IDataset, ILifecycle
     {
-        public BoundCalcZone()
+        public Boundary()
         {
-            TGeneration = 0;
-            Tdemand = 0;
-            UnscaleDem = 0;
-            UnscaleGen = 0;
+
         }
 
-        public BoundCalcZone(Dataset dataset)
+        public Boundary(Dataset dataset)
         {
             Dataset = dataset;
         }
-
+        
         /// <summary>
         /// Database identifier
         /// </summary>
@@ -35,32 +34,22 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         [ManyToOne(Column = "DatasetId", Cascade = "none")]
         public virtual Dataset Dataset { get; set; }
 
+        public virtual IList<Zone> Zones {get; set;}
+
         public virtual int DatasetId {
             get {
                 return Dataset.Id;
             }
         }
 
-        public virtual double TGeneration {get; set;}
-
-        public virtual double Tdemand {get; set;}
-
-        public virtual double UnscaleGen {get; set;}
-
-        public virtual double UnscaleDem {get; set;}
-
         public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
         {
             //
-            var nds = s.QueryOver<BoundCalcNode>().Where( m=>m.Zone == this).List();
-            foreach( var nd in nds) {
-                nd.Zone = null;
-            }
-            //
-            var bzs = s.QueryOver<BoundCalcBoundaryZone>().Where( m=>m.Zone == this).List();
+            var bzs = s.QueryOver<BoundaryZone>().Where( m=>m.Boundary == this).List();
             foreach( var bz in bzs) {
                 s.Delete(bz);
             }
+            //
             return LifecycleVeto.NoVeto;
         }
 
@@ -77,5 +66,6 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         {
             return LifecycleVeto.NoVeto;
         }
+
     }
 }

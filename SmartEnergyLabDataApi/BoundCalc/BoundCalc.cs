@@ -15,7 +15,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         private Branches _branches;
         private Ctrls _ctrls;        
         private Boundaries _boundaries;
-        private DatasetData<BoundCalcZone> _zones;
+        private DatasetData<Zone> _zones;
         private NodeOrder _nord;
         public SparseMatrix admat;
         public SolveLinSym _ufac;
@@ -143,7 +143,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        public DatasetData<BoundCalcZone> Zones {
+        public DatasetData<Zone> Zones {
             get {
                 return _zones;
             }
@@ -192,7 +192,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 return _dcctOut.Results;
             }
         }
-        public (int,BoundCalcNode?) Subnets() {
+        public (int,Node?) Subnets() {
             int i, j1, j2;
             bool chng;
 
@@ -378,7 +378,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             MiscReport("Demand", tdem.ToString("f1"));
             MiscReport("Imports", timp.ToString("f1"));
 
-            (int res, BoundCalcNode? node) = Subnets();
+            (int res, Node? node) = Subnets();
             if ( res!=0) {
                 throw new Exception($"Disconnected network detected at node {node?.Name}");
             }
@@ -951,15 +951,15 @@ namespace SmartEnergyLabDataApi.BoundCalc
             _stageResults.StageResult(sr,BoundCalcStageResultEnum.Pass,$"{result}");
         }
 
-        public NodeBoundaryData GetNodeBoundaryData(BoundCalcBoundary bndry) {
+        public NodeBoundaryData GetNodeBoundaryData(Boundary bndry) {
             NodeBoundaryData nbd=null;
             nbd = new NodeBoundaryData(bndry.Zones);
             return nbd;
         }
 
-        private DatasetData<BoundCalcZone> loadZones(DataAccess da, int datasetId, Nodes nodes) {
-            var q = da.Session.QueryOver<BoundCalcZone>();
-            var ds = new DatasetData<BoundCalcZone>(da, datasetId,m=>m.Id.ToString(),q);
+        private DatasetData<Zone> loadZones(DataAccess da, int datasetId, Nodes nodes) {
+            var q = da.Session.QueryOver<Zone>();
+            var ds = new DatasetData<Zone>(da, datasetId,m=>m.Id.ToString(),q);
             //
             foreach( var nd in nodes.DatasetData.Data) {
                 if ( nd.Ext) {

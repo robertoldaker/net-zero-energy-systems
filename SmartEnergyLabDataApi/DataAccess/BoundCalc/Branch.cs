@@ -11,14 +11,14 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
     
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_branches")]
-    public class BoundCalcBranch : IId, IDataset, ILifecycle
+    public class Branch : IId, IDataset, ILifecycle
     {
-        public BoundCalcBranch()
+        public Branch()
         {
 
         }
 
-        public BoundCalcBranch(Dataset dataset)
+        public Branch(Dataset dataset)
         {
             Dataset = dataset;
         }
@@ -81,11 +81,11 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         [JsonIgnore()]
         [ManyToOne(Column = "Node1Id", Cascade = "none", Fetch = FetchMode.Join)]
-        public virtual BoundCalcNode Node1 {get; set;}
+        public virtual Node Node1 {get; set;}
 
         [JsonIgnore()]
         [ManyToOne(Column = "Node2Id", Cascade = "none", Fetch = FetchMode.Join)]
-        public virtual BoundCalcNode Node2 {get; set;}
+        public virtual Node Node2 {get; set;}
 
         [JsonIgnore()]
         [ManyToOne(Column = "DatasetId", Cascade = "none")]
@@ -93,7 +93,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         [JsonIgnore()]
         [ManyToOne(Column = "CtrlId", Cascade = "all-delete-orphan", Fetch = FetchMode.Join)]
-        public virtual BoundCalcCtrl Ctrl {get; set;}
+        public virtual Ctrl Ctrl {get; set;}
         public virtual int CtrlId {
             get {
                 return Ctrl!=null ? Ctrl.Id : 0;
@@ -229,7 +229,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
         {
             // Delete ctrls pointing at this branch
-            var ctrls = s.QueryOver<BoundCalcCtrl>().Where( m=>m.Branch.Id == Id).List();
+            var ctrls = s.QueryOver<Ctrl>().Where( m=>m.Branch.Id == Id).List();
             foreach( var c in ctrls) {
                 s.Delete(c);
             }

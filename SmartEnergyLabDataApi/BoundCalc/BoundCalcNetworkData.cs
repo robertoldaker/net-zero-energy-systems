@@ -26,11 +26,11 @@ namespace SmartEnergyLabDataApi.BoundCalc
             //??assignNodeLocations();
         }
 
-        public DatasetData<BoundCalcNode> Nodes {get; private set;}
-        public DatasetData<BoundCalcBranch> Branches {get; private set;}        
-        public DatasetData<BoundCalcCtrl> Ctrls {get; private set;}
-        public DatasetData<BoundCalcBoundary> Boundaries {get; private set;}
-        public DatasetData<BoundCalcZone> Zones {get; private set;}
+        public DatasetData<Node> Nodes {get; private set;}
+        public DatasetData<Branch> Branches {get; private set;}        
+        public DatasetData<Ctrl> Ctrls {get; private set;}
+        public DatasetData<Boundary> Boundaries {get; private set;}
+        public DatasetData<Zone> Zones {get; private set;}
         public DatasetData<GridSubstationLocation> Locations {get; private set;}
 
         private DatasetData<GridSubstationLocation> loadLocations(DataAccess da, int datasetId) {

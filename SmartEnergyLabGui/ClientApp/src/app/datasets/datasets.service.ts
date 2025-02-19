@@ -95,7 +95,7 @@ export class DatasetsService {
     afterEdit(cellData: CellEditorData, resp: any, onEdited: (resp:DatasetData<any>)=>void ) {
         if ( this.currentDataset?.type === DatasetType.Elsi ) {
             this.elsiDataService.loadDataset()
-        } else if ( this.currentDataset?.type === DatasetType.Loadflow ) {
+        } else if ( this.currentDataset?.type === DatasetType.BoundCalc ) {
             this.loadflowDataService.afterEdit(resp)
         }    
         if ( onEdited) {
@@ -175,7 +175,7 @@ export class DatasetsService {
     }
 
     private afterDeleteItem(id: number, className: string, dataset: Dataset) {
-        if ( dataset.type == DatasetType.Loadflow) {
+        if ( dataset.type == DatasetType.BoundCalc) {
             this.loadflowDataService.afterDelete(id, className, dataset)
         }
     }
@@ -214,7 +214,7 @@ export class DatasetsService {
     private afterUnDeleteItem(datasets: DatasetData<any>[]) {
         if ( this.currentDataset?.type === DatasetType.Elsi ) {
             this.elsiDataService.loadDataset()
-        } else if ( this.currentDataset?.type === DatasetType.Loadflow ) {
+        } else if ( this.currentDataset?.type === DatasetType.BoundCalc ) {
             this.loadflowDataService.afterUnDelete(datasets)
         }  
     }

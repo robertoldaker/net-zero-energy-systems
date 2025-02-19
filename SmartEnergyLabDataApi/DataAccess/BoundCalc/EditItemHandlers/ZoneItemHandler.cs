@@ -19,12 +19,12 @@ public class ZoneItemHandler : BaseEditItemHandler
     public override IId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
-        return id>0 ? m.Da.BoundCalc.GetZone(id) : new BoundCalcZone(m.Dataset);
+        return id>0 ? m.Da.BoundCalc.GetZone(id) : new Zone(m.Dataset);
     }
 
     public override void Save(EditItemModel m)
     {
-        BoundCalcZone zone = (BoundCalcZone) m.Item;
+        Zone zone = (Zone) m.Item;
         //
         if ( m.GetString("code",out string code)) {
             zone.Code = code;
@@ -39,7 +39,7 @@ public class ZoneItemHandler : BaseEditItemHandler
     {
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();  
-            var zone = (BoundCalcZone) m.Item;          
+            var zone = (Zone) m.Item;          
             var zoneDi = da.BoundCalc.GetZoneDatasetData(m.Dataset.Id, m=>m.Id == zone.Id);
             list.Add(zoneDi.getBaseDatasetData());
             return list;

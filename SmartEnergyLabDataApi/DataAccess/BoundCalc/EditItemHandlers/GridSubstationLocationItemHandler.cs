@@ -87,8 +87,8 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
         // location
         GridSubstationLocation loc = (GridSubstationLocation) m.Item;
         using ( var da = new DataAccess()) {
-            var nodeIds = da.Session.QueryOver<BoundCalcNode>().Where( m=>m.Location.Id == loc.Id).Select(m=>m.Id).List<int>().ToArray();
-            var branchIds = da.Session.QueryOver<BoundCalcBranch>().Where( m=>m.Node1.Id.IsIn(nodeIds) || m.Node2.Id.IsIn(nodeIds) ).Select(m=>m.Id).List<int>().ToArray();
+            var nodeIds = da.Session.QueryOver<Node>().Where( m=>m.Location.Id == loc.Id).Select(m=>m.Id).List<int>().ToArray();
+            var branchIds = da.Session.QueryOver<Branch>().Where( m=>m.Node1.Id.IsIn(nodeIds) || m.Node2.Id.IsIn(nodeIds) ).Select(m=>m.Id).List<int>().ToArray();
             if ( nodeIds.Length == 0 ) {
                 // not being used so just return the dataset for this location
                 var locDi = da.NationalGrid.GetLocationDatasetData(m.Dataset.Id, m=>m.Id == loc.Id);

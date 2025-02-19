@@ -63,15 +63,15 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
     public class BoundCalcLocation {
         private GridSubstationLocation _gsl;
-        private List<BoundCalcNode> _nodes;
+        private List<Node> _nodes;
         private bool _isQB;
         public BoundCalcLocation(GridSubstationLocation loc, bool isQB) {
-            _nodes = new List<BoundCalcNode>();
+            _nodes = new List<Node>();
             _gsl = loc;
             _isQB = isQB;
         }
-        public BoundCalcLocation(BoundCalcNode node, bool isQB) {
-            _nodes = new List<BoundCalcNode>();
+        public BoundCalcLocation(Node node, bool isQB) {
+            _nodes = new List<Node>();
             _nodes.Add(node);
             _gsl = node.Location;
             _isQB = isQB;
@@ -87,7 +87,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }            
         }
 
-        public List<BoundCalcNode> Nodes {
+        public List<Node> Nodes {
             get {
                 return _nodes;
             }
@@ -113,9 +113,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
     }
 
     public class BoundCalcLink {
-        private List<BoundCalcBranch> _branches;
-        public BoundCalcLink(BoundCalcBranch branch, bool isHVDC) {
-            _branches = new List<BoundCalcBranch>();
+        private List<Branch> _branches;
+        public BoundCalcLink(Branch branch, bool isHVDC) {
+            _branches = new List<Branch>();
             _branches.Add(branch);
             IsHVDC = isHVDC;
         }
@@ -126,7 +126,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        public List<BoundCalcBranch> Branches {
+        public List<Branch> Branches {
             get {
                 return _branches;
             }

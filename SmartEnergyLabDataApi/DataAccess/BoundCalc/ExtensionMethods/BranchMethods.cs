@@ -4,15 +4,15 @@ using NHibernate.Mapping.Attributes;
 namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
     public static class BranchMethods {
-        public static string GetKey(this BoundCalcBranch b) {
+        public static string GetKey(this Branch b) {
             return b.LineName;
         }
-        public static void SetCode(this BoundCalcBranch b, string key) {
+        public static void SetCode(this Branch b, string key) {
             var cpnts = key.Split(':');
             b.Code = cpnts[1];
         }
 
-        public static void SetCtrl(this BoundCalcBranch branch, BoundCalcCtrl ctrl) {
+        public static void SetCtrl(this Branch branch, Ctrl ctrl) {
             branch.Ctrl = ctrl;
             //
             if ( ctrl.Type == BoundCalcCtrlType.HVDC) {
@@ -22,7 +22,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
         }
 
-        public static void SetType(this BoundCalcBranch b) {
+        public static void SetType(this Branch b) {
             if ( string.IsNullOrEmpty(b.LinkType) ) {
                 return;
             }
