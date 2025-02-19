@@ -46,6 +46,19 @@ export class LoadflowTripTableComponent implements OnInit, AfterViewInit, OnDest
         return (item.trip != null ) ? item.trip.text : "Intact"
     }
 
+    getSetPoint(item: AllTripResult, ctrlCode: string):string {
+        if ( item.ctrls ) {
+            let ctrl = item.ctrls.find(m=>m.code == ctrlCode);
+            if ( ctrl && ctrl.setPoint) {
+                return ctrl?.setPoint?.toFixed(2)
+            } else {
+                return "0.00"
+            }    
+        } else {
+            return ""
+        }
+    }
+
     displayedColumns: string[]
     ctrls: CtrlResult[]
     parentWidth: string

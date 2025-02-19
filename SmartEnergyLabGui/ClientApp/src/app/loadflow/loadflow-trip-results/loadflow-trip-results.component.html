@@ -1,5 +1,5 @@
 <div style="padding: 0">
-    <mat-tab-group animationDuration="0ms" [preserveContent]="true">
+    <mat-tab-group animationDuration="0ms" [preserveContent]="true" (selectedTabChange)="tabChange()">
         <mat-tab label="Intact"  labelClass="matTabLabelNarrow">
             <app-loadflow-trip-table [trips]="intactTrips"></app-loadflow-trip-table>    
         </mat-tab>

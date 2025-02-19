@@ -52,6 +52,11 @@ export class LoadflowTripResultsComponent implements OnInit, OnDestroy, AfterVie
 
     }
 
+    tabChange() {
+        // needed for the div-auto-scroller to get the right size
+        window.dispatchEvent(new Event('resize'));        
+    }
+
     singleTrips: MatTableDataSource<AllTripResult>
     doubleTrips: MatTableDataSource<AllTripResult>
     intactTrips: MatTableDataSource<AllTripResult>

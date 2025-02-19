@@ -12,6 +12,12 @@ export class DivAutoScrollerComponent implements AfterViewInit {
     @Input()
     name: string = "?"
     
+    @Input()
+    adjustHeight: boolean = true;
+
+    @Input()
+    adjustWidth: boolean = false;
+
     ngAfterViewInit(): void {
     }
 
@@ -25,9 +31,16 @@ export class DivAutoScrollerComponent implements AfterViewInit {
             // this should mean its visible
             if ( element.offsetParent) {
                 let box = element.getBoundingClientRect()
-                let windowHeight = window.innerHeight;
-                let divHeight = windowHeight - box.top
-                element.style.height = `${divHeight}px`
+                if ( this.adjustHeight) {
+                    let windowHeight = window.innerHeight;
+                    let divHeight = windowHeight - box.top
+                    element.style.height = `${divHeight}px`    
+                }
+                if ( this.adjustWidth) {
+                    let windowWidth = window.innerWidth;
+                    let divWidth = windowWidth - box.left
+                    element.style.width = `${divWidth}px`
+                }
             }
         }
     }
