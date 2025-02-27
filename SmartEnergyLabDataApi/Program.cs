@@ -19,6 +19,11 @@ public static class Program
     private const int SCHEMA_VERSION = 62;
     private const int SCRIPT_VERSION = 9;
 
+    public const string DB_NAME = "smart_energy_lab";
+    public const string DB_USER = "smart_energy_lab";
+    public const string DB_PASSWORD = "1234567890";
+
+
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -127,9 +132,9 @@ public static class Program
         DataAccessBase.Initialise(new DbConnection(SCHEMA_VERSION, SCRIPT_VERSION)
         {
             Server = getDbHostName(),
-            DatabaseName = "smart_energy_lab",
-            Username = "smart_energy_lab",
-            Password = "1234567890",
+            DatabaseName = DB_NAME,
+            Username = DB_USER,
+            Password = DB_PASSWORD,
             DbProvider = DbProvider.PostgreSQL
         }, DataAccess.SchemaUpdated, StartupScript.RunNewVersion);
 

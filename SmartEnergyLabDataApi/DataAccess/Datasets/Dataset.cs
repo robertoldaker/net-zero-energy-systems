@@ -8,7 +8,7 @@ namespace SmartEnergyLabDataApi.Data;
 public enum DatasetType {Elsi,Loadflow,BoundCalc}
 
 [ValidateNever] // required as using this class in model binding and without it will get errors for any missing fields
-[ApplicationGroup(ApplicationGroup.Elsi, ApplicationGroup.Loadflow, ApplicationGroup.BoundCalc)]
+[ApplicationGroup(ApplicationGroup.Elsi, ApplicationGroup.BoundCalc)]
 [Class(0, Table = "data_sets")]
 public class Dataset
 {

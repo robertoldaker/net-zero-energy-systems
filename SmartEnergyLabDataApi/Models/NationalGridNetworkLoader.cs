@@ -27,8 +27,9 @@ namespace SmartEnergyLabDataApi.Models
         // NGET urls
         private const string ALL_DATA_URL = "https://www.nationalgrid.com/electricity-transmission/document/81201/download";
         // SSE urls
-        private readonly UriBuilder _sseSuperGridBuilder = new UriBuilder("https://ssentransmission.opendatasoft.com/api/explore/v2.1/catalog/datasets/substation-site-supergrid/exports/json?lang=en&timezone=GMT");
-        private readonly UriBuilder _sseGridBuilder = new UriBuilder("https://ssentransmission.opendatasoft.com/api/explore/v2.1/catalog/datasets/substation-site-grid/exports/json?lang=en&timezone=GMT");
+        private readonly UriBuilder _sseSuperGridBuilder = new UriBuilder("https://ssentransmission.opendatasoft.com/api/explore/v2.1/catalog/datasets/ssen-transmission-substation-site-supergrid/exports/json?lang=en&timezone=GMT");
+        //ssen-transmission-substation-site-grid
+        private readonly UriBuilder _sseGridBuilder = new UriBuilder("https://ssentransmission.opendatasoft.com/api/explore/v2.1/catalog/datasets/ssen-transmission-substation-site-grid/exports/json?lang=en&timezone=GMT");
         private const string SSE_KEY = "d7abb9519f874dbf5094f63d6daa5e50b2e43977f4ee2a250fed0147";
         // SP networks url
         private readonly UriBuilder _SPShapefileInfoUrl = new UriBuilder("https://spenergynetworks.opendatasoft.com/api/explore/v2.1/catalog/datasets/gis-shapefiles-excluding-lv/records");
@@ -89,13 +90,16 @@ namespace SmartEnergyLabDataApi.Models
         public void Load(NationalGridNetworkSource source) {
             //
             updateInterConnectors();
+            // Note loading SP networks first as it uses KIRK and BLYT which are used by NGET and so get overwritten
             // SP Networks
             if ( source == NationalGridNetworkSource.All || source == NationalGridNetworkSource.SPT ) {
                 loadSPNetworks();
             }
+            // NGET
             if ( source == NationalGridNetworkSource.All || source == NationalGridNetworkSource.NGET ) {
                 loadNGET();
             }
+            // SSE
             if ( source == NationalGridNetworkSource.All || source == NationalGridNetworkSource.SSE ) {
                 loadSSE();
             }

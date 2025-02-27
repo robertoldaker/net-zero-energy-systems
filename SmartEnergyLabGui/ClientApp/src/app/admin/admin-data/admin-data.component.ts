@@ -25,7 +25,7 @@ export class AdminDataComponent extends ComponentBase {
         })
     }
 
-    backupDbLocally(appGroup: ApplicationGroup) {
+    backupDbLocally(appGroup: ApplicationGroup) {        
         window.location.href = `${this.baseUrl}/Admin/BackupDbLocally?appGroup=${appGroup}`;
     }
 
@@ -49,6 +49,6 @@ export class AdminDataComponent extends ComponentBase {
 
     inCleanup: boolean
     ApplicationGroup = ApplicationGroup;
-    ElsiAndLoadflow = ApplicationGroup.Elsi | ApplicationGroup.Loadflow;
+    ElsiAndBoundCalc = ApplicationGroup.Elsi | ApplicationGroup.BoundCalc;
 
 }

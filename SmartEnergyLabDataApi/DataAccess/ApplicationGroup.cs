@@ -5,7 +5,7 @@ using NHibernate.Mapping.Attributes;
 namespace SmartEnergyLabDataApi.Data;
 
 [Flags]
-public enum ApplicationGroup { All, Loadflow, Elsi, BoundCalc }
+public enum ApplicationGroup { All, Elsi, BoundCalc }
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public class ApplicationGroupAttribute : Attribute {

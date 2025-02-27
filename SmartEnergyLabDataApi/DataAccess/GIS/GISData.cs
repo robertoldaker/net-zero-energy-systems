@@ -5,7 +5,7 @@ using MySqlX.XDevAPI;
 
 namespace SmartEnergyLabDataApi.Data
 {
-    [ApplicationGroup(ApplicationGroup.Loadflow)]
+    [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "gis_data")]
     public class GISData : ILifecycle
     {

@@ -25,3 +25,7 @@ div.mapButton > div > img {
 .hide {
     display: none;
 }
+
+.output {
+    color: green;
+}

@@ -26,7 +26,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public string Load(IFormFile formFile) {
             string msg = "";
             using( _da = new DataAccess() ) {
-                var name = "GB network";
+                var name = "GB network 2019";
                 _dataset = _da.Datasets.GetDataset(DatasetType.BoundCalc,name);
                 if ( _dataset==null) {
                     var root = _da.Datasets.GetRootDataset(DatasetType.BoundCalc);

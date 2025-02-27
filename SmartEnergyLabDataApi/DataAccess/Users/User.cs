@@ -5,7 +5,7 @@ namespace SmartEnergyLabDataApi.Data
 {
     public enum UserRole { Basic, Admin}
 
-    [ApplicationGroup(ApplicationGroup.Loadflow,ApplicationGroup.Elsi)]
+    [ApplicationGroup(ApplicationGroup.BoundCalc,ApplicationGroup.Elsi)]
     [Class(0, Table = "smart_energy_users")]
     public class User
     {

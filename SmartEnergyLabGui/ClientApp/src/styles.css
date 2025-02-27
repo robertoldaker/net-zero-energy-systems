@@ -243,6 +243,11 @@ div.nodeName {
     min-width: 40px !important;
 }
 
+.matTabLabelNarrow.output {
+    color: green !important;
+}
+
+
 .matTabLabelInfoWindow {
     font-size: 0.9em;
     padding: 7px !important;

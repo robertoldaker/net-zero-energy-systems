@@ -27,21 +27,48 @@ namespace SmartEnergyLabDataApi.Models
         private string create() {
             _taskRunner?.Update(TaskRunner.TaskState.RunningState.Running,"Creating backup ...");
 
-            var dbName = "smart_energy_lab";
+            var dbName = Program.DB_NAME;
 
             var now = DateTime.Now;
             var ts = now.ToString("yyyy-MMM-dd-HH-mm-ss");
             var filename = $"{dbName}-{ts}.dump";
 
             var backup = new Execute();
-            var args = $"-Fc -f \"{filename}\" {dbName}";
-            // explicitly using /usr/bin to ensure it picks up v14.
-            // installing gdal brings in postgres12 which then means "pg_dump" is v12
-            var exitCode = backup.Run("/usr/bin/pg_dump",args,LOCAL_PATH);
+            var args = $"-Fc -f \"{filename}\" {Program.DB_USER}";
+            var pgDump = getPgDump();
+            var exitCode = backup.Run(pgDump,args,LOCAL_PATH,new Dictionary<string, string>() { {"PGPASSWORD",Program.DB_PASSWORD} });
             if ( exitCode!=0) {
                 throw new Exception(backup.StandardError);
             }
             return filename;
+        }
+
+        private string getPgDump() {
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
+                var installDirectory = "C:\\Program Files\\PostgreSQL";
+                var dirs = Directory.EnumerateDirectories(installDirectory);
+                int version=0;
+                foreach( var dir in dirs) {
+                    var cpnts = dir.Split(Path.DirectorySeparatorChar);
+                    if ( cpnts.Length>0 && int.TryParse(cpnts[cpnts.Length-1], out int testVersion) && testVersion>version) {
+                        version = testVersion;
+                    }
+                }
+                if (version>0) {
+                    var path = Path.Combine(installDirectory,version.ToString(),"bin","pg_dump.exe");
+                    if ( File.Exists(path)) {
+                        return path;
+                    } else {
+                        throw new Exception($"Could not find pg_dump at [{path}]");
+                    }
+                } else {
+                    throw new Exception($"Could not find valid PostgresSQL install at {installDirectory}");
+                }                
+            } else {
+                // explicitly using /usr/bin to ensure it picks up v14.
+                // installing gdal brings in postgres12 which then means "pg_dump" is v12
+                return "/usr/bin/pg_dump";
+            }
         }
 
         private void upload(string filename) {
@@ -159,8 +186,9 @@ namespace SmartEnergyLabDataApi.Models
                 classNames = ApplicationGroupAttribute.GetClassNames(appGroup);
             }
 
-            var dbName = "smart_energy_lab";
-            var args = $"-Fc {dbName} ";
+            var dbName = Program.DB_NAME;
+            var dbUser = Program.DB_USER;
+            var args = $"-Fc -U {dbUser} {dbName}";
             if ( classNames!=null) {
                 args+=" --table=";
                 args += string.Join(" --table=",classNames);
@@ -171,10 +199,9 @@ namespace SmartEnergyLabDataApi.Models
             var append = appGroup==ApplicationGroup.All ? "": $" ({appGroup})";
             filename = $"{dbName}-{ts}{append}.dump";
 
-            // explicitly using /usr/bin to ensure it picks up v14.
-            // installing gdal brings in postgres12 which then means "pg_dump" is v12
-            var exe = "/usr/bin/pg_dump";
+            var exe = getPgDump();
             ProcessStartInfo oInfo = new ProcessStartInfo(exe, args);
+            oInfo.EnvironmentVariables["PGPASSWORD"] = Program.DB_PASSWORD;
 			oInfo.UseShellExecute = false;
 			oInfo.CreateNoWindow = true;
 
@@ -185,6 +212,7 @@ namespace SmartEnergyLabDataApi.Models
 			StreamReader srError = null;
 
 			Process proc = System.Diagnostics.Process.Start(oInfo);
+
 			srOutput = proc.StandardOutput;
 			return srOutput;            
         }

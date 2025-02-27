@@ -7,7 +7,7 @@ namespace SmartEnergyLabDataApi.Models
 {
 	public class Execute
 	{
-		public int Run(string exe, string args, string workingDir=null)
+		public int Run(string exe, string args, string? workingDir=null, Dictionary<string,string>? envVariables = null)
 		{
 			ProcessStartInfo oInfo = new ProcessStartInfo(exe, args);
 			oInfo.UseShellExecute = false;
@@ -20,6 +20,12 @@ namespace SmartEnergyLabDataApi.Models
 
 			oInfo.RedirectStandardOutput = true;
 			oInfo.RedirectStandardError = true;
+
+            if ( envVariables!=null ) {
+                foreach( var ev in envVariables) {
+                    oInfo.EnvironmentVariables[ev.Key] = ev.Value;
+                }
+            }
 
 			StreamReader srOutput = null;
 			StreamReader srError = null;

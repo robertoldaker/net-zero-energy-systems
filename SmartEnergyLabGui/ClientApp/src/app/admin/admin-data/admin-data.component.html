@@ -9,8 +9,8 @@
             <button mat-menu-item (click)="backupDbLocally(ApplicationGroup.All)">
                 <span>All</span>
             </button>
-            <button mat-menu-item (click)="backupDbLocally(ElsiAndLoadflow)">
-                <span>Loadflow and Elsi only</span>
+            <button mat-menu-item (click)="backupDbLocally(ElsiAndBoundCalc)">
+                <span>BoundCalc and Elsi only</span>
             </button>
         </mat-menu>     
         <button mat-raised-button color="primary" (click)="performCleanup()" disabled="{{inCleanup}}">            
