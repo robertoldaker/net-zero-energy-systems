@@ -22,6 +22,8 @@ public static class Program
     public const string DB_NAME = "smart_energy_lab";
     public const string DB_USER = "smart_energy_lab";
     public const string DB_PASSWORD = "1234567890";
+    public static int DB_PORT = 5432;
+    public static string DB_HOST = "";
 
 
     public static void Main(string[] args)
@@ -129,9 +131,17 @@ public static class Program
             LoadDistributionDataBackgroundTask.Register(backgroundTasks);
         }
         
+        var hostName = getDbHostName();
+        var cpnts = hostName.Split(':');
+        if ( cpnts.Length>1) {
+            DB_HOST = cpnts[0];
+            DB_PORT = int.Parse(cpnts[1]);
+        } else {
+            DB_HOST = hostName;
+        }
         DataAccessBase.Initialise(new DbConnection(SCHEMA_VERSION, SCRIPT_VERSION)
         {
-            Server = getDbHostName(),
+            Server = hostName,
             DatabaseName = DB_NAME,
             Username = DB_USER,
             Password = DB_PASSWORD,

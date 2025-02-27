@@ -33,14 +33,20 @@ namespace SmartEnergyLabDataApi.Models
             var ts = now.ToString("yyyy-MMM-dd-HH-mm-ss");
             var filename = $"{dbName}-{ts}.dump";
 
-            var backup = new Execute();
-            var args = $"-Fc -f \"{filename}\" {Program.DB_USER}";
+            var backup = new Execute();            
+            var args = getPgDumpArgs(filename);
             var pgDump = getPgDump();
             var exitCode = backup.Run(pgDump,args,LOCAL_PATH,new Dictionary<string, string>() { {"PGPASSWORD",Program.DB_PASSWORD} });
             if ( exitCode!=0) {
                 throw new Exception(backup.StandardError);
             }
             return filename;
+        }
+
+        private string getPgDumpArgs(string? fileName=null) {
+            var fn = fileName!=null ? $"-f {fileName}" : "";
+            var args = $"-h {Program.DB_HOST} -p {Program.DB_PORT} -U {Program.DB_USER} {fn} -Fc {Program.DB_NAME}";
+            return args;
         }
 
         private string getPgDump() {
@@ -187,8 +193,8 @@ namespace SmartEnergyLabDataApi.Models
             }
 
             var dbName = Program.DB_NAME;
-            var dbUser = Program.DB_USER;
-            var args = $"-Fc -U {dbUser} {dbName}";
+            var args = getPgDumpArgs();
+
             if ( classNames!=null) {
                 args+=" --table=";
                 args += string.Join(" --table=",classNames);
@@ -214,6 +220,10 @@ namespace SmartEnergyLabDataApi.Models
 			Process proc = System.Diagnostics.Process.Start(oInfo);
 
 			srOutput = proc.StandardOutput;
+            if ( proc.HasExited) {
+                var stdErr = proc.StandardError.ReadToEnd();
+                throw new Exception($"Failed to backup db: [{stdErr}]");
+            }
 			return srOutput;            
         }
 
