@@ -76,7 +76,7 @@ public class NodeItemHandler : BaseEditItemHandler
         // generation
         var generation = m.CheckDouble("generation",0);
         if ( generation!=null ) {
-            node.Generation = (double) generation;            
+            node.Generation_A = (double) generation;            
         }
         // external
         var ext = m.CheckBoolean("ext");

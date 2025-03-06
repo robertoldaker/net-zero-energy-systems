@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using NHibernate.Mapping.Attributes;
+using SmartEnergyLabDataApi.BoundCalc;
 
 namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
@@ -36,13 +37,13 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         [Property()]
         public virtual double Generation_B {get; set;}
 
-        public virtual double Generation {
-            get {
+        public virtual double GetGeneration(TransportModel model) {
+            if ( model == TransportModel.PeakSecurity) {
+                return Generation_A;
+            } else if ( model == TransportModel.YearRound) {
                 return Generation_B;
-            }
-
-            set {
-                Generation_B = value;
+            } else {
+                throw new Exception($"Unexpected transport model found [{model}]");
             }
         }
 

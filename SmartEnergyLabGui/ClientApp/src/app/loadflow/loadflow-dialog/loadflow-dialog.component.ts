@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Boundary, BoundaryFlowResult, BoundaryTrip, Branch, Dataset, DatasetType, LoadflowResults } from '../../data/app.data';
+import { Boundary, BoundaryFlowResult, BoundaryTrip, Branch, Dataset, DatasetType, LoadflowResults, TransportModel } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { DataClientService } from 'src/app/data/data-client.service';
@@ -50,7 +50,7 @@ export class LoadflowDialogComponent extends ComponentBase {
         if ( bn == "Unspecified") {
             bn = "";
         }
-        this.dataService.runBoundCalc(bn,this.boundaryTrips,"");
+        this.dataService.runBoundCalc(this.transportModel,bn,this.boundaryTrips,"");
     }
 
     runBaseLoadflow() {
@@ -85,6 +85,11 @@ export class LoadflowDialogComponent extends ComponentBase {
         this.dataService.setDataset(dataset)
     }
 
+    transportModelChanged(e: any) {
+        console.log('transport model changed')
+        this.transportModel = e.value;
+    }
+
     currentTrip: string
     percent: number
     selectedTrip: string
@@ -96,5 +101,7 @@ export class LoadflowDialogComponent extends ComponentBase {
     clearFlowResult: BoundaryFlowResult = { genInside: 0, genOutside:0, demInside: 0, demOutside: 0, ia: 0 }
     datasetTypes = DatasetType
     boundaryTrips = false
+    transportModel: TransportModel = TransportModel.PeakSecurity
+    TransportModel = TransportModel
 
 }

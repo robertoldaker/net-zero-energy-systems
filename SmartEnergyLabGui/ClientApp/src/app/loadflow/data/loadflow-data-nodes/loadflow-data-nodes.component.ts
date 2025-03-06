@@ -41,7 +41,7 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         this.dataFilter.columnFilterMap.set(this.zoneDataFilter.columnName, this.zoneDataFilter)
 
         this.createDataSource(this.dataService.dataset,dataService.networkData.nodes);
-        this.displayedColumns = ['buttons','code','voltage','zoneName','demand','generation','ext','mismatch']
+        this.displayedColumns = ['buttons','code','voltage','zoneName','demand','generation_A','generation_B','ext','mismatch']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.createDataSource(this.dataService.dataset,results.nodes);
         }))

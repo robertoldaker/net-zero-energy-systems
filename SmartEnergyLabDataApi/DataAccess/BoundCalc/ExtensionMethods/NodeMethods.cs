@@ -23,10 +23,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
         }
         public static void SetLocation(this Node n, DataAccess da) {
-            var locCode = n.Code.Substring(0,4);
-            if ( n.Code.EndsWith('X')) {
-                locCode += "X";
-            }
+            var locCode = n.GetLocationCode();
             var loc = da.NationalGrid.GetGridSubstationLocation(locCode,n.Dataset,true);
             if ( loc == null ) {
                 loc = da.NationalGrid.GetGridSubstationLocation(locCode,null);
@@ -37,6 +34,21 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 }
             }
             n.Location = loc;
+        }
+
+        public static string GetLocationCode(this Node node) {
+            // Lookup grid locations based on first 4 chars of code
+            var locCode = node.Code.Substring(0,4);
+            // these are nodes at other end of inter connectors
+            if ( node.Ext ) {
+                locCode+="X";
+                // this is a digit that allows for multiple interconnectors from the same source
+                if ( node.Code.Length>6) {
+                    locCode+=node.Code[6];
+                }
+            }
+            //
+            return locCode;
         }
     }
 }

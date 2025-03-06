@@ -8,6 +8,7 @@ namespace SmartEnergyLabDataApi.BoundCalc;
 
 public class Boundaries : DataStore<BoundaryWrapper> {
 
+
     public Boundaries(DataAccess da, int datasetId, BoundCalc boundCalc) {
         var q = da.Session.QueryOver<Boundary>();
         var ds = new DatasetData<Boundary>(da, datasetId,m=>m.Id.ToString(),q);
@@ -46,6 +47,7 @@ public class BoundaryWrapper : ObjectWrapper<Boundary> {
     public Collection<Trip> STripList {get; private set;}
     public Collection<Trip> DTripList {get; private set;}
 
+    private BoundCalc _boundCalc;
     private double _genIn = 0; // Scaleable generation inside boundary
     private double _genInUS = 0; // Unscalable generaion inside boundary
     private double _genOut = 0;
@@ -63,6 +65,7 @@ public class BoundaryWrapper : ObjectWrapper<Boundary> {
     public Collection<BranchWrapper> BoundCcts {get; private set;}
 
     public BoundaryWrapper(Boundary b, int index, BoundCalc boundCalc) : base(b, index) {
+        _boundCalc = boundCalc;
         foreach( var z in boundCalc.Zones.Data ) {
             if ( b.Zones.FirstOrDefault(m=>m.Id == z.Id)!=null ) {
                 _genIn += z.TGeneration;
@@ -132,9 +135,9 @@ public class BoundaryWrapper : ObjectWrapper<Boundary> {
             var zn = nd.Obj.Zone;
             if ( !nd.Obj.Ext ) {
                 if ( Obj.Zones.FirstOrDefault(m=>m.Id == zn.Id)!=null) {
-                    itfr[p] = kgin * nd.Obj.Generation - kdin * nd.Obj.Demand;
+                    itfr[p] = kgin * nd.Obj.GetGeneration(_boundCalc.TransportModel) - kdin * nd.Obj.Demand;
                 } else {
-                    itfr[p] = kgout * nd.Obj.Generation - kdout * nd.Obj.Demand;
+                    itfr[p] = kgout * nd.Obj.GetGeneration(_boundCalc.TransportModel) - kdout * nd.Obj.Demand;
                 }
             }
         }

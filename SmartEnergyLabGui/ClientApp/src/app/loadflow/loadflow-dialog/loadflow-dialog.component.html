@@ -30,7 +30,7 @@
             </td>
         </tr>
         <tr>
-            <td style="vertical-align: top" >
+            <td style="vertical-align: top" colspan="2" >
             <!--<div style="font-weight: bold">Power flow (Gw)</div>
                 <table style="">
                     <tr>
@@ -50,6 +50,12 @@
                     </tr>
                 </table>
             -->
+            <div style="font-size: 10pt">
+                <mat-radio-group aria-label="Select an option" [value]="transportModel" (change)="transportModelChanged($event)">
+                    <mat-radio-button [value]="TransportModel.PeakSecurity">Peak security model</mat-radio-button>&nbsp;&nbsp;
+                    <mat-radio-button [value]="TransportModel.YearRound">Year round model</mat-radio-button>
+                </mat-radio-group>                  
+            </div>
             </td>
         </tr>
         <tr>

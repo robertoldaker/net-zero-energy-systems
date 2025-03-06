@@ -7,7 +7,12 @@
     text-align: right;
 }
 
-.mat-column-generation {
+.mat-column-generation_A {
+    text-align: right;
+    padding-right: 3rem;
+}
+
+.mat-column-generation_B {
     text-align: right;
     padding-right: 3rem;
 }

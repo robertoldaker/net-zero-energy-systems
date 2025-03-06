@@ -13,26 +13,64 @@ public class BoundCalcLocationUpdater {
 
     private Dictionary<string,SubstationCode> _codesDict;
 
-    public void Update(int datasetId) {
+    public string Update(int datasetId) {
 
         var etysLoader = new BoundCalcETYSLoader();
         _codesDict = etysLoader.LoadSubstationCodes();
 
+        (int initialNotFound,int ratio) = getNumNodesWthoutLocations(datasetId);
+        // do nothing is ratio of not found is too great
+        if ( ratio>0.3 ) {
+            return $"Ratio of nodes without locations is too great [{ratio}]";
+        }
         //
         bool cont = true;
         int prevNotFound = 0;
+        int notFound=0;
+        //
         while ( cont ) {
-            int notFound = updateLocations(datasetId);
+            notFound = updateLocations(datasetId);
             Logger.Instance.LogInfoEvent($"[{notFound}] nodes without locations");
             cont = notFound != prevNotFound;
             prevNotFound = notFound;
         }
+        //
+        return $"Number of nodes without locations reduced from [{initialNotFound}] to [{notFound}]";
+    }
 
+    public (int,int) getNumNodesWthoutLocations(int datasetId) {
+        using( var da = new DataAccess() ) {
+            var dataset = da.Datasets.GetDataset(datasetId);
+            if ( dataset==null ) {
+                throw new Exception($"Cannot find dataset with id=[{datasetId}]");
+            }
+            var nodes = da.BoundCalc.GetNodes(dataset);
+            var notFoundDict = getNotFoundDict(nodes);
+            return (notFoundDict.Count, notFoundDict.Count/ nodes.Count);
+        }
+    }
+
+    private Dictionary<string,IList<Node>> getNotFoundDict(IList<Node> nodes) {
+        var notFoundDict = new Dictionary<string,IList<Node>>();
+        foreach( var node in nodes) {
+            var locCode = node.GetLocationCode();
+            // see if the location exists
+            var loc = node.Location;
+            if ( loc==null && !node.Ext)  {
+                if ( !notFoundDict.ContainsKey(locCode) ) {
+                    notFoundDict.Add(locCode,new List<Node>());
+                }
+                notFoundDict[locCode].Add(node);
+            } 
+        }
+        return notFoundDict;
     }
 
     private int updateLocations(int datasetId) {
 
-        var notFoundDict = new Dictionary<string,IList<Node>>();
+        //
+        Dictionary<string,IList<Node>> notFoundDict;
+
         using( var da = new DataAccess() ) {
             var dataset = da.Datasets.GetDataset(datasetId);
             if ( dataset==null ) {
@@ -51,23 +89,7 @@ public class BoundCalcLocationUpdater {
             };
 
             //
-            foreach( var node in nodes) {
-                // Lookup grid locations based on first 4 chars of code
-                var locCode = node.Code.Substring(0,4);
-                // these are nodes at other end of inter connectors
-                if ( node.Ext ) {
-                    locCode+="X";
-                }
-
-                // see if the location exists
-                var loc = node.Location;
-                if ( loc==null && !node.Ext)  {
-                    if ( !notFoundDict.ContainsKey(locCode) ) {
-                        notFoundDict.Add(locCode,new List<Node>());
-                    }
-                    notFoundDict[locCode].Add(node);
-                } 
-            }
+            notFoundDict = getNotFoundDict(nodes);
 
             foreach( var nf in notFoundDict ) {
                 var locCode = nf.Key;

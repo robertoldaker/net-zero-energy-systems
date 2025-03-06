@@ -65,13 +65,28 @@ namespace SmartEnergyLabDataApi.Models
 
         // These are on the end of the inter-connectors so show them in their respective countries
         private static Dictionary<string,InterConnector> _nodeInterConnectors = new Dictionary<string, InterConnector>() {
-            { "SELLX", new InterConnector("IFA1", new LatLng() {Lat=50.755175, Lng= 1.63329}) },
-            { "CHILX", new InterConnector("IFA2", new LatLng() {Lat=49.84289, Lng= 0.84227}) },
-            { "RICHX", new InterConnector("NEMO", new LatLng() {Lat=51.142778, Lng= 2.86376}) },
-            { "GRAIX", new InterConnector("BritNed", new LatLng() {Lat=51.527152, Lng= 3.56688}) }, 
-            { "CONQX", new InterConnector("EWLink", new LatLng() {Lat=53.714219, Lng=-6.21094}) },  
-            { "BLYTX", new InterConnector("NorNed", new LatLng() {Lat=58.35708, Lng=6.92481}) },
-            { "AUCHX", new InterConnector("Moyle", new LatLng() {Lat=55.11766, Lng=-6.06103})}  
+            { "SELLX", new InterConnector("IFA1", new LatLng()                  { Lat=50.755175, Lng= 1.63329}) },
+            { "CHILX", new InterConnector("IFA2", new LatLng()                  { Lat=49.84289,  Lng= 0.84227}) },
+            { "RICHX", new InterConnector("NEMO", new LatLng()                  { Lat=51.142778, Lng= 2.86376}) },
+            { "GRAIX", new InterConnector("BritNed", new LatLng()               { Lat=51.527152, Lng= 3.56688}) }, 
+            { "GRAIX2",new InterConnector("NeuConnect",new LatLng()             { Lat=53.578771, Lng= 8.139178})},
+            { "GRAIX3",new InterConnector("SouthernLink",new LatLng()           { Lat=52.02969,  Lng= 4.17204})},
+            { "CONQX", new InterConnector("EWLink", new LatLng()                { Lat=53.714219, Lng=-6.21094}) },  
+            { "BLYTX", new InterConnector("NorNed", new LatLng()                { Lat=58.35708,  Lng= 6.92481}) },
+            { "BLYTX2", new InterConnector("ContinentalLink", new LatLng()      { Lat=58.005015, Lng= 7.534516}) },
+            { "AUCHX", new InterConnector("Moyle", new LatLng()                 { Lat=55.11766,  Lng=-6.06103})},
+            { "BICFX", new InterConnector("VikingLink",new LatLng()             { Lat=55.500674, Lng= 8.400294})},
+            { "PEMBX", new InterConnector("GreenLink",new LatLng()              { Lat=52.290343, Lng=-7.000129})},
+            { "LOVEX", new InterConnector("AQUIND",new LatLng()                 { Lat=50.05922,  Lng= 1.35011})},
+            { "KEMSX", new InterConnector("CRONOS",new LatLng()                 { Lat=51.270249, Lng= 3.042515})},
+            { "EXETX", new InterConnector("FabLink",new LatLng()                { Lat=49.650342, Lng=-1.556387})},
+            { "KINOX", new InterConnector("GrindLink",new LatLng()              { Lat=51.022983, Lng= 2.160388})},
+            { "CANTX", new InterConnector("Kulizumboo",new LatLng()             { Lat=50.967541, Lng= 1.925483})},
+            { "LEISX", new InterConnector("LionLink",new LatLng()               { Lat=52.160005, Lng= 4.352833})},
+            { "KILSX", new InterConnector("LIRIC",new LatLng()                  { Lat=55.22094,  Lng=-6.16118})},
+            { "BODEX", new InterConnector("MARES",new LatLng()                  { Lat=53.485366, Lng=-6.098011})},
+            { "PEHEX", new InterConnector("NorthConnect",new LatLng()           { Lat=60.509681, Lng= 7.185079})},
+            { "CREBX", new InterConnector("AtlanticSuperConnector",new LatLng() { Lat=64.150369, Lng=-15.716492})},
         };
 
         public void Delete(GridSubstationLocationSource source) {

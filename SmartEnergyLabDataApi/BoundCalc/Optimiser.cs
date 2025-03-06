@@ -5,7 +5,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
 {
     public class Optimiser
     {
-        private BoundCalc lf;
+        private BoundCalc bc;
         private LPModel ctrlmodel;
         public LP ctrllp;
         public LPVarDef boun;          // boundary transfer variable
@@ -19,7 +19,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public const double CSENS = 1; // smallest recognised MW flow for max control action
 
         private Optimiser(BoundCalc loadflow) {
-            lf = loadflow;
+            bc = loadflow;
         }
 
         public static Optimiser BuildOptimiser(BoundCalc bc)
@@ -38,7 +38,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             double ctmax, ctmin, ctcst, mag;
             Node node;
 
-            cupb = lf.Ctrls.Count;
+            cupb = bc.Ctrls.Count;
             cctlim = new LPConsDef[cupb + NCCT + 1];
 
             ctrlmodel = LPhdr.NewLPModel();
@@ -46,22 +46,22 @@ namespace SmartEnergyLabDataApi.BoundCalc
             boun = ctrlmodel.PairDef("boun", pWelfare:1, nWelfare:-1,maxValue:XLRG);
 
             // Make an equality constraint for each hvdc node (<= + >= to ensure selection to basis)
-            nn = lf.Nord.nn;                            // last ac node
-            ndc = lf.Nodes.Count - nn - 2;              // number of dcnodes - 1
+            nn = bc.Nord.nn;                            // last ac node
+            ndc = bc.Nodes.Count - nn - 2;              // number of dcnodes - 1
             if ( ndc >= 0 ) {
                 dceqc = new LPConsDef[ndc+1,2];
             }
 
             for(i=0;i<=ndc;i++) {
-                j = lf.Nord.NodeId(lf.Nord.nn + 1 + i);
-                node = lf.Nodes.get(j).Obj;
+                j = bc.Nord.NodeId(bc.Nord.nn + 1 + i);
+                node = bc.Nodes.get(j).Obj;
                 dcn = node.Code;
-                mag = node.Generation - node.Demand;
+                mag = node.GetGeneration(bc.TransportModel) - node.Demand;
                 dceqc[i,0] = ctrlmodel.ConsDef($"{dcn}pc", LPhdr.CTLTE, mag, new object[0]);
                 dceqc[i,1] = ctrlmodel.ConsDef($"{dcn}nc", LPhdr.CTGTE, mag, new object[0]);                
             }
 
-            foreach( var ct in lf.Ctrls.Objs) {
+            foreach( var ct in bc.Ctrls.Objs) {
                 var br = ct.Branch;
                 ctn = br.Obj.Code;
                 ctcst = ct.Obj.Cost / ct.InjMax;
@@ -124,7 +124,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         }
 
         public double BoundCap() {
-            var pfer = lf.ActiveBound.PlannedTransfer;
+            var pfer = bc.ActiveBound.PlannedTransfer;
             return pfer + Math.Sign(pfer) * boun.Value(ctrllp);
         }
 
@@ -142,7 +142,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 ctrllp.RestoreCOrder(corder);
             }
 
-            foreach(var ct in lf.Ctrls.Objs) {
+            foreach(var ct in bc.Ctrls.Objs) {
                 var br = ct.Branch;
                 if ( br.BOut ) {
                     ctmax = 0;
@@ -163,7 +163,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             string res="";
             BranchWrapper br;
 
-            shadows = new double[lf.Branches.Count+1,2];
+            shadows = new double[bc.Branches.Count+1,2];
 
             if ( ctrllp == null ) {
                 return "";
@@ -176,9 +176,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     res+= cname + ",";
                     if ( cname.Substring(0,2) == "pt" ) {
                         var key = cname.Substring(2);
-                        br = lf.Branches.get(key);
+                        br = bc.Branches.get(key);
                     } else {
-                        br = lf.Branches.get(cname);
+                        br = bc.Branches.get(cname);
                     }
                     shadows[br.Index, 1] = ctrllp.Shadow(c);
                 }
@@ -237,13 +237,13 @@ namespace SmartEnergyLabDataApi.BoundCalc
             tConsMat.ZeroRow(cons);
             if ( ctrlva[xa]!=null && !pt ) {                // Boundary sensitivity present
                 s = CctSensitivity(branch, xa, ctrlva );
-                sf = si * s / Math.Abs(lf.ActiveBound.InterconAllowance);
+                sf = si * s / Math.Abs(bc.ActiveBound.InterconAllowance);
                 tConsMat.SetCell(cons, boun.Vpv.Id, sf);    // sensitivity to boundary +xfer
                 tConsMat.SetCell(cons, boun.Vnv.Id, -sf);   // sensitivity to boundary +xfer
                 fc = fc + si * s * isaf;
             }
 
-            foreach( var ct in lf.Ctrls.Objs) {              // sensistivity to +ve/-ve ctrl vars
+            foreach( var ct in bc.Ctrls.Objs) {              // sensistivity to +ve/-ve ctrl vars
                 i = ct.Index;
                 if ( ctrlva[i]!=null ) {
                     s = CctSensitivity(branch, i, ctrlva);

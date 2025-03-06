@@ -1,9 +1,11 @@
+using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Common;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.BoundCalc;
 
 namespace SmartEnergyLabDataApi.BoundCalc
 {
+    public enum TransportModel {PeakSecurity,YearRound};
     public class BoundCalc : IDisposable {
 
         // Data from the database - nodes, branches and controls
@@ -17,6 +19,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         private Boundaries _boundaries;
         private DatasetData<Zone> _zones;
         private NodeOrder _nord;
+        private TransportModel _transportModel;
         public SparseMatrix admat;
         public SolveLinSym _ufac;
 
@@ -68,12 +71,20 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        public BoundCalc(int datasetId, bool buildOptimiser=false) {
+        public TransportModel TransportModel {
+            get {
+                return _transportModel;
+            }
+        }
+
+        public BoundCalc(int datasetId, TransportModel transportModel = TransportModel.PeakSecurity,  bool buildOptimiser=false) {
             _da = new DataAccess();
             _dataset = _da.Datasets.GetDataset(datasetId);
             if ( _dataset == null) {
                 throw new Exception($"Cannot find dataset with id=[{datasetId}]");
             }
+            _transportModel = transportModel;
+            //
             _stageResults = new BoundCalcStageResults();
             // create nodes wrapper
             var locDi = _da.NationalGrid.GetLocationDatasetData(_dataset.Id);
@@ -216,11 +227,13 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 }
             } while( chng);
 
+            var dodgySnets = snet.Where(m=>m>0).ToList();
             for( i=0; i<snet.Length; i++) {
                 if ( snet[i] != 0) {
-                    return (i,_nodes.DatasetData.Data[i]);                    
+                    return (i,_nodes.DatasetData.Data[snet[i]]);                    
                 }
             }
+
             return (0,null);
         }
 
@@ -274,7 +287,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             tvec = new double[_nodes.Count];
 
             foreach( var node in _nodes.Objs) {
-                tvec[node.Pn] = node.Obj.Generation - node.Obj.Demand;
+                tvec[node.Pn] = node.Obj.GetGeneration(_transportModel) - node.Obj.Demand;
             }
 
         }
@@ -378,10 +391,27 @@ namespace SmartEnergyLabDataApi.BoundCalc
             MiscReport("Demand", tdem.ToString("f1"));
             MiscReport("Imports", timp.ToString("f1"));
 
-            (int res, Node? node) = Subnets();
-            if ( res!=0) {
-                throw new Exception($"Disconnected network detected at node {node?.Name}");
+            // Check network is fully connected - i.e. every node is connected to every other node
+            var networkChecker = new NetworkChecker(_branches.DatasetData.Data);
+            var networks = networkChecker.Check();
+            if ( networks.Count == 1) {
+                if ( networks[0].Count<_nodes.Count) {
+                    foreach( var n in _nodes.DatasetData.Data) {
+                        if ( !networks[0].Contains(n) ) {
+                            Logger.Instance.LogInfoEvent($"Node does not belong to a network [{n.Code}]");
+                        }
+                    }
+                    throw new Exception($"[{_nodes.Count-networks[0].Count}] disconnected nodes detected");
+                }
+            } else {
+                throw new Exception($"Network is disconnected, [{networks.Count}] separate networks found");
             }
+
+            //?? Even though this works, not returning correct node?
+            //??(int res, Node? node) = Subnets();
+            //??if ( res!=0) {
+            //??    throw new Exception($"Disconnected network detected at node {node?.Code}");
+            //??}
 
             //
             var admat = AdmittanceMat(true);
@@ -964,10 +994,10 @@ namespace SmartEnergyLabDataApi.BoundCalc
             foreach( var nd in nodes.DatasetData.Data) {
                 if ( nd.Ext) {
                     nd.Zone.UnscaleDem+=nd.Demand;
-                    nd.Zone.UnscaleGen+=nd.Generation;
+                    nd.Zone.UnscaleGen+=nd.GetGeneration(_transportModel);
                 } else {
                     nd.Zone.Tdemand+=nd.Demand;
-                    nd.Zone.TGeneration+=nd.Generation;
+                    nd.Zone.TGeneration+=nd.GetGeneration(_transportModel);
                 }
             }
             //

@@ -24,6 +24,14 @@ namespace SmartEnergyLabDataApi.BoundCalc
         }
 
         public string Load(IFormFile formFile) {
+            string msg = loadDataFromSpreadsheet(formFile) + "\n";
+            // Also update locations
+            var locUpdater = new BoundCalcLocationUpdater();
+            msg += locUpdater.Update(_dataset.Id) + "\n";
+            return msg;
+        }
+
+        private string loadDataFromSpreadsheet(IFormFile formFile) {
             string msg = "";
             using( _da = new DataAccess() ) {
                 var name = "GB network 2019";
@@ -157,6 +165,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 var node = _nodeCache.GetOrCreate(code, out bool created);
                 if ( created ) {
                     node.Dataset = _dataset;
+                    node.Ext = ext;
                     node.SetVoltage();
                     node.SetLocation(_da);
                     numNodesAdded++;

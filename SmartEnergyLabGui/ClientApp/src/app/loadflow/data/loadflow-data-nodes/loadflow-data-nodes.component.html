@@ -46,11 +46,19 @@
             </td>
         </ng-container>
 
-        <!-- Generation Column -->
-        <ng-container matColumnDef="generation">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Generation</th>
+        <!-- Generation Column A -->
+        <ng-container matColumnDef="generation_A">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Generation<br/>(Peak Security)</th>
             <td mat-cell *matCellDef="let element">
-                <app-cell-editor [data]="element.generation" [decimalPlaces]="0"></app-cell-editor>
+                <app-cell-editor [data]="element.generation_A" [decimalPlaces]="0"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <!-- Generation Column A -->
+        <ng-container matColumnDef="generation_B">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Generation<br/>(Year Round)</th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.generation_B" [decimalPlaces]="0"></app-cell-editor>
             </td>
         </ng-container>
 

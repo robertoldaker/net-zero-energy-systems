@@ -250,8 +250,10 @@ export interface EVDemandStatus {
 }
 
 /**
- * Loadflow
+ * BoundCalc
  */
+
+export enum TransportModel {PeakSecurity,YearRound}
 
 export interface LoadflowResults {
     stageResults: StageResults,
@@ -336,7 +338,8 @@ export interface Node {
     name: string
     location: GridSubstationLocation | undefined
     demand: number
-    generation: number
+    generation_A: number
+    generation_B: number
     ext: boolean
     zone: Zone | undefined
     zoneName: string

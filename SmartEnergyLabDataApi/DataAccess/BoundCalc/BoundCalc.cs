@@ -424,7 +424,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                     //
                     sw.WriteLine($"\"Code\",\"Demand\",\"Generation\",\"Zone\"");
                     foreach( var n in nodes) {
-                        sw.WriteLine($"\"{n.Code}\",\"{n.Demand}\",\"{n.Generation}\",\"{n.Zone.Code}\"");
+                        sw.WriteLine($"\"{n.Code}\",\"{n.Demand}\",\"{n.GetGeneration(TransportModel.PeakSecurity)}\",\"{n.Zone.Code}\"");
                     }
                     sw.Flush();
                     mms = new MemoryStream(ms.ToArray());

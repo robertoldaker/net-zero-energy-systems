@@ -34,7 +34,7 @@ export class LoadflowNodeDialogComponent extends DialogBase implements OnInit {
             this.title = `Edit node [${data.code}]`
             fCode.setValue(data.code)
             fDemand.setValue(data.demand.toFixed(0))
-            fGeneration.setValue(data.generation.toFixed(0))
+            fGeneration.setValue(data.generation_A.toFixed(0))
             fZoneId.setValue(data.zone?.id)
             fExt.setValue(data.ext)
         } else {

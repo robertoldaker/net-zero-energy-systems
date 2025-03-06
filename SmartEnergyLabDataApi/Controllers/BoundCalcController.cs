@@ -82,10 +82,10 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("Run")]
-        public IActionResult Run(int datasetId, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null )
+        public IActionResult Run(int datasetId, TransportModel transportModel, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null )
         {
             try {
-                using( var bc = new BoundCalc.BoundCalc(datasetId, true) ) {
+                using( var bc = new BoundCalc.BoundCalc(datasetId, transportModel, true) ) {
                     if ( connectionId!=null ) {
                         bc.ProgressManager.ProgressUpdate+=(m,p)=>{                    
                         _hubContext.Clients.Client(connectionId).SendAsync("BoundCalc_AllTripsProgress",new {msg=m,percent=p});
@@ -278,6 +278,18 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
+        /// Load data from TNUOS spreadsheet
+        /// </summary>
+        [HttpPost]
+        [Route("Load/TNUOS")]
+        public IActionResult LoadTNUOS(IFormFile file, int year=2024) {
+            var m=new BoundCalcTnuosLoader();
+            var msg = m.Load(file,year);
+            //
+            return this.Ok(msg);
+        }
+
+        /// <summary>
         /// Fix missing zones
         /// </summary>
         [HttpPost]
@@ -310,14 +322,15 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <param name="datasetName">Name of dataset</param>
         [HttpPost]
         [Route("Nodes/UpdateLocations")]
-        public void UpdateLocations(string datasetName) {
+        public IActionResult UpdateLocations(string datasetName) {
             using( var da = new DataAccess()) {
                 var dataset = da.Datasets.GetDataset(DatasetType.BoundCalc, datasetName);
                 if ( dataset==null ) {
                     throw new Exception($"Cannot find loadflow dataset with name [{datasetName}]");
                 }
                 var locUpdater = new BoundCalcLocationUpdater();
-                locUpdater.Update(dataset.Id);
+                var msg = locUpdater.Update(dataset.Id);
+                return this.Ok(msg);
             }
         }
 

@@ -62,7 +62,7 @@ public class BoundCalcReference {
                     throw new Exception($"Cannot find dataset [{name}]");
                 }
             }
-            using( var bc = new BoundCalc(ds.Id) ) {
+            using( var bc = new BoundCalc(ds.Id,TransportModel.PeakSecurity) ) {
                 bc.RunBoundCalc(null,null,BoundCalc.SPAuto,false,true); 
                 var lfr = new BoundCalcResults(bc);
                 // nodes
@@ -114,7 +114,7 @@ public class BoundCalcReference {
                     throw new Exception($"Cannot find dataset [{name}]");
                 }
             }
-            using( var bc = new BoundCalc(ds.Id) ) {
+            using( var bc = new BoundCalc(ds.Id,TransportModel.PeakSecurity) ) {
                 var bnd = bc.Boundaries.GetBoundary(boundaryName);
                 if ( bnd == null ) {
                     throw new Exception($"Cannot find boundary with name [{boundaryName}]");

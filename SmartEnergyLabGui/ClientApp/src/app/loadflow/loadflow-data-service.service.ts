@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { Branch, Ctrl, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, ILoadflowLink, ILoadflowLocation, LoadflowCtrlType, LoadflowResults, LocationData, NetworkData, Node, UpdateLocationData } from '../data/app.data';
+import { Branch, Ctrl, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, ILoadflowLink, ILoadflowLocation, LoadflowCtrlType, LoadflowResults, LocationData, NetworkData, Node, TransportModel, UpdateLocationData } from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { ShowMessageService } from '../main/show-message/show-message.service';
@@ -97,9 +97,9 @@ export class LoadflowDataService {
         })
     }
 
-    runBoundCalc(boundaryName: string, boundaryTrips: boolean, tripStr: string) {
+    runBoundCalc(transportModel: TransportModel, boundaryName: string, boundaryTrips: boolean, tripStr: string) {
         this.inRun = true;
-        this.dataClientService.RunBoundCalc( this.dataset.id, boundaryName, boundaryTrips, tripStr, (results) => {
+        this.dataClientService.RunBoundCalc( this.dataset.id, transportModel, boundaryName, boundaryTrips, tripStr, (results) => {
             this.inRun = false;
             this.loadFlowResults = results;
             this.ResultsLoaded.emit(results);
