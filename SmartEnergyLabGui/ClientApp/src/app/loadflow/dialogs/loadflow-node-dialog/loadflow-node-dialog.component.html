@@ -11,14 +11,19 @@
         </div>
         <div class="row">
             <div>
-                <app-dialog-text-input [dialog]="dialog" name="demand" placeholder="Enter demand in MW" label="Demand (MW)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
-            </div>
+                <app-dialog-text-input [dialog]="dialog" name="generation_A" placeholder="Enter generation in MW" label="Generation (Peak Demand, MW)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
+            </div>    
             <div>
-                <app-dialog-text-input [dialog]="dialog" name="generation" placeholder="Enter generation in MW" label="Generation (MW)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
+                <app-dialog-text-input [dialog]="dialog" name="generation_B" placeholder="Enter generation in MW" label="Generation (Year Round, MW)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
             </div>    
         </div>
         <div class="row">
-            <app-dialog-checkbox [dialog]="dialog" label="External" name="ext"></app-dialog-checkbox>
+            <div>
+                <app-dialog-text-input [dialog]="dialog" name="demand" placeholder="Enter demand in MW" label="Demand (MW)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
+            </div>
+            <div>
+                <app-dialog-checkbox [dialog]="dialog" label="External" name="ext"></app-dialog-checkbox>
+            </div>
         </div>
     </form>
 </div>

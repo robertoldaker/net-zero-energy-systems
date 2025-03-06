@@ -43,8 +43,10 @@ public class NodeItemHandler : BaseEditItemHandler
         }
         // demand        
         m.CheckDouble("demand");
-        // generation
-        m.CheckDouble("generation");
+        // generation A
+        m.CheckDouble("generation_A");
+        // generation B
+        m.CheckDouble("generation_B");
         // external
         m.CheckBoolean("ext");
         // zone id
@@ -73,10 +75,15 @@ public class NodeItemHandler : BaseEditItemHandler
         if ( demand!=null ) {
             node.Demand = (double) demand;
         }
-        // generation
-        var generation = m.CheckDouble("generation",0);
-        if ( generation!=null ) {
-            node.Generation_A = (double) generation;            
+        // generation A
+        var generation_A = m.CheckDouble("generation_A",0);
+        if ( generation_A!=null ) {
+            node.Generation_A = (double) generation_A;            
+        }
+        // generation B
+        var generation_B = m.CheckDouble("generation_B",0);
+        if ( generation_B!=null ) {
+            node.Generation_B = (double) generation_B;            
         }
         // external
         var ext = m.CheckBoolean("ext");
