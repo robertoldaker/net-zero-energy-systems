@@ -39,6 +39,18 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
+        /// Load data from TNUOS spreadsheet
+        /// </summary>
+        [HttpPost]
+        [Route("Load/TNUOS")]
+        public IActionResult LoadTNUOS(IFormFile file, int year=2024) {
+            var m=new BoundCalcTnuosLoader();
+            var msg = m.Load(file,year);
+            //
+            return this.Ok(msg);
+        }
+        
+        /// <summary>
         /// Returns a list of boundaries that have been defined
         /// </summary>
         /// <returns>List of boundaries</returns>
@@ -275,18 +287,6 @@ namespace SmartEnergyLabDataApi.Controllers
             var m=new BoundCalcETYSLoader(loadOptions);
             m.Load();
             
-        }
-
-        /// <summary>
-        /// Load data from TNUOS spreadsheet
-        /// </summary>
-        [HttpPost]
-        [Route("Load/TNUOS")]
-        public IActionResult LoadTNUOS(IFormFile file, int year=2024) {
-            var m=new BoundCalcTnuosLoader();
-            var msg = m.Load(file,year);
-            //
-            return this.Ok(msg);
         }
 
         /// <summary>
