@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using CommonInterfaces.Models;
+using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
 using Renci.SshNet;
 using SmartEnergyLabDataApi.Data;
@@ -51,30 +52,56 @@ namespace SmartEnergyLabDataApi.Models
 
         private string getPgDump() {
             if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
-                var installDirectory = "C:\\Program Files\\PostgreSQL";
-                var dirs = Directory.EnumerateDirectories(installDirectory);
-                int version=0;
-                foreach( var dir in dirs) {
-                    var cpnts = dir.Split(Path.DirectorySeparatorChar);
-                    if ( cpnts.Length>0 && int.TryParse(cpnts[cpnts.Length-1], out int testVersion) && testVersion>version) {
-                        version = testVersion;
-                    }
-                }
-                if (version>0) {
-                    var path = Path.Combine(installDirectory,version.ToString(),"bin","pg_dump.exe");
-                    if ( File.Exists(path)) {
-                        return path;
-                    } else {
-                        throw new Exception($"Could not find pg_dump at [{path}]");
-                    }
+                var installDirectory = getWindowsPostgresBinFolder();
+                var path = Path.Combine(installDirectory,"pg_dump.exe");
+                if ( File.Exists(path)) {
+                    return path;
                 } else {
-                    throw new Exception($"Could not find valid PostgresSQL install at {installDirectory}");
-                }                
+                    throw new Exception($"Could not find pg_dump at [{path}]");
+                }
             } else {
                 // explicitly using /usr/bin to ensure it picks up v14.
                 // installing gdal brings in postgres12 which then means "pg_dump" is v12
                 return "/usr/bin/pg_dump";
             }
+        }
+
+        private string getPgRestore() {
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
+                var installDirectory = getWindowsPostgresBinFolder();
+                var path = Path.Combine(installDirectory,"pg_restore.exe");
+                if ( File.Exists(path)) {
+                    return path;
+                } else {
+                    throw new Exception($"Could not find pg_restore at [{path}]");
+                }
+            } else {
+                // explicitly using /usr/bin to ensure it picks up v14.
+                // installing gdal brings in postgres12 which then means "pg_dump" is v12
+                return "/usr/bin/pg_restore";
+            }
+        }
+
+        private string getWindowsPostgresBinFolder() {
+            var installDirectory = "C:\\Program Files\\PostgreSQL";
+            var dirs = Directory.EnumerateDirectories(installDirectory);
+            int version=0;
+            foreach( var dir in dirs) {
+                var cpnts = dir.Split(Path.DirectorySeparatorChar);
+                if ( cpnts.Length>0 && int.TryParse(cpnts[cpnts.Length-1], out int testVersion) && testVersion>version) {
+                    version = testVersion;
+                }
+            }
+            if (version>0) {
+                var path = Path.Combine(installDirectory,version.ToString(),"bin");
+                if ( Directory.Exists(path)) {
+                    return path;
+                } else {
+                    throw new Exception($"Could not find PostgreSQL bin directory");
+                }
+            } else {
+                throw new Exception($"Could not find valid PostgreSQL install at {installDirectory}");
+            }                
         }
 
         private void upload(string filename) {
@@ -189,7 +216,7 @@ namespace SmartEnergyLabDataApi.Models
 
             List<string> classNames = null;
             if ( appGroup != ApplicationGroup.All) {
-                classNames = ApplicationGroupAttribute.GetClassNames(appGroup);
+                classNames = ApplicationGroupAttribute.GetTableNames(appGroup);
             }
 
             var dbName = Program.DB_NAME;
@@ -227,6 +254,76 @@ namespace SmartEnergyLabDataApi.Models
 			return srOutput;            
         }
 
+        public void Restore(IFormFile file) {
+
+            // Note this implementation deletes tables explicitly first as found that using --clean option with pg_restore
+            // didn't do a cascade delete and had errors with repeated keys when restoring
+
+            // Check its a .dump file we are restoring
+            if ( !file.FileName.Contains(".dump")) {
+                throw new Exception("Can only restore a .dump file");
+            }
+
+            // Figure out what tables are included in the dump based on filename
+            ApplicationGroup appGroup;
+            if ( file.FileName.Contains('(')) {
+                appGroup = 0;
+                if ( file.FileName.Contains("Elsi") ) {
+                    appGroup = ApplicationGroup.Elsi;
+                }
+                if ( file.FileName.Contains("BoundCalc") ) {
+                    appGroup |= ApplicationGroup.BoundCalc;
+                }
+            } else {
+                appGroup = ApplicationGroup.All;
+            }
+
+            // Delete all tables based on this application group
+            List<string> tableNames = null;
+            tableNames = ApplicationGroupAttribute.GetTableNames(appGroup);
+            foreach( var tableName in tableNames) {
+                DataAccessBase.DeleteTable(tableName);
+            }
+
+            // Now restore the .dump file
+            var restore = new Execute();
+            var pgRestore = getPgRestore();  
+            var args = getPgRestoreArgs();
+
+            ProcessStartInfo oInfo = new ProcessStartInfo(pgRestore, args);
+            oInfo.EnvironmentVariables["PGPASSWORD"] = Program.DB_PASSWORD;
+			oInfo.UseShellExecute = false;
+			oInfo.CreateNoWindow = true;
+
+			oInfo.RedirectStandardOutput = true;
+			oInfo.RedirectStandardError = true;
+            oInfo.RedirectStandardInput = true;
+
+            var inputStream = file.OpenReadStream();
+            var readBuffer = new Byte[8196];
+			Process proc = System.Diagnostics.Process.Start(oInfo);
+            int bRead;
+            while( (bRead = inputStream.Read(readBuffer) )!=0 ) {                
+                if ( proc.HasExited ) {
+                    break;
+                } else {
+                    proc.StandardInput.BaseStream.Write(readBuffer,0,bRead);
+                }
+            }
+            proc.WaitForExit();
+            string stdOutput = proc.StandardOutput.ReadToEnd();
+            if ( proc.ExitCode!=0 ) {
+                var stdErr = proc.StandardError.ReadToEnd();
+                throw new Exception($"Failed to restore db: [{stdErr}]");
+            }
+          
+        }
+
+        private string getPgRestoreArgs(string? fileName=null) {
+            var fn = fileName!=null ? $"-f {fileName}" : "";
+            var args = $"--clean --if-exists -h {Program.DB_HOST} -p {Program.DB_PORT} -U {Program.DB_USER} {fn} -d {Program.DB_NAME}";
+            return args;
+        }
 
     }
 }

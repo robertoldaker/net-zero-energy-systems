@@ -169,7 +169,6 @@ public static class Program
         EditItemModel.AddHandler<PeakDemand>(new PeakDemandItemHandler());
 
         app.Run();
-
     }
 
     private static string getDbHostName() {

@@ -2,6 +2,7 @@
 using HaloSoft.EventLogger;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.FileProviders;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.SGT;
@@ -96,6 +97,20 @@ namespace EnergySystemLabDataApi.Controllers
             var fsr = new FileStreamResult(sr.BaseStream, "application/sql");
 			fsr.FileDownloadName = filename;
 			return fsr;
+        }
+
+        /// <summary>
+        /// Restores database backup
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("RestoreDb")]
+        [DisableRequestSizeLimit]
+        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
+        public IActionResult RestoreDb(IFormFile file) {
+            var m = new DatabaseBackup(null);
+            m.Restore(file);
+			return this.Ok();
         }
 
         /// <summary>

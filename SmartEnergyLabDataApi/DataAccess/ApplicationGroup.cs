@@ -15,7 +15,7 @@ public class ApplicationGroupAttribute : Attribute {
 
     public ApplicationGroup[] Groups {get; set;}
 
-    public static List<string> GetClassNames(ApplicationGroup appGroup) {
+    public static List<string> GetTableNames(ApplicationGroup appGroup) {
 
         // Get the current assembly
         Assembly assembly = Assembly.GetExecutingAssembly();
@@ -27,11 +27,21 @@ public class ApplicationGroupAttribute : Attribute {
 
         foreach (Type type in types)
         {
-            // Get all attributes of the type
-            var appGroupAttr = type.GetCustomAttributes<ApplicationGroupAttribute>().FirstOrDefault();
-            if ( appGroupAttr!=null && appGroupAttr.HasGroup(appGroup) ) {
+            // Get all classes that have the [Class] attribute set
+            if ( appGroup==ApplicationGroup.All) {
                 var classAttr = type.GetCustomAttributes<ClassAttribute>().FirstOrDefault();
-                classNames.Add(classAttr.Table);
+                if ( classAttr!=null) {
+                    classNames.Add(classAttr.Table);
+                }
+            } else {
+                // Only include those with the specific ApplicationGroup attrribute
+                var appGroupAttr = type.GetCustomAttributes<ApplicationGroupAttribute>().FirstOrDefault();
+                if ( appGroupAttr!=null && appGroupAttr.HasGroup(appGroup) ) {
+                    var classAttr = type.GetCustomAttributes<ClassAttribute>().FirstOrDefault();
+                    if ( classAttr!=null) {
+                        classNames.Add(classAttr.Table);
+                    }
+                }
             }
         }
 

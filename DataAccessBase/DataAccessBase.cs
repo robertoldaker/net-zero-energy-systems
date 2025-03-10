@@ -509,5 +509,10 @@ order by
                 });
             return indexes;
         }
+        public static void DeleteTable(string tableName) {
+            var sql = $"DROP TABLE IF EXISTS {tableName} CASCADE;";
+            runPostgreSQL(sql);
+        }
     }
+
 }

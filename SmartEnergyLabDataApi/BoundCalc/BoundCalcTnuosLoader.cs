@@ -7,6 +7,7 @@ using NHibernate.Mapping.Attributes;
 using Org.BouncyCastle.Crypto.Parameters;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.BoundCalc;
+using SmartEnergyLabDataApi.Models;
 
 namespace SmartEnergyLabDataApi.BoundCalc;
 
@@ -100,12 +101,64 @@ public class BoundCalcTnuosLoader {
 
     public string Load(IFormFile formFile, int year) {
         string msg = loadDataFromSpreadsheet(formFile, year) + "\n";
+        msg+=removeUnconnectedNetworks() + "\n";
         msg+=addCtrls() + "\n";
         msg+=addInterConnectorLinks() + "\n";
         // Also update locations
         var locUpdater = new BoundCalcLocationUpdater();
         msg += locUpdater.Update(_dataset.Id) + "\n";
         return msg;
+    }
+
+    private string removeUnconnectedNetworks() {
+        string msg="";
+        using( var da = new DataAccess() ) {
+            var dataset = da.Datasets.GetDataset(_dataset.Id);
+            var nodes = da.BoundCalc.GetNodes(dataset);
+            var branches = da.BoundCalc.GetBranches(dataset);
+            //
+            var networkChecker = new NetworkChecker(branches);
+            var networks = networkChecker.Check();
+            if ( networks.Count>1) {
+                // these are ordered by descending count - if the first one has more than 90% of nodes remove the rest
+                if ( networks[0].Count>0.9*nodes.Count ) {
+                    msg += "Multiple networks found, deleting smaller detached networks\n";
+                    for( int i=1;i<networks.Count;i++) {
+                        (int numNodes, int numBranches) = removeNodes(da,networks[i], branches);
+                        msg+=$"Removed {numNodes} nodes and {numBranches} branches from detached network";
+                    }
+                } else {
+                    msg+="Detached networks found that could be removed";
+                }
+            } else {
+                msg+="No detached networks found";
+            }
+            //
+            networkChecker = new NetworkChecker(branches);
+            networks = networkChecker.Check();
+            if ( networks.Count!=1) {
+                throw new Exception("Unexpected detached network found");
+            }
+            //
+            da.CommitChanges();
+        }
+        return msg;
+    }
+
+    private (int,int) removeNodes(DataAccess da, List<Node> nodes, IList<Branch> branches) {
+        int numNodes=0;
+        int numBranches=0;
+        foreach( var n in nodes) {
+            var bs = branches.Where( m=>m.Node1 == n || m.Node2 == n).ToList();
+            foreach( var b in bs) {
+                da.BoundCalc.Delete(b);
+                branches.Remove(b);
+                numBranches++;
+            }
+            da.BoundCalc.Delete(n);
+            numNodes++;
+        }
+        return (numNodes,numBranches);
     }
 
     private string loadDataFromSpreadsheet(IFormFile formFile, int year) {
