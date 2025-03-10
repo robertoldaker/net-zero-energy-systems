@@ -300,7 +300,7 @@ namespace SmartEnergyLabDataApi.Models
             oInfo.RedirectStandardInput = true;
 
             var inputStream = file.OpenReadStream();
-            var readBuffer = new Byte[8196];
+            var readBuffer = new byte[8196];
 			Process proc = System.Diagnostics.Process.Start(oInfo);
             int bRead;
             while( (bRead = inputStream.Read(readBuffer) )!=0 ) {                
@@ -310,8 +310,9 @@ namespace SmartEnergyLabDataApi.Models
                     proc.StandardInput.BaseStream.Write(readBuffer,0,bRead);
                 }
             }
+            proc.StandardInput.BaseStream.Flush();
+            proc.StandardInput.Close();
             proc.WaitForExit();
-            string stdOutput = proc.StandardOutput.ReadToEnd();
             if ( proc.ExitCode!=0 ) {
                 var stdErr = proc.StandardError.ReadToEnd();
                 throw new Exception($"Failed to restore db: [{stdErr}]");
@@ -319,9 +320,8 @@ namespace SmartEnergyLabDataApi.Models
           
         }
 
-        private string getPgRestoreArgs(string? fileName=null) {
-            var fn = fileName!=null ? $"-f {fileName}" : "";
-            var args = $"--clean --if-exists -h {Program.DB_HOST} -p {Program.DB_PORT} -U {Program.DB_USER} {fn} -d {Program.DB_NAME}";
+        private string getPgRestoreArgs() {
+            var args = $"--clean --if-exists -h {Program.DB_HOST} -p {Program.DB_PORT} -U {Program.DB_USER} -d {Program.DB_NAME}";
             return args;
         }
 
