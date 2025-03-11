@@ -24,7 +24,7 @@
             </td>
         </ng-container>
 
-        <ng-container *ngFor="let c of ctrls" matColumnDef="{{c.code}}">
+        <ng-container *ngFor="let c of getCtrls()" matColumnDef="{{c.code}}">
             <th mat-header-cell *matHeaderCellDef>
                 <div style="padding-right: 1rem; text-align: right; color: green">{{c.code}}</div>
             </th>

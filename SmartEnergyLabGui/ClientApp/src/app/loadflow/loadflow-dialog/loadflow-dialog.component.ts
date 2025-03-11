@@ -86,7 +86,6 @@ export class LoadflowDialogComponent extends ComponentBase {
     }
 
     transportModelChanged(e: any) {
-        console.log('transport model changed')
         this.transportModel = e.value;
     }
 

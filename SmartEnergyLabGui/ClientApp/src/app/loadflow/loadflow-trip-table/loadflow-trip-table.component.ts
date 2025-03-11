@@ -42,6 +42,14 @@ export class LoadflowTripTableComponent implements OnInit, AfterViewInit, OnDest
         }
     }
 
+    getCtrls() {
+        if ( this.trips.data.length>0) {
+            return this.trips.data[0].ctrls
+        } else {
+            return []
+        }
+    }
+
     getTripName(index: number, item: AllTripResult) {
         return (item.trip != null ) ? item.trip.text : "Intact"
     }
