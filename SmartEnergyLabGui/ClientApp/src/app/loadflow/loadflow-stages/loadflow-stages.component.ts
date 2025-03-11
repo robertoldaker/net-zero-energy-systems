@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { StageResult, StageResultEnum } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
 import { ComponentBase } from 'src/app/utils/component-base';
+import { DivAutoScrollerComponent } from 'src/app/utils/div-auto-scroller/div-auto-scroller.component';
 
 @Component({
     selector: 'app-loadflow-stages',
@@ -17,6 +18,9 @@ export class LoadflowStagesComponent extends ComponentBase implements AfterViewI
         this.stageResults = [];
         this.addSub(dataService.ResultsLoaded.subscribe((results)=>{
             this.stageResults = results.stageResults.results
+            if ( this.autoScroller ) {
+                this.autoScroller.scrollBottom()
+            }
         }))
         this.addSub(dataService.NetworkDataLoaded.subscribe((results)=>{
             this.stageResults = []
@@ -54,5 +58,9 @@ export class LoadflowStagesComponent extends ComponentBase implements AfterViewI
             return 'black'
         }
     }
+
+    @ViewChild(DivAutoScrollerComponent)
+    autoScroller : DivAutoScrollerComponent | undefined;
+
 
 }

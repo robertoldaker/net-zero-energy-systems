@@ -45,6 +45,13 @@ export class DivAutoScrollerComponent implements AfterViewInit {
         }
     }
 
-
+    scrollBottom() {
+        window.setTimeout(()=>{
+            if ( this.div ) {
+                let element = this.div.nativeElement
+                element.scrollTop = element.scrollHeight
+            }
+        }, 0)
+    }
 
 }
