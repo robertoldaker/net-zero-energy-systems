@@ -478,8 +478,10 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch,m=>m.Branch);
             ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch,m=>m.Branch.Node1.Location);
             ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch,m=>m.Branch.Node1.Location.GISData);
+            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch,m=>m.Branch.Node1.Zone);
             ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch,m=>m.Branch.Node2.Location);
             ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch,m=>m.Branch.Node2.Location.GISData);
+            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch,m=>m.Branch.Node2.Zone);
             var ctrlDi = new DatasetData<Ctrl>(DataAccess,datasetId,m=>m.Id.ToString(), ctrlQuery);
             return ctrlDi;        
         }
