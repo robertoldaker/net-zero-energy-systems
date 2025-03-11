@@ -644,6 +644,7 @@ public class BoundCalcTnuosLoader {
                     ctrl.Type = BoundCalcCtrlType.HVDC;
                     ctrl.MinCtrl = -branch.Cap;
                     ctrl.MaxCtrl = branch.Cap;
+                    ctrl.Cost = 10;
                     branch.SetCtrl(ctrl);
                     _da.BoundCalc.Add(ctrl);
                 }
