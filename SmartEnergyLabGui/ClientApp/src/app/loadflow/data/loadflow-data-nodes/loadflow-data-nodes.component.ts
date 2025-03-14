@@ -46,6 +46,7 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
             this.createDataSource(this.dataService.dataset,results.nodes);
         }))
         this.addSub( dataService.ResultsLoaded.subscribe( (results) => {
+            this.nodeMismatchError = results.nodeMismatchError;
             this.createDataSource(this.dataService.dataset,results.nodes);
         }))
 
@@ -59,9 +60,22 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         this.dialogService.showLoadflowNodeDialog();
     }
 
+    getMismatchStyle(mm: number | undefined): any {
+        if (mm!=undefined && Math.abs(mm) > 0.01) {
+            return {'color':'darkred'}
+        } else {
+            return {};
+        }
+    }
+
+    getOverallMismatchStyle(): any {
+        return this.nodeMismatchError ? {'color':'darkred'} : {}
+    }
+
     codeDataFilter: ColumnDataFilter
     voltageDataFilter: ColumnDataFilter 
     zoneDataFilter: ColumnDataFilter 
+    nodeMismatchError: boolean = false;
 
 }
 

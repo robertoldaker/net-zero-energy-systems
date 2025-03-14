@@ -644,9 +644,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 MiscReport(title,$"Ctrl cost: {opt.ControlCost():0.00}");
             } else {
                 if ( r1 == LPhdr.lpInfeasible ) {
-                    MiscReport(title,$"Unresolvable constraint {opt.ctrllp.GetCname(r2)}");
+                    MiscReport(title,$"Unresolvable constraint {opt.ctrllp.GetCname(r2)}", BoundCalcStageResultEnum.Fail);
                 } else {
-                    MiscReport(title,"Unknown optimiser fail");
+                    MiscReport(title,"Unknown optimiser fail",BoundCalcStageResultEnum.Fail);
                 }
             }
             return r1;
@@ -688,9 +688,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     MiscReport(title, $"{opt.BoundCap():0.00}");                    
                 } else {
                     if ( r1 == LPhdr.lpInfeasible ) {
-                        MiscReport(title, $"Unresolvable constraint ${opt.ctrllp.GetCname(r2)}");
+                        MiscReport(title, $"Unresolvable constraint ${opt.ctrllp.GetCname(r2)}", BoundCalcStageResultEnum.Fail);
                     } else {
-                        MiscReport(title, "Unknown optimiser fail");
+                        MiscReport(title, "Unknown optimiser fail", BoundCalcStageResultEnum.Fail);
                     }
                 }
 
@@ -737,9 +737,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
                 if ( r1!= LPhdr.lpOptimum ) {
                     if ( r1 == LPhdr.lpInfeasible ) {
-                        MiscReport("Optimiser",$"Unresolvable constraint {opt.ctrllp.GetCname(r2)}");
+                        MiscReport("Optimiser",$"Unresolvable constraint {opt.ctrllp.GetCname(r2)}", BoundCalcStageResultEnum.Fail);
                     } else {
-                        MiscReport("Optimiser", "Unknown optimiser fail");
+                        MiscReport("Optimiser", "Unknown optimiser fail", BoundCalcStageResultEnum.Fail);
                     }
                     return r1;
                 }
@@ -976,9 +976,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
         }
 
 
-        public void MiscReport(string msg, object result) {
+        public void MiscReport(string msg, object result, BoundCalcStageResultEnum res=BoundCalcStageResultEnum.Pass) {
             var sr = _stageResults.NewStage(msg);
-            _stageResults.StageResult(sr,BoundCalcStageResultEnum.Pass,$"{result}");
+            _stageResults.StageResult(sr,res,$"{result}");
         }
 
         public NodeBoundaryData GetNodeBoundaryData(Boundary bndry) {

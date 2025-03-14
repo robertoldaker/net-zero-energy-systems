@@ -35,6 +35,8 @@ namespace SmartEnergyLabDataApi.BoundCalc
             IntactTrips = lf.IntactTrips;
             SingleTrips = lf.SingleTrips;
             DoubleTrips = lf.DoubleTrips;
+
+            NodeMismatchError = lf.Nodes.DatasetData.Data.Any(nw => nw.Mismatch!=null && Math.Abs((double) nw.Mismatch)>0.01);
         }
 
         public BoundCalcResults(string errorMsg) {
@@ -56,6 +58,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public List<BoundCalcAllTripsResult> IntactTrips {get; set;}
         public List<BoundCalcAllTripsResult> SingleTrips {get; set;}
         public List<BoundCalcAllTripsResult> DoubleTrips {get; set;}
+        public bool NodeMismatchError {get; set;}
 
         public void Save() {
             using( var da = new DataAccess() ) {

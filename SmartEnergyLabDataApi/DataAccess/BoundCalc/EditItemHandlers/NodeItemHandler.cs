@@ -71,17 +71,17 @@ public class NodeItemHandler : BaseEditItemHandler
             node.SetLocation(m.Da);
         }
         // demand        
-        var demand = m.CheckDouble("demand",0);
+        var demand = m.CheckDouble("demand");
         if ( demand!=null ) {
             node.Demand = (double) demand;
         }
         // generation A
-        var generation_A = m.CheckDouble("generation_A",0);
+        var generation_A = m.CheckDouble("generation_A");
         if ( generation_A!=null ) {
             node.Generation_A = (double) generation_A;            
         }
         // generation B
-        var generation_B = m.CheckDouble("generation_B",0);
+        var generation_B = m.CheckDouble("generation_B");
         if ( generation_B!=null ) {
             node.Generation_B = (double) generation_B;            
         }

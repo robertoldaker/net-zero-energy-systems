@@ -72,8 +72,8 @@
 
         <!-- Mismatch  Column -->
         <ng-container matColumnDef="mismatch">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Mismatch</th>
-            <td mat-cell *matCellDef="let element">{{element.mismatch?.value?.toExponential(3)}}</td>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before"><div [style]="getOverallMismatchStyle()">Mismatch</div></th>
+            <td mat-cell *matCellDef="let element"><div [style]="getMismatchStyle(element.mismatch?.value)">{{element.mismatch?.value?.toExponential(3)}}</div></td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true">

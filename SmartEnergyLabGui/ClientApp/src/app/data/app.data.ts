@@ -265,6 +265,7 @@ export interface LoadflowResults {
     singleTrips: AllTripResult[],
     doubleTrips: AllTripResult[]
     intactTrips: AllTripResult[]
+    nodeMismatchError: boolean
 }
 
 export interface Boundary {
