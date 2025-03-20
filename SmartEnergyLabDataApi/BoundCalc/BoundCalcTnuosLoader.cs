@@ -3,6 +3,7 @@ using ExcelDataReader;
 using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
 using NHibernate.Driver;
+using NHibernate.Loader.Custom;
 using NHibernate.Mapping.Attributes;
 using Org.BouncyCastle.Crypto.Parameters;
 using SmartEnergyLabDataApi.Data;
@@ -101,12 +102,42 @@ public class BoundCalcTnuosLoader {
 
     public string Load(IFormFile formFile, int year) {
         string msg = loadDataFromSpreadsheet(formFile, year) + "\n";
-        msg+=removeUnconnectedNetworks() + "\n";
+        //?? Since we are loading all nodes now, this should not be required
+        //??msg+=removeUnconnectedNetworks() + "\n";
         msg+=addCtrls() + "\n";
         msg+=addInterConnectorLinks() + "\n";
         // Also update locations
         var locUpdater = new BoundCalcLocationUpdater();
         msg += locUpdater.Update(_dataset.Id) + "\n";
+        msg+=checkNetwork() + "\n";
+        return msg;
+    }
+
+    private string checkNetwork() {
+        string msg="";
+        using( var da = new DataAccess() ) {
+            var dataset = da.Datasets.GetDataset(_dataset.Id);
+            var nodes = da.BoundCalc.GetNodes(dataset);
+            var branches = da.BoundCalc.GetBranches(dataset);
+            //
+            var totalDemand = nodes.Sum( m=>m.Demand);
+            var totalGenA = nodes.Sum( m=>m.Generation_A);
+            var totalGenB = nodes.Sum( m=>m.Generation_B);
+            if ( Math.Abs(totalDemand-totalGenA) > 1e-6) {
+                msg += $"Total demand [{totalDemand}] does not equal total generation A [{totalGenA}]\n";
+            }
+            if ( Math.Abs(totalDemand-totalGenB) > 1e-6) {
+                msg += $"Total demand [{totalDemand}] does not equal total generation B [{totalGenB}]\n";
+            }
+            //
+            var networkChecker = new NetworkChecker(branches);
+            var networks = networkChecker.Check();
+            if ( networks.Count!=1) {
+                msg = $"Unexpected detached network found, num networks={networks.Count}";
+            }
+            //
+            da.CommitChanges();
+        }
         return msg;
     }
 
@@ -163,13 +194,17 @@ public class BoundCalcTnuosLoader {
 
     private string loadDataFromSpreadsheet(IFormFile formFile, int year) {
         string msg = "";
+
+        var name = getDatasetName(year,formFile.FileName);
+        msg += deleteIfExists(name);
         using( _da = new DataAccess() ) {
-            var name = getDatasetName(year,formFile.FileName);
             _dataset = _da.Datasets.GetDataset(DatasetType.BoundCalc,name);
             if ( _dataset==null) {
                 var root = _da.Datasets.GetRootDataset(DatasetType.BoundCalc);
                 _dataset = new Dataset() { Type = DatasetType.BoundCalc, Parent = root, Name = name };                
                 _da.Datasets.Add(_dataset);
+            } else {
+                throw new Exception("Dataset unexpectedly already exists");
             }
             // Caches of existing objects
             var existingNodes = _da.BoundCalc.GetNodes(_dataset);
@@ -208,6 +243,19 @@ public class BoundCalcTnuosLoader {
             msg+=loadInterconnectors(formFile);
             //
             _da.CommitChanges();
+        }
+        return msg;
+    }
+
+    private string deleteIfExists(string name) {
+        string msg = "";
+        using( var da = new DataAccess() ) {
+            var dataset = da.Datasets.GetDataset(DatasetType.BoundCalc,name);
+            if ( dataset!=null) {
+                da.Datasets.Delete(dataset);
+                da.CommitChanges();            
+                msg = $"Deleted existing dataset [{name}]\n";
+            }
         }
         return msg;
     }
@@ -305,6 +353,7 @@ public class BoundCalcTnuosLoader {
         bool added = false;
 
         var extNodeCode = getExtNodeCode(nodeCode, extNodeNum);
+        // this is a node to represent connection to the external grid
         var branch = _branchCache.GetOrCreate($"{nodeCode}-{extNodeCode}:{branchCode}", out bool created);
         if ( created ) {
             branch.Dataset = _dataset;
@@ -315,6 +364,8 @@ public class BoundCalcTnuosLoader {
                 throw new Exception($"Could not find node [{nodeCode}] for interconnector [{name}]");
             }
             branch.Node1 = node1;
+            // remove from node1
+            node1.Generation_B-=maxTEC;
             // this is a node to represent connection to the external grid
             var node2 =  _nodeCache.GetOrCreate(extNodeCode, out bool extNodeCreated );
             if ( extNodeCreated ) {
@@ -324,7 +375,10 @@ public class BoundCalcTnuosLoader {
                 node2.SetVoltage();
                 node2.SetLocation(_da);
             }
+            // add to external node, node2
+            node2.Generation_B+=maxTEC;
             branch.Node2 = node2;
+
             // add Ctrl
             Ctrl ctrl = new Ctrl(_dataset,branch);
             ctrl.Type = BoundCalcCtrlType.HVDC;
@@ -595,10 +649,6 @@ public class BoundCalcTnuosLoader {
             var cap = reader.GetDouble(branchIndex+8);
             var code = reader.GetString(branchIndex+9);
             var linkType = reader.GetString(branchIndex+10);
-            // Ignore branches under contruction
-            if (linkType == "Construct") {
-                continue;
-            }
             // node1
             Node node1, node2;
             if ( _nodeDataDict.ContainsKey(node1Code) ) {
@@ -645,9 +695,10 @@ public class BoundCalcTnuosLoader {
                     ctrl.MinCtrl = -branch.Cap;
                     ctrl.MaxCtrl = branch.Cap;
                     ctrl.Cost = 10;
+                    branch.X = 0; // HVDC branches have no reactance
                     branch.SetCtrl(ctrl);
-                    _da.BoundCalc.Add(ctrl);
-                }
+                    _da.BoundCalc.Add(ctrl);                
+                }                
             }
         }
         // These are nodes lised but not referenced by branched
@@ -655,7 +706,9 @@ public class BoundCalcTnuosLoader {
 
         string msg = $"{numNodesAdded} nodes added\n";
         msg += $"{numBranchesAdded} branches added, {numBranchesUpdated} branches updated\n";
-        msg += $"{numNodesNotUsed} nodes were not referenced by a branch and were ignored";
+        if ( numNodesNotUsed>0) {
+            msg += $"{numNodesNotUsed} nodes were not referenced by a branch and were ignored";
+        }
         Logger.Instance.LogInfoEvent($"End reading branches, {msg}");
         return msg;
     }

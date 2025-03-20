@@ -163,6 +163,8 @@ import { MiniIconButtonComponent } from './utils/mini-icon-button/mini-icon-butt
 import { ColumnFilterComponent } from './datasets/column-filter/column-filter.component';
 import { DistDataComponent } from './admin/admin-data/dist-data/dist-data.component';
 import { TransDataComponent } from './admin/admin-data/trans-data/trans-data.component';
+import { LoadflowNodeCellComponent } from './loadflow/data/loadflow-node-cell/loadflow-node-cell.component';
+import { LoadflowBranchCodeCellComponent } from './loadflow/data/loadflow-branch-code-cell/loadflow-branch-code-cell.component';
 
 
 @NgModule({
@@ -281,6 +283,8 @@ import { TransDataComponent } from './admin/admin-data/trans-data/trans-data.com
         ColumnFilterComponent,
         DistDataComponent,
         TransDataComponent,
+        LoadflowNodeCellComponent,
+        LoadflowBranchCodeCellComponent,
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

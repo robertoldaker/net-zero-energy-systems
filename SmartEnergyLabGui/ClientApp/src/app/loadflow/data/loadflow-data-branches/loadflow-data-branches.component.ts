@@ -4,6 +4,7 @@ import { LoadflowDataService } from '../../loadflow-data-service.service';
 import { ColumnDataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { DataTableBaseComponent } from '../../../datasets/data-table-base/data-table-base.component';
+import { LoadflowDataComponent } from '../loadflow-data/loadflow-data.component';
 
 @Component({
   selector: 'app-loadflow-data-branches',
@@ -12,7 +13,9 @@ import { DataTableBaseComponent } from '../../../datasets/data-table-base/data-t
 })
 export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch> {
 
-    constructor(private dataService: LoadflowDataService, private dialogService: DialogService) {
+    constructor(private dataService: LoadflowDataService, 
+                private dialogService: DialogService,
+                private dataComponent: LoadflowDataComponent) {
         super()
         this.dataFilter.sort = { active: 'node1Code', direction: 'asc'};
         this.typeDataFilter = new ColumnDataFilter(this,"typeStr")
@@ -24,12 +27,17 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
             this.createDataSource(dataService.dataset,results.branches)
         }))
         this.addSub(dataService.ResultsLoaded.subscribe( (results) => {
+            this.branchCapacityError = results.branchCapacityError;
+            if ( this.branchCapacityError) {
+                this.dataFilter.sort = { active: 'freePower', direction: 'asc'};
+            }
             this.createDataSource(dataService.dataset,results.branches)
         }))
     }
 
     typeName: string = "Branch"
     typeDataFilter: ColumnDataFilter
+    branchCapacityError: boolean = false;
 
     getTypeStr(type: BranchType) {
         return BranchType[type];
@@ -44,4 +52,31 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
     add() {
         this.dialogService.showLoadflowBranchDialog();
     }
+
+    getFreePowerStyle(fp: number | undefined): any {
+        if (fp!=undefined && fp<-1e-6 ) {
+            return {'color':'darkred'}
+        } else {
+            return {};
+        }
+    }
+
+    getOverallFreePowerStyle(): any {
+        return this.branchCapacityError ? {'color':'darkred'} : {}
+    }
+
+    filterByNode(nodeCode: string) {
+        this.dataFilter.reset(true)
+        this.dataFilter.searchStr = nodeCode
+        this.createDataSource()
+    }
+
+    filterByCode(code: string) {
+        //
+        this.dataFilter.reset(true)
+        this.dataFilter.searchStr = code
+        this.createDataSource()
+    }
+
+
 }

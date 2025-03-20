@@ -266,6 +266,8 @@ export interface LoadflowResults {
     doubleTrips: AllTripResult[]
     intactTrips: AllTripResult[]
     nodeMismatchError: boolean
+    nodeMismatchErrorAsc: boolean
+    branchCapacityError: boolean
 }
 
 export interface Boundary {
@@ -401,6 +403,8 @@ export interface Ctrl {
     node2Code: string
     node1Name: string
     node2Name: string
+    node1LocationId: number
+    node2LocationId: number
     node1: Node
     node2: Node
     setPoint: number | null

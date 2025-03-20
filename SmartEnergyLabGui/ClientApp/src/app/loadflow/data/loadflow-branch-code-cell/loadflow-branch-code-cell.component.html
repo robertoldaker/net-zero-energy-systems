@@ -1,0 +1,4 @@
+<div style="white-space: nowrap">
+    <span [class]="codeClass" (click)="showCtrlOrBranch()">{{branchCode}}</span>
+    <img *ngIf="node1LocationId>0 && node2LocationId>0" class="mapImage link" style="vertical-align: middle;" src="/assets/images/world.png" (click)="showLinkOnMap()"/>    
+</div>

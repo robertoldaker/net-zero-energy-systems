@@ -118,6 +118,18 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
         }
 
+        public virtual int Node1LocationId {
+            get {
+                return Branch.Node1LocationId;
+            }
+        }
+
+        public virtual int Node2LocationId {
+            get {
+                return Branch.Node2LocationId;
+            }
+        }
+
         public virtual string LineName {
             get {
                 return Branch.LineName;

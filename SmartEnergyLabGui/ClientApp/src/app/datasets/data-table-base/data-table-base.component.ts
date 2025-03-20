@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Sort } from '@angular/material/sort';
+import { Sort, SortDirection } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Dataset, DatasetData, IId } from 'src/app/data/app.data';
 import { DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
@@ -73,5 +73,13 @@ export class DataTableBaseComponent<T extends IId> extends DialogBase  {
     newFilterTable() {
         this.tablePaginator?.firstPage()
         this.createDataSource()
+    }
+
+    get sortColumn(): string  {
+        return this.dataFilter.sort ? this.dataFilter.sort.active : ''
+    }
+
+    get sortDirection(): SortDirection  {
+        return this.dataFilter.sort ? this.dataFilter.sort.direction : ''
     }
 }

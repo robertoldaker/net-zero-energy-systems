@@ -597,7 +597,8 @@ namespace SmartEnergyLabDataApi.BoundCalc
             var mi = MaxMismatch(mism);
             var mm = mism[mi];
             var nd = _nodes.get(_nord.NodeId(mi));
-            MiscReport($"Max mismatch [{nd.Obj.Code}]", $"{mm:g5}");
+            var result = Math.Abs(mm)>0.01 ? BoundCalcStageResultEnum.Warn : BoundCalcStageResultEnum.Pass;
+            MiscReport($"Max mismatch [{nd.Obj.Code}]", $"{mm:g5}",result);
         }
 
         public void CalcBoundLF(double[]?[] cvang, out double[] lflow, bool save = false) {

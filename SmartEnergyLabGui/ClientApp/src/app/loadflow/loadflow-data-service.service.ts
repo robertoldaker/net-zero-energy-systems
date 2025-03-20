@@ -141,6 +141,14 @@ export class LoadflowDataService {
         }
     }
 
+    selectLocationByName(locName: string) {
+        let loc = this.locationData.locations.find(m=>m.name == locName)
+        if ( loc ) {
+            this.selectedMapItem = { location: loc, link: null }
+            this.ObjectSelected.emit(this.selectedMapItem)    
+        }
+    }
+
     getLocation(locId: number):ILoadflowLocation | undefined {
         let loc = this.locationData.locations.find(m=>m.id==locId)
         return loc
@@ -148,6 +156,14 @@ export class LoadflowDataService {
 
     selectLink(branchId: number) {
         let branch = this.locationData.links.find(m=>m.id==branchId)
+        if ( branch) {
+            this.selectedMapItem = { location: null, link: branch }
+            this.ObjectSelected.emit(this.selectedMapItem)    
+        }
+    }
+
+    selectLinkByLocIds(node1LocationId: number, node2LocationId: number) {
+        let branch = this.locationData.links.find(m=>m.node1LocationId == node1LocationId && m.node2LocationId == node2LocationId)
         if ( branch) {
             this.selectedMapItem = { location: null, link: branch }
             this.ObjectSelected.emit(this.selectedMapItem)    

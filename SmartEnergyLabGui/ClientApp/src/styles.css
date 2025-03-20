@@ -230,6 +230,12 @@ span.mode {
 
 div.nodeName {
     font-size: 0.8em; 
+    color: grey;
+    white-space: nowrap;
+}
+
+div.prevValue {
+    font-size: 0.8em; 
     color: grey
 }
 
@@ -241,6 +247,10 @@ div.nodeName {
 /* for matTab to make the labels thinner */
 .matTabLabelNarrow {
     min-width: 40px !important;
+}
+
+.tabLabelError {
+    color: darkred !important;
 }
 
 .matTabLabelNarrow.output {
@@ -258,4 +268,13 @@ div.nodeName {
 /* for use with table that has inline editor as last column */
 .mat-column-dummy {
     width: 40px;
+}
+
+/* */
+.cellLink {
+    cursor: pointer;
+}
+
+.cellLink:hover {
+    text-decoration: underline;
 }

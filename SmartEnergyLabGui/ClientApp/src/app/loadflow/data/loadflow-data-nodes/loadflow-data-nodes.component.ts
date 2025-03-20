@@ -4,6 +4,9 @@ import { LoadflowDataService } from 'src/app/loadflow/loadflow-data-service.serv
 import { ColumnDataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { DataTableBaseComponent } from '../../../datasets/data-table-base/data-table-base.component';
+import { SortDirection } from '@angular/material/sort';
+import { LoadflowHomeComponent } from '../../loadflow-home/loadflow-home.component';
+import { LoadflowDataComponent } from '../loadflow-data/loadflow-data.component';
 
 @Component({
     selector: 'app-loadflow-data-nodes',
@@ -15,6 +18,7 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
     constructor(
         private dataService: LoadflowDataService, 
         private dialogService: DialogService,
+        private dataComponent: LoadflowDataComponent,
      ) {
         super();
         this.dataFilter.sort = { active: 'code', direction: 'asc'};
@@ -47,6 +51,10 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         }))
         this.addSub( dataService.ResultsLoaded.subscribe( (results) => {
             this.nodeMismatchError = results.nodeMismatchError;
+            if ( this.nodeMismatchError) {
+                let dir:SortDirection = results.nodeMismatchErrorAsc ? 'asc' : 'desc'
+                this.dataFilter.sort = { active: 'mismatch', direction: dir};
+            }
             this.createDataSource(this.dataService.dataset,results.nodes);
         }))
 
@@ -71,6 +79,13 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
     getOverallMismatchStyle(): any {
         return this.nodeMismatchError ? {'color':'darkred'} : {}
     }
+
+    filterByNode(nodeCode: string) {
+        this.dataFilter.reset(true)
+        this.dataFilter.searchStr = nodeCode
+        this.createDataSource()
+    }
+
 
     codeDataFilter: ColumnDataFilter
     voltageDataFilter: ColumnDataFilter 

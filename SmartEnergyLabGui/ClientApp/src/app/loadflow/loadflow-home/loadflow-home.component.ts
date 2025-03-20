@@ -2,6 +2,7 @@ import { AfterContentInit, AfterViewInit, Component, ElementRef, OnInit, ViewChi
 import { LoadflowSplitService } from '../loadflow-split.service';
 import { UserService } from 'src/app/users/user.service';
 import { DialogService } from 'src/app/dialogs/dialog.service';
+import { LoadflowDataComponent } from '../data/loadflow-data/loadflow-data.component';
 
 @Component({
     selector: 'app-loadflow-home',
@@ -17,8 +18,10 @@ export class LoadflowHomeComponent implements OnInit, AfterViewInit{
         this.updateSplitData()        
     }
 
-    @ViewChild('leftDiv') leftView: ElementRef | undefined;
-    @ViewChild('rightDiv') rightView: ElementRef | undefined;
+    @ViewChild('leftDiv') 
+    leftView: ElementRef | undefined;
+    @ViewChild('rightDiv') 
+    rightView: ElementRef | undefined;
 
     ngOnInit(): void {
     }
@@ -55,6 +58,5 @@ export class LoadflowHomeComponent implements OnInit, AfterViewInit{
     register() {
         this.dialogService.showRegisterUserDialog()
     }
-
 
 }

@@ -2,7 +2,7 @@
 
 <app-div-auto-scroller name="nodes">
     
-    <table style="width: 100%;" #table mat-table [dataSource]="data" [trackBy]="getDataId" matSort matSortActive="code" matSortDirection="asc" matSortDisableClear (matSortChange)="sortTable($event)">
+    <table style="width: 100%;" #table mat-table [dataSource]="data" [trackBy]="getDataId" matSort [matSortActive]="sortColumn" [matSortDirection]="sortDirection" matSortDisableClear (matSortChange)="sortTable($event)">
 
         <!-- buttons Column -->
         <ng-container matColumnDef="buttons">
@@ -17,8 +17,7 @@
                 <app-column-filter [filter]="codeDataFilter" title="Code"></app-column-filter>
             </th>
             <td mat-cell *matCellDef="let element">
-                <div>{{element.code.value}}</div>
-                <div *ngIf="element.name.value" class="nodeName">({{element.name.value}})</div>
+                <app-loadflow-node-cell [nodeCode]="element.code.value" [nodeName]="element.name.value"></app-loadflow-node-cell>
             </td>
         </ng-container>
 

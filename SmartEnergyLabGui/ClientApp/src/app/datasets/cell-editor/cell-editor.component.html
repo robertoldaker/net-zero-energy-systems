@@ -3,6 +3,9 @@
     <div *ngIf="data.userEdit" class="delete button">
         <mat-icon (click)="delete()" title="Delete edit" [inline]="true">cancel</mat-icon>
     </div>
+    <div *ngIf="data.userEdit?.prevValue" class="prevValue">
+        ({{data.userEdit?.prevValue}})  
+    </div>
     <ng-template #editableBlock>
         <select *ngIf="options; else textEdit" [ngClass]="{'existing': data.userEdit}" [(ngModel)]="data.value" (ngModelChange)="saveSelect($event)">
             <option *ngFor="let o of options" [value]="o">{{o}}</option>

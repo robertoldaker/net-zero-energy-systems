@@ -371,10 +371,19 @@ export class DataFilter {
         return items;
     }
 
-    public reset() {
+    public reset(clearFilters?: boolean) {
         this.skip = 0
         this.searchStr = ''
         this.onlyEditedRows = false
+        if ( clearFilters ) {
+            this.clearFilters()
+        }   
+    }
+
+    public clearFilters() {
+        this.columnFilterMap.forEach((v,k)=>{
+            v.enabled = false
+        })
     }
 
     skip: number = 0;

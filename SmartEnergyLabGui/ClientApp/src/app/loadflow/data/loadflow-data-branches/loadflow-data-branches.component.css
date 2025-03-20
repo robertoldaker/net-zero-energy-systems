@@ -11,7 +11,8 @@
 
 .mat-column-node2Code {
     min-width: 100px;
-    width: 15%;    
+    width: 15%; 
+    padding-left: 5px;   
 }
 
 .mat-column-region {

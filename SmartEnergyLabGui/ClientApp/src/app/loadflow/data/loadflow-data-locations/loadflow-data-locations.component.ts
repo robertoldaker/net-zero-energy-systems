@@ -44,4 +44,10 @@ export class LoadflowDataLocationsComponent extends DataTableBaseComponent<GridS
         this.dialogService.showLoadflowLocationDialog();
     }
 
+    filterByName(locName: string) {
+        this.dataFilter.reset()
+        this.dataFilter.searchStr = locName
+        this.createDataSource()
+    }
+
 }

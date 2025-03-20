@@ -44,4 +44,11 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
         this.dialogService.showLoadflowBranchDialog(editorData);
     }
 
+    filterByCode(code: string) {
+        //
+        this.dataFilter.reset(true)
+        this.dataFilter.searchStr = code
+        this.createDataSource()
+    }
+
 }

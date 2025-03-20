@@ -4,10 +4,10 @@
     </div>
 </div>
 <mat-tab-group [ngClass]="{hide: showMap}" animationDuration="0ms" [preserveContent]="true" [selectedIndex]="selected.value" (selectedIndexChange)="selected.setValue($event)" (selectedTabChange)="tabChange($event)">
-    <mat-tab label="Nodes" labelClass="matTabLabelNarrow">
+    <mat-tab label="Nodes" [labelClass]="getNodeTabLabelClass()">
         <app-loadflow-data-nodes></app-loadflow-data-nodes>
     </mat-tab>
-    <mat-tab label="Branches" labelClass="matTabLabelNarrow">
+    <mat-tab label="Branches" [labelClass]="getBranchTabLabelClass()">
         <app-loadflow-data-branches></app-loadflow-data-branches>
     </mat-tab>
     <mat-tab label="Controls" labelClass="matTabLabelNarrow">

@@ -1,0 +1,11 @@
+.mapImage {
+    width: 15px;
+    height: 15px;
+    opacity: 0.5;
+    margin-left: 4px;
+    cursor: pointer;
+}
+
+.mapImage:hover {
+    opacity: 1;
+}

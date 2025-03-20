@@ -36,7 +36,12 @@ namespace SmartEnergyLabDataApi.BoundCalc
             SingleTrips = lf.SingleTrips;
             DoubleTrips = lf.DoubleTrips;
 
-            NodeMismatchError = lf.Nodes.DatasetData.Data.Any(nw => nw.Mismatch!=null && Math.Abs((double) nw.Mismatch)>0.01);
+            var misMatches  = lf.Nodes.DatasetData.Data.Where(nw => nw.Mismatch!=null && Math.Abs((double) nw.Mismatch)>0.01).Select(nw => nw.Mismatch).OrderBy(m=>m).ToList();
+            NodeMismatchError = misMatches.Count>0;
+            if ( NodeMismatchError ) {
+                NodeMismatchErrorAsc = Math.Abs((double) misMatches[0]) > Math.Abs((double) misMatches[misMatches.Count-1]);
+            }
+            BranchCapacityError = lf.Branches.DatasetData.Data.Any(nw => nw.FreePower!=null && nw.FreePower<-1e-6);
         }
 
         public BoundCalcResults(string errorMsg) {
@@ -59,6 +64,8 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public List<BoundCalcAllTripsResult> SingleTrips {get; set;}
         public List<BoundCalcAllTripsResult> DoubleTrips {get; set;}
         public bool NodeMismatchError {get; set;}
+        public bool NodeMismatchErrorAsc {get; set;}
+        public bool BranchCapacityError {get; set;}
 
         public void Save() {
             using( var da = new DataAccess() ) {
