@@ -246,11 +246,13 @@ export class DatasetsService {
             if ( index>=0 ) {
                 dd.deletedData.splice(index,1)
             }
+            //
+            
             let ues = dd.userEdits.filter(m=>m.key == d.id)
             for (let ue of ues) {
                 let index = dd.userEdits.findIndex(m=>m.id === ue.id)
                 dd.userEdits.splice(index,1)
-            }                
+            }              
         }
         for( let d of resp.deletedData) {
             // add or replace in deletedData
@@ -269,6 +271,9 @@ export class DatasetsService {
         for( let ue of resp.userEdits ) {
             dd.userEdits.push(ue);
         }
+
+        //
+        console.log('useredits',dd.userEdits)
     }
 
 }

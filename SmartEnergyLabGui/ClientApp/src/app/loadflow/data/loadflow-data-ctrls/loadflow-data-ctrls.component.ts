@@ -44,11 +44,21 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
         this.dialogService.showLoadflowBranchDialog(editorData);
     }
 
+    getSetPointStyle(sp: number | undefined,min: number, max: number): any {
+        if (sp!=undefined && (sp>max || sp<min)) {
+            return {'color':'darkred'}
+        } else {
+            return {};
+        }
+    }
+
     filterByCode(code: string) {
         //
         this.dataFilter.reset(true)
         this.dataFilter.searchStr = code
         this.createDataSource()
     }
+
+
 
 }

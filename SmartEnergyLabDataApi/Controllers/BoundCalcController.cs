@@ -1,17 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using SmartEnergyLabDataApi.Models;
-using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.BoundCalc;
-using Org.BouncyCastle.Crypto.Signers;
-using System.Text.Json;
-using System.Linq.Expressions;
 using SmartEnergyLabDataApi.Data.BoundCalc;
-using Org.BouncyCastle.Asn1.Ntt;
-using Org.BouncyCastle.Crypto.Modes.Gcm;
-using NHibernate.Loader.Custom;
 
 namespace SmartEnergyLabDataApi.Controllers
 {
@@ -142,6 +133,96 @@ namespace SmartEnergyLabDataApi.Controllers
                 }
             } catch( Exception e) {
                 return this.Ok(new BoundCalcResults(e.Message));
+            }
+        }
+
+
+        /// <summary>
+        /// Adjusts branch capcities to remove overloads
+        /// </summary>
+        [HttpPost]
+        [Route("AdjustBranchCapacities")]
+        public BoundCalcResults AdjustBranchCapacities(int datasetId, TransportModel transportModel){            
+
+            // Check the dataset is owend by the user
+            using( var da = new DataAccess() ) {
+                var dataset = da.Datasets.GetDataset(datasetId);
+                if ( dataset==null ) {
+                    throw new Exception($"Cannot find dataset with id [{datasetId}]");
+                } else {
+                    var userId = this.GetUserId();
+                    if ( dataset.User?.Id==null || dataset.User.Id!=userId ) {
+                        throw new Exception($"Dataset [{datasetId}] does not belong to user [{this.GetUserId()}]");
+                    }
+                }
+            }
+
+            var overloadingBrancheDict = new Dictionary<int,Branch>();
+            // run peak security model
+            runBase(datasetId,TransportModel.PeakSecurity,overloadingBrancheDict);
+            runBase(datasetId,TransportModel.YearRound,overloadingBrancheDict);
+            // if we have any then add user edits to increase capacity of each branch
+            if ( overloadingBrancheDict.Count>0) {
+                using( var da = new DataAccess()) {
+                    var dataset = da.Datasets.GetDataset(datasetId);
+                    var userEdits = da.Datasets.GetUserEdits(typeof(Branch).Name,dataset.Id);
+                    foreach( var b in overloadingBrancheDict.Values) {
+                        // add user edits to increase capacity of each branch
+                        var adjCap = getAdjustedCapacity(b);
+                        if ( adjCap!=null) {
+                            var ue = userEdits.FirstOrDefault(m=>m.Key==b.Id.ToString() && m.ColumnName=="Cap");
+                            if ( ue==null) {
+                                ue = new UserEdit();
+                                ue.Dataset = dataset;
+                                ue.TableName = typeof(Branch).Name;
+                                ue.ColumnName = "Cap";
+                                ue.Key = b.Id.ToString();
+                                da.Datasets.Add(ue);
+                            }
+                            ue.Value = ((double) adjCap).ToString();
+                        }
+                    }
+                    da.CommitChanges();
+                }
+            }
+
+            // lastly run base case again using the requested transport model
+            using( var bc = new BoundCalc.BoundCalc(datasetId,transportModel,true) ) {
+                // run base case
+                bc.RunBoundCalc(null,null,BoundCalc.BoundCalc.SPAuto,false,true);
+                return new BoundCalcResults(bc);
+            }
+        }
+
+        private double? getAdjustedCapacity(Branch b) {
+            double? result = null;
+            if ( b.PowerFlow!=null && b.FreePower!=null ) {
+                var pf = (double) b.PowerFlow;
+                var fp = (double) b.FreePower;
+                if ( Math.Abs(pf) > (b.Cap+0.1) ) {
+                    result = Math.Abs(pf)*1.1;
+                } else if ( Math.Abs(pf) >= b.Cap ) {
+                    result = (Math.Abs(pf) + Math.Abs(fp)) * 1.1;
+                }
+            }
+            return result;
+        }
+
+        private void runBase(int datasetId, TransportModel transportModel, Dictionary<int,Branch> overloadingBranchDict ) {
+            using( var bc = new BoundCalc.BoundCalc(datasetId,transportModel,true) ) {
+                // run base case
+                bc.RunBoundCalc(null,null,BoundCalc.BoundCalc.SPAuto,false,true);
+                var errorBranches = bc.Branches.DatasetData.Data.Where(b=>b.FreePower<0).ToList();
+                foreach( var b in errorBranches) {
+                    if ( !overloadingBranchDict.ContainsKey(b.Id)) {
+                        overloadingBranchDict.Add(b.Id,b);
+                    } else {
+                        // store the least free power
+                        if ( b.FreePower<overloadingBranchDict[b.Id].FreePower) {
+                            overloadingBranchDict[b.Id].FreePower = b.FreePower;
+                        }
+                    }
+                }
             }
         }
 

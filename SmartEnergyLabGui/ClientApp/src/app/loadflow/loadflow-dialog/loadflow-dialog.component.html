@@ -62,6 +62,7 @@
             <td colspan="2">
                 <div style="padding-top: 1rem">
                     <button mat-stroked-button (click)="calc()">Calc</button>
+                    <button style="float: right; color: red" *ngIf="hasCapacityError" mat-stroked-button (click)="adjustBranchCapacities()">Adjust Capacities</button>
                 </div>
             </td>
         </tr>

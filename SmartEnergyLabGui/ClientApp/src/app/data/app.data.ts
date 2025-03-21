@@ -268,6 +268,7 @@ export interface LoadflowResults {
     nodeMismatchError: boolean
     nodeMismatchErrorAsc: boolean
     branchCapacityError: boolean
+    setPointError: boolean
 }
 
 export interface Boundary {

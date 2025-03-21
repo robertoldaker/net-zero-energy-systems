@@ -10,7 +10,7 @@
     <mat-tab label="Branches" [labelClass]="getBranchTabLabelClass()">
         <app-loadflow-data-branches></app-loadflow-data-branches>
     </mat-tab>
-    <mat-tab label="Controls" labelClass="matTabLabelNarrow">
+    <mat-tab label="Controls" [labelClass]="getCtrlTabLabelClass()">
         <app-loadflow-data-ctrls></app-loadflow-data-ctrls>
     </mat-tab>
     <mat-tab label="Boundaries" labelClass="matTabLabelNarrow">

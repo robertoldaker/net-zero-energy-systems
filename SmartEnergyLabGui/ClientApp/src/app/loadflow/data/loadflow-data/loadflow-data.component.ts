@@ -30,11 +30,14 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
             this.showAllTripResults = this.hasTrips(results.singleTrips) || this.hasTrips(results.doubleTrips) || this.hasTrips(results.intactTrips)
             this.hasNodesError = results.nodeMismatchError
             this.hasBranchesError = results.branchCapacityError
+            this.hasCtrlsError = results.setPointError
             if ( this.matTabGroup ) {
                 if ( this.hasNodesError) {
                     this.matTabGroup.selectedIndex = this.NODES_INDEX
                 } else if ( this.hasBranchesError) {
                     this.matTabGroup.selectedIndex = this.BRANCHES_INDEX
+                } else if ( this.hasCtrlsError) {
+                    this.matTabGroup.selectedIndex = this.CTRLS_INDEX
                 }
             }
         }))
@@ -64,6 +67,7 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
     showMap:boolean = false;
     hasNodesError: boolean = false
     hasBranchesError: boolean = false
+    hasCtrlsError: boolean = false
     @ViewChild(MatTabGroup) 
     matTabGroup: MatTabGroup | null = null;
     @ViewChild(LoadflowDataBranchesComponent)
@@ -95,6 +99,14 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
     getBranchTabLabelClass():string {
         let tabClass = 'matTabLabelNarrow'
         if (this.hasBranchesError) {
+            tabClass += ' tabLabelError'
+        }
+        return tabClass
+    }
+
+    getCtrlTabLabelClass():string {
+        let tabClass = 'matTabLabelNarrow'
+        if (this.hasCtrlsError) {
             tabClass += ' tabLabelError'
         }
         return tabClass

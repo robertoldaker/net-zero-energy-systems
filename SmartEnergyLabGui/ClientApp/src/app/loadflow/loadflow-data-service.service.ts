@@ -75,7 +75,8 @@ export class LoadflowDataService {
         this.dataClientService.GetNetworkData( this.dataset.id, (results)=>{
             this.networkData = results
             this.messageService.clearMessage()
-            this.NetworkDataLoaded.emit(results);
+            this.loadFlowResults = undefined
+            this.NetworkDataLoaded.emit(results)
             this.updateLocationData(true)
         })
     }
@@ -100,6 +101,15 @@ export class LoadflowDataService {
     runBoundCalc(transportModel: TransportModel, boundaryName: string, boundaryTrips: boolean, tripStr: string) {
         this.inRun = true;
         this.dataClientService.RunBoundCalc( this.dataset.id, transportModel, boundaryName, boundaryTrips, tripStr, (results) => {
+            this.inRun = false;
+            this.loadFlowResults = results;
+            this.ResultsLoaded.emit(results);
+        });
+    }
+
+    adjustBranchCapacities(transportModel: TransportModel) {
+        this.inRun = true;
+        this.dataClientService.AdjustBranchCapacities( this.dataset.id, transportModel, (results) => {
             this.inRun = false;
             this.loadFlowResults = results;
             this.ResultsLoaded.emit(results);
@@ -232,12 +242,19 @@ export class LoadflowDataService {
 
     afterEdit(resp: DatasetData<any>[] ) {
         //
+        console.log('afterEdit',resp)
         for( let r of resp) {
             let dd = this.getDatasetData(r.tableName)
             DatasetsService.updateDatasetData(dd,r)    
         }
         //
-        this.NetworkDataLoaded.emit(this.networkData)
+        if ( this.loadFlowResults) {
+            console.log('afterEdit results',this.loadFlowResults)
+            this.ResultsLoaded.emit(this.loadFlowResults)
+        } else {
+            console.log('afterEdit networkData',this.networkData)
+            this.NetworkDataLoaded.emit(this.networkData)
+        }
         //
         this.updateLocationData(false);
     }
@@ -390,11 +407,11 @@ export class LoadflowDataService {
 
     private getDatasetData(typeName: string):DatasetData<any> {
         if ( typeName == "Node") {
-            return this.networkData.nodes;
+            return this.loadFlowResults ? this.loadFlowResults.nodes : this.networkData.nodes;
         } else if ( typeName == "Branch") {
-            return this.networkData.branches
+            return this.loadFlowResults ? this.loadFlowResults.branches : this.networkData.branches
         } else if ( typeName == "Ctrl") {
-            return this.networkData.ctrls
+            return this.loadFlowResults ? this.loadFlowResults.ctrls : this.networkData.ctrls
         } else if ( typeName == "Zone") {
             return this.networkData.zones
         } else if ( typeName == "Boundary") {

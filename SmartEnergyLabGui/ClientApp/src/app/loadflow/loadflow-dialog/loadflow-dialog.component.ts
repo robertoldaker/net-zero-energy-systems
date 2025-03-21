@@ -35,6 +35,8 @@ export class LoadflowDialogComponent extends ComponentBase {
             if ( results.boundaryFlowResult ) {
                 this.flowResult = results.boundaryFlowResult;
             }
+            // this enables the adjustCapacities button and should only appear if we have a capacity error and the dataset is not read only
+            this.hasCapacityError = results.branchCapacityError && !this.dataService.dataset.isReadOnly;
         }))
         this.addSub(dataService.AllTripsProgress.subscribe((data)=>{
             this.currentTrip = data.msg;
@@ -82,11 +84,16 @@ export class LoadflowDialogComponent extends ComponentBase {
     }
 
     onDatasetSelected(dataset: Dataset) {
+        this.hasCapacityError = false
         this.dataService.setDataset(dataset)
     }
 
     transportModelChanged(e: any) {
         this.transportModel = e.value;
+    }
+
+    adjustBranchCapacities() {
+        this.dataService.adjustBranchCapacities(this.transportModel);
     }
 
     currentTrip: string
@@ -102,5 +109,6 @@ export class LoadflowDialogComponent extends ComponentBase {
     boundaryTrips = true
     transportModel: TransportModel = TransportModel.PeakSecurity
     TransportModel = TransportModel
+    hasCapacityError:boolean = false
 
 }

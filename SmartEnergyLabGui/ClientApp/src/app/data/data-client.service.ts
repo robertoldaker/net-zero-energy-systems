@@ -302,6 +302,17 @@ export class DataClientService implements ILogs {
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
     }
 
+    AdjustBranchCapacities( datasetId: number, transportModel: TransportModel, onLoad: (results: LoadflowResults)=> void | undefined) {
+        let connectionId = this.signalRService.hubConnection?.connectionId;
+        this.showMessageService.showMessage("Calculating ...");
+        this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/AdjustBranchCapacities?datasetId=${datasetId}&transportModel=${transportModel}`,{}).subscribe( result => {
+            this.showMessageService.clearMessage()
+            if ( onLoad ) {
+                onLoad(result)
+            }
+        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
+    }
+
     RunBaseLoadflow( datasetId: number,onLoad: (results: LoadflowResults)=> void | undefined) {
         this.showMessageService.showMessage("Calculating ...");
         this.http.post<LoadflowResults>(this.baseUrl + `/${this.controller}/RunBase?datasetId=${datasetId}`,{}).subscribe( result => {
