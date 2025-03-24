@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using ExcelDataReader;
 using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
+using Microsoft.VisualBasic;
 using NHibernate.Driver;
 using NHibernate.Loader.Custom;
 using NHibernate.Mapping.Attributes;
@@ -633,6 +634,7 @@ public class BoundCalcTnuosLoader {
         int numBranchesUpdated = 0;
         int numNodesAdded = 0;
         //
+        string overloadMsg = "\n";
         // Read data by row
         while (reader.Read()) {
             var region = reader.GetString(branchIndex);
@@ -700,6 +702,17 @@ public class BoundCalcTnuosLoader {
                     _da.BoundCalc.Add(ctrl);                
                 }                
             }
+            // Compare link flows from the spreadsheet with line capacities
+            var linkFlowPS = reader.GetDouble(branchIndex+14);
+            var linkFlowYR = reader.GetDouble(branchIndex+18);
+            var maxLinkFlow = Math.Max(Math.Abs(linkFlowPS),Math.Abs(linkFlowYR));
+            // Look for instances where the link flow exceeds the capacity
+            if ( branch.Cap>0 && maxLinkFlow>branch.Cap) {
+                overloadMsg+=$"Link flow [{maxLinkFlow:F0}] exceeds capacity [{branch.Cap}] for branch [{code}]\n";
+                //?? This get models 2025/26, 2026/27, 2027/28, 2028/29 going but 29/30 needs extra work.
+                //??branch.Cap = maxLinkFlow*1.1;
+            }
+
         }
         // These are nodes lised but not referenced by branched
         var numNodesNotUsed = _nodeDataDict.Values.Where( m=>!m.Used).Count();
@@ -709,6 +722,7 @@ public class BoundCalcTnuosLoader {
         if ( numNodesNotUsed>0) {
             msg += $"{numNodesNotUsed} nodes were not referenced by a branch and were ignored";
         }
+        msg+=overloadMsg;
         Logger.Instance.LogInfoEvent($"End reading branches, {msg}");
         return msg;
     }
