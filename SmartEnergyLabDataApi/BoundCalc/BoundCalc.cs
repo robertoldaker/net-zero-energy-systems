@@ -1,4 +1,6 @@
+using System.Text.RegularExpressions;
 using HaloSoft.EventLogger;
+using Microsoft.AspNetCore.SignalR;
 using SmartEnergyLabDataApi.Common;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.BoundCalc;
@@ -1034,6 +1036,116 @@ namespace SmartEnergyLabDataApi.BoundCalc
             //    throw new Exception("LPModel internal test failed");
             //}
         }
-    }
+ 
+        public static BoundCalcResults AdjustBranchCapacities(int datasetId, TransportModel transportModel, int userId) {
+            int year, targetYear;
 
+            // Get branches in separate DataAccess instance to prevent it being overwritten
+            DatasetData<Branch> branchDi;
+            using ( var da = new DataAccess() ) {
+                var q = da.Session.QueryOver<Branch>();
+                branchDi = new DatasetData<Branch>(da,datasetId,m=>m.Id.ToString(),q);
+            }
+
+            using( var da = new DataAccess() ) {
+                // Check the dataset is owned by the user            
+                var dataset = da.Datasets.GetDataset(datasetId);            
+                if ( dataset==null ) {
+                    throw new Exception($"Cannot find dataset with id [{datasetId}]");
+                } else {
+                    if ( dataset.User?.Id==null || dataset.User.Id!=userId ) {
+                        throw new Exception($"Dataset [{datasetId}] does not belong to user [{userId}]");
+                    }
+                }
+                //
+                var regEx = new Regex(@"^GB network (\d{4})\/\d{2} \((\d{4})\)$");
+                var match = regEx.Match(dataset.Parent.Name);
+                if ( !match.Success ) {
+                    throw new Exception($"Dataset name [{dataset.Name}] does not match expected format");
+                }
+                targetYear = int.Parse(match.Groups[1].Value);
+                year = int.Parse(match.Groups[2].Value);
+                var adjustments = da.BoundCalc.GetBoundCalcAdjustments(year, targetYear);
+                var userEdits = da.Datasets.GetUserEdits(typeof(Branch).Name,datasetId);
+                foreach( var adj in adjustments) {
+                    var branch = branchDi.Data.FirstOrDefault(b=>b.Code == adj.BranchCode);
+                    if ( branch!=null) {
+                        var userEdit = userEdits.FirstOrDefault(e=>e.Key == branch.Id.ToString());
+                        if ( userEdit==null ) {
+                            userEdit = new UserEdit() {
+                                Dataset = dataset,
+                                Key = branch.Id.ToString(),
+                                TableName = typeof(Branch).Name,
+                                ColumnName = "Cap"
+                            };
+                            da.Datasets.Add(userEdit);
+                        }
+                        var cap = adj.Capacity * 1.1;
+                        userEdit.Value = cap.ToString();
+                    } else {
+                        throw new Exception($"Cannot find branch with code [{adj.BranchCode}]");
+                    }
+                }
+                da.CommitChanges();
+            }
+
+            // lastly run base case again using the requested transport model
+            using( var bc = new BoundCalc(datasetId,transportModel,true) ) {
+                // run base case
+                bc.RunBoundCalc(null,null,BoundCalc.SPAuto,false,true);
+                return new BoundCalcResults(bc);
+            }
+
+        }
+
+        public static BoundCalcResults Run(int datasetId, TransportModel transportModel, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null, IHubContext<NotificationHub> hubContext=null)
+        {
+            using( var bc = new BoundCalc(datasetId, transportModel, true) ) {
+                if ( connectionId!=null ) {
+                    bc.ProgressManager.ProgressUpdate+=(m,p)=>{                    
+                    hubContext.Clients.Client(connectionId).SendAsync("BoundCalc_AllTripsProgress",new {msg=m,percent=p});
+                    };
+                }
+                BoundaryWrapper? bnd = null;
+                if ( !string.IsNullOrEmpty(boundaryName) ) {
+                    bnd = bc.Boundaries.GetBoundary(boundaryName);
+                    if ( bnd == null ) {
+                        throw new Exception($"Cannot find boundary with name [{boundaryName}]");
+                    }
+                }
+                // work out ncycles for the progress manager
+                int nCycles = (bnd != null) ? bnd.STripList.Count + bnd.DTripList.Count + 2 : 1;
+                bc.ProgressManager.Start("Calculating",nCycles);
+
+
+                if ( bnd == null ) {
+                    Trip tr = null;
+                    if ( !string.IsNullOrEmpty(tripStr)) {
+                        tr = new Trip("T1",tripStr,bc.Branches);
+                    }
+                    bc.RunBoundCalc(null, tr, BoundCalc.SPAuto, false, true); 
+                } else {
+                    if ( boundaryTrips) {
+                        bc.RunAllTrips(bnd, BoundCalc.SPAuto);
+                    } else {
+                        Trip tr = null;
+                        if ( !string.IsNullOrEmpty(tripStr) ) {
+                            if ( tripStr.Contains(',')) {
+                                tr = new Trip("T1",tripStr,bc.Branches);
+                            } else {
+                                tr = new Trip("S1",tripStr,bc.Branches);
+                            }
+                        }
+                        bc.RunTrip(bnd,tr,BoundCalc.SPAuto,true);
+                    }
+                }
+                var resp = new BoundCalcResults(bc);
+                bc.ProgressManager.Finish();
+                return resp;
+            }
+        }
+
+
+    }
 }
+

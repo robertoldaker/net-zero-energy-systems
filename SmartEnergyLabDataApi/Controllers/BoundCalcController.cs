@@ -88,54 +88,12 @@ namespace SmartEnergyLabDataApi.Controllers
         public IActionResult Run(int datasetId, TransportModel transportModel, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null )
         {
             try {
-                using( var bc = new BoundCalc.BoundCalc(datasetId, transportModel, true) ) {
-                    if ( connectionId!=null ) {
-                        bc.ProgressManager.ProgressUpdate+=(m,p)=>{                    
-                        _hubContext.Clients.Client(connectionId).SendAsync("BoundCalc_AllTripsProgress",new {msg=m,percent=p});
-                        };
-                    }
-                    BoundaryWrapper? bnd = null;
-                    if ( !string.IsNullOrEmpty(boundaryName) ) {
-                        bnd = bc.Boundaries.GetBoundary(boundaryName);
-                        if ( bnd == null ) {
-                            throw new Exception($"Cannot find boundary with name [{boundaryName}]");
-                        }
-                    }
-                    // work out ncycles for the progress manager
-                    int nCycles = (bnd != null) ? bnd.STripList.Count + bnd.DTripList.Count + 2 : 1;
-                    bc.ProgressManager.Start("Calculating",nCycles);
-
-
-                    if ( bnd == null ) {
-                        Trip tr = null;
-                        if ( !string.IsNullOrEmpty(tripStr)) {
-                            tr = new Trip("T1",tripStr,bc.Branches);
-                        }
-                        bc.RunBoundCalc(null,tr,BoundCalc.BoundCalc.SPAuto,false,true); 
-                    } else {
-                        if ( boundaryTrips) {
-                            bc.RunAllTrips(bnd, BoundCalc.BoundCalc.SPAuto);
-                        } else {
-                            Trip tr = null;
-                            if ( !string.IsNullOrEmpty(tripStr) ) {
-                                if ( tripStr.Contains(',')) {
-                                    tr = new Trip("T1",tripStr,bc.Branches);
-                                } else {
-                                    tr = new Trip("S1",tripStr,bc.Branches);
-                                }
-                            }
-                            bc.RunTrip(bnd,tr,BoundCalc.BoundCalc.SPAuto,true);
-                        }
-                    }
-                    var resp = new BoundCalcResults(bc);
-                    bc.ProgressManager.Finish();
-                    return this.Ok(resp);
-                }
+                var resp = BoundCalc.BoundCalc.Run(datasetId,transportModel,boundaryName,boundaryTrips,tripStr,connectionId,_hubContext);
+                return this.Ok(resp);
             } catch( Exception e) {
                 return this.Ok(new BoundCalcResults(e.Message));
             }
         }
-
 
         /// <summary>
         /// Adjusts branch capcities to remove overloads
@@ -143,87 +101,7 @@ namespace SmartEnergyLabDataApi.Controllers
         [HttpPost]
         [Route("AdjustBranchCapacities")]
         public BoundCalcResults AdjustBranchCapacities(int datasetId, TransportModel transportModel){            
-
-            // Check the dataset is owend by the user
-            using( var da = new DataAccess() ) {
-                var dataset = da.Datasets.GetDataset(datasetId);
-                if ( dataset==null ) {
-                    throw new Exception($"Cannot find dataset with id [{datasetId}]");
-                } else {
-                    var userId = this.GetUserId();
-                    if ( dataset.User?.Id==null || dataset.User.Id!=userId ) {
-                        throw new Exception($"Dataset [{datasetId}] does not belong to user [{this.GetUserId()}]");
-                    }
-                }
-            }
-
-            var overloadingBrancheDict = new Dictionary<int,Branch>();
-            // run peak security model
-            runBase(datasetId,TransportModel.PeakSecurity,overloadingBrancheDict);
-            runBase(datasetId,TransportModel.YearRound,overloadingBrancheDict);
-            // if we have any then add user edits to increase capacity of each branch
-            if ( overloadingBrancheDict.Count>0) {
-                using( var da = new DataAccess()) {
-                    var dataset = da.Datasets.GetDataset(datasetId);
-                    var userEdits = da.Datasets.GetUserEdits(typeof(Branch).Name,dataset.Id);
-                    foreach( var b in overloadingBrancheDict.Values) {
-                        // add user edits to increase capacity of each branch
-                        var adjCap = getAdjustedCapacity(b);
-                        if ( adjCap!=null) {
-                            var ue = userEdits.FirstOrDefault(m=>m.Key==b.Id.ToString() && m.ColumnName=="Cap");
-                            if ( ue==null) {
-                                ue = new UserEdit();
-                                ue.Dataset = dataset;
-                                ue.TableName = typeof(Branch).Name;
-                                ue.ColumnName = "Cap";
-                                ue.Key = b.Id.ToString();
-                                da.Datasets.Add(ue);
-                            }
-                            ue.Value = ((double) adjCap).ToString();
-                        }
-                    }
-                    da.CommitChanges();
-                }
-            }
-
-            // lastly run base case again using the requested transport model
-            using( var bc = new BoundCalc.BoundCalc(datasetId,transportModel,true) ) {
-                // run base case
-                bc.RunBoundCalc(null,null,BoundCalc.BoundCalc.SPAuto,false,true);
-                return new BoundCalcResults(bc);
-            }
-        }
-
-        private double? getAdjustedCapacity(Branch b) {
-            double? result = null;
-            if ( b.PowerFlow!=null && b.FreePower!=null ) {
-                var pf = (double) b.PowerFlow;
-                var fp = (double) b.FreePower;
-                if ( Math.Abs(pf) > (b.Cap+0.1) ) {
-                    result = Math.Abs(pf)*1.1;
-                } else if ( Math.Abs(pf) >= b.Cap ) {
-                    result = (Math.Abs(pf) + Math.Abs(fp)) * 1.1;
-                }
-            }
-            return result;
-        }
-
-        private void runBase(int datasetId, TransportModel transportModel, Dictionary<int,Branch> overloadingBranchDict ) {
-            using( var bc = new BoundCalc.BoundCalc(datasetId,transportModel,true) ) {
-                // run base case
-                bc.RunBoundCalc(null,null,BoundCalc.BoundCalc.SPAuto,false,true);
-                var errorBranches = bc.Branches.DatasetData.Data.Where(b=>b.FreePower<0).ToList();
-                foreach( var b in errorBranches) {
-                    if ( !overloadingBranchDict.ContainsKey(b.Id)) {
-                        overloadingBranchDict.Add(b.Id,b);
-                    } else {
-                        // store the least free power
-                        if ( b.FreePower<overloadingBranchDict[b.Id].FreePower) {
-                            overloadingBranchDict[b.Id].FreePower = b.FreePower;
-                        }
-                    }
-                }
-            }
+            return BoundCalc.BoundCalc.AdjustBranchCapacities(datasetId,transportModel,this.GetUserId());
         }
 
         /// <summary>

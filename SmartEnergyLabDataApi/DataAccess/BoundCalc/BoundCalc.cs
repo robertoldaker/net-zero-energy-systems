@@ -517,5 +517,23 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         }
 
         #endregion
+
+        #region BoundCalcAdjustments
+        public void Add( BoundCalcAdjustment obj) {
+            Session.Save(obj);
+        }
+        public void Delete( BoundCalcAdjustment obj) {
+            Session.Delete(obj);
+        }
+        public BoundCalcAdjustment GetBoundCalcAdjustment(int id) {
+            return Session.Get<BoundCalcAdjustment>(id);
+        }
+        public IList<BoundCalcAdjustment> GetBoundCalcAdjustments(int sourceYear, int targetYear) {
+            return Session.QueryOver<BoundCalcAdjustment>().
+                Where( m=>m.SourceYear == sourceYear).
+                And(m=>m.TargetYear == targetYear).
+                List();
+        }
+        #endregion
     }
 }

@@ -97,11 +97,15 @@ public class BoundCalcTnuosLoader {
     private ObjectCache<Ctrl> _ctrlCache;
     private ObjectCache<Boundary> _boundaryCache;
     private ObjectCache<BoundaryZone> _boundaryZoneCache;
+    private IList<BoundCalcAdjustment> _branchAdjustments;
+    private int _year, _targetYear;
+
     public BoundCalcTnuosLoader() {
 
     }
 
     public string Load(IFormFile formFile, int year) {
+        _year = year;
         string msg = loadDataFromSpreadsheet(formFile, year) + "\n";
         //?? Since we are loading all nodes now, this should not be required
         //??msg+=removeUnconnectedNetworks() + "\n";
@@ -196,7 +200,7 @@ public class BoundCalcTnuosLoader {
     private string loadDataFromSpreadsheet(IFormFile formFile, int year) {
         string msg = "";
 
-        var name = getDatasetName(year,formFile.FileName);
+        (var name,_targetYear) = getDatasetName(year,formFile.FileName);
         msg += deleteIfExists(name);
         using( _da = new DataAccess() ) {
             _dataset = _da.Datasets.GetDataset(DatasetType.BoundCalc,name);
@@ -217,9 +221,6 @@ public class BoundCalcTnuosLoader {
             var existingBranches = _da.BoundCalc.GetBranches(_dataset);
             _branchCache = new ObjectCache<Branch>(_da, existingBranches, m=>m.GetKey(), (m,key)=>m.SetCode(key) );
             //
-            var existingCtrls = _da.BoundCalc.GetCtrls(_dataset);
-            _ctrlCache = new ObjectCache<Ctrl>(_da, existingCtrls, m=>m.Code, (m,code)=>{} );
-
             var existingBoundaries = _da.BoundCalc.GetBoundaries(_dataset);
             _boundaryCache = new ObjectCache<Boundary>(_da, existingBoundaries, m=>m.Code, (m,code)=>m.Code=code );
             //
@@ -237,6 +238,10 @@ public class BoundCalcTnuosLoader {
                     m.Zone.Dataset = _dataset;
                 }
             } );
+
+
+            // These are adjustments to the raw data needed to get the model to run
+            _branchAdjustments = _da.BoundCalc.GetBoundCalcAdjustments(year,_targetYear);
 
             msg+=loadBoundaries(formFile) + "\n";
             loadNodes(formFile);
@@ -261,13 +266,13 @@ public class BoundCalcTnuosLoader {
         return msg;
     }
 
-    private string getDatasetName(int year, string fileName) {
+    private (string,int) getDatasetName(int year, string fileName) {
 
         var match = _nameRegEx.Match(fileName);
         if ( match.Success && match.Groups.Count>1) {
             string yearStr= match.Groups[1].Value;
             if ( int.TryParse(yearStr, out int targetYear) ) {
-                return $"GB network {targetYear}/{targetYear-1999} ({year})";
+                return ($"GB network {targetYear}/{targetYear-1999} ({year})",targetYear);
             } else {
                 throw new Exception($"Problem parsing year from year string [{yearStr}]");
             }
@@ -709,8 +714,18 @@ public class BoundCalcTnuosLoader {
             // Look for instances where the link flow exceeds the capacity
             if ( branch.Cap>0 && maxLinkFlow>branch.Cap) {
                 overloadMsg+=$"Link flow [{maxLinkFlow:F0}] exceeds capacity [{branch.Cap}] for branch [{code}]\n";
-                //?? This get models 2025/26, 2026/27, 2027/28, 2028/29 going but 29/30 needs extra work.
-                //??branch.Cap = maxLinkFlow*1.1;
+                var bs = _branchAdjustments.FirstOrDefault(m=>m.BranchCode == code);
+                if ( bs==null) {
+                    bs = new BoundCalcAdjustment() {
+                        SourceYear = _year,
+                        TargetYear = _targetYear,
+                        BranchCode = code,
+                        Capacity = maxLinkFlow
+                    };
+                    _da.BoundCalc.Add(bs);
+                } else {
+                    bs.Capacity = Math.Max(bs.Capacity,maxLinkFlow);
+                }
             }
 
         }
