@@ -1,9 +1,6 @@
-<div style="white-space: nowrap; position: relative">
-    <span *ngIf="readOnly || data.userEdit!==undefined; else editableBlock" [ngClass]="{'existing': data.userEdit}">{{value}}</span>
-    <div *ngIf="data.userEdit" class="delete button">
-        <mat-icon (click)="delete()" title="Delete edit" [inline]="true">cancel</mat-icon>
-    </div>
-    <div *ngIf="data.userEdit?.prevValue" class="prevValue">
+<div style="white-space: nowrap; position: relative;">
+    <span *ngIf="readOnly; else editableBlock" [ngClass]="{'existing': data.userEdit}">{{value}}</span>
+    <div *ngIf="data.userEdit?.prevValue" class="prevValue" style="line-height: 85%;">
         ({{data.userEdit?.prevValue}})  
     </div>
     <ng-template #editableBlock>
@@ -18,10 +15,13 @@
             </div>
         </ng-template>
         <div class="editButtons">
-            <div class="save button" [ngClass]="{'hide': !hasFocus}" (click)="save($event)" (mousedown)="mouseDown($event)">
+            <div class="delete button" *ngIf="data.userEdit && !hasFocus">
+                <mat-icon (click)="delete()" title="Delete edit" [inline]="true">cancel</mat-icon>
+            </div>
+            <div class="save button" *ngIf="hasFocus" (click)="save($event)" (mousedown)="mouseDown($event)">
                 <mat-icon title="Save edit" [inline]="true">done</mat-icon>
             </div>        
-            <div class="cancel button" [ngClass]="{'hide': !hasFocus}" (click)="cancel($event)" (mousedown)="mouseDown($event)">
+            <div class="cancel button" *ngIf="hasFocus" (click)="cancel($event)" (mousedown)="mouseDown($event)">
                 <mat-icon title="Cancel edit" [inline]="true">close</mat-icon>
             </div>    
         </div>    

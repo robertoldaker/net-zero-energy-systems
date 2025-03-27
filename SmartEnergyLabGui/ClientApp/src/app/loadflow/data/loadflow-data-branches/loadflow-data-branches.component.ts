@@ -24,6 +24,7 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
         this.createDataSource(dataService.dataset,dataService.networkData.branches)
         this.displayedColumns = ['buttons','code','node1Code','node2Code','typeStr','x','cap','freePower','powerFlow','km','mwkm','loss']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
+            this.branchCapacityError = false
             this.createDataSource(dataService.dataset,results.branches)
         }))
         this.addSub(dataService.ResultsLoaded.subscribe( (results) => {
@@ -54,7 +55,7 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
     }
 
     getFreePowerStyle(fp: number | undefined): any {
-        if (fp!=undefined && fp<-1e-6 ) {
+        if (fp!=undefined && fp<-1e-2 ) {
             return {'color':'darkred'}
         } else {
             return {};

@@ -170,6 +170,9 @@ public class Datasets : DataSet
             }
         }
 
+        // Ignore user edits that have not been referenced
+        userEdits = userEdits.Where(m=>m.PrevValue!=null).ToList();
+
         // remove deletes from main list
         foreach( var dgp in deletedData) {
             data.Remove(dgp);

@@ -47,6 +47,7 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         this.createDataSource(this.dataService.dataset,dataService.networkData.nodes);
         this.displayedColumns = ['buttons','code','voltage','zoneName','demand','generation_A','generation_B','ext','mismatch']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
+            this.nodeMismatchError = false
             this.createDataSource(this.dataService.dataset,results.nodes);
         }))
         this.addSub( dataService.ResultsLoaded.subscribe( (results) => {

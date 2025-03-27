@@ -24,9 +24,11 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
         this.createDataSource(this.dataService.dataset,dataService.networkData.ctrls);        
         this.displayedColumns = ['buttons','code','node1Code','node2Code','type','minCtrl','maxCtrl','cost','setPoint']
         this.addSub(dataService.NetworkDataLoaded.subscribe( (results) => {
+            this.setPointError = false
             this.createDataSource(this.dataService.dataset,results.ctrls)
         }))
         this.addSub(dataService.ResultsLoaded.subscribe( (results) => {
+            this.setPointError = results.setPointError;
             this.createDataSource(this.dataService.dataset,results.ctrls)
         }))
     }
@@ -42,6 +44,12 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
         let branchId = e._data.branchId
         let editorData = this.dataService.getBranchEditorData(branchId)
         this.dialogService.showLoadflowBranchDialog(editorData);
+    }
+
+    setPointError: boolean = false
+
+    getOverallSetPointStyle(): any {
+        return this.setPointError ? {'color':'darkred'} : {}
     }
 
     getSetPointStyle(sp: number | undefined,min: number, max: number): any {

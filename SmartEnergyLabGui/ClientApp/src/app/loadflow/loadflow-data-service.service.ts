@@ -75,7 +75,7 @@ export class LoadflowDataService {
         this.dataClientService.GetNetworkData( this.dataset.id, (results)=>{
             this.networkData = results
             this.messageService.clearMessage()
-            this.loadFlowResults = undefined
+            this.loadFlowResults = undefined            
             this.NetworkDataLoaded.emit(results)
             this.updateLocationData(true)
         })
@@ -112,6 +112,8 @@ export class LoadflowDataService {
         this.dataClientService.AdjustBranchCapacities( this.dataset.id, transportModel, (results) => {
             this.inRun = false;
             this.loadFlowResults = results;
+            // need to copy branch userEdits into NetworkData to ensure further edits work
+            this.networkData.branches.userEdits = results.branches.userEdits
             this.ResultsLoaded.emit(results);
         });
     }
@@ -243,18 +245,18 @@ export class LoadflowDataService {
     afterEdit(resp: DatasetData<any>[] ) {
         //
         console.log('afterEdit',resp)
+        this.loadFlowResults = undefined
+        //
         for( let r of resp) {
             let dd = this.getDatasetData(r.tableName)
             DatasetsService.updateDatasetData(dd,r)    
+            if ( r.tableName === "Branch") {
+                //??console.log('useredits (resp)',r.userEdits)
+                //??console.log('useredits (dd)',dd.userEdits)
+            }
         }
         //
-        if ( this.loadFlowResults) {
-            console.log('afterEdit results',this.loadFlowResults)
-            this.ResultsLoaded.emit(this.loadFlowResults)
-        } else {
-            console.log('afterEdit networkData',this.networkData)
-            this.NetworkDataLoaded.emit(this.networkData)
-        }
+        this.NetworkDataLoaded.emit(this.networkData)
         //
         this.updateLocationData(false);
     }
@@ -406,12 +408,13 @@ export class LoadflowDataService {
     }
 
     private getDatasetData(typeName: string):DatasetData<any> {
+        // Note always use this.networkData as loadflowResults should be null here
         if ( typeName == "Node") {
-            return this.loadFlowResults ? this.loadFlowResults.nodes : this.networkData.nodes;
+            return this.networkData.nodes;
         } else if ( typeName == "Branch") {
-            return this.loadFlowResults ? this.loadFlowResults.branches : this.networkData.branches
+            return this.networkData.branches
         } else if ( typeName == "Ctrl") {
-            return this.loadFlowResults ? this.loadFlowResults.ctrls : this.networkData.ctrls
+            return this.networkData.ctrls
         } else if ( typeName == "Zone") {
             return this.networkData.zones
         } else if ( typeName == "Boundary") {

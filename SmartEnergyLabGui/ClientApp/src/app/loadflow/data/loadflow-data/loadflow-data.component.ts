@@ -42,6 +42,9 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
             }
         }))
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results)=>{
+            this.hasNodesError = false
+            this.hasBranchesError = false
+            this.hasCtrlsError = false
             this.showAllTripResults = false;
         }))
     }

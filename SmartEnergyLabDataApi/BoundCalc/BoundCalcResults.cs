@@ -41,7 +41,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             if ( NodeMismatchError ) {
                 NodeMismatchErrorAsc = Math.Abs((double) misMatches[0]) > Math.Abs((double) misMatches[misMatches.Count-1]);
             }
-            BranchCapacityError = lf.Branches.DatasetData.Data.Any(nw => nw.FreePower!=null && nw.FreePower<-1e-6);
+            BranchCapacityError = lf.Branches.DatasetData.Data.Any(nw => nw.FreePower!=null && nw.FreePower<-1e-2);
             SetPointError = lf.Ctrls.DatasetData.Data.Any(cw => cw.SetPoint!=null && cw.SetPoint>cw.MaxCtrl || cw.SetPoint<cw.MinCtrl);
         }
 

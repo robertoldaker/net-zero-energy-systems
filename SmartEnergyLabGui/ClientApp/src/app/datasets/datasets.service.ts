@@ -246,8 +246,7 @@ export class DatasetsService {
             if ( index>=0 ) {
                 dd.deletedData.splice(index,1)
             }
-            //
-            
+            // Remove any user edits referencing this data as these will be added later          
             let ues = dd.userEdits.filter(m=>m.key == d.id)
             for (let ue of ues) {
                 let index = dd.userEdits.findIndex(m=>m.id === ue.id)
@@ -268,12 +267,10 @@ export class DatasetsService {
                 dd.data.splice(index,1)
             }
         }
+        // push new user edits
         for( let ue of resp.userEdits ) {
             dd.userEdits.push(ue);
         }
-
-        //
-        console.log('useredits',dd.userEdits)
     }
 
 }
