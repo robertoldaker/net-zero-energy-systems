@@ -32,6 +32,7 @@ export class LoadflowDataService {
             boundaries: { tableName: '',data:[], userEdits: [],deletedData: [] },
             zones: { tableName: '',data:[], userEdits: [],deletedData: [] },
             locations: { tableName: '',data:[], userEdits: [],deletedData: [] },
+            boundaryDict: {},
         }
         this.locationData = { locations: [], links: []}
         this.locMap = new Map<number,LoadflowLocation>()
@@ -54,6 +55,7 @@ export class LoadflowDataService {
     linkMap: Map<string,LoadflowLink>
     loadFlowResults: LoadflowResults | undefined
     boundaryName: string | undefined
+    boundaryLinks: ILoadflowLink[] = []
     inRun: boolean = false
 
     selectedMapItem: SelectedMapItem | null
@@ -88,14 +90,18 @@ export class LoadflowDataService {
         }
     }
 
-    setBound(boundaryName: string) {
-        this.inRun = true;
-        this.dataClientService.SetBound(this.dataset.id, boundaryName, (results) =>{
-            this.inRun = false;
+    setBoundary(boundaryName: string | undefined) {
+        this.boundaryLinks = [];
+        if ( this.networkData) {
             this.boundaryName = boundaryName
-            this.loadFlowResults = results
-            this.ResultsLoaded.emit(results)
-        })
+            if ( this.boundaryName ) {
+                let boundaryBranchIds = this.networkData.boundaryDict[this.boundaryName];
+                if ( boundaryBranchIds) {                                        
+                    this.boundaryLinks = this.locationData.links.filter( m=>boundaryBranchIds.includes(m.id))
+                }
+            }
+        }
+        this.BoundarySelected.emit(this.boundaryLinks)
     }
 
     runBoundCalc(transportModel: TransportModel, boundaryName: string, boundaryTrips: boolean, tripStr: string) {
@@ -189,9 +195,6 @@ export class LoadflowDataService {
 
     reload() {
         this.loadDataset();
-        if ( this.boundaryName!=null ) {
-            this.setBound(this.boundaryName);
-        }
     }
 
     searchLocations(str: string, maxResults: number):ILoadflowLocation[]  {
@@ -244,16 +247,11 @@ export class LoadflowDataService {
 
     afterEdit(resp: DatasetData<any>[] ) {
         //
-        console.log('afterEdit',resp)
         this.loadFlowResults = undefined
         //
         for( let r of resp) {
             let dd = this.getDatasetData(r.tableName)
             DatasetsService.updateDatasetData(dd,r)    
-            if ( r.tableName === "Branch") {
-                //??console.log('useredits (resp)',r.userEdits)
-                //??console.log('useredits (dd)',dd.userEdits)
-            }
         }
         //
         this.NetworkDataLoaded.emit(this.networkData)
@@ -481,7 +479,7 @@ export class LoadflowDataService {
     LocationDataUpdated:EventEmitter<UpdateLocationData> = new EventEmitter<UpdateLocationData>()
     AllTripsProgress:EventEmitter<any> = new EventEmitter<any>()
     ObjectSelected:EventEmitter<SelectedMapItem> = new EventEmitter<SelectedMapItem>()
-
+    BoundarySelected:EventEmitter<ILoadflowLink[]> = new EventEmitter<ILoadflowLink[]>()
 }
 
 export interface IBranchEditorData {

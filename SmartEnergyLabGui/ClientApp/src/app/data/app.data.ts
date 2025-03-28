@@ -417,6 +417,9 @@ export interface Zone {
     datasetId: number
 }
 
+export interface IBoundaryDict {
+    [index: string]: number[],
+}
 export interface NetworkData {
     nodes: DatasetData<Node>
     branches: DatasetData<Branch>
@@ -424,6 +427,7 @@ export interface NetworkData {
     boundaries: DatasetData<Boundary>
     zones: DatasetData<Zone>
     locations: DatasetData<GridSubstationLocation>
+    boundaryDict: IBoundaryDict
 }
 
 export interface LocationData {

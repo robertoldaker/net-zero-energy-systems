@@ -175,8 +175,8 @@ namespace SmartEnergyLabDataApi.Controllers
         [HttpGet]
         [Route("NetworkData")]
         public BoundCalcNetworkData NetworkData(int datasetId) {
-            using( var lf = new BoundCalc.BoundCalc(datasetId) ) {
-                return new BoundCalcNetworkData(lf);
+            using( var bc = new BoundCalc.BoundCalc(datasetId) ) {
+                return new BoundCalcNetworkData(bc);
             }
         }
 

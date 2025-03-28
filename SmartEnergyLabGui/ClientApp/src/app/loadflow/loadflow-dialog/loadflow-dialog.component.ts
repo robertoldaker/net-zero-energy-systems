@@ -26,6 +26,8 @@ export class LoadflowDialogComponent extends ComponentBase {
         this.addSub(dataService.NetworkDataLoaded.subscribe((results=>{
             this.boundaries = results.boundaries.data
             this.branches = results.branches.data
+            this.boundaryName = "Unspecified"
+            this.setBoundary()
         })))
         this.addSub(dataService.ResultsLoaded.subscribe((results)=>{
             if ( results.boundaryTrips ) {
@@ -59,8 +61,12 @@ export class LoadflowDialogComponent extends ComponentBase {
         this.dataService.runBaseLoadflow();
     }
 
-    setBound() {
-        //??this.dataService.setBound(this.boundaryName);
+    setBoundary() {
+        if ( this.boundaryName == "Unspecified") {
+            this.dataService.setBoundary(undefined);
+        } else {
+            this.dataService.setBoundary(this.boundaryName);
+        }
     }
 
     runSingleTrip() {

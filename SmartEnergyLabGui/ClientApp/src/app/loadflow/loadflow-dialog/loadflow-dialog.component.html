@@ -9,7 +9,7 @@
             <td style="vertical-align: top; width:50%; height:50%">
                 <mat-form-field appearance="fill" [color]="'primary'">
                     <mat-label>Boundary</mat-label>
-                    <mat-select (selectionChange)="setBound()" [(ngModel)]="boundaryName">
+                    <mat-select (selectionChange)="setBoundary()" [(ngModel)]="boundaryName">
                         <mat-option [value]="'Unspecified'">Unspecified</mat-option>
                         <mat-option *ngFor="let b of boundaries" [value]="b.code">{{b.code}}</mat-option>
                     </mat-select>

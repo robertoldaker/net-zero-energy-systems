@@ -20,10 +20,10 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     @ViewChild(GoogleMap, { static: false }) map: GoogleMap | undefined
     @ViewChildren('locMarkers', { read: MapMarker }) locMapMarkers: QueryList<MapMarker> | undefined
-    @ViewChildren('branchLines', { read: MapPolyline }) branchMapPolylines: QueryList<MapPolyline> | undefined
+    @ViewChildren('linkLines', { read: MapPolyline }) linkMapPolylines: QueryList<MapPolyline> | undefined
     @ViewChild('key') key: ElementRef | undefined
     @ViewChild('locInfoWindow', { read: MapInfoWindow }) locInfoWindow: MapInfoWindow | undefined
-    @ViewChild('branchInfoWindow', { read: MapInfoWindow }) branchInfoWindow: MapInfoWindow | undefined
+    @ViewChild('linkInfoWindow', { read: MapInfoWindow }) linkInfoWindow: MapInfoWindow | undefined
     @ViewChild('divContainer') divContainer: ElementRef | undefined
 
     constructor(
@@ -38,12 +38,12 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             // add markers and lines to represent loadflow nodes, branches and ctrls 
             this.updateMapData(updateLocationData)
         }))
-        this.addSub(this.loadflowDataService.ResultsLoaded.subscribe((loadflowResults) => {
-            if (loadflowResults.boundaryTrips) {
-                this.selectBoundaryBranches(loadflowResults.boundaryTrips.trips)
-            }
+        this.addSub(this.loadflowDataService.BoundarySelected.subscribe((boundaryLinks) => {
+            // select links associated with the selected boundary
+            this.selectBoundaryBranches(boundaryLinks)
         }))
         this.addSub(this.loadflowDataService.ObjectSelected.subscribe((selectedItem) => {
+            // select an objet (link or location)
             this.selectObject(selectedItem)
         }))
     }
@@ -58,10 +58,6 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     ngAfterViewInit(): void {
         if (this.key) {
             this.map?.controls[google.maps.ControlPosition.TOP_LEFT].push(this.key.nativeElement);
-        }
-        let trips = this.loadflowDataService.loadFlowResults?.boundaryTrips?.trips
-        if (trips) {
-            this.selectBoundaryBranches(trips);
         }
         if ( this.locInfoWindow ) {
             this.addBranchHandler = new AddBranchHandler(this.locInfoWindow,this.messageService,this.dialogService, this.loadflowDataService)
@@ -108,20 +104,20 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     private readonly BOUNDARY_COLOUR = '#00FF2F'
 
     locMarkerOptions: MapOptions<google.maps.MarkerOptions> = new MapOptions()
-    branchOptions: MapOptions<google.maps.PolylineOptions> = new MapOptions()
+    linkOptions: MapOptions<google.maps.PolylineOptions> = new MapOptions()
     selectedLocMarker: MapMarker | null = null
     selectedItem: SelectedMapItem = { location: null, link: null }
-    selectedBranchLine: MapPolyline | null = null
+    selectedLinkLine: MapPolyline | null = null
     private selectObject(selectedItem: SelectedMapItem) {
         // de-select existing location marker 
         if (this.selectedLocMarker && this.selectedItem.location) {
             this.selectMarker(this.selectedItem.location, this.selectedLocMarker, false);
             this.selectedLocMarker = null;
         }
-        // and branch
-        if (this.selectedBranchLine && this.selectedItem.link) {
-            this.selectBranch(this.selectedItem.link, this.selectedBranchLine, false);
-            this.selectedBranchLine = null;
+        // and link
+        if (this.selectedLinkLine && this.selectedItem.link) {
+            this.selectLink(this.selectedItem.link, this.selectedLinkLine, false);
+            this.selectedLinkLine = null;
         }
         if (selectedItem.location && this.locMapMarkers) {
             let index = this.locMarkerOptions.getIndex(selectedItem.location.id)
@@ -131,12 +127,12 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
                 this.selectedLocMarker = mm
                 this.selectedItem = selectedItem
             }
-        } else if (selectedItem.link && this.branchMapPolylines) {
-            let index = this.branchOptions.getIndex(selectedItem.link.id)
-            let mpl = this.branchMapPolylines.get(index);
+        } else if (selectedItem.link && this.linkMapPolylines) {
+            let index = this.linkOptions.getIndex(selectedItem.link.id)
+            let mpl = this.linkMapPolylines.get(index);
             if (mpl) {
-                this.selectBranch(selectedItem.link, mpl, true)
-                this.selectedBranchLine = mpl
+                this.selectLink(selectedItem.link, mpl, true)
+                this.selectedLinkLine = mpl
                 this.selectedItem = selectedItem
             }
         }
@@ -154,7 +150,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
         if ( updateLocationData.clearBeforeUpdate ) {
             this.locMarkerOptions.clear()
-            this.branchOptions.clear()    
+            this.linkOptions.clear()    
         }
 
         let updateLocs = updateLocationData.updateLocations
@@ -181,20 +177,20 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         // Links
         // delete ones not needed
         for (let link of deleteLinks) {
-            this.branchOptions.remove(link.id)
+            this.linkOptions.remove(link.id)
             // if its the selected one then remove the info window
             if ( link.id == this.loadflowDataService.selectedMapItem?.link?.id) {
-                this.branchInfoWindow?.close()
+                this.linkInfoWindow?.close()
             }
         }
         // replace or add branch options as needed
         updateLinks.forEach(link => {
-            let branchOption = this.branchOptions.get(link.id);
+            let branchOption = this.linkOptions.get(link.id);
             let options = this.getBranchOptions(link)
             if (branchOption) {
                 branchOption.options = options
             } else {
-                this.branchOptions.add(link.id, options)
+                this.linkOptions.add(link.id, options)
             }
         })
 
@@ -310,7 +306,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
     }
 
-    branchLineClicked(branchId: number) {
+    linkLineClicked(branchId: number) {
         this.loadflowDataService.selectLink(branchId)
     }
 
@@ -344,30 +340,32 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
     }
 
-    selectBranch(branch: ILoadflowLink, mpl: MapPolyline, select: boolean) {
+    selectLink(link: ILoadflowLink, mpl: MapPolyline, select: boolean) {
         //
-        let options = this.getPolylineOptions(branch, select, false)
+        let isBoundaryLink = this.loadflowDataService.boundaryLinks.find(m=>m.id == link.id) ? true : false
+        //
+        let options = this.getPolylineOptions(link, select, isBoundaryLink)
         mpl.polyline?.setOptions(options);
         //
-        this.showBranchInfoWindow(branch, mpl, select)
+        this.showLinkInfoWindow(link, mpl, select)
     }
 
-    showBranchInfoWindow(branch: ILoadflowLink, mpl: MapPolyline, select: boolean) {
+    showLinkInfoWindow(link: ILoadflowLink, mpl: MapPolyline, select: boolean) {
         // pan/zoom to new position
         let center = {
-            lat: (branch.gisData1.latitude + branch.gisData2.latitude) / 2,
-            lng: (branch.gisData1.longitude + branch.gisData2.longitude) / 2
+            lat: (link.gisData1.latitude + link.gisData2.latitude) / 2,
+            lng: (link.gisData1.longitude + link.gisData2.longitude) / 2
         }
         if (select) {
             this.panTo(center, 7)
         }
         // open info window
-        if (this.branchInfoWindow) {
+        if (this.linkInfoWindow) {
             if (select) {
-                this.branchInfoWindow.position = center
-                this.branchInfoWindow.open()
+                this.linkInfoWindow.position = center
+                this.linkInfoWindow.open()
             } else {
-                this.branchInfoWindow.close()
+                this.linkInfoWindow.close()
             }
         }
     }
@@ -438,11 +436,11 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.map?.googleMap?.panTo(this.center)
     }
 
-    boundaryBranches: ILoadflowLink[] = []
+    boundaryLinks: ILoadflowLink[] = []
     boundaryMapPolylines: Map<number, MapPolyline> = new Map()
-    selectBoundaryBranches(boundaryTrips: BoundaryTrip[]) {
+    selectBoundaryBranches(boundaryLinks: ILoadflowLink[]) {
         // unselect current ones
-        this.boundaryBranches.forEach((branch) => {
+        this.boundaryLinks.forEach((branch) => {
             let mapPolyline = this.boundaryMapPolylines.get(branch.id)
             if (mapPolyline) {
                 let options = this.getPolylineOptions(branch, false, false)
@@ -450,14 +448,14 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             }
         })
         // select new ones
-        this.boundaryBranches = []
+        this.boundaryLinks = []
         this.boundaryMapPolylines.clear()
-        this.boundaryBranches = this.loadflowDataService.locationData.links.
-            filter(m => boundaryTrips.find(n => n.type == BoundaryTripType.Single && n.branchIds[0] == m.id));
-        this.boundaryBranches.forEach((branch) => {
-            var index = this.branchOptions.getIndex(branch.id);
-            if (index >= 0 && this.branchMapPolylines) {
-                let mapPolyline = this.branchMapPolylines.get(index);
+        // make a copy of array
+        this.boundaryLinks = [...boundaryLinks]
+        this.boundaryLinks.forEach((branch) => {
+            var index = this.linkOptions.getIndex(branch.id);
+            if (index >= 0 && this.linkMapPolylines) {
+                let mapPolyline = this.linkMapPolylines.get(index);
                 if (mapPolyline) {
                     let options = this.getPolylineOptions(branch, false, true)
                     mapPolyline.polyline?.setOptions(options);

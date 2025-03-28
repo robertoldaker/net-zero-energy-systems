@@ -7,23 +7,27 @@ using SmartEnergyLabDataApi.Data.BoundCalc;
 namespace SmartEnergyLabDataApi.BoundCalc
 {
     public class BoundCalcNetworkData {
-        public BoundCalcNetworkData(BoundCalc lf) {
+        public BoundCalcNetworkData(BoundCalc bc) {
             // Nodes
-            Nodes = lf.Nodes.DatasetData;
+            Nodes = bc.Nodes.DatasetData;
             // Branches
-            Branches = lf.Branches.DatasetData;
+            Branches = bc.Branches.DatasetData;
             // Controls
-            Ctrls = lf.Ctrls.DatasetData;
+            Ctrls = bc.Ctrls.DatasetData;
             // Boundaries
-            Boundaries = lf.Boundaries.DatasetData;
+            Boundaries = bc.Boundaries.DatasetData;
             // Zones
-            Zones = lf.Zones;
+            Zones = bc.Zones;
             // Locations
             using (var da = new DataAccess() ) {
-                Locations = loadLocations(da, lf.Dataset.Id);
+                Locations = loadLocations(da, bc.Dataset.Id);
             }
-            //?? Not needed as reverted to using node.Location as a db foreign key
-            //??assignNodeLocations();
+            // Boundary branches
+            BoundaryDict = new Dictionary<string, int[]>();
+            foreach( var b in bc.Boundaries.Objs) {
+                var boundaries = b.BoundCcts.Items.Select(m=>m.Obj.Id).ToArray();
+                BoundaryDict.Add(b.name,boundaries);
+            }
         }
 
         public DatasetData<Node> Nodes {get; private set;}
@@ -32,6 +36,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public DatasetData<Boundary> Boundaries {get; private set;}
         public DatasetData<Zone> Zones {get; private set;}
         public DatasetData<GridSubstationLocation> Locations {get; private set;}
+        public Dictionary<string,int[]> BoundaryDict {get; private set;}
 
         private DatasetData<GridSubstationLocation> loadLocations(DataAccess da, int datasetId) {
             var q = da.Session.QueryOver<GridSubstationLocation>();

@@ -10,13 +10,9 @@ import { LoadflowDataService } from '../../loadflow-data-service.service';
 export class LoadflowMapKeyComponent  extends ComponentBase {
     constructor(private loadflowDataService: LoadflowDataService) {
         super()
-        if ( this.loadflowDataService.loadFlowResults) {
-            this.boundaryName = this.loadflowDataService.boundaryName;
-        }
-        this.addSub(this.loadflowDataService.ResultsLoaded.subscribe(()=>{
-            this.boundaryName = this.loadflowDataService.boundaryName;
-        }))         
     }
 
-    boundaryName: string | undefined
+    get boundaryName() {
+        return this.loadflowDataService.boundaryName
+    }
 }
