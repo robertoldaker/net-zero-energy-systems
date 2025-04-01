@@ -1,0 +1,11 @@
+.dialogContainer {
+    padding: 1rem;
+}
+
+.tripsContainer {
+    display: inline-block;
+    padding-left: 1rem;
+    vertical-align: top;
+    margin-bottom: 1rem;
+}
+

@@ -63,6 +63,19 @@
             </td>
         </ng-container>
             
+        <!-- trip -->
+        <ng-container matColumnDef="trip">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">
+                <div style="line-height: 120%">
+                    <div>Trips</div>
+                    <div class="cellLink" style="color: blue; text-decoration: underline; opacity: 0.5;" (click)="clearTrips($event);">clear</div>
+                </div>
+            </th>
+            <td mat-cell *matCellDef="let element">
+                <input type="checkbox" [checked]="isTripped(element.id.value)" (change)="toggleTrip($event,element.id.value)"/>
+            </td>
+        </ng-container>
+            
         <!-- free power -->
         <ng-container matColumnDef="freePower">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before"><div [style]="getOverallFreePowerStyle()">Free</div></th>

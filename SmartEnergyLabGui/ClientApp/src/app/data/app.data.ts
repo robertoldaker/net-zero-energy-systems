@@ -355,6 +355,7 @@ export interface Branch {
     id: number
     datasetId: number
     displayName: string
+    lineName: string
     type: BranchType
     typeStr: string
     ctrlId: number

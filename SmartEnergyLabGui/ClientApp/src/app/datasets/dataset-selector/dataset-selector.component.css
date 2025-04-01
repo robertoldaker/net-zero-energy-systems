@@ -18,3 +18,8 @@
     display: inline-block;
     width: 10px;
 }
+
+.datasetButtons {
+    display: inline-block;
+    white-space: nowrap;
+}

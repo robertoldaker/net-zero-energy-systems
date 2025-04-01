@@ -29,7 +29,7 @@
 .mat-column-cap {
   /*  width: 100px;*/
     text-align: right;
-    padding-right: 2rem;
+    padding-right: 0.5rem;
 }
 
 .mat-column-type {
@@ -69,4 +69,8 @@
     text-align: right;
     font-style: italic;
     color: green;
+}
+
+.mat-column-trip {
+    text-align: right;
 }

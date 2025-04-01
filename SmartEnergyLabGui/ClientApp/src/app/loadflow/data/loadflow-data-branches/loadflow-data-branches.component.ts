@@ -5,6 +5,7 @@ import { ColumnDataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-edi
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { DataTableBaseComponent } from '../../../datasets/data-table-base/data-table-base.component';
 import { LoadflowDataComponent } from '../loadflow-data/loadflow-data.component';
+import { Sort } from '@angular/material/sort';
 
 @Component({
   selector: 'app-loadflow-data-branches',
@@ -20,9 +21,18 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
         this.dataFilter.sort = { active: 'node1Code', direction: 'asc'};
         this.typeDataFilter = new ColumnDataFilter(this,"typeStr")
         this.dataFilter.columnFilterMap.set(this.typeDataFilter.columnName, this.typeDataFilter)
+        this.dataFilter.addCustomSorter("trip",(col: string, item1: any, item2: any)=>{
+            let isTripped1 = this.dataService.isTripped(item1.id)
+            let isTripped2 = this.dataService.isTripped(item2.id)
+            if (isTripped1 == isTripped2 ) {
+                return 0
+            } else {
+                return isTripped1 && !isTripped2 ? 1 : -1
+            }
+        })
 
         this.createDataSource(dataService.dataset,dataService.networkData.branches)
-        this.displayedColumns = ['buttons','code','node1Code','node2Code','typeStr','x','cap','freePower','powerFlow','km','mwkm','loss']
+        this.displayedColumns = ['buttons','code','node1Code','node2Code','typeStr','x','cap','trip','freePower','powerFlow','km','mwkm','loss']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.branchCapacityError = false
             this.createDataSource(dataService.dataset,results.branches)
@@ -79,5 +89,22 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
         this.createDataSource()
     }
 
+    isTripped(branchId: number) {
+        return this.dataService.isTripped(branchId)
+    }
+
+    toggleTrip(e: any, branchId: number) {
+        console.log('toggleTrip',branchId,e.target.checked)
+        if ( e.target.checked ) {
+            this.dataService.addTrip(branchId)
+        } else {
+            this.dataService.removeTrip(branchId)
+        }
+    }
+
+    clearTrips(e:any) {
+        this.dataService.clearTrips()
+        e.stopPropagation()
+    }
 
 }

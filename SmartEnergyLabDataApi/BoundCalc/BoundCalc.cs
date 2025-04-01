@@ -852,7 +852,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 ActiveTrip = tr;
                 return true;
             } else {
-                MiscReport($"Trip {tr.name}","splits AC network");
+                MiscReport($"Trip {tr.name}","splits AC network",BoundCalcStageResultEnum.Fail);
                 return false;
             }
         }

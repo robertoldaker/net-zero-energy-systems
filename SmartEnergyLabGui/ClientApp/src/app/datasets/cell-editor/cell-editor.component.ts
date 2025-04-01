@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { Sort } from '@angular/material/sort';
+import { Sort, SortDirection } from '@angular/material/sort';
 import { Dataset, DatasetData, DatasetType, IId, UserEdit } from 'src/app/data/app.data';
 import { DatasetsService } from 'src/app/datasets/datasets.service';
 import { DataTableBaseComponent } from '../data-table-base/data-table-base.component';
@@ -328,47 +328,49 @@ export class DataFilter {
         return items;
     }
 
-    private sortData(items: any[]):any[] {
-        items.sort((item1,item2)=>{
-            let result = 0;
-            if ( this.sort ) {
-                let sort = this.sort
-                let data1 = item1[sort.active]
-                if ( data1===undefined || data1===null) {
-                    data1=''
-                }
-                let data2 = item2[sort.active]
-                if ( data2===undefined || data2===null) {
-                    data2=''
-                }
-                if ( data1!==undefined && data2!==undefined) {
-                    if (typeof(data1) === 'string' && typeof(data2) === 'string') {
-                        if ( sort.direction == 'asc') {
-                            result = data1.localeCompare(data2)
-                        } else {
-                            result = data2.localeCompare(data1)
-                        }
-                    } else if (typeof(data1) === 'number' && typeof(data2) === 'number') {
-                        if ( sort.direction == 'asc') {
-                            result = data1 - data2;
-                        } else {
-                            result = data2 - data1;
-                        }
-                    } else if (typeof(data1) === 'boolean' && typeof(data2) === 'boolean') {
-                        if ( data1 === data2) {
-                            result = 0;
-                        } else if ( sort.direction == 'asc') {
-                            result = data1 && !data2 ? 1:-1;
-                        } else {
-                            result = data1 && !data2 ? -1:1;
-                        }
-                    }
-                }
-    
-            }
-            return result;
-        })
+    public addCustomSorter(column: string, sortFcn: (col: string, item1: any,item2: any)=>number) {
+        this.sortFcnMap.set(column,sortFcn)
+    }
+
+    private sortFcnMap: Map<string,(col: string, item1: any,item2: any)=>number> = new Map()
+
+    private sortData(items: any[]):any[] {        
+        if ( this.sort) {
+            let sortFcnTest = this.sortFcnMap.get(this.sort.active)
+            let sortFcn = sortFcnTest ? sortFcnTest : this.defaultSortFcn
+            let col:string = this.sort.active
+            items.sort((item1,item2) => {
+                let result = sortFcn(col,item1,item2)
+                return this.sort?.direction == 'asc' ? result : -result    
+            })
+        }
         return items;
+    }
+
+    private defaultSortFcn(col: string, item1: any,item2: any):number {
+        let result = 0;
+        let data1 = item1[col]
+        if ( data1===undefined || data1===null) {
+            data1=''
+        }
+        let data2 = item2[col]
+        if ( data2===undefined || data2===null) {
+            data2=''
+        }
+        if ( data1!==undefined && data2!==undefined) {
+            if (typeof(data1) === 'string' && typeof(data2) === 'string') {
+                result = data1.localeCompare(data2)
+            } else if (typeof(data1) === 'number' && typeof(data2) === 'number') {
+                result = data1 - data2;
+            } else if (typeof(data1) === 'boolean' && typeof(data2) === 'boolean') {
+                if ( data1 === data2) {
+                    result = 0;
+                } else {
+                    result = data1 && !data2 ? 1:-1;
+                }
+            }
+        }
+        return result;
     }
 
     public reset(clearFilters?: boolean) {

@@ -57,6 +57,7 @@ export class LoadflowDataService {
     boundaryName: string | undefined
     boundaryLinks: ILoadflowLink[] = []
     inRun: boolean = false
+    trips: Map<number,boolean> = new Map()
 
     selectedMapItem: SelectedMapItem | null
 
@@ -77,7 +78,8 @@ export class LoadflowDataService {
         this.dataClientService.GetNetworkData( this.dataset.id, (results)=>{
             this.networkData = results
             this.messageService.clearMessage()
-            this.loadFlowResults = undefined            
+            this.loadFlowResults = undefined
+            this.clearTrips()
             this.NetworkDataLoaded.emit(results)
             this.updateLocationData(true)
         })
@@ -104,13 +106,32 @@ export class LoadflowDataService {
         this.BoundarySelected.emit(this.boundaryLinks)
     }
 
-    runBoundCalc(transportModel: TransportModel, boundaryName: string, boundaryTrips: boolean, tripStr: string) {
+    runBoundCalc(transportModel: TransportModel, boundaryName: string, boundaryTrips: boolean) {
         this.inRun = true;
+        let tripStr = this.getTripStr()
+        console.log('tripStr',tripStr)
         this.dataClientService.RunBoundCalc( this.dataset.id, transportModel, boundaryName, boundaryTrips, tripStr, (results) => {
             this.inRun = false;
             this.loadFlowResults = results;
             this.ResultsLoaded.emit(results);
         });
+    }
+
+    private getTripStr():string {
+        let tripStr = ""
+        let first:boolean = true
+        for( let tr of this.trips.keys()) {
+            let br = this.networkData.branches.data.find(m=>m.id == tr)
+            if ( br ) {
+                if ( first ) {
+                    first = false
+                } else {
+                    tripStr += ","
+                }    
+                tripStr+=br.lineName
+            }
+        }
+        return tripStr
     }
 
     adjustBranchCapacities(transportModel: TransportModel) {
@@ -474,12 +495,38 @@ export class LoadflowDataService {
         }
     }    
 
+    public addTrip(branchId : number) {
+        if ( !this.trips.get(branchId)) {
+            this.trips.set(branchId,true)
+            this.TripsChanged.emit(Array.from(this.trips.keys()))    
+        }
+    }
+
+    public isTripped(branchId : number): boolean {
+        let tripped = this.trips.get(branchId)
+        return tripped ? true : false
+    }
+
+    public removeTrip(branchId : number) {
+        if ( this.trips.delete(branchId) ) {
+            this.TripsChanged.emit(Array.from(this.trips.keys()))
+        }
+    }
+
+    public clearTrips() {
+        if ( this.trips.size>0) {
+            this.trips.clear()
+            this.TripsChanged.emit(Array.from(this.trips.keys()))    
+        }
+    }
+
     ResultsLoaded:EventEmitter<LoadflowResults> = new EventEmitter<LoadflowResults>()
     NetworkDataLoaded:EventEmitter<NetworkData> = new EventEmitter<NetworkData>()
     LocationDataUpdated:EventEmitter<UpdateLocationData> = new EventEmitter<UpdateLocationData>()
     AllTripsProgress:EventEmitter<any> = new EventEmitter<any>()
     ObjectSelected:EventEmitter<SelectedMapItem> = new EventEmitter<SelectedMapItem>()
     BoundarySelected:EventEmitter<ILoadflowLink[]> = new EventEmitter<ILoadflowLink[]>()
+    TripsChanged:EventEmitter<number[]> = new EventEmitter<number[]>()
 }
 
 export interface IBranchEditorData {
@@ -553,6 +600,7 @@ export class LoadflowLocation implements ILoadflowLocation {
     private areGslDifferent(gslA: GridSubstationLocation, gslB: GridSubstationLocation) {
         return gslA.latitude!=gslB.latitude || gslA.longitude != gslB.longitude
     }
+
 }
 
 export class LoadflowLink implements ILoadflowLink {

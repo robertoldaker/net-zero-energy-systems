@@ -54,7 +54,7 @@ export class LoadflowDialogComponent extends ComponentBase {
         if ( bn == "Unspecified") {
             bn = "";
         }
-        this.dataService.runBoundCalc(this.transportModel,bn,this.boundaryTrips,"");
+        this.dataService.runBoundCalc(this.transportModel,bn,this.boundaryTrips);
     }
 
     runBaseLoadflow() {
@@ -100,6 +100,10 @@ export class LoadflowDialogComponent extends ComponentBase {
 
     adjustBranchCapacities() {
         this.dataService.adjustBranchCapacities(this.transportModel);
+    }
+
+    get numberOfTrips() {
+        return this.dataService.trips.size
     }
 
     currentTrip: string
