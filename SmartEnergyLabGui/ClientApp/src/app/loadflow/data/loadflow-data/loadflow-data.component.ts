@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 import { LoadflowDataService } from '../../loadflow-data-service.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { MatTabGroup, MatTabLabel } from '@angular/material/tabs';
-import { AllTripResult } from 'src/app/data/app.data';
+import { AllTripResult, SetPointMode } from 'src/app/data/app.data';
 import { LoadflowDataBranchesComponent } from '../loadflow-data-branches/loadflow-data-branches.component';
 import { LoadflowDataNodesComponent } from '../loadflow-data-nodes/loadflow-data-nodes.component';
 import { LoadflowDataCtrlsComponent } from '../loadflow-data-ctrls/loadflow-data-ctrls.component';
@@ -46,6 +46,11 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
             this.hasBranchesError = false
             this.hasCtrlsError = false
             this.showAllTripResults = false;
+        }))
+        this.addSub( dataService.SetPointModeChanged.subscribe( (sp)=>{
+            if ( sp == SetPointMode.Manual && this.matTabGroup) {
+                this.matTabGroup.selectedIndex = this.CTRLS_INDEX
+            }
         }))
     }
     

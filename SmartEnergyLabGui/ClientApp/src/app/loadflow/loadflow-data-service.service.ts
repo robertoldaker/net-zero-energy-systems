@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { Branch, Ctrl, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, ILoadflowLink, ILoadflowLocation, LoadflowCtrlType, LoadflowResults, LocationData, NetworkData, Node, TransportModel, UpdateLocationData } from '../data/app.data';
+import { Branch, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, ILoadflowLink, ILoadflowLocation, LoadflowCtrlType, LoadflowResults, LocationData, NetworkData, Node, SetPointMode, TransportModel, UpdateLocationData } from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { ShowMessageService } from '../main/show-message/show-message.service';
@@ -58,6 +58,7 @@ export class LoadflowDataService {
     boundaryLinks: ILoadflowLink[] = []
     inRun: boolean = false
     trips: Map<number,boolean> = new Map()
+    setPointMode: SetPointMode = SetPointMode.Auto
 
     selectedMapItem: SelectedMapItem | null
 
@@ -67,11 +68,11 @@ export class LoadflowDataService {
         this.loadDataset();
     }
 
-    private loadDataset() {
-        this.loadNetworkData(false);
+    private loadDataset(onLoad: (()=>void) | undefined = undefined) {
+        this.loadNetworkData(false,onLoad);
     }
 
-    private loadNetworkData(withMessage: boolean) {
+    private loadNetworkData(withMessage: boolean, onLoad: (()=>void) | undefined) {
         if ( withMessage ) {
             this.messageService.showMessage('Loading ...')
         }
@@ -82,6 +83,9 @@ export class LoadflowDataService {
             this.clearTrips()
             this.NetworkDataLoaded.emit(results)
             this.updateLocationData(true)
+            if ( onLoad ) {
+                onLoad()
+            }
         })
     }
 
@@ -109,8 +113,7 @@ export class LoadflowDataService {
     runBoundCalc(transportModel: TransportModel, boundaryName: string, boundaryTrips: boolean) {
         this.inRun = true;
         let tripStr = this.getTripStr()
-        console.log('tripStr',tripStr)
-        this.dataClientService.RunBoundCalc( this.dataset.id, transportModel, boundaryName, boundaryTrips, tripStr, (results) => {
+        this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, transportModel, boundaryName, boundaryTrips, tripStr, (results) => {
             this.inRun = false;
             this.loadFlowResults = results;
             this.ResultsLoaded.emit(results);
@@ -132,6 +135,30 @@ export class LoadflowDataService {
             }
         }
         return tripStr
+    }
+
+    public setSetPointMode(setPointMode: SetPointMode) {
+        if ( setPointMode == SetPointMode.Auto) {
+            this.setPointMode = setPointMode
+            this.SetPointModeChanged.emit(this.setPointMode)
+        } else {
+            // manual mode so setup the user edits
+            if ( this.loadFlowResults == undefined) {
+                throw "Unexpected undefined loadflow results"
+            }
+            // create array of current set points
+            let setPoints:CtrlSetPoint[] = []
+            for( let ctrl of this.loadFlowResults.ctrls.data) {
+                setPoints.push({ctrlId: ctrl.id, setPoint: ctrl.setPoint ? ctrl.setPoint : 0})
+            }
+            this.dataClientService.ManualSetPointMode(this.dataset.id, setPoints, (results)=> {
+                console.log('ManualSetPoint',results)
+                this.loadDataset(()=>{                    
+                    this.setPointMode = setPointMode
+                    this.SetPointModeChanged.emit(this.setPointMode)    
+                })
+            })    
+        }
     }
 
     adjustBranchCapacities(transportModel: TransportModel) {
@@ -527,6 +554,7 @@ export class LoadflowDataService {
     ObjectSelected:EventEmitter<SelectedMapItem> = new EventEmitter<SelectedMapItem>()
     BoundarySelected:EventEmitter<ILoadflowLink[]> = new EventEmitter<ILoadflowLink[]>()
     TripsChanged:EventEmitter<number[]> = new EventEmitter<number[]>()
+    SetPointModeChanged:EventEmitter<SetPointMode> = new EventEmitter<SetPointMode>()
 }
 
 export interface IBranchEditorData {

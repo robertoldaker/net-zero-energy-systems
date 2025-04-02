@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType, DatasetData, EditItem, DistributionData, TransmissionData, NationalGridNetworkSource, GridSubstationLocationSource, TransportModel } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LocationData, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType, DatasetData, EditItem, DistributionData, TransmissionData, NationalGridNetworkSource, GridSubstationLocationSource, TransportModel, SetPointMode, CtrlSetPoint } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { DialogService } from '../dialogs/dialog.service';
@@ -291,10 +291,10 @@ export class DataClientService implements ILogs {
         }, error => this.logErrorMessage(error));        
     }
 
-    RunBoundCalc( datasetId: number, transportModel: TransportModel, boundaryName: string, boundaryTrips: boolean, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
+    RunBoundCalc( datasetId: number, setPointMode: SetPointMode, transportModel: TransportModel, boundaryName: string, boundaryTrips: boolean, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/Run?datasetId=${datasetId}&transportModel=${transportModel}&boundaryName=${boundaryName}&boundaryTrips=${boundaryTrips}&tripStr=${tripStr}&connectionId=${connectionId}`,{}).subscribe( result => {
+        this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/Run?datasetId=${datasetId}&setPointMode=${setPointMode}&transportModel=${transportModel}&boundaryName=${boundaryName}&boundaryTrips=${boundaryTrips}&tripStr=${tripStr}&connectionId=${connectionId}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
                 onLoad(result)
@@ -311,6 +311,12 @@ export class DataClientService implements ILogs {
                 onLoad(result)
             }
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
+    }
+
+    ManualSetPointMode( datasetId: number, setPoints: CtrlSetPoint[], onOk: (results: any)=>void) {
+        this.http.post(this.baseUrl + `/BoundCalc/ManualSetPointMode?datasetId=${datasetId}`,setPoints).subscribe( result => {
+            onOk(result)
+        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );                
     }
 
     RunBaseLoadflow( datasetId: number,onLoad: (results: LoadflowResults)=> void | undefined) {

@@ -23,9 +23,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
             Branches = lf.Branches.DatasetData;
             // Controls
             Ctrls = lf.Ctrls.DatasetData;
-            if ( lf.setptmode==BoundCalc.SPAuto) {
+            if ( lf.SetPointMode==SetPointMode.Auto) {
                 foreach( var ct in lf.Ctrls.Objs) {
-                    ct.SetPoint = ct.GetSetPoint(lf.setptmode);
+                    ct.SetPoint = ct.GetSetPoint(lf.SetPointMode);
                 }
             }
 

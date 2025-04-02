@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Ctrl, LoadflowCtrlType } from '../../../data/app.data';
+import { Ctrl, LoadflowCtrlType, SetPointMode } from '../../../data/app.data';
 import { LoadflowDataService } from '../../loadflow-data-service.service';
 import { ColumnDataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
@@ -31,6 +31,9 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
             this.setPointError = results.setPointError;
             this.createDataSource(this.dataService.dataset,results.ctrls)
         }))
+        this.addSub(dataService.SetPointModeChanged.subscribe( ( result) => {
+            console.log('setPointMode',result)
+        }))
     }
 
     getTypeStr(type: LoadflowCtrlType) {
@@ -49,14 +52,18 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
     setPointError: boolean = false
 
     getOverallSetPointStyle(): any {
-        return this.setPointError ? {'color':'darkred'} : {}
+        if ( this.setPointMode == SetPointMode.Manual) {
+            return {}
+        } else {
+            return this.setPointError ? {'color':'darkred'} : {'color': 'green'}
+        }
     }
 
     getSetPointStyle(sp: number | undefined,min: number, max: number): any {
         if (sp!=undefined && (sp>max || sp<min)) {
             return {'color':'darkred'}
         } else {
-            return {};
+            return {'color': 'green'};
         }
     }
 
@@ -67,6 +74,10 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
         this.createDataSource()
     }
 
+    get setPointMode():SetPointMode {
+        return this.dataService.setPointMode
+    }
 
+    SetPointMode = SetPointMode
 
 }

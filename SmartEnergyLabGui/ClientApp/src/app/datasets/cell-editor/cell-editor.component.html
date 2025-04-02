@@ -15,7 +15,7 @@
             </div>
         </ng-template>
         <div class="editButtons">
-            <div class="delete button" *ngIf="data.userEdit && !hasFocus">
+            <div class="delete button" *ngIf="data.userEdit && !hasFocus && canDelete">
                 <mat-icon (click)="delete()" title="Delete edit" [inline]="true">cancel</mat-icon>
             </div>
             <div class="save button" *ngIf="hasFocus" (click)="save($event)" (mousedown)="mouseDown($event)">

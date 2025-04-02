@@ -78,14 +78,14 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         public LPVarDef CtVar {get; set;}
 
-        public double GetSetPoint(int spt) {
+        public double GetSetPoint(SetPointMode spt) {
             double v = this.Obj.MaxCtrl / InjMax;
             switch( spt) {
-                case BoundCalc.SPAuto:
+                case SetPointMode.Auto:
                     return v * CtVar.Value(BoundCalc.Optimiser.ctrllp);
-                case BoundCalc.SPMan:
+                case SetPointMode.Manual:
                     return (double) Obj.SetPoint;
-                case BoundCalc.SPZero:
+                case SetPointMode.Zero:
                     return 0;
                 default:
                     throw new Exception($"Unknown setpoint type request [{spt}]");

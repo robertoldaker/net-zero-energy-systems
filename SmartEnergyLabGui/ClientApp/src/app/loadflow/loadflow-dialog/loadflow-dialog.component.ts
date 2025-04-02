@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Boundary, BoundaryFlowResult, BoundaryTrip, Branch, Dataset, DatasetType, LoadflowResults, TransportModel } from '../../data/app.data';
+import { Boundary, BoundaryFlowResult, BoundaryTrip, Branch, Dataset, DatasetType, LoadflowResults, SetPointMode, TransportModel } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { DataClientService } from 'src/app/data/data-client.service';
@@ -98,12 +98,24 @@ export class LoadflowDialogComponent extends ComponentBase {
         this.transportModel = e.value;
     }
 
+    setPointModeChanged(e: any) {
+        this.dataService.setSetPointMode(e.value);
+    }
+
     adjustBranchCapacities() {
         this.dataService.adjustBranchCapacities(this.transportModel);
     }
 
     get numberOfTrips() {
         return this.dataService.trips.size
+    }
+
+    get setPointMode() {
+        return this.dataService.setPointMode
+    }
+
+    get resultsLoaded() {
+        return this.dataService.loadFlowResults ? true : false
     }
 
     currentTrip: string
@@ -120,5 +132,5 @@ export class LoadflowDialogComponent extends ComponentBase {
     transportModel: TransportModel = TransportModel.PeakSecurity
     TransportModel = TransportModel
     hasCapacityError:boolean = false
-
+    SetPointMode = SetPointMode
 }

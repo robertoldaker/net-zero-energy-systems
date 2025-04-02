@@ -121,6 +121,9 @@ export class CellEditorComponent {
     @Input()
     decimalPlaces: number | undefined
 
+    @Input()
+    canDelete: boolean = true
+
     get readOnly(): boolean {
         return this.data.dataset.isReadOnly || this.data.isRowDeleted
     }

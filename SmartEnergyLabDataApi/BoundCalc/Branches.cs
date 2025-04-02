@@ -243,7 +243,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         public bool BOut {get; set;} = false;
 
-        public double flow(double[] vang, int setptmd, bool outages) {
+        public double flow(double[] vang, SetPointMode setptmd, bool outages) {
             double f;
             if ( BOut && outages) {
                 f = 0;

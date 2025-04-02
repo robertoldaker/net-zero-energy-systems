@@ -44,18 +44,19 @@ public class TopTrips {
     }
 
     public void Insert(Trip tr, double[] bndcap, int[] mord, List<string> limitccts) {
-        int i, j, m, spm, limits=0;
+        int i, j, m, limits=0;
         double limitsu=0, su;
         bool first;
         string bn;
+        SetPointMode spm;
 
         first = true;        // signals first row of trip  must be output with setpoints
         j=0;
         if (limitccts.Count > 0 ) {
-            spm = BoundCalc.SPAuto;
+            spm = SetPointMode.Auto;
             limits = 1;      // signals limitccts must be output, 2 = check if cct in limitccts, 3 = ignore
         } else {
-            spm = BoundCalc.SPMan;
+            spm = SetPointMode.Manual;
         }
 
         for( i=0; i<_nsz;i++ ) {

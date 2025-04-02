@@ -72,7 +72,8 @@
         <ng-container matColumnDef="setPoint">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before"><div [style]="getOverallSetPointStyle()">Set point</div></th>
             <td mat-cell *matCellDef="let element">
-                <div [style]="getSetPointStyle(element.setPoint?.value,element.minCtrl.value,element.maxCtrl.value)">{{element.setPoint?.value?.toFixed(2)}}</div>
+                <div *ngIf="setPointMode==SetPointMode.Auto" [style]="getSetPointStyle(element.setPoint?.value,element.minCtrl.value,element.maxCtrl.value)">{{element.setPoint?.value?.toFixed(2)}}</div>
+                <app-cell-editor *ngIf="setPointMode==SetPointMode.Manual" [data]="element.setPoint" [decimalPlaces]="2" [canDelete]="false"></app-cell-editor>
             </td>
         </ng-container>
 

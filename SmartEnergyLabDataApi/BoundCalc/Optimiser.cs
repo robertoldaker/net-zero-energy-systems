@@ -251,7 +251,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     if ( Math.Abs(s) >= CSENS) { 
                         tConsMat.SetCell(cons,ct.CtVar.Vpv.Id, sf);
                         tConsMat.SetCell(cons,ct.CtVar.Vnv.Id, -sf);
-                        fc = fc + si * s * ct.GetSetPoint(BoundCalc.SPAuto) / ct.Obj.MaxCtrl;
+                        fc = fc + si * s * ct.GetSetPoint(SetPointMode.Auto) / ct.Obj.MaxCtrl;
                     }
                 }
             }
@@ -264,7 +264,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
             cvang = ctrlvang[ctnum];
 
-            f = br.flow(cvang, BoundCalc.SPZero, true);
+            f = br.flow(cvang, SetPointMode.Zero, true);
 
             var ct = br.Ctrl;
             if ( !(ct==null) ) {

@@ -254,6 +254,7 @@ export interface EVDemandStatus {
  */
 
 export enum TransportModel {PeakSecurity,YearRound}
+export enum SetPointMode {Zero,Auto,Manual}
 
 export interface LoadflowResults {
     stageResults: StageResults,
@@ -482,6 +483,11 @@ export interface AllTripResult {
     trip: BoundaryTrip | null
     limCCt: string[]
     ctrls: CtrlResult[]
+}
+
+export interface CtrlSetPoint {
+    ctrlId: number,
+    setPoint: number
 }
 
 /**

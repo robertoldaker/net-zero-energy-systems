@@ -62,8 +62,8 @@ public class BoundCalcReference {
                     throw new Exception($"Cannot find dataset [{name}]");
                 }
             }
-            using( var bc = new BoundCalc(ds.Id,TransportModel.PeakSecurity) ) {
-                bc.RunBoundCalc(null,null,BoundCalc.SPAuto,false,true); 
+            using( var bc = new BoundCalc(ds.Id,SetPointMode.Auto,TransportModel.PeakSecurity) ) {
+                bc.RunBoundCalc(null,null,false,true); 
                 var lfr = new BoundCalcResults(bc);
                 // nodes
                 foreach( var nw in bc.Nodes.Objs) {
@@ -114,12 +114,12 @@ public class BoundCalcReference {
                     throw new Exception($"Cannot find dataset [{name}]");
                 }
             }
-            using( var bc = new BoundCalc(ds.Id,TransportModel.PeakSecurity) ) {
+            using( var bc = new BoundCalc(ds.Id,SetPointMode.Auto,TransportModel.PeakSecurity) ) {
                 var bnd = bc.Boundaries.GetBoundary(boundaryName);
                 if ( bnd == null ) {
                     throw new Exception($"Cannot find boundary with name [{boundaryName}]");
                 }
-                bc.RunAllTrips(bnd, BoundCalc.SPAuto);
+                bc.RunAllTrips(bnd);
 
                 var lfr = new BoundCalcResults(bc);
                 // Single trips

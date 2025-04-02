@@ -1,6 +1,8 @@
 using System.Text.RegularExpressions;
 using HaloSoft.EventLogger;
+using Microsoft.AspNetCore.Server.IIS.Core;
 using Microsoft.AspNetCore.SignalR;
+using Org.BouncyCastle.Bcpg;
 using SmartEnergyLabDataApi.Common;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.BoundCalc;
@@ -8,6 +10,7 @@ using SmartEnergyLabDataApi.Data.BoundCalc;
 namespace SmartEnergyLabDataApi.BoundCalc
 {
     public enum TransportModel {PeakSecurity,YearRound};
+    public enum SetPointMode {Zero,Auto,Manual}
     public class BoundCalc : IDisposable {
 
         // Data from the database - nodes, branches and controls
@@ -44,12 +47,12 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public Trip WorstTrip;
         public double WTCapacity;
 
-        public int setptmode;
+        private SetPointMode _setPointMode;
         //
-        public const int SPZero = 0;          // controls at zero cost points
-        public const int SPMan = 1;           // given by ISetPt input data
-        public const int SPAuto = 2;          // determined by optimiser values
-        public const int SPBLANK = -1;        // do not display
+        //public const int SPZero = 0;          // controls at zero cost points
+        //??public const int SPMan = 1;           // given by ISetPt input data
+        //??public const int SPAuto = 2;          // determined by optimiser values
+        //??public const int SPBLANK = -1;        // do not display
 
         public const double PUCONV = 10000;   // Conversion for % on 100MVA to pu on 1MVA
         public const double SCAP = 1;         // Ignore branches with cap < 1 MW
@@ -79,12 +82,19 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        public BoundCalc(int datasetId, TransportModel transportModel = TransportModel.PeakSecurity,  bool buildOptimiser=false) {
+        public SetPointMode SetPointMode {
+            get {
+                return _setPointMode;
+            }
+        }
+
+        public BoundCalc(int datasetId, SetPointMode setPointMode=SetPointMode.Auto, TransportModel transportModel = TransportModel.PeakSecurity, bool buildOptimiser=false) {
             _da = new DataAccess();
             _dataset = _da.Datasets.GetDataset(datasetId);
             if ( _dataset == null) {
                 throw new Exception($"Cannot find dataset with id=[{datasetId}]");
             }
+            _setPointMode = setPointMode;
             _transportModel = transportModel;
             //
             _stageResults = new BoundCalcStageResults();
@@ -310,7 +320,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         // Calculate all flows and mismatches from vangs and setpoints
         // call with mism = transfers
         // outages=falase ensures intact network calculation irrespective of ActiveTrip
-        public void CalcFlows(double[] vang, int setptmd, bool outages, out double[] lflow, double[] mism)
+        public void CalcFlows(double[] vang, SetPointMode setptmd, bool outages, out double[] lflow, double[] mism)
         {
             double f;
             lflow = new double[_branches.Count];
@@ -347,7 +357,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             mism = Utilities.CopyArray(btfer);
             _ufac.Solve(btfer, ref vang);
             civang[0] = vang;
-            CalcFlows( vang, SPZero, false, out flow, mism);
+            CalcFlows( vang, SetPointMode.Zero, false, out flow, mism);
             return _nord.NodeId(_nord.nn); // Index of refnode
         }        
 
@@ -454,7 +464,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
 
             foreach( var ct in _ctrls.Objs) {
-                sp = ct.GetSetPoint(setptmode);
+                sp = ct.GetSetPoint(_setPointMode);
                 if ( sp!=0 && ctrlva[ct.Index]!=null ) {
                     tv = ctrlva[ct.Index];
                     sf2 = sp / ct.Obj.MaxCtrl;
@@ -543,7 +553,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
             foreach( var br in _branches.Objs) {
                 i = br.Index - 1;
-                iflow = br.flow(ivang, SPZero, true); // the flow resulting from interconnection
+                iflow = br.flow(ivang, SetPointMode.Zero, true); // the flow resulting from interconnection
                 if ( br.Obj.Cap > SCAP) {
                     mfree = br.Obj.Cap - mflow[i] * Math.Sign(iflow);
                 } else {
@@ -560,7 +570,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             LPhdr.MergeSortFlt(bc,mord, n+1);
             i = mord[0];
             var brr = _branches.get(i+1);
-            iflow = brr.flow(ivang, SPZero, true);
+            iflow = brr.flow(ivang, SetPointMode.Zero, true);
 
             if ( brr.Obj.Cap > SCAP ) {
                 mfree = brr.Obj.Cap - mflow[i] * Math.Sign(iflow);
@@ -584,7 +594,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             CalcTransfers(isaf, out tfr);
             mism = Utilities.CopyArray(tfr);
             CalcVang(isaf, cvang, out vang);
-            CalcFlows( vang, setptmode, true, out lflow, mism);
+            CalcFlows( vang, _setPointMode, true, out lflow, mism);
             //
             // Store mismatches in node wrappers
             foreach( var nd in _nodes.Objs) {
@@ -666,7 +676,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             bool pt;
             double iasf=0;
 
-            setptmode = SPAuto;
+            _setPointMode = SetPointMode.Auto;
             pt = ActiveBound == null;
             r1 = BalanceHVDC();
             CalcLoadFlow(cva, 0, out lflow, r1!= LPhdr.lpOptimum); // start at planned transfer
@@ -777,7 +787,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 tv = new double[_nodes.Count];
                 tv[i] = 1;
                 _ufac.Solve(tv, ref va);
-                CalcFlows(va, SPZero, true, out sflow, tv);
+                CalcFlows(va, SetPointMode.Zero, true, out sflow, tv);
 
                 foreach( var br in _branches.Objs) {
                     j = br.Index - 1;
@@ -813,7 +823,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     mism = Utilities.CopyArray(itfer);                    
                     _ufac.Solve(itfer, ref ivang);
                     civang[_ctrls.Count+1] = ivang;
-                    CalcFlows(ivang,SPZero, false, out iflow, mism);
+                    CalcFlows(ivang,SetPointMode.Zero, false, out iflow, mism);
                     mi = MaxMismatch(mism);
                     mm = mism[mi];
                     var nd = _nodes.get(_nord.NodeId(mi));
@@ -862,7 +872,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         // If bound is not already active then setup itfer and civang
         // Optionally save boundary max transfer or planned transfer loadflows
         // Optionally undertake nodemarginals calc for planned transfer only
-        public int RunBoundCalc(BoundaryWrapper bound, Trip tr, int setptmd, bool nodemarginals, bool save = false) {
+        public int RunBoundCalc(BoundaryWrapper bound, Trip tr, bool nodemarginals, bool save = false) {
             double[] vang;
             double[]?[] cvang;
             int mi,res;
@@ -879,8 +889,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 cvang = tcvang;
             }
 
-            if ( setptmd == SPAuto) {
-                setptmd = SPAuto;                
+            if ( _setPointMode == SetPointMode.Auto) {
                 res = OptimiseLoadflow(cvang, out flow, save);
                 if ( res!= LPhdr.lpOptimum) {
                     return res;
@@ -893,7 +902,6 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 }
 
             } else {
-                setptmode = SPMan;
                 CalcBoundLF( cvang, out flow, save);
                 if ( ActiveBound!=null ) {
                     if ( bc[mord[0]] < WTCapacity ) {
@@ -917,17 +925,17 @@ namespace SmartEnergyLabDataApi.BoundCalc
         }
 
         // Run trip case and fill in relevent TopN tables
-        public void RunTrip(BoundaryWrapper bn, Trip tr, int setptmd, bool save=false)
+        public void RunTrip(BoundaryWrapper bn, Trip tr, bool save=false)
         {
             List<string> limccts = new List<string>();;
             int res;
             if ( tr == null ) { // intact network case
                 _acctOut.SetBoundary(bn, bn.PlannedTransfer + bn.InterconAllowance); // use full interconnection for intact case
-                res = RunBoundCalc(bn, null, setptmd, false, save);
+                res = RunBoundCalc(bn, null, false, save);
                 if ( res!=LPhdr.lpOptimum) {
                     //??
                 } else {
-                    if ( setptmd == SPAuto ) {
+                    if ( _setPointMode == SetPointMode.Auto ) {
                         limccts = opt.Limitccts();
                     }
                     _acctOut.Insert(null, bc, mord, limccts);
@@ -935,22 +943,22 @@ namespace SmartEnergyLabDataApi.BoundCalc
             } else {
                 if ( tr.name.Substring(0,1) == "S" ) { // single circuit trip
                     _scctOut.SetBoundary(bn, bn.PlannedTransfer + bn.InterconAllowance); // use full interconnection for since cct trips
-                    res = RunBoundCalc(bn, tr, setptmd, false, save);
+                    res = RunBoundCalc(bn, tr, false, save);
                     if ( res!=LPhdr.lpOptimum) {
                         //??
                     } else {
-                        if ( setptmd == SPAuto) {
+                        if ( _setPointMode == SetPointMode.Auto) {
                             limccts = opt.Limitccts();
                         }
                         _scctOut.Insert( tr, bc, mord, limccts); 
                     }
                 } else {
                     _dcctOut.SetBoundary(bn, bn.PlannedTransfer + 0.5*bn.InterconAllowance); // use half interconnection for double cct trips 
-                    res = RunBoundCalc(bn, tr, setptmd, false, save);
+                    res = RunBoundCalc(bn, tr, false, save);
                     if ( res!=LPhdr.lpOptimum) {
                         //??
                     } else {
-                        if ( setptmd == SPAuto ) {
+                        if ( _setPointMode == SetPointMode.Auto ) {
                             limccts = opt.Limitccts();
                         }
                         _dcctOut.Insert(tr, bc, mord, limccts);
@@ -961,21 +969,21 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         // Run trip collection
         // Boundary must be specified
-        public void RunTripSet(BoundaryWrapper bn, Collection<Trip> trips, int setptmd) {
+        public void RunTripSet(BoundaryWrapper bn, Collection<Trip> trips) {
             foreach( var tr in trips.Items) {
-                RunTrip(bn, tr, setptmd, false);
+                RunTrip(bn, tr, false);
                 _progressManager.Update(tr.name);
             }
             //?? output results
         }
 
-        public void RunAllTrips(BoundaryWrapper bn, int setptmd) {
+        public void RunAllTrips(BoundaryWrapper bn) {
             WTCapacity = 99999;
-            RunTrip(bn, null, setptmd, true);
-            RunTripSet(bn, bn.STripList, setptmd);
-            RunTripSet(bn, bn.DTripList, setptmd);
+            RunTrip(bn, null, true);
+            RunTripSet(bn, bn.STripList);
+            RunTripSet(bn, bn.DTripList);
             MiscReport("Worst Case Trip",$"{WTCapacity:0.00}");
-            RunBoundCalc(bn, WorstTrip, setptmd, false, true);
+            RunBoundCalc(bn, WorstTrip, false, true);
         }
 
 
@@ -1090,17 +1098,17 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
 
             // lastly run base case again using the requested transport model
-            using( var bc = new BoundCalc(datasetId,transportModel,true) ) {
+            using( var bc = new BoundCalc(datasetId,SetPointMode.Auto,transportModel,true) ) {
                 // run base case
-                bc.RunBoundCalc(null,null,BoundCalc.SPAuto,false,true);
+                bc.RunBoundCalc(null,null,false,true);
                 return new BoundCalcResults(bc);
             }
 
         }
 
-        public static BoundCalcResults Run(int datasetId, TransportModel transportModel, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null, IHubContext<NotificationHub> hubContext=null)
+        public static BoundCalcResults Run(int datasetId, SetPointMode setPointMode, TransportModel transportModel, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null, IHubContext<NotificationHub> hubContext=null)
         {
-            using( var bc = new BoundCalc(datasetId, transportModel, true) ) {
+            using( var bc = new BoundCalc(datasetId, setPointMode, transportModel, true) ) {
                 if ( connectionId!=null ) {
                     bc.ProgressManager.ProgressUpdate+=(m,p)=>{                    
                     hubContext.Clients.Client(connectionId).SendAsync("BoundCalc_AllTripsProgress",new {msg=m,percent=p});
@@ -1123,10 +1131,10 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     if ( !string.IsNullOrEmpty(tripStr)) {
                         tr = new Trip("T1",tripStr,bc.Branches);
                     }
-                    bc.RunBoundCalc(null, tr, BoundCalc.SPAuto, false, true); 
+                    bc.RunBoundCalc(null, tr, false, true); 
                 } else {
                     if ( boundaryTrips) {
-                        bc.RunAllTrips(bnd, BoundCalc.SPAuto);
+                        bc.RunAllTrips(bnd);
                     } else {
                         Trip tr = null;
                         if ( !string.IsNullOrEmpty(tripStr) ) {
@@ -1136,7 +1144,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                                 tr = new Trip("S1",tripStr,bc.Branches);
                             }
                         }
-                        bc.RunTrip(bnd,tr,BoundCalc.SPAuto,true);
+                        bc.RunTrip(bnd,tr,true);
                     }
                 }
                 var resp = new BoundCalcResults(bc);
@@ -1145,7 +1153,38 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-
+        public class CtrlSetPoint {
+            public int CtrlId {get; set;}
+            public double SetPoint {get ;set;}
+        }
+        public static void ManualSetPointMode(int datasetId, int userId, List<CtrlSetPoint> initialSetPoints) {
+            //
+            using ( var da = new DataAccess() ) {
+                var dataset = da.Datasets.GetDataset(datasetId);
+                if ( dataset == null ) {
+                    throw new Exception($"Cannot find dataset with id={datasetId}");                    
+                }
+                if ( dataset.User?.Id != userId) {
+                    throw new Exception($"Not authorised");
+                }
+                var ues = da.Datasets.GetUserEdits(typeof(Ctrl).Name,datasetId);
+                foreach( var sp in initialSetPoints) {
+                    var ue = ues.FirstOrDefault(m=>m.Key.ToString() == sp.CtrlId.ToString());
+                    if ( ue==null) {
+                        ue = new UserEdit() {
+                            TableName = typeof(Ctrl).Name,
+                            ColumnName = "SetPoint",
+                            Dataset = dataset,
+                            Key = sp.CtrlId.ToString()
+                        };
+                        da.Datasets.Add(ue);
+                    }
+                    ue.Value = sp.SetPoint.ToString();
+                }
+                //
+                da.CommitChanges();
+            }
+        }
     }
 }
 

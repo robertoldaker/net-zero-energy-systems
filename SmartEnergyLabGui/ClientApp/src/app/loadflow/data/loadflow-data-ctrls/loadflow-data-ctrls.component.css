@@ -20,24 +20,24 @@
 .mat-column-maxCtrl {
     width: 120px;
     text-align: right;
-    padding-right: 1rem;
+    padding-right: 2.5rem;
 }
 
 .mat-column-minCtrl {
     width: 120px;
     text-align: right;
-    padding-right: 1rem;
+    padding-right: 2.5rem;
 }
 
 .mat-column-cost {
     width: 120px;
     text-align: right;
-    padding-right: 1rem;
+    padding-right: 2.5rem;
 }
 
 .mat-column-setPoint {
     width: 120px;
     text-align: right;
     font-style: italic;
-    color: green;
+    padding-right: 2.5rem ! important;
 }

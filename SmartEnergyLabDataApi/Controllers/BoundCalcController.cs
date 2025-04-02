@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.BoundCalc;
 using SmartEnergyLabDataApi.Data.BoundCalc;
+using static SmartEnergyLabDataApi.BoundCalc.BoundCalc;
 
 namespace SmartEnergyLabDataApi.Controllers
 {
@@ -85,14 +86,27 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("Run")]
-        public IActionResult Run(int datasetId, TransportModel transportModel, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null )
+        public IActionResult Run(int datasetId, SetPointMode setPointMode, TransportModel transportModel, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null )
         {
             try {
-                var resp = BoundCalc.BoundCalc.Run(datasetId,transportModel,boundaryName,boundaryTrips,tripStr,connectionId,_hubContext);
+                var resp = BoundCalc.BoundCalc.Run(datasetId,setPointMode,transportModel,boundaryName,boundaryTrips,tripStr,connectionId,_hubContext);
                 return this.Ok(resp);
             } catch( Exception e) {
                 return this.Ok(new BoundCalcResults(e.Message));
             }
+        }
+
+        /// <summary>
+        /// Sets up manual setpoint mode for a dataset
+        /// </summary>
+        /// <param name="datasetId">Id of dataset</param>
+        /// <param name="initialSetPoints">List of initial set points</param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("ManualSetPointMode")]
+        public IActionResult ManualSetPointMode(int datasetId, [FromBody] List<CtrlSetPoint> initialSetPoints) {
+            BoundCalc.BoundCalc.ManualSetPointMode(datasetId,this.GetUserId(),initialSetPoints);
+            return Ok();
         }
 
         /// <summary>
