@@ -91,10 +91,10 @@
         <!-- km -->
         <ng-container matColumnDef="km">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Km</th>
-            <td mat-cell *matCellDef="let element">{{element.km?.value?.toFixed(0)}}</td>
+            <td mat-cell *matCellDef="let element">{{element.km?.value?.toFixed(1)}}</td>
         </ng-container>
 
-        <!-- km -->
+        <!-- mwkm -->
         <ng-container matColumnDef="mwkm">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">MW.Km</th>
             <td mat-cell *matCellDef="let element">{{element.mwkm?.value?.toFixed(0)}}</td>
@@ -103,7 +103,7 @@
         <!-- loss -->
         <ng-container matColumnDef="loss">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Loss</th>
-            <td mat-cell *matCellDef="let element">{{element.loss?.value?.toFixed(0)}}</td>
+            <td mat-cell *matCellDef="let element">{{element.loss?.value?.toFixed(3)}}</td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>

@@ -1,8 +1,6 @@
 using System.Text.RegularExpressions;
 using HaloSoft.EventLogger;
-using Microsoft.AspNetCore.Server.IIS.Core;
 using Microsoft.AspNetCore.SignalR;
-using Org.BouncyCastle.Bcpg;
 using SmartEnergyLabDataApi.Common;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.BoundCalc;
@@ -327,11 +325,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
             foreach( var br in _branches.Objs ) {
                 f = br.flow(vang, setptmd, outages);
-                lflow[br.Index -1] = f;
+                lflow[br.Index-1] = f;
                 mism[br.pn1]-= f;
                 mism[br.pn2]+= f;
-                //
-                br.PowerFlow=f;
             }
         }
 
@@ -596,6 +592,10 @@ namespace SmartEnergyLabDataApi.BoundCalc
             CalcVang(isaf, cvang, out vang);
             CalcFlows( vang, _setPointMode, true, out lflow, mism);
             //
+            // Power flow in branch wrappers            
+            foreach( var br in _branches.Objs) {
+                br.PowerFlow = lflow[br.Index-1];
+            }
             // Store mismatches in node wrappers
             foreach( var nd in _nodes.Objs) {
                 nd.Mismatch = mism[nd.Pn];
@@ -800,6 +800,11 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 }
             }
 
+            // Store calculated values in node data structure
+            foreach( var nw in _nodes.Objs) {
+                nw.Obj.TLF = tlf[nw.Pn];
+                nw.Obj.km = km[nw.Pn];
+            }
         }
 
         // Set active boundary always clearing any active trip
@@ -915,10 +920,8 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
 
             if ( bound == null && nodemarginals ) {
+                // TLF and km
                 CalcNodeMarginals(flow);
-                //??
-            } else {
-                //??
             }
 
             return LPhdr.lpOptimum;
@@ -1131,7 +1134,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     if ( !string.IsNullOrEmpty(tripStr)) {
                         tr = new Trip("T1",tripStr,bc.Branches);
                     }
-                    bc.RunBoundCalc(null, tr, false, true); 
+                    bc.RunBoundCalc(null, tr, true, true); 
                 } else {
                     if ( boundaryTrips) {
                         bc.RunAllTrips(bnd);

@@ -45,7 +45,7 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         this.dataFilter.columnFilterMap.set(this.zoneDataFilter.columnName, this.zoneDataFilter)
 
         this.createDataSource(this.dataService.dataset,dataService.networkData.nodes);
-        this.displayedColumns = ['buttons','code','voltage','zoneName','demand','generation_A','generation_B','ext','mismatch']
+        this.displayedColumns = ['buttons','code','voltage','zoneName','demand','generation_A','generation_B','ext','tlf','km','mismatch']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.nodeMismatchError = false
             this.createDataSource(this.dataService.dataset,results.nodes);
@@ -85,6 +85,15 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         this.dataFilter.reset(true)
         this.dataFilter.searchStr = nodeCode
         this.createDataSource()
+    }
+
+    getTLFPercent( element: any) {
+        let tlf = element.tlf?.value
+        if ( tlf!=undefined ) {
+            return (tlf*100).toFixed(0)
+        } else {
+            return "";
+        }
     }
 
 

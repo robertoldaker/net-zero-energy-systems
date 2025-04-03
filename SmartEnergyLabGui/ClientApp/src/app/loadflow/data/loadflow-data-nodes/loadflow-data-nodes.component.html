@@ -69,6 +69,18 @@
             </td>
         </ng-container>
 
+        <!-- TLF Column -->
+        <ng-container matColumnDef="tlf">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">TLF (%)</th>
+            <td mat-cell *matCellDef="let element">{{getTLFPercent(element)}}</td>
+        </ng-container>
+
+        <!-- km Column -->
+        <ng-container matColumnDef="km">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">km</th>
+            <td mat-cell *matCellDef="let element">{{element.km?.value?.toFixed(1)}}</td>
+        </ng-container>
+
         <!-- Mismatch  Column -->
         <ng-container matColumnDef="mismatch">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before"><div [style]="getOverallMismatchStyle()">Mismatch</div></th>

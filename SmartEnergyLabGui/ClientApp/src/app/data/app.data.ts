@@ -348,6 +348,8 @@ export interface Node {
     ext: boolean
     zone: Zone | undefined
     zoneName: string
+    tlf: number | undefined
+    km: number | undefined
     mismatch: number | undefined
 }
 

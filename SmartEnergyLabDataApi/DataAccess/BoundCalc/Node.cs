@@ -98,7 +98,9 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         public virtual double? Mismatch {get; set;}    
 
+        public virtual double? TLF {get; set;}    
 
+        public virtual double? km {get; set;}    
 
     }
 }
