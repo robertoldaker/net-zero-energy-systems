@@ -1,20 +1,20 @@
 .mat-column-code {
-    min-width: 200px;
-    width: 25%;    
+    width: 25%;
 }
 
 .mat-column-demand {
     text-align: right;
+    padding-right: 2.5rem;
 }
 
 .mat-column-generation_A {
     text-align: right;
-    padding-right: 3rem;
+    padding-right: 2.5rem;
 }
 
 .mat-column-generation_B {
     text-align: right;
-    padding-right: 3rem;
+    padding-right: 2.5rem;
 }
 
 .mat-column-mismatch {
@@ -22,4 +22,9 @@
     justify-content: flex-end;
     font-style: italic;
     color: green;
+}
+
+.defaultTableHeader {
+    font-weight: 300;
+    color: black;
 }

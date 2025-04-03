@@ -231,7 +231,7 @@ span.mode {
 div.nodeName {
     font-size: 0.8em; 
     color: grey;
-    white-space: nowrap;
+    white-space: normal;
 }
 
 div.prevValue {
@@ -268,6 +268,14 @@ div.prevValue {
 /* for use with table that has inline editor as last column */
 .mat-column-dummy {
     width: 40px;
+}
+
+table.dataTable {
+    width: 100%;
+}
+
+table.dataTable  {
+
 }
 
 /* */

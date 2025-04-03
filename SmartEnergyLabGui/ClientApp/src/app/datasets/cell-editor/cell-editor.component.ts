@@ -103,7 +103,7 @@ export class CellEditorComponent {
     }
 
     delete() {
-        if ( this.data ) {
+        if ( this.data && this.canDelete) {
             this.datasetsService.removeUserEditWithPrompt(this.data, (resp)=>{
                 this.onEdited.emit(this.data)
             })        
@@ -145,6 +145,20 @@ export class CellEditorComponent {
             }
         } 
         return value
+    }
+
+    get prevValue():string {
+        let pv = this.data.userEdit?.prevValue
+        if ( pv) {
+            let pvFloat = parseFloat(pv)
+            if ( !isNaN(pvFloat)) {
+                return pvFloat.toFixed(this.decimalPlaces)
+            }  else {
+                return pv;
+            }
+        } else {
+            return ""
+        }
     }
 }
 

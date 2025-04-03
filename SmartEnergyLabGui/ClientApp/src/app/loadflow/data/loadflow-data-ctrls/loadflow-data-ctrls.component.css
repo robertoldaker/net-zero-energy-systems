@@ -1,16 +1,17 @@
 .mat-column-code {
     width: 10%;
+    padding-right: 0.5rem;
 }
 
 .mat-column-node1Code {
-    min-width: 150px;
     width: 25%;    
+    padding-right: 0.5rem;
 }
 
 
 .mat-column-node2Code {
-    min-width: 150px;
     width: 25%;    
+    padding-right: 0.5rem;
 }
 
 .mat-column-type {

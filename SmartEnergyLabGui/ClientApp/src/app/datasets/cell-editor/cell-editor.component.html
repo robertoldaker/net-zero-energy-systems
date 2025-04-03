@@ -1,7 +1,7 @@
 <div style="white-space: nowrap; position: relative;">
     <span *ngIf="readOnly; else editableBlock" [ngClass]="{'existing': data.userEdit}">{{value}}</span>
     <div *ngIf="data.userEdit?.prevValue" class="prevValue" style="line-height: 85%;">
-        ({{data.userEdit?.prevValue}})  
+        ({{prevValue}})  
     </div>
     <ng-template #editableBlock>
         <select *ngIf="options; else textEdit" [ngClass]="{'existing': data.userEdit}" [(ngModel)]="data.value" (ngModelChange)="saveSelect($event)">
@@ -15,7 +15,7 @@
             </div>
         </ng-template>
         <div class="editButtons">
-            <div class="delete button" *ngIf="data.userEdit && !hasFocus && canDelete">
+            <div [class]="{delete: true, button: true, disabled: !canDelete}" *ngIf="data.userEdit && !hasFocus">
                 <mat-icon (click)="delete()" title="Delete edit" [inline]="true">cancel</mat-icon>
             </div>
             <div class="save button" *ngIf="hasFocus" (click)="save($event)" (mousedown)="mouseDown($event)">

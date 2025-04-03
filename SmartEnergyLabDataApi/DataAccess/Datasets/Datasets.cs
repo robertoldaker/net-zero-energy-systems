@@ -150,8 +150,7 @@ public class Datasets : DataSet
                     // See if the object has the property name based on the lower-case column name
                     if ( propDict.TryGetValue(ue.ColumnName, out PropertyInfo prop)) {
                         if ( vId == lastDatasetId ) {
-                            var prevValue = prop.GetValue(gp);
-                            ue.PrevValue = prevValue!=null ? prevValue.ToString() : "";
+                            ue.PrevValue = getPrevValue(prop, gp);
                         }
                         // if so apply change
                         if ( prop.PropertyType == typeof (double) || prop.PropertyType == typeof(double?) ) {
@@ -176,6 +175,15 @@ public class Datasets : DataSet
         // remove deletes from main list
         foreach( var dgp in deletedData) {
             data.Remove(dgp);
+        }
+    }
+
+    private string getPrevValue<T>(PropertyInfo prop, T pv) {
+        var prevValue = prop.GetValue(pv);
+        if ( prevValue == null) {
+            return "";
+        } else {
+            return prevValue.ToString();
         }
     }
 

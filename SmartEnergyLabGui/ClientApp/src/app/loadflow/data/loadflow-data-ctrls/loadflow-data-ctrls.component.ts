@@ -53,7 +53,7 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
 
     getOverallSetPointStyle(): any {
         if ( this.setPointMode == SetPointMode.Manual) {
-            return {}
+            return {'font-style': 'normal'}
         } else {
             return this.setPointError ? {'color':'darkred'} : {'color': 'green'}
         }
