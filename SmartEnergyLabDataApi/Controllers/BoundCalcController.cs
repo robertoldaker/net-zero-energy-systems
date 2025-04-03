@@ -43,29 +43,6 @@ namespace SmartEnergyLabDataApi.Controllers
         }
         
         /// <summary>
-        /// Returns a list of boundaries that have been defined
-        /// </summary>
-        /// <returns>List of boundaries</returns>
-        [HttpGet]
-        [Route("Boundaries")]
-        public DatasetData<Boundary> Boundaries(int datasetId) {
-            using ( var da = new DataAccess() ) {
-                var q = da.Session.QueryOver<Boundary>();
-                var ds = new DatasetData<Boundary>(da, datasetId,m=>m.Id.ToString(),q);
-                // add zones they belong to
-                var boundDict = da.BoundCalc.GetBoundaryZoneDict(ds.Data);
-                foreach( var b in ds.Data) {
-                    if ( boundDict.ContainsKey(b) ) {
-                        b.Zones = boundDict[b];
-                    } else {
-                        b.Zones = new List<Zone>();
-                    }
-                }
-                return ds;
-            }
-        }
-
-        /// <summary>
         /// Get list of branch names
         /// </summary>
         /// <param name="datasetId"></param>
@@ -116,24 +93,6 @@ namespace SmartEnergyLabDataApi.Controllers
         [Route("AdjustBranchCapacities")]
         public BoundCalcResults AdjustBranchCapacities(int datasetId, TransportModel transportModel){            
             return BoundCalc.BoundCalc.AdjustBranchCapacities(datasetId,transportModel,this.GetUserId());
-        }
-
-        /// <summary>
-        /// Runs a multi-branch trip scenario with tripped branches defined by a list of their link names
-        /// </summary>
-        /// <param name="datasetId">Id of dataset to use</param>
-        /// <param name="linkNames">List of link names of branches to trip</param>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("RunTripBoundCalc")]
-        public BoundCalcResults RunTripBoundCalc(int datasetId,List<string> linkNames) {
-            if ( linkNames==null ) {
-                linkNames = new List<string>() { "ABH4A4:EXET40:A833"};
-            }
-            using( var lf = new BoundCalc.BoundCalc(datasetId) ) {
-                //??lf.RunTrip(linkNames);
-                return new BoundCalcResults(lf);
-            }
         }
 
         /// <summary>

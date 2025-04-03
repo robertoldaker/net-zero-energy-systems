@@ -172,33 +172,6 @@ export class LoadflowDataService {
         });
     }
 
-    runBaseLoadflow() {
-        this.inRun = true;
-        this.dataClientService.RunBaseLoadflow( this.dataset.id, (results) => {
-            this.inRun = false;
-            this.loadFlowResults = results;
-            this.ResultsLoaded.emit(results);
-        });
-    }
-
-    runBoundaryTrip(boundaryName:string, tripName: string) {
-        this.inRun = true;
-        this.dataClientService.RunBoundaryTrip( this.dataset.id, boundaryName, tripName, (results) => {
-            this.inRun = false;
-            this.loadFlowResults = results;
-            this.ResultsLoaded.emit(results);
-        });
-    }
-
-    runAllBoundaryTrips(boundaryName:string) {
-        this.inRun = true;
-        this.dataClientService.RunAllBoundaryTrips( this.dataset.id, boundaryName, (results) => {
-            this.inRun = false;
-            this.loadFlowResults = results;
-            this.ResultsLoaded.emit(results);
-        });
-    }
-
     selectLocation(locId: number) {
         let loc = this.locationData.locations.find(m=>m.id==locId)
         if ( loc ) {

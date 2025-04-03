@@ -57,24 +57,12 @@ export class LoadflowDialogComponent extends ComponentBase {
         this.dataService.runBoundCalc(this.transportModel,bn,this.boundaryTrips);
     }
 
-    runBaseLoadflow() {
-        this.dataService.runBaseLoadflow();
-    }
-
     setBoundary() {
         if ( this.boundaryName == "Unspecified") {
             this.dataService.setBoundary(undefined);
         } else {
             this.dataService.setBoundary(this.boundaryName);
         }
-    }
-
-    runSingleTrip() {
-        this.dataService.runBoundaryTrip(this.boundaryName, this.selectedTrip);
-    }
-
-    runAllTrips() {
-        this.dataService.runAllBoundaryTrips(this.boundaryName);
     }
 
     getLineNames(trip: BoundaryTrip):string {

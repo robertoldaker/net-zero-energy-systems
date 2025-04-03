@@ -283,14 +283,6 @@ export class DataClientService implements ILogs {
         }, error => this.logErrorMessage(error));        
     }
 
-    GetBoundaries( datasetId: number, onLoad: (boundaryData: DatasetData<Boundary>)=> void | undefined) {
-        this.http.get<DatasetData<Boundary>>(this.baseUrl + `/${this.controller}/Boundaries?datasetId=${datasetId}`).subscribe( result => {
-            if ( onLoad ) {
-                onLoad(result)
-            }
-        }, error => this.logErrorMessage(error));        
-    }
-
     RunBoundCalc( datasetId: number, setPointMode: SetPointMode, transportModel: TransportModel, boundaryName: string, boundaryTrips: boolean, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.showMessageService.showMessage("Calculating ...");
@@ -317,55 +309,6 @@ export class DataClientService implements ILogs {
         this.http.post(this.baseUrl + `/BoundCalc/ManualSetPointMode?datasetId=${datasetId}`,setPoints).subscribe( result => {
             onOk(result)
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );                
-    }
-
-    RunBaseLoadflow( datasetId: number,onLoad: (results: LoadflowResults)=> void | undefined) {
-        this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/${this.controller}/RunBase?datasetId=${datasetId}`,{}).subscribe( result => {
-            this.showMessageService.clearMessage()
-            if ( onLoad ) {
-                onLoad(result)
-            }
-        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
-    }
-
-    SetBound( datasetId: number, boundaryName:string, onLoad: (results: LoadflowResults)=> void | undefined) {
-        this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/${this.controller}/SetBound?datasetId=${datasetId}&boundaryName=${boundaryName}`,{}).subscribe( result => {
-            this.showMessageService.clearMessage()
-            if ( onLoad ) {
-                onLoad(result)
-            }
-        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
-    }
-
-    RunBoundaryTrip( datasetId: number, boundaryName: string, tripName: string, onLoad: (results: LoadflowResults)=> void | undefined) {
-        this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/${this.controller}/RunBoundaryTrip?datasetId=${datasetId}&boundaryName=${boundaryName}&tripName=${tripName}`,{}).subscribe( result => {
-            this.showMessageService.clearMessage()
-            if ( onLoad ) {
-                onLoad(result)
-            }
-        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
-    }
-
-    RunAllBoundaryTrips( datasetId: number, boundaryName: string,  onLoad: (results: LoadflowResults)=> void | undefined) {
-        let connectionId = this.signalRService.hubConnection?.connectionId;
-        this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/${this.controller}/RunAllBoundaryTrips?datasetId=${datasetId}&boundaryName=${boundaryName}&connectionId=${connectionId}`,{}).subscribe( result => {
-            this.showMessageService.clearMessage()
-            if ( onLoad ) {
-                onLoad(result)
-            }
-        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
-    }
-
-    GetBranchNames( datasetId: number, onLoad: (branchNames: string[])=> void | undefined) {
-        this.http.get<string[]>(this.baseUrl + `/${this.controller}/BranchNames?datasetId=${datasetId}`).subscribe( result => {
-            if ( onLoad ) {
-                onLoad(result)
-            }
-        }, error => this.logErrorMessage(error));        
     }
 
     /**
