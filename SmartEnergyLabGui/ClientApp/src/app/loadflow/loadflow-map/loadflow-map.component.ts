@@ -15,7 +15,6 @@ import { IFormControlDict } from 'src/app/dialogs/dialog-base';
     templateUrl: './loadflow-map.component.html',
     styleUrls: ['./loadflow-map.component.css']
 })
-
 export class LoadflowMapComponent extends ComponentBase implements OnInit, AfterViewInit {
 
     @ViewChild(GoogleMap, { static: false }) map: GoogleMap | undefined
@@ -46,6 +45,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             // select an objet (link or location)
             this.selectObject(selectedItem)
         }))
+
     }
 
     addBranchHandler: AddBranchHandler | undefined
@@ -152,7 +152,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             this.locMarkerOptions.clear()
             this.linkOptions.clear()    
         }
-
+          
         let updateLocs = updateLocationData.updateLocations
         let deleteLocs = updateLocationData.deleteLocations
         let updateLinks = updateLocationData.updateLinks
@@ -220,7 +220,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         if (selected || isBoundary) {
             lineSymbol.strokeOpacity = 1
         } else {
-            lineSymbol.strokeOpacity = 0.5
+            lineSymbol.strokeOpacity = this.isTripped(link) ? 0.15: 0.5
         }
         if (isBoundary) {
             lineSymbol.scale = 3
@@ -258,6 +258,10 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             ]
         }
         return options;
+    }
+
+    private isTripped(link:ILoadflowLink): boolean {
+        return link.branches.find(m=>this.loadflowDataService.isTripped(m.id)) ? true : false
     }
 
     getLocMarkerOptions(loc: ILoadflowLocation): google.maps.MarkerOptions {

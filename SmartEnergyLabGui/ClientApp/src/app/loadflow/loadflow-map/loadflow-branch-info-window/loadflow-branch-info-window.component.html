@@ -4,10 +4,29 @@
         <span>{{name}}</span>
     </div>
     <div class="branchContainer">
-        <div *ngFor="let b of branches">                    
-            <app-map-buttons typeName="Branch" [element]="b" (onEdit)="edit($event)">
-                <span>{{b.displayName}}</span>
-            </app-map-buttons>
-        </div>    
+        <table class="branchTable">
+            <tr>
+                <th>Branch</th>
+                <th>Tripped</th>
+                <th>Flow<br/>(MW)</th>
+                <th>Free<br/>(MW)</th>
+            </tr>
+            <tr *ngFor="let b of branches">
+                <td>
+                    <app-map-buttons typeName="Branch" [element]="b" (onEdit)="edit($event)">
+                        <span>{{b.displayName}}</span>
+                    </app-map-buttons>            
+                </td>
+                <td>
+                    <input type="checkbox" [checked]="isTripped(b.id)" (change)="toggleTrip($event,b.id)"/>
+                </td>
+                <td>
+                    {{b.powerFlow?.toFixed(0)}}
+                </td>
+                <td>
+                    {{b.freePower?.toFixed(0)}}
+                </td>
+            </tr>    
+        </table>                    
     </div>
 </div>

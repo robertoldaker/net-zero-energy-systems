@@ -106,6 +106,10 @@ export class LoadflowDialogComponent extends ComponentBase {
         return this.dataService.loadFlowResults ? true : false
     }
 
+    clearTrips(e:any) {
+        this.dataService.clearTrips()
+    }
+
     currentTrip: string
     percent: number
     selectedTrip: string

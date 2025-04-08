@@ -476,6 +476,7 @@ export interface ILoadflowLink {
     branchCount: number
     node1LocationId: number
     node2LocationId: number
+    branches: Branch[]
 }
 
 

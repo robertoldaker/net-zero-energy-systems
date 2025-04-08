@@ -498,7 +498,21 @@ export class LoadflowDataService {
     public addTrip(branchId : number) {
         if ( !this.trips.get(branchId)) {
             this.trips.set(branchId,true)
+            this.updateLocationDataForTrip(branchId)
             this.TripsChanged.emit(Array.from(this.trips.keys()))    
+        }
+    }
+
+    private updateLocationDataForTrip(branchId: number) {
+        let updateLocationData:UpdateLocationData = { updateLocations: [], deleteLocations: [], updateLinks: [] , deleteLinks: [], clearBeforeUpdate: false }
+        let br = this.branches?.data.find(m=>m.id == branchId)
+        if ( br ) {
+            var keys = this.getBranchKeys(br)
+            let link = this.linkMap.get(keys.key1)
+            if ( link ) {
+                updateLocationData.updateLinks.push(link)
+                this.LocationDataUpdated.emit(updateLocationData)
+            }
         }
     }
 
@@ -509,14 +523,49 @@ export class LoadflowDataService {
 
     public removeTrip(branchId : number) {
         if ( this.trips.delete(branchId) ) {
+            this.updateLocationDataForTrip(branchId)
             this.TripsChanged.emit(Array.from(this.trips.keys()))
         }
     }
 
     public clearTrips() {
         if ( this.trips.size>0) {
+            let branchIds = Array.from(this.trips.keys())
             this.trips.clear()
-            this.TripsChanged.emit(Array.from(this.trips.keys()))    
+            for( let branchId of branchIds) {
+                this.updateLocationDataForTrip(branchId)
+            }
+            this.TripsChanged.emit(branchIds)    
+        }
+    }
+
+    public get branches():DatasetData<Branch> | undefined {
+        if ( this.loadFlowResults) {
+            return this.loadFlowResults.branches
+        } else if ( this.networkData) {
+            return this.networkData.branches
+        } else {
+            return undefined
+        }
+    }
+
+    public get nodes():DatasetData<Node> | undefined {
+        if ( this.loadFlowResults) {
+            return this.loadFlowResults.nodes
+        } else if ( this.networkData) {
+            return this.networkData.nodes
+        } else {
+            return undefined
+        }
+    }
+
+    public get ctrls():DatasetData<Ctrl> | undefined {
+        if ( this.loadFlowResults) {
+            return this.loadFlowResults.ctrls
+        } else if ( this.networkData) {
+            return this.networkData.ctrls
+        } else {
+            return undefined
         }
     }
 
@@ -613,6 +662,7 @@ export class LoadflowLink implements ILoadflowLink {
     private _voltage:number = 0
     private _id:number
     private _isNew: boolean
+    private _branches:Branch[] = []
 
     constructor(branch:Branch) {
         this._node1LocationId = branch.node1LocationId;
@@ -629,6 +679,7 @@ export class LoadflowLink implements ILoadflowLink {
         this.branchCount = 1
         this._id = branch.id
         this._isNew = true
+        this._branches = [branch]
     }
 
     get id():number {
@@ -655,8 +706,13 @@ export class LoadflowLink implements ILoadflowLink {
         return this._gisData2
     }
 
+    get branches():Branch[] {
+        return this._branches;
+    }
+
     update(branches: Branch[],ctrlMap: Map<number,Ctrl>):boolean {
         let isHVDC = false
+        this._branches = branches;
         branches.forEach(m=>{
             let ctrl = ctrlMap.get(m.id)
             if ( ctrl?.type === LoadflowCtrlType.HVDC) {
