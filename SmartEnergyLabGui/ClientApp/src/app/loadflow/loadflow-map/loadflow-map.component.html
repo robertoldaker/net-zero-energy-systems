@@ -6,7 +6,7 @@
             <app-loadflow-map-buttons (onAddLocation)="addLocation($event)"></app-loadflow-map-buttons>
         </div>
 
-        <map-marker #locMarkers *ngFor="let markerOption of locMarkerOptions.getArray(); trackBy: markerTrackByFcn" [options]="markerOption.options" (mapClick)="locMarkerClicked(markerOption)" (mapDragend)="locMarkerDragEnd({ mo: markerOption, e: $event} )"></map-marker>
+        <map-advanced-marker #locMarkers *ngFor="let markerOption of locMarkerOptions.getArray(); trackBy: markerTrackByFcn" [options]="markerOption.options" (mapClick)="locMarkerClicked(markerOption)" (mapDragend)="locMarkerDragEnd({ mo: markerOption, e: $event} )"></map-advanced-marker>
         <map-polyline #linkLines *ngFor="let linkOption of linkOptions.getArray(); trackBy: polylineTrackByFcn" [options]="linkOption.options" (polylineClick)="linkLineClicked(linkOption.id)"></map-polyline>
 
         <map-info-window #locInfoWindow  (closeclick)="clearSelection()">
@@ -15,6 +15,7 @@
         <map-info-window #linkInfoWindow (closeclick)="clearSelection()">
             <app-loadflow-branch-info-window></app-loadflow-branch-info-window>
         </map-info-window>
+        <map-marker #dummyMarker [options]="dummyMarkerOptions"></map-marker>
         
     </google-map>
     

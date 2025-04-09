@@ -9,6 +9,7 @@ import { DialogService } from 'src/app/dialogs/dialog.service';
 import { DatasetsService, NewItemData } from 'src/app/datasets/datasets.service';
 import { DataClientService } from 'src/app/data/data-client.service';
 import { IFormControlDict } from 'src/app/dialogs/dialog-base';
+import { MapAdvancedMarker } from './map-advanced-marker/map-advanced-marker';
 
 @Component({
     selector: 'app-loadflow-map',
@@ -18,12 +19,13 @@ import { IFormControlDict } from 'src/app/dialogs/dialog-base';
 export class LoadflowMapComponent extends ComponentBase implements OnInit, AfterViewInit {
 
     @ViewChild(GoogleMap, { static: false }) map: GoogleMap | undefined
-    @ViewChildren('locMarkers', { read: MapMarker }) locMapMarkers: QueryList<MapMarker> | undefined
+    @ViewChildren('locMarkers', { read: MapAdvancedMarker }) locMapMarkers: QueryList<MapAdvancedMarker> | undefined
     @ViewChildren('linkLines', { read: MapPolyline }) linkMapPolylines: QueryList<MapPolyline> | undefined
     @ViewChild('key') key: ElementRef | undefined
     @ViewChild('locInfoWindow', { read: MapInfoWindow }) locInfoWindow: MapInfoWindow | undefined
     @ViewChild('linkInfoWindow', { read: MapInfoWindow }) linkInfoWindow: MapInfoWindow | undefined
     @ViewChild('divContainer') divContainer: ElementRef | undefined
+    @ViewChild('dummyMarker', { read: MapMarker }) dummyMarker: MapMarker | undefined
 
     constructor(
         private loadflowDataService: LoadflowDataService, 
@@ -45,11 +47,13 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             // select an objet (link or location)
             this.selectObject(selectedItem)
         }))
-
     }
 
     addBranchHandler: AddBranchHandler | undefined
     addLocationHandler: AddLocationHandler | undefined
+    // Needed to support opening of location info window whilst using advanced markers ith a older version of angular/google-maps
+    dummyMarkerOptions: google.maps.MarkerOptions = { position: {lat: 54.50355, lng: -3.76489}, visible: false  }
+    private locSvg: HTMLElement | undefined
 
     ngOnInit(): void {
 
@@ -76,11 +80,9 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         disableDoubleClickZoom: true,
         mapTypeId: 'roadmap',
         minZoom: 3,
-        styles: [
-            { featureType: "poi", stylers: [{ visibility: "off" }] },
-            { featureType: "road", stylers: [{ visibility: "off" }] },
-            { featureType: "landscape", stylers: [{ visibility: "off" }] },
-            { featureType: "administrative", stylers: [{ visibility: "off" }] }],
+        // This is defined in google cloud console "https://console.cloud.google.com/google/maps-apis/studio/maps?invt=AbuSBg&project=smart-energy-lab"
+        // and defines the style for the map
+        mapId: 'b270cc5a1339c548',
         mapTypeControl: false,
         fullscreenControl: false,
         streetViewControl: false,
@@ -97,15 +99,15 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     }
 
     private readonly QB_COLOUR = '#7E4444'
-    private readonly LOC_COLOUR = 'grey'
+    private readonly LOC_COLOUR = '#aaa'
     private readonly QB_SEL_COLOUR = 'red'
     private readonly LOC_SEL_COLOUR = 'white'
     private readonly LOC_EMPTY_COLOUR = 'white'
     private readonly BOUNDARY_COLOUR = '#00FF2F'
 
-    locMarkerOptions: MapOptions<google.maps.MarkerOptions> = new MapOptions()
+    locMarkerOptions: MapOptions<google.maps.marker.AdvancedMarkerElementOptions> = new MapOptions()
     linkOptions: MapOptions<google.maps.PolylineOptions> = new MapOptions()
-    selectedLocMarker: MapMarker | null = null
+    selectedLocMarker: MapAdvancedMarker | null = null
     selectedItem: SelectedMapItem = { location: null, link: null }
     selectedLinkLine: MapPolyline | null = null
     private selectObject(selectedItem: SelectedMapItem) {
@@ -136,6 +138,19 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
                 this.selectedItem = selectedItem
             }
         }
+    }
+
+    getLocSvg(): any {
+        if ( !this.locSvg ) {
+            const parser = new DOMParser();
+            // A marker with a custom inline SVG.
+            const pinSvgString = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><circle cx="5" cy="5" r="4" /></svg>`
+            this.locSvg = parser.parseFromString(pinSvgString, 'image/svg+xml').documentElement; 
+            this.locSvg.style.setProperty('stroke','black')
+            this.locSvg.style.setProperty('transform','translate(0px, 5px)')
+        }
+        let locSvg = this.locSvg.cloneNode(true)
+        return locSvg;
     }
 
     markerTrackByFcn(index:number , mo: IMapData<google.maps.MarkerOptions>):any {
@@ -264,33 +279,27 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         return link.branches.find(m=>this.loadflowDataService.isTripped(m.id)) ? true : false
     }
 
-    getLocMarkerOptions(loc: ILoadflowLocation): google.maps.MarkerOptions {
+    getLocMarkerOptions(loc: ILoadflowLocation): google.maps.marker.AdvancedMarkerElementOptions {
         let fillColor = loc.isQB ? this.QB_COLOUR : this.LOC_COLOUR
         let fillOpacity = loc.hasNodes ? 1 : 0
-        let sqIcon: google.maps.Symbol = {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 4,
-            strokeOpacity: 1,
-            strokeColor: 'black',
-            strokeWeight: 0.5,
-            fillOpacity: fillOpacity,
-            fillColor: fillColor
-        };
+        let locSvg = this.getLocSvg();
+
+        locSvg.style.setProperty('opacity',fillOpacity.toFixed(1))
+        locSvg.style.setProperty('fill',fillColor)
 
         return {
-            icon: sqIcon,
             position: {
                 lat: loc.gisData.latitude,
                 lng: loc.gisData.longitude,
             },
             title: `${loc.reference}: ${loc.name}`,
-            opacity: 1,
-            draggable: this.datasetsService.isEditable,
-            zIndex: 15
+            content: locSvg,            
+            zIndex: 15,
+            gmpDraggable: true
         }
     }
 
-    locMarkerClicked(mapData: IMapData<google.maps.MarkerOptions>) {
+    locMarkerClicked(mapData: IMapData<google.maps.marker.AdvancedMarkerElementOptions>) {
         if ( this.addBranchHandler?.inProgress ) {
             this.addBranchHandler.location2Selected(mapData.id)
         } else {
@@ -298,7 +307,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
     }
 
-    locMarkerDragEnd(e: {mo: IMapData<google.maps.MarkerOptions>, e: any}) {
+    locMarkerDragEnd(e: {mo: IMapData<google.maps.marker.AdvancedMarkerElementOptions>, e: any}) {
         let loc = this.loadflowDataService.getLocation(e.mo.id)
         if ( loc && this.datasetsService.currentDataset) {
             let data = { latitude: e.e.latLng.lat(), longitude: e.e.latLng.lng() };
@@ -314,30 +323,35 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.loadflowDataService.selectLink(branchId)
     }
 
-    selectMarker(loc: ILoadflowLocation, mm: MapMarker, select: boolean) {
+    selectMarker(loc: ILoadflowLocation, mm: MapAdvancedMarker, select: boolean) {
         //
-        let s: any = mm.marker?.getIcon()
+        /*let s: any = mm.marker?.getIcon()
         if (loc.isQB) {
             s.fillColor = select ? this.QB_SEL_COLOUR : this.QB_COLOUR
         } else {
             s.fillColor = select ? this.LOC_SEL_COLOUR : this.LOC_COLOUR
         }
         s.strokeOpacity = select ? 1 : 0.5
-        mm.marker?.setIcon(s)
+        mm.marker?.setIcon(s)*/
         //
         this.showLocInfoWindow(loc, mm, select)
     }
 
-    showLocInfoWindow(loc: ILoadflowLocation, mm: MapMarker, select: boolean) {
-        // pan/zoom to new position
-        if (select) {
-            let center = { lat: loc.gisData.latitude, lng: loc.gisData.longitude }
-            this.panTo(center, 7)
-        }
+    showLocInfoWindow(loc: ILoadflowLocation, mm: MapAdvancedMarker, select: boolean) {
         // open info window
         if (this.locInfoWindow) {
             if (select) {
-                this.locInfoWindow.open(mm)
+                let center = { lat: loc.gisData.latitude, lng: loc.gisData.longitude }
+                this.panTo(center, 7, () => {
+                    //??
+                    //?? Need to use dummy marker to set position since we are using an old version of angular/google-maps
+                    //?? if/when upgrade to latest version should be able to use .open with the supplied MapAdvancedMarker
+                    //??
+                    if ( this.locInfoWindow && this.dummyMarker && this.dummyMarker.marker ) {
+                        this.dummyMarker.marker.setPosition( mm.advancedMarker.position )
+                        this.locInfoWindow.open(this.dummyMarker)
+                    }    
+                })
             } else {
                 this.locInfoWindow.close()
             }
@@ -356,21 +370,19 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     showLinkInfoWindow(link: ILoadflowLink, mpl: MapPolyline, select: boolean) {
         // pan/zoom to new position
-        let center = {
-            lat: (link.gisData1.latitude + link.gisData2.latitude) / 2,
-            lng: (link.gisData1.longitude + link.gisData2.longitude) / 2
-        }
         if (select) {
-            this.panTo(center, 7)
-        }
-        // open info window
-        if (this.linkInfoWindow) {
-            if (select) {
-                this.linkInfoWindow.position = center
-                this.linkInfoWindow.open()
-            } else {
-                this.linkInfoWindow.close()
+            let center = {
+                lat: (link.gisData1.latitude + link.gisData2.latitude) / 2,
+                lng: (link.gisData1.longitude + link.gisData2.longitude) / 2
             }
+            this.panTo(center, 7, () => {
+                if ( this.linkInfoWindow) {
+                    this.linkInfoWindow.position = center
+                    this.linkInfoWindow.open()        
+                }
+            })
+        } else {
+            this.linkInfoWindow?.close()
         }
     }
 
@@ -390,21 +402,37 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.map?.panToBounds(bounds);
     }
 
-    panTo(center: google.maps.LatLngLiteral, minZoom: number) {
+    panTo(center: google.maps.LatLngLiteral, minZoom: number, onIdle: (()=>void)) {
 
-        let curZoom = this.map?.googleMap?.getZoom()
-        if (curZoom && curZoom < minZoom) {
-            this.map?.googleMap?.setZoom(minZoom)
+        this.panToCenter(center, () => {
+            this.zoomTo(minZoom,onIdle)
+        });
+
+    }
+
+    panToCenter(center: google.maps.LatLngLiteral,  onIdle: (()=>void)) {
+        // Add an event listener for the 'idle' event
+        if ( this.map?.googleMap) {
+            google.maps.event.addListenerOnce(this.map?.googleMap, "idle", () => {
+                // Place any code here that you want to execute after panning.
+                onIdle()
+            });    
         }
-
-        this.map?.googleMap?.setCenter(center)
         this.map?.googleMap?.panTo(center)
     }
 
-    zoomTo(minZoom: number) {
+    zoomTo(minZoom: number,onIdle: (()=>void)) {
         let curZoom = this.map?.googleMap?.getZoom()
         if (curZoom && curZoom < minZoom) {
+            if ( this.map?.googleMap) {
+                google.maps.event.addListenerOnce(this.map?.googleMap, "idle", () => {
+                    // Place any code here that you want to execute after panning.
+                    onIdle()
+                });    
+            }
             this.map?.googleMap?.setZoom(minZoom)
+        } else {
+            onIdle()
         }
     }
 

@@ -165,6 +165,7 @@ import { DistDataComponent } from './admin/admin-data/dist-data/dist-data.compon
 import { TransDataComponent } from './admin/admin-data/trans-data/trans-data.component';
 import { LoadflowNodeCellComponent } from './loadflow/data/loadflow-node-cell/loadflow-node-cell.component';
 import { LoadflowBranchCodeCellComponent } from './loadflow/data/loadflow-branch-code-cell/loadflow-branch-code-cell.component';
+import { MapAdvancedMarker } from './loadflow/loadflow-map/map-advanced-marker/map-advanced-marker';
 
 
 @NgModule({
@@ -285,6 +286,7 @@ import { LoadflowBranchCodeCellComponent } from './loadflow/data/loadflow-branch
         TransDataComponent,
         LoadflowNodeCellComponent,
         LoadflowBranchCodeCellComponent,
+        MapAdvancedMarker
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

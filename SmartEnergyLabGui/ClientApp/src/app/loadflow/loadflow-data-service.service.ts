@@ -69,12 +69,12 @@ export class LoadflowDataService {
     }
 
     private loadDataset(onLoad: (()=>void) | undefined = undefined) {
-        this.loadNetworkData(false,onLoad);
+        this.loadNetworkData(true,onLoad);
     }
 
     private loadNetworkData(withMessage: boolean, onLoad: (()=>void) | undefined) {
         if ( withMessage ) {
-            this.messageService.showMessage('Loading ...')
+            this.messageService.showModalMessage('Loading ...')
         }
         this.dataClientService.GetNetworkData( this.dataset.id, (results)=>{
             this.networkData = results
