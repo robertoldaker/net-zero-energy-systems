@@ -85,11 +85,4 @@ export class LoadflowMapSearchComponent implements OnInit {
         return str;
     }
 
-    resetZoom() {
-        this.loadflowService.clearMapSelection()
-        this.parent.resetZoom()
-    }
-
-
-
 }

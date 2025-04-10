@@ -1,4 +1,4 @@
-<div class="mapButton" (click)="toggleMap()" title="show map">
+<div [ngClass]="{hide: showMap}" class="mapButton" (click)="toggleMap()" title="show map">
     <div>
         <img [src]="mapButtonImage"/>
     </div>

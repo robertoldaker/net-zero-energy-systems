@@ -22,13 +22,14 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     @ViewChildren('locMarkers', { read: MapAdvancedMarker }) locMapMarkers: QueryList<MapAdvancedMarker> | undefined
     @ViewChildren('linkLines', { read: MapPolyline }) linkMapPolylines: QueryList<MapPolyline> | undefined
     @ViewChild('key') key: ElementRef | undefined
+    @ViewChild('buttons') buttons: ElementRef | undefined
     @ViewChild('locInfoWindow', { read: MapInfoWindow }) locInfoWindow: MapInfoWindow | undefined
     @ViewChild('linkInfoWindow', { read: MapInfoWindow }) linkInfoWindow: MapInfoWindow | undefined
     @ViewChild('divContainer') divContainer: ElementRef | undefined
     @ViewChild('dummyMarker', { read: MapMarker }) dummyMarker: MapMarker | undefined
 
     constructor(
-        private loadflowDataService: LoadflowDataService, 
+        private loadflowDataService: LoadflowDataService,
         private messageService: ShowMessageService,
         private dialogService: DialogService,
         private dataService: DataClientService,
@@ -44,15 +45,19 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             this.selectBoundaryBranches(boundaryLinks)
         }))
         this.addSub(this.loadflowDataService.ObjectSelected.subscribe((selectedItem) => {
-            // select an objet (link or location)
+            // select an object (link or location)
             this.selectObject(selectedItem)
         }))
+        this.addSub(loadflowDataService.LocationDraggingChanged.subscribe((value) => {
+            this.updateDraggable()
+        }))
+
     }
 
     addBranchHandler: AddBranchHandler | undefined
     addLocationHandler: AddLocationHandler | undefined
     // Needed to support opening of location info window whilst using advanced markers ith a older version of angular/google-maps
-    dummyMarkerOptions: google.maps.MarkerOptions = { position: {lat: 54.50355, lng: -3.76489}, visible: false  }
+    dummyMarkerOptions: google.maps.MarkerOptions = { position: { lat: 54.50355, lng: -3.76489 }, visible: false }
     private locSvg: HTMLElement | undefined
 
     ngOnInit(): void {
@@ -61,13 +66,16 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     ngAfterViewInit(): void {
         if (this.key) {
-            this.map?.controls[google.maps.ControlPosition.TOP_LEFT].push(this.key.nativeElement);
+            this.map?.controls[google.maps.ControlPosition.TOP_RIGHT].push(this.key.nativeElement);
         }
-        if ( this.locInfoWindow ) {
-            this.addBranchHandler = new AddBranchHandler(this.locInfoWindow,this.messageService,this.dialogService, this.loadflowDataService)
+        if (this.buttons) {
+            this.map?.controls[google.maps.ControlPosition.TOP_LEFT].push(this.buttons.nativeElement);
         }
-        if ( this.map?.googleMap) {
-            this.addLocationHandler = new AddLocationHandler(this.map.googleMap,this.messageService,this.dialogService, this.loadflowDataService)
+        if (this.locInfoWindow) {
+            this.addBranchHandler = new AddBranchHandler(this.locInfoWindow, this.messageService, this.dialogService, this.loadflowDataService)
+        }
+        if (this.map?.googleMap) {
+            this.addLocationHandler = new AddLocationHandler(this.map.googleMap, this.messageService, this.dialogService, this.loadflowDataService)
         }
     }
 
@@ -140,34 +148,56 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
     }
 
+    updateDraggable() {
+        if (this.locMapMarkers) {
+            for (let amm of this.locMapMarkers) {
+                amm.advancedMarker.gmpDraggable = this.loadflowDataService.locationDragging
+            }
+        }
+    }
+
     getLocSvg(): any {
-        if ( !this.locSvg ) {
+        if (!this.locSvg) {
             const parser = new DOMParser();
             // A marker with a custom inline SVG.
             const pinSvgString = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><circle cx="5" cy="5" r="4" /></svg>`
-            this.locSvg = parser.parseFromString(pinSvgString, 'image/svg+xml').documentElement; 
-            this.locSvg.style.setProperty('stroke','black')
-            this.locSvg.style.setProperty('transform','translate(0px, 5px)')
+            this.locSvg = parser.parseFromString(pinSvgString, 'image/svg+xml').documentElement;
+            this.locSvg.style.setProperty('stroke', 'black')
+            this.locSvg.style.setProperty('transform', 'translate(0px, 5px)')
         }
         let locSvg = this.locSvg.cloneNode(true)
         return locSvg;
     }
 
-    markerTrackByFcn(index:number , mo: IMapData<google.maps.MarkerOptions>):any {
+    redrawToggle: boolean = false
+    redraw() {
+        // This is needed since advanced map markers do not get updated when the map is hidden. polylines are ok.
+        // this may not be needed when upgrading to lates angular/google-maps.
+        // Getting the map to redraw fixes this but only way I could figure out is by panning a small amount
+        // redraw() is called when showMap is set to true
+        if ( this.map?.googleMap) {
+            console.log('redraw!')
+            let amount = this.redrawToggle ? 1 : -1
+            this.map.googleMap.panBy(0,amount)
+            this.redrawToggle = !this.redrawToggle
+        }
+    }
+
+    markerTrackByFcn(index: number, mo: IMapData<google.maps.marker.AdvancedMarkerElementOptions>): any {
         return mo.id;
     }
 
-    polylineTrackByFcn(index:number , mo: IMapData<google.maps.PolylineOptions>):any {
+    polylineTrackByFcn(index: number, mo: IMapData<google.maps.PolylineOptions>): any {
         return mo.id;
     }
 
     updateMapData(updateLocationData: UpdateLocationData) {
 
-        if ( updateLocationData.clearBeforeUpdate ) {
+        if (updateLocationData.clearBeforeUpdate) {
             this.locMarkerOptions.clear()
-            this.linkOptions.clear()    
+            this.linkOptions.clear()
         }
-          
+
         let updateLocs = updateLocationData.updateLocations
         let deleteLocs = updateLocationData.deleteLocations
         let updateLinks = updateLocationData.updateLinks
@@ -180,10 +210,16 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
         // replace or add markers as needed
         updateLocs.forEach(loc => {
-            let markerOption = this.locMarkerOptions.get(loc.id);
+            let index = this.locMarkerOptions.getIndex(loc.id)
+            let mm = this.locMapMarkers?.get(index)
             let options = this.getLocMarkerOptions(loc)
-            if (markerOption) {
-                markerOption.options = options
+            if (mm) {
+                // Can't get setting options to work with advanced map markers so access and set map marker options directly
+                mm.advancedMarker.position = options.position
+                mm.advancedMarker.content = options.content
+                if ( options.title ) {
+                    mm.advancedMarker.title = options.title
+                }
             } else {
                 this.locMarkerOptions.add(loc.id, options)
             }
@@ -194,7 +230,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         for (let link of deleteLinks) {
             this.linkOptions.remove(link.id)
             // if its the selected one then remove the info window
-            if ( link.id == this.loadflowDataService.selectedMapItem?.link?.id) {
+            if (link.id == this.loadflowDataService.selectedMapItem?.link?.id) {
                 this.linkInfoWindow?.close()
             }
         }
@@ -211,7 +247,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     }
 
-    getBranchOptions(b: ILoadflowLink):google.maps.PolylineOptions  {
+    getBranchOptions(b: ILoadflowLink): google.maps.PolylineOptions {
         let options = this.getPolylineOptions(b, false, false);
         options.path = [
             { lat: b.gisData1.latitude, lng: b.gisData1.longitude },
@@ -235,7 +271,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         if (selected || isBoundary) {
             lineSymbol.strokeOpacity = 1
         } else {
-            lineSymbol.strokeOpacity = this.isTripped(link) ? 0.15: 0.5
+            lineSymbol.strokeOpacity = this.isTripped(link) ? 0.15 : 0.5
         }
         if (isBoundary) {
             lineSymbol.scale = 3
@@ -275,17 +311,17 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         return options;
     }
 
-    private isTripped(link:ILoadflowLink): boolean {
-        return link.branches.find(m=>this.loadflowDataService.isTripped(m.id)) ? true : false
+    private isTripped(link: ILoadflowLink): boolean {
+        return link.branches.find(m => this.loadflowDataService.isTripped(m.id)) ? true : false
     }
 
     getLocMarkerOptions(loc: ILoadflowLocation): google.maps.marker.AdvancedMarkerElementOptions {
         let fillColor = loc.isQB ? this.QB_COLOUR : this.LOC_COLOUR
-        let fillOpacity = loc.hasNodes ? 1 : 0
+        let fillOpacity = loc.hasNodes ? 1 : 0.5
         let locSvg = this.getLocSvg();
 
-        locSvg.style.setProperty('opacity',fillOpacity.toFixed(1))
-        locSvg.style.setProperty('fill',fillColor)
+        locSvg.style.setProperty('opacity', fillOpacity.toFixed(1))
+        locSvg.style.setProperty('fill', fillColor)
 
         return {
             position: {
@@ -293,27 +329,27 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
                 lng: loc.gisData.longitude,
             },
             title: `${loc.reference}: ${loc.name}`,
-            content: locSvg,            
+            content: locSvg,
             zIndex: 15,
-            gmpDraggable: true
+            gmpDraggable: this.loadflowDataService.locationDragging
         }
     }
 
     locMarkerClicked(mapData: IMapData<google.maps.marker.AdvancedMarkerElementOptions>) {
-        if ( this.addBranchHandler?.inProgress ) {
+        if (this.addBranchHandler?.inProgress) {
             this.addBranchHandler.location2Selected(mapData.id)
         } else {
             this.loadflowDataService.selectLocation(mapData.id)
         }
     }
 
-    locMarkerDragEnd(e: {mo: IMapData<google.maps.marker.AdvancedMarkerElementOptions>, e: any}) {
+    locMarkerDragEnd(e: { mo: IMapData<google.maps.marker.AdvancedMarkerElementOptions>, e: any }) {
         let loc = this.loadflowDataService.getLocation(e.mo.id)
-        if ( loc && this.datasetsService.currentDataset) {
+        if (loc && this.datasetsService.currentDataset) {
             let data = { latitude: e.e.latLng.lat(), longitude: e.e.latLng.lng() };
-            this.dataService.EditItem({id: loc.id, datasetId: this.datasetsService.currentDataset.id, className: "GridSubstationLocation", data: data }, (resp)=>{
+            this.dataService.EditItem({ id: loc.id, datasetId: this.datasetsService.currentDataset.id, className: "GridSubstationLocation", data: data }, (resp) => {
                 this.loadflowDataService.afterEdit(resp)
-            }, (errors)=>{
+            }, (errors) => {
                 console.log(errors)
             })
         }
@@ -347,10 +383,10 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
                     //?? Need to use dummy marker to set position since we are using an old version of angular/google-maps
                     //?? if/when upgrade to latest version should be able to use .open with the supplied MapAdvancedMarker
                     //??
-                    if ( this.locInfoWindow && this.dummyMarker && this.dummyMarker.marker ) {
-                        this.dummyMarker.marker.setPosition( mm.advancedMarker.position )
+                    if (this.locInfoWindow && this.dummyMarker && this.dummyMarker.marker) {
+                        this.dummyMarker.marker.setPosition(mm.advancedMarker.position)
                         this.locInfoWindow.open(this.dummyMarker)
-                    }    
+                    }
                 })
             } else {
                 this.locInfoWindow.close()
@@ -360,7 +396,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     selectLink(link: ILoadflowLink, mpl: MapPolyline, select: boolean) {
         //
-        let isBoundaryLink = this.loadflowDataService.boundaryLinks.find(m=>m.id == link.id) ? true : false
+        let isBoundaryLink = this.loadflowDataService.boundaryLinks.find(m => m.id == link.id) ? true : false
         //
         let options = this.getPolylineOptions(link, select, isBoundaryLink)
         mpl.polyline?.setOptions(options);
@@ -376,9 +412,9 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
                 lng: (link.gisData1.longitude + link.gisData2.longitude) / 2
             }
             this.panTo(center, 7, () => {
-                if ( this.linkInfoWindow) {
+                if (this.linkInfoWindow) {
                     this.linkInfoWindow.position = center
-                    this.linkInfoWindow.open()        
+                    this.linkInfoWindow.open()
                 }
             })
         } else {
@@ -387,7 +423,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     }
 
     mapClick(e: google.maps.MapMouseEvent) {
-        if ( this.addLocationHandler?.inProgress && e.latLng) {
+        if (this.addLocationHandler?.inProgress && e.latLng) {
             this.addLocationHandler.addLocation(e.latLng);
         } else {
             this.loadflowDataService.clearMapSelection();
@@ -402,33 +438,33 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.map?.panToBounds(bounds);
     }
 
-    panTo(center: google.maps.LatLngLiteral, minZoom: number, onIdle: (()=>void)) {
+    panTo(center: google.maps.LatLngLiteral, minZoom: number, onIdle: (() => void)) {
 
         this.panToCenter(center, () => {
-            this.zoomTo(minZoom,onIdle)
+            this.zoomTo(minZoom, onIdle)
         });
 
     }
 
-    panToCenter(center: google.maps.LatLngLiteral,  onIdle: (()=>void)) {
+    panToCenter(center: google.maps.LatLngLiteral, onIdle: (() => void)) {
         // Add an event listener for the 'idle' event
-        if ( this.map?.googleMap) {
+        if (this.map?.googleMap) {
             google.maps.event.addListenerOnce(this.map?.googleMap, "idle", () => {
                 // Place any code here that you want to execute after panning.
                 onIdle()
-            });    
+            });
         }
         this.map?.googleMap?.panTo(center)
     }
 
-    zoomTo(minZoom: number,onIdle: (()=>void)) {
+    zoomTo(minZoom: number, onIdle: (() => void)) {
         let curZoom = this.map?.googleMap?.getZoom()
         if (curZoom && curZoom < minZoom) {
-            if ( this.map?.googleMap) {
+            if (this.map?.googleMap) {
                 google.maps.event.addListenerOnce(this.map?.googleMap, "idle", () => {
                     // Place any code here that you want to execute after panning.
                     onIdle()
-                });    
+                });
             }
             this.map?.googleMap?.setZoom(minZoom)
         } else {
@@ -509,26 +545,26 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 }
 
 export class AddBranchHandler {
-    constructor(private locInfoWindow: MapInfoWindow, 
-        private messageService:ShowMessageService, 
-        private dialogService:DialogService, 
+    constructor(private locInfoWindow: MapInfoWindow,
+        private messageService: ShowMessageService,
+        private dialogService: DialogService,
         private loadflowDataService: LoadflowDataService) {
-        }
+    }
 
     inProgress = false
     startLocation: ILoadflowLocation | null = null
     eventListener: google.maps.MapsEventListener | undefined
 
-    start(loc: ILoadflowLocation | null) {        
+    start(loc: ILoadflowLocation | null) {
         this.inProgress = true
         this.startLocation = loc
         this.messageService.showMessage("Please select location to connect to ... \n\n(click ESC to cancel)");
         this.locInfoWindow.close()
         let addBranchHandler = this
-        this.eventListener = google.maps.event.addDomListener(document, 'keydown', (e: any)=>{
-            if ( e.keyCode == 27 && addBranchHandler.inProgress) {
+        this.eventListener = google.maps.event.addDomListener(document, 'keydown', (e: any) => {
+            if (e.keyCode == 27 && addBranchHandler.inProgress) {
                 addBranchHandler.cancel()
-            }    
+            }
         });
     }
 
@@ -536,17 +572,17 @@ export class AddBranchHandler {
         this.inProgress = false
         this.messageService.clearMessage();
         this.locInfoWindow.open()
-        if ( this.eventListener ) {
+        if (this.eventListener) {
             google.maps.event.removeListener(this.eventListener)
         }
     }
 
     location2Selected(locId: number) {
         let loc2 = this.loadflowDataService.getLocation(locId)
-        if ( loc2 && this.startLocation) {
+        if (loc2 && this.startLocation) {
             this.messageService.clearMessage();
-            let itemData = new NewItemData({node1: this.startLocation.reference, node2: loc2.reference})                
-            this.dialogService.showLoadflowBranchDialog({ branch: itemData, ctrl: undefined}, ()=>{
+            let itemData = new NewItemData({ node1: this.startLocation.reference, node2: loc2.reference })
+            this.dialogService.showLoadflowBranchDialog({ branch: itemData, ctrl: undefined }, () => {
                 this.cancel()
             });
         } else {
@@ -556,41 +592,41 @@ export class AddBranchHandler {
 }
 
 export class AddLocationHandler {
-    constructor( 
+    constructor(
         private map: google.maps.Map,
-        private messageService:ShowMessageService, 
-        private dialogService:DialogService, 
+        private messageService: ShowMessageService,
+        private dialogService: DialogService,
         private loadflowDataService: LoadflowDataService) {
-        }
+    }
 
     inProgress = false
     eventListener: google.maps.MapsEventListener | undefined
 
-    start() {        
+    start() {
         this.inProgress = true
         this.messageService.showMessage("Please select location on the map ... \n\n(click ESC to cancel)");
-        this.map.setOptions({gestureHandling:  'none'})
+        this.map.setOptions({ gestureHandling: 'none' })
         let addLocationHandler = this
-        this.eventListener = google.maps.event.addDomListener(document, 'keydown', (e: any)=>{
-            if ( e.keyCode == 27 && addLocationHandler.inProgress) {
+        this.eventListener = google.maps.event.addDomListener(document, 'keydown', (e: any) => {
+            if (e.keyCode == 27 && addLocationHandler.inProgress) {
                 addLocationHandler.cancel()
-            }    
+            }
         });
     }
 
     cancel() {
         this.inProgress = false
         this.messageService.clearMessage();
-        this.map.setOptions({gestureHandling:  'greedy'})
-        if ( this.eventListener ) {
+        this.map.setOptions({ gestureHandling: 'greedy' })
+        if (this.eventListener) {
             google.maps.event.removeListener(this.eventListener)
         }
     }
 
     addLocation(latLng: google.maps.LatLng) {
         this.messageService.clearMessage()
-        let itemData = new NewItemData({lat: latLng.lat(), lng: latLng.lng()})
-        this.dialogService.showLoadflowLocationDialog(itemData, ()=>{
+        let itemData = new NewItemData({ lat: latLng.lat(), lng: latLng.lng() })
+        this.dialogService.showLoadflowLocationDialog(itemData, () => {
             this.cancel()
         });
     }

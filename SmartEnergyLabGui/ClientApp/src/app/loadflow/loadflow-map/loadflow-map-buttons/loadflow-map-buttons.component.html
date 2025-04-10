@@ -1,6 +1,21 @@
-<div class="buttonContainer button">
+<div class="buttonContainer">
+    <button mat-icon-button aria-label="Back to table view" (click)="tableView()" title="Back to table view">
+        <mat-icon>keyboard_arrow_left</mat-icon>
+    </button>
+</div>
+<div *ngIf="isEditable" class="buttonContainer">
     <button mat-icon-button aria-label="Add location" (click)="addLocation()" title="Add location">
         <mat-icon>add</mat-icon>
+    </button>
+</div>
+<div class="buttonContainer">
+    <button mat-icon-button aria-label="Reset zoom" (click)="resetZoom()" title="Reset zoom">
+        <mat-icon>settings_overscan</mat-icon>
+    </button>
+</div>
+<div *ngIf="isEditable" class="buttonContainer img">
+    <button mat-icon-button aria-label="Allow dragging" (click)="toggleLocationDragging()" title="Allow substation dragging">
+        <img src="assets/icons/drag-and-drop.png" class="button" [class]="{enabled: locationDragging}"/>
     </button>
 </div>
 

@@ -9,6 +9,7 @@ import { LoadflowDataBranchesComponent } from '../loadflow-data-branches/loadflo
 import { LoadflowDataNodesComponent } from '../loadflow-data-nodes/loadflow-data-nodes.component';
 import { LoadflowDataCtrlsComponent } from '../loadflow-data-ctrls/loadflow-data-ctrls.component';
 import { LoadflowDataLocationsComponent } from '../loadflow-data-locations/loadflow-data-locations.component';
+import { LoadflowMapComponent } from '../../loadflow-map/loadflow-map.component';
 
 @Component({
     selector: 'app-loadflow-data',
@@ -86,9 +87,16 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
     ctrlsComponent: LoadflowDataCtrlsComponent | null = null;
     @ViewChild(LoadflowDataLocationsComponent)
     locationsComponent: LoadflowDataLocationsComponent | null = null;
+    @ViewChild(LoadflowMapComponent)
+    mapComponent: LoadflowMapComponent | null = null;
 
     toggleMap() {
         this.showMap = !this.showMap;
+        window.setTimeout( () => {
+            if ( this.mapComponent) {
+                this.mapComponent.redraw();
+            }
+        },0 )
     }
 
     tabChange(e: any) {

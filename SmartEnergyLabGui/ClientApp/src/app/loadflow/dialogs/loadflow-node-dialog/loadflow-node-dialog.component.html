@@ -1,15 +1,16 @@
 <app-dialog-header [dialogRef]="dialogRef">{{title}}</app-dialog-header>
 <div mat-dialog-content id="content">
     <form [formGroup]="form">
-        <div class="row">
+        <div class="row leftAlign">
             <div>
                 <app-dialog-text-input [dialog]="dialog" name="code" placeholder="Enter code" label="Code"></app-dialog-text-input>
             </div>
-            <div>
+            <div class="zone">
                 <app-dialog-selector [dialog]="dialog"  name="zoneId" label="Zone" [data]="zones" [displayFcn]="displayZone"></app-dialog-selector>
+                <mat-icon class="iconLink addButton" (click)="addZone()" [title]="'Add a new zone'">add</mat-icon>
             </div>    
         </div>
-        <div class="row">
+        <div class="row leftAlign">
             <div>
                 <app-dialog-text-input [dialog]="dialog" name="generation_A" placeholder="Enter generation in MW" label="Generation (Peak Demand, MW)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
             </div>    
@@ -17,7 +18,7 @@
                 <app-dialog-text-input [dialog]="dialog" name="generation_B" placeholder="Enter generation in MW" label="Generation (Year Round, MW)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
             </div>    
         </div>
-        <div class="row">
+        <div class="row leftAlign">
             <div>
                 <app-dialog-text-input [dialog]="dialog" name="demand" placeholder="Enter demand in MW" label="Demand (MW)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
             </div>

@@ -13,6 +13,16 @@ div.buttonContainer {
     display: inline-block;
 }
 
-div.button {
-    display: inline-block;
+div.buttonContainer.img {
+    /* padding: 10px !important; */
+    cursor: pointer;
+}
+
+img.button {
+    width: 20px;
+    opacity: 0.5;   
+}
+
+img.enabled {
+    opacity: 1;
 }

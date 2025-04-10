@@ -4,3 +4,7 @@ div.row {
     padding-bottom: 2rem;
 }
 
+div.leftAlign {
+    justify-content: start;
+}
+

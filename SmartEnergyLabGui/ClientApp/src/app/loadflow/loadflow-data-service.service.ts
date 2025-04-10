@@ -59,6 +59,7 @@ export class LoadflowDataService {
     inRun: boolean = false
     trips: Map<number,boolean> = new Map()
     setPointMode: SetPointMode = SetPointMode.Auto
+    private _locationDragging: boolean = false
 
     selectedMapItem: SelectedMapItem | null
 
@@ -80,6 +81,7 @@ export class LoadflowDataService {
             this.networkData = results
             this.messageService.clearMessage()
             this.loadFlowResults = undefined
+            this._locationDragging = false
             this.clearTrips()
             this.NetworkDataLoaded.emit(results)
             this.updateLocationData(true)
@@ -528,6 +530,16 @@ export class LoadflowDataService {
         }
     }
 
+    public get locationDragging(): boolean {
+        // don't allow dragging if a readonly dataset
+        return this._locationDragging && !this.dataset.isReadOnly
+    }
+
+    public setLocationDragging( value: boolean ) {
+        this._locationDragging = value
+        this.LocationDraggingChanged.emit(value)
+    }
+
     public clearTrips() {
         if ( this.trips.size>0) {
             let branchIds = Array.from(this.trips.keys())
@@ -577,6 +589,7 @@ export class LoadflowDataService {
     BoundarySelected:EventEmitter<ILoadflowLink[]> = new EventEmitter<ILoadflowLink[]>()
     TripsChanged:EventEmitter<number[]> = new EventEmitter<number[]>()
     SetPointModeChanged:EventEmitter<SetPointMode> = new EventEmitter<SetPointMode>()
+    LocationDraggingChanged:EventEmitter<boolean> = new EventEmitter<boolean>()
 }
 
 export interface IBranchEditorData {

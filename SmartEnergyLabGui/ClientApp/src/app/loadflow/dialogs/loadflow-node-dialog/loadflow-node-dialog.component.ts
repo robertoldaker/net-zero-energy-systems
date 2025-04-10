@@ -8,6 +8,7 @@ import { LoadflowDataService } from '../../loadflow-data-service.service';
 import { DatasetsService } from 'src/app/datasets/datasets.service';
 import { ICellEditorDataDict} from 'src/app/datasets/cell-editor/cell-editor.component';
 import { Validators } from '@angular/forms';
+import { DialogService } from 'src/app/dialogs/dialog.service';
 
 @Component({
     selector: 'app-loadflow-node-dialog',
@@ -20,7 +21,8 @@ export class LoadflowNodeDialogComponent extends DialogBase implements OnInit {
         @Inject(MAT_DIALOG_DATA) dialogData:ICellEditorDataDict | undefined,
         private dataService: DataClientService, 
         private loadflowService: LoadflowDataService,
-        private datasetsService: DatasetsService
+        private datasetsService: DatasetsService,
+        private dialogService: DialogService
     ) { 
         super()
         let fCode = this.addFormControl('code')
@@ -87,6 +89,10 @@ export class LoadflowNodeDialogComponent extends DialogBase implements OnInit {
             })
             
         }
+    }
+
+    addZone() {
+        this.dialogService.showLoadflowZoneDialog()
     }
 
 }

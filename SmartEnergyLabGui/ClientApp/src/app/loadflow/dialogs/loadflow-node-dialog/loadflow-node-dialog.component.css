@@ -1,0 +1,8 @@
+.zone {
+    display: flex;
+    align-items: top;    
+}
+
+.addButton {
+    margin-top: 1rem;
+}
