@@ -477,6 +477,8 @@ export interface ILoadflowLink {
     node1LocationId: number
     node2LocationId: number
     branches: Branch[]
+    totalFlow: number | null
+    totalFree: number | null
 }
 
 

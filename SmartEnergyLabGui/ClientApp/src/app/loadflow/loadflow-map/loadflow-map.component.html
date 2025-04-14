@@ -8,8 +8,9 @@
             <app-loadflow-map-search></app-loadflow-map-search>
         </div>
 
-        <map-advanced-marker #locMarkers *ngFor="let markerOption of locMarkerOptions.getArray();" [options]="markerOption.options" (mapClick)="locMarkerClicked(markerOption)" (mapDragend)="locMarkerDragEnd({ mo: markerOption, e: $event} )"></map-advanced-marker>
-        <map-polyline #linkLines *ngFor="let linkOption of linkOptions.getArray(); trackBy: polylineTrackByFcn" [options]="linkOption.options" (polylineClick)="linkLineClicked(linkOption.id)"></map-polyline>
+        <map-advanced-marker #locMarkers *ngFor="let markerOption of locMarkerData.markerOptions;" [options]="markerOption.options" (mapClick)="locMarkerClicked(markerOption)" (mapDragend)="locMarkerDragEnd({ mo: markerOption, e: $event} )"></map-advanced-marker>
+        <map-polyline #linkLines *ngFor="let linkOption of linkPolylineData.polyLineOptions; trackBy: polylineTrackByFcn" [options]="linkOption.options" (polylineClick)="linkLineClicked(linkOption.id)"></map-polyline>
+        <map-advanced-marker #linkMarkers *ngFor="let markerOption of linkLabelData.markerOptions;" [options]="markerOption.options"></map-advanced-marker>
 
         <map-info-window #locInfoWindow  (closeclick)="clearSelection()">
             <app-loadflow-loc-info-window (onNewBranch)="newBranch($event)"></app-loadflow-loc-info-window>
@@ -17,7 +18,6 @@
         <map-info-window #linkInfoWindow (closeclick)="clearSelection()">
             <app-loadflow-branch-info-window></app-loadflow-branch-info-window>
         </map-info-window>
-        <map-marker #dummyMarker [options]="dummyMarkerOptions"></map-marker>
         
     </google-map>
     

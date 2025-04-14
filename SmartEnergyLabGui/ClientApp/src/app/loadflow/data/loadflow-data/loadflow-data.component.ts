@@ -92,11 +92,13 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
 
     toggleMap() {
         this.showMap = !this.showMap;
-        window.setTimeout( () => {
-            if ( this.mapComponent) {
-                this.mapComponent.redraw();
-            }
-        },0 )
+        if ( this.showMap ) {
+            window.setTimeout( () => {
+                if ( this.mapComponent) {
+                    this.mapComponent.redraw();
+                }
+            },0 )    
+        }
     }
 
     tabChange(e: any) {

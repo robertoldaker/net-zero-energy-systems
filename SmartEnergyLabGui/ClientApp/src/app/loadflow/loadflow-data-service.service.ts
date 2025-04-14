@@ -82,6 +82,7 @@ export class LoadflowDataService {
             this.messageService.clearMessage()
             this.loadFlowResults = undefined
             this._locationDragging = false
+            this.clearMapSelection()
             this.clearTrips()
             this.NetworkDataLoaded.emit(results)
             this.updateLocationData(true)
@@ -118,6 +119,7 @@ export class LoadflowDataService {
         this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, transportModel, boundaryName, boundaryTrips, tripStr, (results) => {
             this.inRun = false;
             this.loadFlowResults = results;
+            this.updateLocationData(true);
             this.ResultsLoaded.emit(results);
         });
     }
@@ -328,7 +330,10 @@ export class LoadflowDataService {
         let deleteLocs:LoadflowLocation[] = []
         let deleteLocKeys:number[] = []
         let locations = this.networkData.locations.data
-        let nodes = this.networkData.nodes.data.filter(m=>m.location)
+        if ( !this.nodes || !this.ctrls) {
+            return
+        }
+        let nodes = this.nodes.data.filter(m=>m.location)
         let nodeMap = new Map<number,Node[]>()
         for ( let gsl of locations) {
             let ns = nodes.filter(m=>m.location?.id == gsl.id)
@@ -343,7 +348,7 @@ export class LoadflowDataService {
             }
         }
         //
-        let ctrls = this.networkData.ctrls.data
+        let ctrls = this.ctrls.data
         for( let key of this.locMap.keys()) {
             let loc = this.locMap.get(key)
             let nodes = nodeMap.get(key);
@@ -374,7 +379,10 @@ export class LoadflowDataService {
         let updateLinks:LoadflowLink[] = []
         let deleteLinks:LoadflowLink[] = []
         let deleteLinkKeys:string[] = []
-        let extBranches = this.networkData.branches.data.filter(m=>this.isBranchExternal(m))        
+        if ( !this.branches || !this.ctrls) {
+            return
+        }
+        let extBranches = this.branches.data.filter(m=>this.isBranchExternal(m))        
         let branchMap = new Map<string,Branch[]>()
         for( let b of extBranches) {
             let key = this.getBranchKeys(b)
@@ -391,8 +399,8 @@ export class LoadflowDataService {
             }
         }
         //
-        let ctrls = this.networkData.ctrls.data
-        let branches = this.networkData.branches.data
+        let ctrls = this.ctrls.data
+        let branches = this.branches.data
         let ctrlMap = new Map<number,Ctrl>()
         for( let b of branches) {
             let ctrl = ctrls.find(m=>m.branchId == b.id)
@@ -693,6 +701,7 @@ export class LoadflowLink implements ILoadflowLink {
         this._id = branch.id
         this._isNew = true
         this._branches = [branch]
+        this.totalFlow = branch.powerFlow
     }
 
     get id():number {
@@ -752,6 +761,26 @@ export class LoadflowLink implements ILoadflowLink {
         this.isHVDC = isHVDC
         this.branchCount = branches.length
         this._isNew = false
+        // total power flow across all branches
+        this.totalFlow = null
+        for( let b of this._branches) {
+            if ( b.powerFlow!=null ) {
+                if ( this.totalFlow==null) {
+                    this.totalFlow = 0
+                }
+                this.totalFlow += b.powerFlow
+            }
+        }
+        // total free across all branches
+        this.totalFree = null
+        for( let b of this._branches) {
+            if ( b.freePower!=null ) {
+                if ( this.totalFree==null) {
+                    this.totalFree = 0
+                }
+                this.totalFree += b.freePower
+            }
+        }
 
         return result
     }
@@ -762,4 +791,6 @@ export class LoadflowLink implements ILoadflowLink {
 
     branchCount:number
     isHVDC: boolean
+    totalFlow: number | null
+    totalFree: number | null = null
 }

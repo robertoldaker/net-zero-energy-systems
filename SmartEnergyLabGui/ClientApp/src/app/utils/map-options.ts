@@ -1,12 +1,13 @@
 
-export interface IMapData<T> {
+export interface IMapData<T,U> {
     id: number
     options: T
+    data: U
 }
 
-export class MapOptions<T> {
+export class MapOptions<T,U> {
     
-    private _optionsArray:IMapData<T>[]
+    private _optionsArray:IMapData<T,U>[]
 
     constructor() {
         this._optionsArray = []
@@ -21,12 +22,12 @@ export class MapOptions<T> {
         this._optionsArray.splice(index,1);
     }
 
-    add(id: number, options: T) {
+    add(id: number, options: T, data: U) {
         // push into the array
-        this._optionsArray.push({id: id, options: options})
+        this._optionsArray.push({id: id, options: options, data: data})
     }
 
-    getArray():IMapData<T>[] {
+    getArray():IMapData<T,U>[] {
         return this._optionsArray
     }
 
@@ -34,7 +35,7 @@ export class MapOptions<T> {
         return this._optionsArray.findIndex(m=>m.id == id)
     }
 
-    get(id: number): IMapData<T> | undefined {
+    get(id: number): IMapData<T,U> | undefined {
         return this._optionsArray.find(m=>m.id == id)
     }
 }

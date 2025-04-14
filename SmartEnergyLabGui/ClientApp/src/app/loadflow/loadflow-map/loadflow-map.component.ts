@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, OnInit, QueryList, ViewChild, Vie
 import { GoogleMap, MapInfoWindow, MapMarker, MapPolyline } from '@angular/google-maps';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { LoadflowDataService, LoadflowLink, LoadflowLocation, SelectedMapItem } from '../loadflow-data-service.service';
-import { BoundaryTrip, BoundaryTripType, ILoadflowLink, ILoadflowLocation, UpdateLocationData } from 'src/app/data/app.data';
+import { BoundaryTrip, BoundaryTripType, GISData, ILoadflowLink, ILoadflowLocation, UpdateLocationData } from 'src/app/data/app.data';
 import { IMapData, MapOptions } from 'src/app/utils/map-options';
 import { ShowMessageService } from 'src/app/main/show-message/show-message.service';
 import { DialogService } from 'src/app/dialogs/dialog.service';
@@ -10,6 +10,9 @@ import { DatasetsService, NewItemData } from 'src/app/datasets/datasets.service'
 import { DataClientService } from 'src/app/data/data-client.service';
 import { IFormControlDict } from 'src/app/dialogs/dialog-base';
 import { MapAdvancedMarker } from './map-advanced-marker/map-advanced-marker';
+import { LinkLabelData } from './link-label-data';
+import { LocMarkerData } from './loc-marker-data';
+import { LinkLineData } from './link-line-data';
 
 @Component({
     selector: 'app-loadflow-map',
@@ -21,15 +24,15 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     @ViewChild(GoogleMap, { static: false }) map: GoogleMap | undefined
     @ViewChildren('locMarkers', { read: MapAdvancedMarker }) locMapMarkers: QueryList<MapAdvancedMarker> | undefined
     @ViewChildren('linkLines', { read: MapPolyline }) linkMapPolylines: QueryList<MapPolyline> | undefined
+    @ViewChildren('linkMarkers', { read: MapAdvancedMarker }) linkMarkers: QueryList<MapAdvancedMarker> | undefined
     @ViewChild('key') key: ElementRef | undefined
     @ViewChild('buttons') buttons: ElementRef | undefined
     @ViewChild('locInfoWindow', { read: MapInfoWindow }) locInfoWindow: MapInfoWindow | undefined
     @ViewChild('linkInfoWindow', { read: MapInfoWindow }) linkInfoWindow: MapInfoWindow | undefined
     @ViewChild('divContainer') divContainer: ElementRef | undefined
-    @ViewChild('dummyMarker', { read: MapMarker }) dummyMarker: MapMarker | undefined
 
     constructor(
-        private loadflowDataService: LoadflowDataService,
+        public loadflowDataService: LoadflowDataService,
         private messageService: ShowMessageService,
         private dialogService: DialogService,
         private dataService: DataClientService,
@@ -42,7 +45,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }))
         this.addSub(this.loadflowDataService.BoundarySelected.subscribe((boundaryLinks) => {
             // select links associated with the selected boundary
-            this.selectBoundaryBranches(boundaryLinks)
+            this.linkPolylineData.selectBoundaryBranches(boundaryLinks)
         }))
         this.addSub(this.loadflowDataService.ObjectSelected.subscribe((selectedItem) => {
             // select an object (link or location)
@@ -56,9 +59,6 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     addBranchHandler: AddBranchHandler | undefined
     addLocationHandler: AddLocationHandler | undefined
-    // Needed to support opening of location info window whilst using advanced markers ith a older version of angular/google-maps
-    dummyMarkerOptions: google.maps.MarkerOptions = { position: { lat: 54.50355, lng: -3.76489 }, visible: false }
-    private locSvg: HTMLElement | undefined
 
     ngOnInit(): void {
 
@@ -106,15 +106,11 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     centerChanged() {
     }
 
-    private readonly QB_COLOUR = '#7E4444'
-    private readonly LOC_COLOUR = '#aaa'
-    private readonly QB_SEL_COLOUR = 'red'
-    private readonly LOC_SEL_COLOUR = 'white'
-    private readonly LOC_EMPTY_COLOUR = 'white'
     private readonly BOUNDARY_COLOUR = '#00FF2F'
 
-    locMarkerOptions: MapOptions<google.maps.marker.AdvancedMarkerElementOptions> = new MapOptions()
-    linkOptions: MapOptions<google.maps.PolylineOptions> = new MapOptions()
+    locMarkerData: LocMarkerData = new LocMarkerData(this)
+    linkLabelData: LinkLabelData = new LinkLabelData(this)
+    linkPolylineData: LinkLineData = new LinkLineData(this)
     selectedLocMarker: MapAdvancedMarker | null = null
     selectedItem: SelectedMapItem = { location: null, link: null }
     selectedLinkLine: MapPolyline | null = null
@@ -130,7 +126,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             this.selectedLinkLine = null;
         }
         if (selectedItem.location && this.locMapMarkers) {
-            let index = this.locMarkerOptions.getIndex(selectedItem.location.id)
+            let index = this.locMarkerData.getIndex(selectedItem.location.id)
             let mm = this.locMapMarkers.get(index)
             if (mm) {
                 this.selectMarker(selectedItem.location, mm, true)
@@ -138,7 +134,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
                 this.selectedItem = selectedItem
             }
         } else if (selectedItem.link && this.linkMapPolylines) {
-            let index = this.linkOptions.getIndex(selectedItem.link.id)
+            let index = this.linkPolylineData.getIndex(selectedItem.link.id)
             let mpl = this.linkMapPolylines.get(index);
             if (mpl) {
                 this.selectLink(selectedItem.link, mpl, true)
@@ -156,186 +152,23 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
     }
 
-    getLocSvg(): any {
-        if (!this.locSvg) {
-            const parser = new DOMParser();
-            // A marker with a custom inline SVG.
-            const pinSvgString = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><circle cx="5" cy="5" r="4" /></svg>`
-            this.locSvg = parser.parseFromString(pinSvgString, 'image/svg+xml').documentElement;
-            this.locSvg.style.setProperty('stroke', 'black')
-            this.locSvg.style.setProperty('transform', 'translate(0px, 5px)')
-        }
-        let locSvg = this.locSvg.cloneNode(true)
-        return locSvg;
-    }
-
-    redrawToggle: boolean = false
-    redraw() {
-        // This is needed since advanced map markers do not get updated when the map is hidden. polylines are ok.
-        // this may not be needed when upgrading to lates angular/google-maps.
-        // Getting the map to redraw fixes this but only way I could figure out is by panning a small amount
-        // redraw() is called when showMap is set to true
-        if ( this.map?.googleMap) {
-            console.log('redraw!')
-            let amount = this.redrawToggle ? 1 : -1
-            this.map.googleMap.panBy(0,amount)
-            this.redrawToggle = !this.redrawToggle
-        }
-    }
-
-    markerTrackByFcn(index: number, mo: IMapData<google.maps.marker.AdvancedMarkerElementOptions>): any {
+    markerTrackByFcn(index: number, mo: IMapData<google.maps.marker.AdvancedMarkerElementOptions,ILoadflowLocation>): any {
         return mo.id;
     }
 
-    polylineTrackByFcn(index: number, mo: IMapData<google.maps.PolylineOptions>): any {
+    polylineTrackByFcn(index: number, mo: IMapData<google.maps.PolylineOptions,ILoadflowLink>): any {
         return mo.id;
     }
 
     updateMapData(updateLocationData: UpdateLocationData) {
 
-        if (updateLocationData.clearBeforeUpdate) {
-            this.locMarkerOptions.clear()
-            this.linkOptions.clear()
-        }
-
-        let updateLocs = updateLocationData.updateLocations
-        let deleteLocs = updateLocationData.deleteLocations
-        let updateLinks = updateLocationData.updateLinks
-        let deleteLinks = updateLocationData.deleteLinks
-
-        // Locations
-        // remove markers
-        for (let loc of deleteLocs) {
-            this.locMarkerOptions.remove(loc.id)
-        }
-        // replace or add markers as needed
-        updateLocs.forEach(loc => {
-            let index = this.locMarkerOptions.getIndex(loc.id)
-            let mm = this.locMapMarkers?.get(index)
-            let options = this.getLocMarkerOptions(loc)
-            if (mm) {
-                // Can't get setting options to work with advanced map markers so access and set map marker options directly
-                mm.advancedMarker.position = options.position
-                mm.advancedMarker.content = options.content
-                if ( options.title ) {
-                    mm.advancedMarker.title = options.title
-                }
-            } else {
-                this.locMarkerOptions.add(loc.id, options)
-            }
-        })
-
-        // Links
-        // delete ones not needed
-        for (let link of deleteLinks) {
-            this.linkOptions.remove(link.id)
-            // if its the selected one then remove the info window
-            if (link.id == this.loadflowDataService.selectedMapItem?.link?.id) {
-                this.linkInfoWindow?.close()
-            }
-        }
-        // replace or add branch options as needed
-        updateLinks.forEach(link => {
-            let branchOption = this.linkOptions.get(link.id);
-            let options = this.getBranchOptions(link)
-            if (branchOption) {
-                branchOption.options = options
-            } else {
-                this.linkOptions.add(link.id, options)
-            }
-        })
+        this.locMarkerData.update(updateLocationData)
+        this.linkLabelData.update(updateLocationData)
+        this.linkPolylineData.update(updateLocationData)
 
     }
 
-    getBranchOptions(b: ILoadflowLink): google.maps.PolylineOptions {
-        let options = this.getPolylineOptions(b, false, false);
-        options.path = [
-            { lat: b.gisData1.latitude, lng: b.gisData1.longitude },
-            { lat: b.gisData2.latitude, lng: b.gisData2.longitude },
-        ];
-        return options;
-    }
-
-    private getPolylineOptions(link: ILoadflowLink, selected: boolean, isBoundary: boolean): google.maps.PolylineOptions {
-        let options: google.maps.PolylineOptions = {
-            strokeOpacity: 0, // makes it invisible
-            strokeWeight: 20 // allows it to be selected when mouse close to line not directly over it
-        }
-
-        let lineSymbol: google.maps.Symbol = { path: "" }
-        if (link.branchCount > 1) {
-            lineSymbol.path = "M-1,-1 L-1,1 M1,-1 L1,1" // does a double line
-        } else {
-            lineSymbol.path = "M0,-1 L0,1" // single line
-        }
-        if (selected || isBoundary) {
-            lineSymbol.strokeOpacity = 1
-        } else {
-            lineSymbol.strokeOpacity = this.isTripped(link) ? 0.15 : 0.5
-        }
-        if (isBoundary) {
-            lineSymbol.scale = 3
-        } else if (selected) {
-            lineSymbol.scale = 2
-        } else {
-            lineSymbol.scale = 1
-        }
-
-        if (link.isHVDC) {
-            options.strokeColor = isBoundary ? this.BOUNDARY_COLOUR : 'black'
-            options.icons = [
-                {
-                    icon: lineSymbol,
-                    offset: "0",
-                    repeat: selected || isBoundary ? "8px" : "4px",
-                },
-            ]
-        } else {
-            if (isBoundary) {
-                options.strokeColor = this.BOUNDARY_COLOUR;
-            } else if (link.voltage == 400) {
-                options.strokeColor = 'blue'
-            } else if (link.voltage == 275) {
-                options.strokeColor = 'red'
-            } else {
-                options.strokeColor = 'black';
-            }
-            options.icons = [
-                {
-                    icon: lineSymbol,
-                    offset: "0",
-                    repeat: selected || isBoundary ? "4px" : "2px",
-                },
-            ]
-        }
-        return options;
-    }
-
-    private isTripped(link: ILoadflowLink): boolean {
-        return link.branches.find(m => this.loadflowDataService.isTripped(m.id)) ? true : false
-    }
-
-    getLocMarkerOptions(loc: ILoadflowLocation): google.maps.marker.AdvancedMarkerElementOptions {
-        let fillColor = loc.isQB ? this.QB_COLOUR : this.LOC_COLOUR
-        let fillOpacity = loc.hasNodes ? 1 : 0.5
-        let locSvg = this.getLocSvg();
-
-        locSvg.style.setProperty('opacity', fillOpacity.toFixed(1))
-        locSvg.style.setProperty('fill', fillColor)
-
-        return {
-            position: {
-                lat: loc.gisData.latitude,
-                lng: loc.gisData.longitude,
-            },
-            title: `${loc.reference}: ${loc.name}`,
-            content: locSvg,
-            zIndex: 15,
-            gmpDraggable: this.loadflowDataService.locationDragging
-        }
-    }
-
-    locMarkerClicked(mapData: IMapData<google.maps.marker.AdvancedMarkerElementOptions>) {
+    locMarkerClicked(mapData: IMapData<google.maps.marker.AdvancedMarkerElementOptions,ILoadflowLocation>) {
         if (this.addBranchHandler?.inProgress) {
             this.addBranchHandler.location2Selected(mapData.id)
         } else {
@@ -343,7 +176,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
     }
 
-    locMarkerDragEnd(e: { mo: IMapData<google.maps.marker.AdvancedMarkerElementOptions>, e: any }) {
+    locMarkerDragEnd(e: { mo: IMapData<google.maps.marker.AdvancedMarkerElementOptions,ILoadflowLocation>, e: any }) {
         let loc = this.loadflowDataService.getLocation(e.mo.id)
         if (loc && this.datasetsService.currentDataset) {
             let data = { latitude: e.e.latLng.lat(), longitude: e.e.latLng.lng() };
@@ -361,15 +194,6 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     selectMarker(loc: ILoadflowLocation, mm: MapAdvancedMarker, select: boolean) {
         //
-        /*let s: any = mm.marker?.getIcon()
-        if (loc.isQB) {
-            s.fillColor = select ? this.QB_SEL_COLOUR : this.QB_COLOUR
-        } else {
-            s.fillColor = select ? this.LOC_SEL_COLOUR : this.LOC_COLOUR
-        }
-        s.strokeOpacity = select ? 1 : 0.5
-        mm.marker?.setIcon(s)*/
-        //
         this.showLocInfoWindow(loc, mm, select)
     }
 
@@ -379,13 +203,9 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             if (select) {
                 let center = { lat: loc.gisData.latitude, lng: loc.gisData.longitude }
                 this.panTo(center, 7, () => {
-                    //??
-                    //?? Need to use dummy marker to set position since we are using an old version of angular/google-maps
-                    //?? if/when upgrade to latest version should be able to use .open with the supplied MapAdvancedMarker
-                    //??
-                    if (this.locInfoWindow && this.dummyMarker && this.dummyMarker.marker) {
-                        this.dummyMarker.marker.setPosition(mm.advancedMarker.position)
-                        this.locInfoWindow.open(this.dummyMarker)
+                    if ( this.locInfoWindow && mm.advancedMarker.position) {
+                        this.locInfoWindow.position = mm.advancedMarker.position
+                        this.locInfoWindow.open()
                     }
                 })
             } else {
@@ -398,8 +218,8 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         //
         let isBoundaryLink = this.loadflowDataService.boundaryLinks.find(m => m.id == link.id) ? true : false
         //
-        let options = this.getPolylineOptions(link, select, isBoundaryLink)
-        mpl.polyline?.setOptions(options);
+        //??let options = this.getPolylineOptions(link, select, isBoundaryLink)
+        //??mpl.polyline?.setOptions(options);
         //
         this.showLinkInfoWindow(link, mpl, select)
     }
@@ -432,6 +252,28 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     zoomChanged() {
         let curZoom = this.map?.googleMap?.getZoom()
+        console.log('zoom changed',curZoom)
+        this.linkLabelData.updateForZoom()
+    }
+
+    redrawToggle: boolean = false
+    redraw() {
+        // This is needed since advanced map markers do not get updated when the map is hidden. polylines are ok.
+        // this may not be needed when upgrading to latest angular/google-maps.
+        // Getting the map to redraw fixes this but only way I could figure out is by panning a small amount
+        if ( this.map?.googleMap) {
+            let amount = this.redrawToggle ? 1 : -1
+            // Add an event listener for the 'idle' event
+            if (this.map?.googleMap) {
+                google.maps.event.addListenerOnce(this.map?.googleMap, "idle", () => {
+                    // Needed here since it needs the projection defined to work out when to show the labels
+                    this.linkLabelData.updateForZoom()
+                });
+            }
+            // only way to get the map to refresh after being hidden!!
+            this.map.googleMap.panBy(0,amount)
+            this.redrawToggle = !this.redrawToggle
+        }
     }
 
     panToBounds(bounds: google.maps.LatLngBounds) {
@@ -481,6 +323,10 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
     }
 
+    get googleMap(): google.maps.Map | undefined {
+        return this.map?.googleMap
+    }
+
     clearSelection() {
         this.loadflowDataService.clearMapSelection()
     }
@@ -502,36 +348,6 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     resetZoom() {
         this.map?.googleMap?.setZoom(this.zoom)
         this.map?.googleMap?.panTo(this.center)
-    }
-
-    boundaryLinks: ILoadflowLink[] = []
-    boundaryMapPolylines: Map<number, MapPolyline> = new Map()
-    selectBoundaryBranches(boundaryLinks: ILoadflowLink[]) {
-        // unselect current ones
-        this.boundaryLinks.forEach((branch) => {
-            let mapPolyline = this.boundaryMapPolylines.get(branch.id)
-            if (mapPolyline) {
-                let options = this.getPolylineOptions(branch, false, false)
-                mapPolyline.polyline?.setOptions(options);
-            }
-        })
-        // select new ones
-        this.boundaryLinks = []
-        this.boundaryMapPolylines.clear()
-        // make a copy of array
-        this.boundaryLinks = [...boundaryLinks]
-        this.boundaryLinks.forEach((branch) => {
-            var index = this.linkOptions.getIndex(branch.id);
-            if (index >= 0 && this.linkMapPolylines) {
-                let mapPolyline = this.linkMapPolylines.get(index);
-                if (mapPolyline) {
-                    let options = this.getPolylineOptions(branch, false, true)
-                    mapPolyline.polyline?.setOptions(options);
-                    this.boundaryMapPolylines.set(branch.id, mapPolyline)
-                }
-            }
-        })
-
     }
 
     newBranch(e: any) {

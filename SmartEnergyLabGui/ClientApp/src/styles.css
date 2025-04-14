@@ -286,3 +286,21 @@ table.dataTable  {
 .cellLink:hover {
     text-decoration: underline;
 }
+
+/* */
+div.flowLabel {
+    color: #666;
+    font-size: 9pt;
+    /*line-height: 100%;*/
+    padding-left: 1px;
+    padding-right: 1px;
+    background-color: white;
+    border-radius: 3px;
+    border-width: 1px;
+    border-color: #666;
+    border-style: solid;
+}
+
+.hide {
+    display: none;
+}
