@@ -252,7 +252,6 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     zoomChanged() {
         let curZoom = this.map?.googleMap?.getZoom()
-        console.log('zoom changed',curZoom)
         this.linkLabelData.updateForZoom()
     }
 
