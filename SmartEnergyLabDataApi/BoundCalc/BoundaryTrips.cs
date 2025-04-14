@@ -72,6 +72,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     Type=BoundCalcBoundaryTripType.Single;
                 }
                 LineNames = _branches.Select(m=>m.LineName).ToList<string>();
+                BranchCodes = _branches.Select(m=>m.Obj.Code).ToList<string>();
                 BranchIds = _branches.Select(m=>m.Obj.Id).ToList<int>();
             }
 
@@ -79,6 +80,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 _text = trip.name;
                 _branches = new List<BranchWrapper>(trip.Branches);
                 LineNames = _branches.Select(m=>m.LineName).ToList<string>();
+                BranchCodes = _branches.Select(m=>m.Obj.Code).ToList<string>();
                 BranchIds = _branches.Select(m=>m.Obj.Id).ToList<int>();                
             }
             public int Index {get; private set;}
@@ -87,13 +89,12 @@ namespace SmartEnergyLabDataApi.BoundCalc
             private string _text;
             public string Text {
                 get {
-                    //??string tStr = Type==BoundCalcBoundaryTripType.Single ? "S" : "D";
-                    //??return $"{tStr}{Index}";
                     return _text;
                 }
             }
 
             public List<string> LineNames {get; private set;}
+            public List<string> BranchCodes {get; private set;}
             public List<int> BranchIds {get; private set;}
         }
     }

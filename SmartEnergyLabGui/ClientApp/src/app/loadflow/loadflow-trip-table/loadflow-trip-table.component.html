@@ -12,15 +12,16 @@
         
         <ng-container matColumnDef="trip">
             <th mat-header-cell *matHeaderCellDef>Trip</th>
-            <td mat-cell *matCellDef="let element">{{(element.trip != null) ? element.trip.text : "Intact"}}</td>
+            <td mat-cell *matCellDef="let element">
+                <app-loadflow-trip-cell [trip]="element.trip"></app-loadflow-trip-cell>
+            </td>
         </ng-container>
 
         <ng-container matColumnDef="limCct">
             <th mat-header-cell *matHeaderCellDef>Lim Cct</th>
             <td mat-cell *matCellDef="let element">
-                <div style="white-space: nowrap;">
-                    <div *ngFor="let lc of element.limCct" style="line-height: 120%">{{lc}}</div>
-                </div>
+                <div *ngIf="element.trip!=null" style="line-height: 100%">&nbsp;</div>
+                <app-loadflow-trip-link *ngFor="let lc of element.limCct" [branchName]="lc"></app-loadflow-trip-link>
             </td>
         </ng-container>
 

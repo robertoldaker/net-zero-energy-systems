@@ -22,6 +22,7 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
     private readonly BRANCHES_INDEX = 1
     private readonly CTRLS_INDEX = 2
     private readonly LOCATIONS_INDEX = 5
+    private readonly ALL_TRIP_RESULTS_INDEX = 6
 
     constructor(private dataService: LoadflowDataService) { 
         super()
@@ -39,6 +40,8 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
                     this.matTabGroup.selectedIndex = this.BRANCHES_INDEX
                 } else if ( this.hasCtrlsError) {
                     this.matTabGroup.selectedIndex = this.CTRLS_INDEX
+                } else if ( this.showAllTripResults) {
+                    this.matTabGroup.selectedIndex = this.ALL_TRIP_RESULTS_INDEX
                 }
             }
         }))
@@ -193,5 +196,25 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
     showBranchOnMap(node1LocationId: number, node2LocationId: number) {
         this.showMap = true
         this.dataService.selectLinkByLocIds(node1LocationId,node2LocationId)
+    }
+
+    showBranchOnMapByCode(branchCode: string) {
+        this.showMap = true
+        this.dataService.selectLinkByBranch(branchCode)
+    }
+
+    showBranchByName(branchName: string) {
+        if ( this.matTabGroup) {
+            this.showMap = false
+            if ( this.branchesComponent) {
+                //
+                let cpnts = branchName.split(':')
+                if ( cpnts.length>1) {
+                    let code = cpnts[1]
+                    this.branchesComponent.filterByCode(code)
+                }
+            }
+            this.matTabGroup.selectedIndex = this.BRANCHES_INDEX
+        }
     }
 }

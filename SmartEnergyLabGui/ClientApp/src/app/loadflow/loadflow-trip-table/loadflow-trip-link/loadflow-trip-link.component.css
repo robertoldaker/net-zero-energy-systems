@@ -1,0 +1,16 @@
+div.linkContainer {
+    white-space: nowrap;
+    font-size: 8pt;
+    line-height: 100%;
+}
+.mapImage {
+    width: 13px;
+    height: 13px;
+    opacity: 0.5;
+    margin-left: 2px;
+    cursor: pointer;
+}
+
+.mapImage:hover {
+    opacity: 1;
+}

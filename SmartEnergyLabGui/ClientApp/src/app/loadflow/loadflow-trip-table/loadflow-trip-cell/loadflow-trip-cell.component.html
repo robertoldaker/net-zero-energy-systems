@@ -1,0 +1,6 @@
+<div class="cellContainer">
+    <div style="font-weight: bold;">{{trip!=null ? trip.text : 'Intact' }}</div>
+    <div *ngIf="trip!=null;">
+        <app-loadflow-trip-link *ngFor="let ln of trip.lineNames" [branchName]="ln"></app-loadflow-trip-link>
+    </div>    
+</div>

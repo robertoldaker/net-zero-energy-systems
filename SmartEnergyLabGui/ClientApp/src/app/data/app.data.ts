@@ -284,6 +284,7 @@ export interface BoundaryTrip {
     type: BoundaryTripType,
     lineNames: string[],
     branchIds: number[],
+    branchCodes: string[],
     text: string
 }
 

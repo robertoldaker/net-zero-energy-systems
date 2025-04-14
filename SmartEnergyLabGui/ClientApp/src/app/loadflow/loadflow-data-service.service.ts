@@ -205,6 +205,14 @@ export class LoadflowDataService {
         }
     }
 
+    selectLinkByBranch(branchCode: string) {
+        let link = this.locationData.links.find(m=>m.branches.find(n=>n.code == branchCode))
+        if ( link) {
+            this.selectedMapItem = { location: null, link: link }
+            this.ObjectSelected.emit(this.selectedMapItem)    
+        }
+    }
+
     selectLinkByLocIds(node1LocationId: number, node2LocationId: number) {
         let branch = this.locationData.links.find(m=>m.node1LocationId == node1LocationId && m.node2LocationId == node2LocationId)
         if ( branch) {
