@@ -1,6 +1,6 @@
 import { IMapData, MapOptions } from "src/app/utils/map-options";
 import { LoadflowMapComponent } from "./loadflow-map.component";
-import { ILoadflowLocation, UpdateLocationData } from "src/app/data/app.data";
+import { LoadflowLocation, UpdateLocationData } from "../loadflow-data-service.service";
 
 export class LocMarkerData {
     constructor(private mapComponent: LoadflowMapComponent) {
@@ -9,10 +9,10 @@ export class LocMarkerData {
     private readonly QB_COLOUR = '#7E4444'
     private readonly LOC_COLOUR = '#aaa'
 
-    private locMarkerData: MapOptions<google.maps.marker.AdvancedMarkerElementOptions,ILoadflowLocation> = new MapOptions()
+    private locMarkerData: MapOptions<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLocation> = new MapOptions()
     private locSvg: HTMLElement | undefined
 
-    get markerOptions():IMapData<google.maps.marker.AdvancedMarkerElementOptions,ILoadflowLocation>[] {        
+    get markerOptions():IMapData<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLocation>[] {        
 
         return this.locMarkerData.getArray()
     }
@@ -58,7 +58,7 @@ export class LocMarkerData {
         // not zoom dependent so do nothing (for time being anyway)
     } 
 
-    getLocMarkerOptions(loc: ILoadflowLocation): google.maps.marker.AdvancedMarkerElementOptions {
+    getLocMarkerOptions(loc: LoadflowLocation): google.maps.marker.AdvancedMarkerElementOptions {
         let fillColor = loc.isQB ? this.QB_COLOUR : this.LOC_COLOUR
         let fillOpacity = loc.hasNodes ? 1 : 0.5
         let locSvg = this.getLocSvg();

@@ -1,7 +1,7 @@
 import { IMapData, MapOptions } from "src/app/utils/map-options";
 import { LoadflowMapComponent } from "./loadflow-map.component";
-import { ILoadflowLink, UpdateLocationData } from "src/app/data/app.data";
 import { MapPolyline } from "@angular/google-maps";
+import { LoadflowLink, UpdateLocationData } from "../loadflow-data-service.service";
 
 export class LinkLineData {
     constructor(private mapComponent: LoadflowMapComponent) {
@@ -10,9 +10,9 @@ export class LinkLineData {
 
     private readonly BOUNDARY_COLOUR = '#00FF2F'
 
-    private linkLineData: MapOptions<google.maps.marker.AdvancedMarkerElementOptions,ILoadflowLink> = new MapOptions()
+    private linkLineData: MapOptions<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLink> = new MapOptions()
 
-    get polyLineOptions():IMapData<google.maps.marker.AdvancedMarkerElementOptions,ILoadflowLink>[] {        
+    get polyLineOptions():IMapData<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLink>[] {        
 
         return this.linkLineData.getArray()
     }
@@ -47,7 +47,7 @@ export class LinkLineData {
         })        
     }
 
-    getBranchOptions(b: ILoadflowLink): google.maps.PolylineOptions {
+    getBranchOptions(b: LoadflowLink): google.maps.PolylineOptions {
         let options = this.getPolylineOptions(b, false, false);
         options.path = [
             { lat: b.gisData1.latitude, lng: b.gisData1.longitude },
@@ -56,7 +56,7 @@ export class LinkLineData {
         return options;
     }
 
-    private getPolylineOptions(link: ILoadflowLink, selected: boolean, isBoundary: boolean): google.maps.PolylineOptions {
+    private getPolylineOptions(link: LoadflowLink, selected: boolean, isBoundary: boolean): google.maps.PolylineOptions {
         let options: google.maps.PolylineOptions = {
             strokeOpacity: 0, // makes it invisible
             strokeWeight: 20 // allows it to be selected when mouse close to line not directly over it
@@ -119,7 +119,7 @@ export class LinkLineData {
             arrowSymbol.strokeColor  = lineSymbol.strokeColor
             arrowSymbol.fillColor = lineSymbol.strokeColor
             arrowSymbol.fillOpacity = 1
-            arrowSymbol.scale = 2
+            arrowSymbol.scale = 1.5
 
             // 
             options.icons.push( {
@@ -130,13 +130,13 @@ export class LinkLineData {
         return options;
     }
 
-    private isTripped(link: ILoadflowLink): boolean {
+    private isTripped(link: LoadflowLink): boolean {
         return link.branches.find(m => this.mapComponent.loadflowDataService.isTripped(m.id)) ? true : false
     }
 
-    boundaryLinks: ILoadflowLink[] = []
+    boundaryLinks: LoadflowLink[] = []
     boundaryMapPolylines: Map<number, MapPolyline> = new Map()
-    selectBoundaryBranches(boundaryLinks: ILoadflowLink[]) {
+    selectBoundaryBranches(boundaryLinks: LoadflowLink[]) {
         // unselect current ones
         this.boundaryLinks.forEach((branch) => {
             let mapPolyline = this.boundaryMapPolylines.get(branch.id)

@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { Branch, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, ILoadflowLink, ILoadflowLocation, LoadflowCtrlType, LoadflowResults, LocationData, NetworkData, Node, SetPointMode, TransportModel, UpdateLocationData } from '../data/app.data';
+import { Branch, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, LoadflowCtrlType, LoadflowResults, NetworkData, Node, SetPointMode, TransportModel} from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { ShowMessageService } from '../main/show-message/show-message.service';
@@ -12,7 +12,7 @@ type NodeDict = {
     [code: string]:Node
 }
 
-export type SelectedMapItem = {location: ILoadflowLocation | null, link: ILoadflowLink | null}
+export type SelectedMapItem = {location: LoadflowLocation | null, link: LoadflowLink | null}
 
 @Injectable({
     providedIn: 'root'
@@ -55,7 +55,7 @@ export class LoadflowDataService {
     linkMap: Map<string,LoadflowLink>
     loadFlowResults: LoadflowResults | undefined
     boundaryName: string | undefined
-    boundaryLinks: ILoadflowLink[] = []
+    boundaryLinks: LoadflowLink[] = []
     inRun: boolean = false
     trips: Map<number,boolean> = new Map()
     setPointMode: SetPointMode = SetPointMode.Auto
@@ -85,7 +85,7 @@ export class LoadflowDataService {
             this.clearMapSelection()
             this.clearTrips()
             this.NetworkDataLoaded.emit(results)
-            this.updateLocationData(true)
+            this.updateLocationData(false)
             if ( onLoad ) {
                 onLoad()
             }
@@ -117,9 +117,17 @@ export class LoadflowDataService {
         this.inRun = true;
         let tripStr = this.getTripStr()
         this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, transportModel, boundaryName, boundaryTrips, tripStr, (results) => {
-            this.inRun = false;
-            this.loadFlowResults = results;
-            this.updateLocationData(true);
+            this.inRun = false
+            this.loadFlowResults = results
+            // Reset the nodes/branches/results since these are the data from the last trip run
+            if ( boundaryName && boundaryTrips ) {
+                this.loadFlowResults.nodes = this.networkData.nodes
+                this.loadFlowResults.branches = this.networkData.branches
+                this.loadFlowResults.ctrls = this.networkData.ctrls
+            }
+            //
+            this.updateLocationData(false)
+            this.updateSelectedObject()          
             this.ResultsLoaded.emit(results);
         });
     }
@@ -192,7 +200,7 @@ export class LoadflowDataService {
         }
     }
 
-    getLocation(locId: number):ILoadflowLocation | undefined {
+    getLocation(locId: number):LoadflowLocation | undefined {
         let loc = this.locationData.locations.find(m=>m.id==locId)
         return loc
     }
@@ -230,7 +238,7 @@ export class LoadflowDataService {
         this.loadDataset();
     }
 
-    searchLocations(str: string, maxResults: number):ILoadflowLocation[]  {
+    searchLocations(str: string, maxResults: number):LoadflowLocation[]  {
         let lowerStr = str.toLocaleLowerCase()
         let upperStr = str.toUpperCase()
         var searchResults = this.locationData.locations.
@@ -321,7 +329,7 @@ export class LoadflowDataService {
     }
 
     updateLocationData(clear: boolean) {
-        let updateLocationData = { updateLocations: [], deleteLocations: [], updateLinks: [] , deleteLinks: [], clearBeforeUpdate: clear }
+        let updateLocationData = new UpdateLocationData(clear);
         if ( clear) {
             this.locMap.clear()
             this.linkMap.clear()
@@ -330,6 +338,23 @@ export class LoadflowDataService {
         this.updateLinks(updateLocationData)
         //
         this.LocationDataUpdated.emit(updateLocationData)
+    }
+
+    updateSelectedObject() {
+        if ( this.selectedMapItem?.link) {
+            let oldLink = this.selectedMapItem.link
+            let newLink = this.locationData.links.find(m=>m.id == oldLink.id)
+            if ( newLink) {
+                this.selectedMapItem.link = newLink
+            }
+        }
+        if ( this.selectedMapItem?.location) {
+            let oldLoc = this.selectedMapItem.location
+            let newLoc = this.locationData.locations.find(m=>m.id == oldLoc.id)
+            if ( newLoc) {
+                this.selectedMapItem.location = newLoc
+            }
+        }
     }
 
     updateLocations(updateLocationData: UpdateLocationData) {
@@ -522,7 +547,7 @@ export class LoadflowDataService {
     }
 
     private updateLocationDataForTrip(branchId: number) {
-        let updateLocationData:UpdateLocationData = { updateLocations: [], deleteLocations: [], updateLinks: [] , deleteLinks: [], clearBeforeUpdate: false }
+        let updateLocationData:UpdateLocationData = new UpdateLocationData(false)
         let br = this.branches?.data.find(m=>m.id == branchId)
         if ( br ) {
             var keys = this.getBranchKeys(br)
@@ -602,7 +627,7 @@ export class LoadflowDataService {
     LocationDataUpdated:EventEmitter<UpdateLocationData> = new EventEmitter<UpdateLocationData>()
     AllTripsProgress:EventEmitter<any> = new EventEmitter<any>()
     ObjectSelected:EventEmitter<SelectedMapItem> = new EventEmitter<SelectedMapItem>()
-    BoundarySelected:EventEmitter<ILoadflowLink[]> = new EventEmitter<ILoadflowLink[]>()
+    BoundarySelected:EventEmitter<LoadflowLink[]> = new EventEmitter<LoadflowLink[]>()
     TripsChanged:EventEmitter<number[]> = new EventEmitter<number[]>()
     SetPointModeChanged:EventEmitter<SetPointMode> = new EventEmitter<SetPointMode>()
     LocationDraggingChanged:EventEmitter<boolean> = new EventEmitter<boolean>()
@@ -613,7 +638,23 @@ export interface IBranchEditorData {
     ctrl: ICellEditorDataDict | undefined
 }
 
-export class LoadflowLocation implements ILoadflowLocation {
+export class LocationData {
+    locations: LoadflowLocation[] = []
+    links: LoadflowLink[] = []
+}
+
+export class UpdateLocationData {
+    constructor(clear: boolean) {
+        this.clearBeforeUpdate = clear
+    }
+    updateLocations: LoadflowLocation[] = []
+    deleteLocations: LoadflowLocation[] = []
+    updateLinks: LoadflowLink[] = []
+    deleteLinks: LoadflowLink[] = []
+    clearBeforeUpdate: boolean = false
+}
+
+export class LoadflowLocation {
     private _gsl: GridSubstationLocation
     private _isQB: boolean
     private _hasNodes: boolean
@@ -682,7 +723,7 @@ export class LoadflowLocation implements ILoadflowLocation {
 
 }
 
-export class LoadflowLink implements ILoadflowLink {
+export class LoadflowLink {
 
     private _node1LocationId:number = 0
     private _node2LocationId:number = 0
@@ -709,7 +750,8 @@ export class LoadflowLink implements ILoadflowLink {
         this._id = branch.id
         this._isNew = true
         this._branches = [branch]
-        this.totalFlow = branch.powerFlow
+        this.totalFlow = this.getTotalFlow()
+        this.totalFree = this.getTotalFree()
     }
 
     get id():number {
@@ -754,6 +796,8 @@ export class LoadflowLink implements ILoadflowLink {
         let node2LocationId = branches[0].node2LocationId
         let gisData1 = branches[0].node1GISData ? branches[0].node1GISData : { id:0, latitude: 0, longitude: 0}
         let gisData2 = branches[0].node2GISData ? branches[0].node2GISData : { id:0, latitude: 0, longitude: 0}
+        let totalFlow = this.getTotalFlow()
+        let totalFree = this.getTotalFree()
         //
         let result = branches.length!==this.branchCount || 
                         isHVDC!==this.isHVDC || 
@@ -761,6 +805,8 @@ export class LoadflowLink implements ILoadflowLink {
                         node2LocationId !== this.node2LocationId ||
                         this.areGISDataDifferent(gisData1,this._gisData1) ||
                         this.areGISDataDifferent(gisData2,this._gisData2) ||
+                        this.totalFlow!=totalFlow ||
+                        this.totalFree!=totalFree ||
                         this._isNew
         this._node1LocationId = node1LocationId
         this._node2LocationId = node2LocationId
@@ -768,29 +814,36 @@ export class LoadflowLink implements ILoadflowLink {
         this._gisData2 = gisData2
         this.isHVDC = isHVDC
         this.branchCount = branches.length
+        this.totalFlow = totalFlow
+        this.totalFree = totalFree
         this._isNew = false
-        // total power flow across all branches
-        this.totalFlow = null
+        return result
+    }
+
+    private getTotalFlow():number | null {
+        let tf = null
         for( let b of this._branches) {
             if ( b.powerFlow!=null ) {
-                if ( this.totalFlow==null) {
-                    this.totalFlow = 0
+                if ( tf==null) {
+                    tf = 0
                 }
-                this.totalFlow += b.powerFlow
+                tf += b.powerFlow
             }
         }
-        // total free across all branches
-        this.totalFree = null
+        return tf
+    }
+
+    private getTotalFree():number | null {
+        let tf = null
         for( let b of this._branches) {
             if ( b.freePower!=null ) {
-                if ( this.totalFree==null) {
-                    this.totalFree = 0
+                if ( tf==null) {
+                    tf = 0
                 }
-                this.totalFree += b.freePower
+                tf += b.freePower
             }
         }
-
-        return result
+        return tf
     }
 
     private areGISDataDifferent(gisA: GISData, gisB: GISData) {
@@ -799,6 +852,6 @@ export class LoadflowLink implements ILoadflowLink {
 
     branchCount:number
     isHVDC: boolean
-    totalFlow: number | null
+    totalFlow: number | null = null
     totalFree: number | null = null
 }

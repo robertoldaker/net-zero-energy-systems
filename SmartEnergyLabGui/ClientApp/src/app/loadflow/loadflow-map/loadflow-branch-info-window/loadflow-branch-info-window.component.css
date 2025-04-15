@@ -46,3 +46,8 @@ table.branchTable td:nth-child(4) {
     text-align: right;
     padding-right: 0.5em;
 }
+
+td.totalCell {
+    border-top: 1px black solid;
+    font-weight: 400;
+}

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { ComponentBase } from 'src/app/utils/component-base';
-import { LoadflowDataService } from '../../loadflow-data-service.service';
-import { Branch, DatasetData, ILoadflowLink } from 'src/app/data/app.data';
+import { LoadflowDataService, LoadflowLink } from '../../loadflow-data-service.service';
+import { Branch } from 'src/app/data/app.data';
 import { DatasetsService } from 'src/app/datasets/datasets.service';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 
@@ -29,7 +29,28 @@ export class LoadflowBranchInfoWindowComponent extends ComponentBase {
         }))
     }
 
-    private link: ILoadflowLink | null = null
+    private link: LoadflowLink | null = null
+
+    get totalFlowStr(): string {
+        let tf = ''
+        if ( this.dataService.selectedMapItem?.link) {
+            if ( this.dataService.selectedMapItem?.link.totalFlow!=null ) {
+                tf = this.dataService.selectedMapItem?.link.totalFlow.toFixed(0)
+            }
+        } 
+        return tf
+    }
+
+    get totalFreeStr(): string {
+        let tf = ''
+        if ( this.dataService.selectedMapItem?.link) {
+            if ( this.dataService.selectedMapItem?.link.totalFree!=null ) {
+                tf = this.dataService.selectedMapItem?.link.totalFree.toFixed(0)
+            }
+        } 
+        return tf
+    }
+
     private _branches:Branch[] = []
 
     get name():string {

@@ -368,11 +368,11 @@ export class DataFilter {
         let result = 0;
         let data1 = item1[col]
         if ( data1===undefined || data1===null) {
-            data1=''
+            return 1
         }
         let data2 = item2[col]
         if ( data2===undefined || data2===null) {
-            data2=''
+            return -1
         }
         if ( data1!==undefined && data2!==undefined) {
             if (typeof(data1) === 'string' && typeof(data2) === 'string') {
@@ -385,6 +385,8 @@ export class DataFilter {
                 } else {
                     result = data1 && !data2 ? 1:-1;
                 }
+            } else {
+                console.log('unexpected value for data1, data2')
             }
         }
         return result;

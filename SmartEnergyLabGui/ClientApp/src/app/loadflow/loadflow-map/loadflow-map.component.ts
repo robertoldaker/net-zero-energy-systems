@@ -1,14 +1,12 @@
 import { AfterViewInit, Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import { GoogleMap, MapInfoWindow, MapMarker, MapPolyline } from '@angular/google-maps';
+import { GoogleMap, MapInfoWindow, MapPolyline } from '@angular/google-maps';
 import { ComponentBase } from 'src/app/utils/component-base';
-import { LoadflowDataService, LoadflowLink, LoadflowLocation, SelectedMapItem } from '../loadflow-data-service.service';
-import { BoundaryTrip, BoundaryTripType, GISData, ILoadflowLink, ILoadflowLocation, UpdateLocationData } from 'src/app/data/app.data';
-import { IMapData, MapOptions } from 'src/app/utils/map-options';
+import { LoadflowDataService, LoadflowLink, LoadflowLocation, SelectedMapItem, UpdateLocationData } from '../loadflow-data-service.service';
+import { IMapData } from 'src/app/utils/map-options';
 import { ShowMessageService } from 'src/app/main/show-message/show-message.service';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { DatasetsService, NewItemData } from 'src/app/datasets/datasets.service';
 import { DataClientService } from 'src/app/data/data-client.service';
-import { IFormControlDict } from 'src/app/dialogs/dialog-base';
 import { MapAdvancedMarker } from './map-advanced-marker/map-advanced-marker';
 import { LinkLabelData } from './link-label-data';
 import { LocMarkerData } from './loc-marker-data';
@@ -152,11 +150,11 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
     }
 
-    markerTrackByFcn(index: number, mo: IMapData<google.maps.marker.AdvancedMarkerElementOptions,ILoadflowLocation>): any {
+    markerTrackByFcn(index: number, mo: IMapData<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLocation>): any {
         return mo.id;
     }
 
-    polylineTrackByFcn(index: number, mo: IMapData<google.maps.PolylineOptions,ILoadflowLink>): any {
+    polylineTrackByFcn(index: number, mo: IMapData<google.maps.PolylineOptions,LoadflowLink>): any {
         return mo.id;
     }
 
@@ -168,7 +166,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     }
 
-    locMarkerClicked(mapData: IMapData<google.maps.marker.AdvancedMarkerElementOptions,ILoadflowLocation>) {
+    locMarkerClicked(mapData: IMapData<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLocation>) {
         if (this.addBranchHandler?.inProgress) {
             this.addBranchHandler.location2Selected(mapData.id)
         } else {
@@ -176,7 +174,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
     }
 
-    locMarkerDragEnd(e: { mo: IMapData<google.maps.marker.AdvancedMarkerElementOptions,ILoadflowLocation>, e: any }) {
+    locMarkerDragEnd(e: { mo: IMapData<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLocation>, e: any }) {
         let loc = this.loadflowDataService.getLocation(e.mo.id)
         if (loc && this.datasetsService.currentDataset) {
             let data = { latitude: e.e.latLng.lat(), longitude: e.e.latLng.lng() };
@@ -192,12 +190,12 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.loadflowDataService.selectLink(branchId)
     }
 
-    selectMarker(loc: ILoadflowLocation, mm: MapAdvancedMarker, select: boolean) {
+    selectMarker(loc: LoadflowLocation, mm: MapAdvancedMarker, select: boolean) {
         //
         this.showLocInfoWindow(loc, mm, select)
     }
 
-    showLocInfoWindow(loc: ILoadflowLocation, mm: MapAdvancedMarker, select: boolean) {
+    showLocInfoWindow(loc: LoadflowLocation, mm: MapAdvancedMarker, select: boolean) {
         // open info window
         if (this.locInfoWindow) {
             if (select) {
@@ -214,7 +212,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         }
     }
 
-    selectLink(link: ILoadflowLink, mpl: MapPolyline, select: boolean) {
+    selectLink(link: LoadflowLink, mpl: MapPolyline, select: boolean) {
         //
         let isBoundaryLink = this.loadflowDataService.boundaryLinks.find(m => m.id == link.id) ? true : false
         //
@@ -224,7 +222,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.showLinkInfoWindow(link, mpl, select)
     }
 
-    showLinkInfoWindow(link: ILoadflowLink, mpl: MapPolyline, select: boolean) {
+    showLinkInfoWindow(link: LoadflowLink, mpl: MapPolyline, select: boolean) {
         // pan/zoom to new position
         if (select) {
             let center = {
@@ -367,10 +365,10 @@ export class AddBranchHandler {
     }
 
     inProgress = false
-    startLocation: ILoadflowLocation | null = null
+    startLocation: LoadflowLocation | null = null
     eventListener: google.maps.MapsEventListener | undefined
 
-    start(loc: ILoadflowLocation | null) {
+    start(loc: LoadflowLocation | null) {
         this.inProgress = true
         this.startLocation = loc
         this.messageService.showMessage("Please select location to connect to ... \n\n(click ESC to cancel)");

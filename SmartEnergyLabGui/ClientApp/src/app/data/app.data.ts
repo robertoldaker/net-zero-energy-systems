@@ -386,9 +386,9 @@ export interface Branch {
     powerFlow: number | null    
     bFlow: number
     freePower: number | null
-    km: number
-    mwkm: number
-    loss: number
+    km: number | null
+    mwkm: number | null
+    loss: number | null
 }
 
 export enum LoadflowCtrlType {  QB=0,  // Quad booster
@@ -435,19 +435,6 @@ export interface NetworkData {
     boundaryDict: IBoundaryDict
 }
 
-export interface LocationData {
-    locations: ILoadflowLocation[]
-    links: ILoadflowLink[]
-}
-
-export interface UpdateLocationData {
-    updateLocations: ILoadflowLocation[]
-    deleteLocations: ILoadflowLocation[]
-    updateLinks: ILoadflowLink[]
-    deleteLinks: ILoadflowLink[]
-    clearBeforeUpdate: boolean
-}
-
 export enum GridSubstationLocationSource { NGET, SHET, SPT, GoogleMaps, Estimated, UserDefined}
 export interface GridSubstationLocation {
     id: number
@@ -458,30 +445,6 @@ export interface GridSubstationLocation {
     latitude: number
     longitude: number
 }
-
-export interface ILoadflowLocation {
-    id: number
-    name: string
-    reference: string
-    gisData: GISData
-    isQB: boolean
-    hasNodes: boolean
-}
-
-export interface ILoadflowLink {
-    id: number
-    voltage: number
-    isHVDC: boolean
-    gisData1: GISData
-    gisData2: GISData
-    branchCount: number
-    node1LocationId: number
-    node2LocationId: number
-    branches: Branch[]
-    totalFlow: number | null
-    totalFree: number | null
-}
-
 
 export interface AllTripResult {
     surplus: number

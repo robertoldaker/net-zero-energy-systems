@@ -1,13 +1,14 @@
-import { GISData, ILoadflowLink, UpdateLocationData } from "src/app/data/app.data";
+import { GISData } from "src/app/data/app.data";
 import { IMapData, MapOptions } from "src/app/utils/map-options";
 import { LoadflowMapComponent } from "./loadflow-map.component";
+import { LoadflowLink, UpdateLocationData } from "../loadflow-data-service.service";
 
 export class LinkLabelData {
     constructor(private mapComponent: LoadflowMapComponent) {
 
     }
-    private linkLabelData: MapOptions<google.maps.marker.AdvancedMarkerElementOptions,ILoadflowLink> = new MapOptions()
-    get markerOptions():IMapData<google.maps.marker.AdvancedMarkerElementOptions,ILoadflowLink>[] {        
+    private linkLabelData: MapOptions<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLink> = new MapOptions()
+    get markerOptions():IMapData<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLink>[] {        
         return this.linkLabelData.getArray()
     }
 
@@ -65,7 +66,7 @@ export class LinkLabelData {
         }
     } 
     
-    private getLinkLabelOptions(link: ILoadflowLink, tol: number): google.maps.marker.AdvancedMarkerElementOptions {
+    private getLinkLabelOptions(link: LoadflowLink, tol: number): google.maps.marker.AdvancedMarkerElementOptions {
         const linkLabelDiv = document.createElement('div');
 
         linkLabelDiv.className = this.getClassName(link,tol)
@@ -98,12 +99,12 @@ export class LinkLabelData {
         return tol
     }
 
-    private getLabel(link: ILoadflowLink):string {
+    private getLabel(link: LoadflowLink):string {
         let label = link.totalFlow!=null ? Math.abs(link.totalFlow).toFixed(0) : ''
         return label
     }
 
-    private getClassName(link: ILoadflowLink, tol: number):string {
+    private getClassName(link: LoadflowLink, tol: number):string {
         let label = this.getLabel(link)
         let className = "hide"
         if ( label ) {
