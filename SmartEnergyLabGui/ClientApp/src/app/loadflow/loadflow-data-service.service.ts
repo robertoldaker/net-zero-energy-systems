@@ -55,7 +55,7 @@ export class LoadflowDataService {
     linkMap: Map<string,LoadflowLink>
     loadFlowResults: LoadflowResults | undefined
     boundaryName: string | undefined
-    boundaryLinks: LoadflowLink[] = []
+    boundaryBranchIds: number[] = []
     inRun: boolean = false
     trips: Map<number,boolean> = new Map()
     setPointMode: SetPointMode = SetPointMode.Auto
@@ -100,17 +100,18 @@ export class LoadflowDataService {
     }
 
     setBoundary(boundaryName: string | undefined) {
-        this.boundaryLinks = [];
+        this.boundaryBranchIds = []
         if ( this.networkData) {
             this.boundaryName = boundaryName
             if ( this.boundaryName ) {
-                let boundaryBranchIds = this.networkData.boundaryDict[this.boundaryName];
-                if ( boundaryBranchIds) {                                        
-                    this.boundaryLinks = this.locationData.links.filter( m=>boundaryBranchIds.includes(m.id))
-                }
+                this.boundaryBranchIds = this.networkData.boundaryDict[this.boundaryName];
             }
         }
-        this.BoundarySelected.emit(this.boundaryLinks)
+        this.BoundarySelected.emit()
+    }
+
+    isBoundaryBranch(branchId: number):boolean {
+        return this.boundaryBranchIds.includes(branchId)
     }
 
     runBoundCalc(transportModel: TransportModel, boundaryName: string, boundaryTrips: boolean) {
@@ -627,7 +628,7 @@ export class LoadflowDataService {
     LocationDataUpdated:EventEmitter<UpdateLocationData> = new EventEmitter<UpdateLocationData>()
     AllTripsProgress:EventEmitter<any> = new EventEmitter<any>()
     ObjectSelected:EventEmitter<SelectedMapItem> = new EventEmitter<SelectedMapItem>()
-    BoundarySelected:EventEmitter<LoadflowLink[]> = new EventEmitter<LoadflowLink[]>()
+    BoundarySelected:EventEmitter<void> = new EventEmitter<void>()
     TripsChanged:EventEmitter<number[]> = new EventEmitter<number[]>()
     SetPointModeChanged:EventEmitter<SetPointMode> = new EventEmitter<SetPointMode>()
     LocationDraggingChanged:EventEmitter<boolean> = new EventEmitter<boolean>()

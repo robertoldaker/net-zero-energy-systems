@@ -21,6 +21,13 @@ export class LinkLineData {
         return this.linkLineData.getIndex(id)
     }
 
+    updateAll() {
+        for( let linkData of this.linkLineData.getArray()) {
+            let link = linkData.data
+            linkData.options = this.getBranchOptions(link)
+        }        
+    }
+
 
     update(updateLocationData: UpdateLocationData) {
         if (updateLocationData.clearBeforeUpdate) {
@@ -48,7 +55,8 @@ export class LinkLineData {
     }
 
     getBranchOptions(b: LoadflowLink): google.maps.PolylineOptions {
-        let options = this.getPolylineOptions(b, false, false);
+        let isBoundary = this.mapComponent.loadflowDataService.isBoundaryBranch(b.id)
+        let options = this.getPolylineOptions(b, false, isBoundary);
         options.path = [
             { lat: b.gisData1.latitude, lng: b.gisData1.longitude },
             { lat: b.gisData2.latitude, lng: b.gisData2.longitude },
@@ -69,7 +77,7 @@ export class LinkLineData {
             lineSymbol.path = "M0,-1 L0,1" // single line
         }
         if (selected || isBoundary) {
-            lineSymbol.strokeOpacity = 1
+            lineSymbol.strokeOpacity = this.isTripped(link) ? 0.25 : 1
         } else {
             lineSymbol.strokeOpacity = this.isTripped(link) ? 0.15 : 0.5
         }
@@ -119,7 +127,7 @@ export class LinkLineData {
             arrowSymbol.strokeColor  = lineSymbol.strokeColor
             arrowSymbol.fillColor = lineSymbol.strokeColor
             arrowSymbol.fillOpacity = 1
-            arrowSymbol.scale = 1.5
+            arrowSymbol.scale = isBoundary ? (link.branchCount>1 ? 4 : 3) : 1.5
 
             // 
             options.icons.push( {
@@ -132,36 +140,6 @@ export class LinkLineData {
 
     private isTripped(link: LoadflowLink): boolean {
         return link.branches.find(m => this.mapComponent.loadflowDataService.isTripped(m.id)) ? true : false
-    }
-
-    boundaryLinks: LoadflowLink[] = []
-    boundaryMapPolylines: Map<number, MapPolyline> = new Map()
-    selectBoundaryBranches(boundaryLinks: LoadflowLink[]) {
-        // unselect current ones
-        this.boundaryLinks.forEach((branch) => {
-            let mapPolyline = this.boundaryMapPolylines.get(branch.id)
-            if (mapPolyline) {
-                let options = this.getPolylineOptions(branch, false, false)
-                mapPolyline.polyline?.setOptions(options);
-            }
-        })
-        // select new ones
-        this.boundaryLinks = []
-        this.boundaryMapPolylines.clear()
-        // make a copy of array
-        this.boundaryLinks = [...boundaryLinks]
-        this.boundaryLinks.forEach((branch) => {
-            var index = this.linkLineData.getIndex(branch.id);
-            if (index >= 0 && this.mapComponent.linkMapPolylines) {
-                let mapPolyline = this.mapComponent.linkMapPolylines.get(index);
-                if (mapPolyline) {
-                    let options = this.getPolylineOptions(branch, false, true)
-                    mapPolyline.polyline?.setOptions(options);
-                    this.boundaryMapPolylines.set(branch.id, mapPolyline)
-                }
-            }
-        })
-
     }
     
 }

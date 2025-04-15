@@ -42,8 +42,8 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             this.updateMapData(updateLocationData)
         }))
         this.addSub(this.loadflowDataService.BoundarySelected.subscribe((boundaryLinks) => {
-            // select links associated with the selected boundary
-            this.linkPolylineData.selectBoundaryBranches(boundaryLinks)
+            // update links to show boundary links
+            this.linkPolylineData.updateAll()
         }))
         this.addSub(this.loadflowDataService.ObjectSelected.subscribe((selectedItem) => {
             // select an object (link or location)
@@ -213,11 +213,6 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     }
 
     selectLink(link: LoadflowLink, mpl: MapPolyline, select: boolean) {
-        //
-        let isBoundaryLink = this.loadflowDataService.boundaryLinks.find(m => m.id == link.id) ? true : false
-        //
-        //??let options = this.getPolylineOptions(link, select, isBoundaryLink)
-        //??mpl.polyline?.setOptions(options);
         //
         this.showLinkInfoWindow(link, mpl, select)
     }

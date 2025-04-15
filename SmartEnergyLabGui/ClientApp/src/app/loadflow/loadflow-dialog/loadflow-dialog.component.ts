@@ -120,7 +120,7 @@ export class LoadflowDialogComponent extends ComponentBase {
     flowResult: BoundaryFlowResult
     clearFlowResult: BoundaryFlowResult = { genInside: 0, genOutside:0, demInside: 0, demOutside: 0, ia: 0 }
     datasetTypes = DatasetType
-    boundaryTrips = true
+    boundaryTrips = false
     transportModel: TransportModel = TransportModel.PeakSecurity
     TransportModel = TransportModel
     hasCapacityError:boolean = false
