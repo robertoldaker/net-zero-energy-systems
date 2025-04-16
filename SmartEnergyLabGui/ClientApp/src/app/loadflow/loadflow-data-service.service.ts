@@ -120,12 +120,6 @@ export class LoadflowDataService {
         this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, transportModel, boundaryName, boundaryTrips, tripStr, (results) => {
             this.inRun = false
             this.loadFlowResults = results
-            // Reset the nodes/branches/results since these are the data from the last trip run
-            if ( boundaryName && boundaryTrips ) {
-                this.loadFlowResults.nodes = this.networkData.nodes
-                this.loadFlowResults.branches = this.networkData.branches
-                this.loadFlowResults.ctrls = this.networkData.ctrls
-            }
             //
             this.updateLocationData(false)
             this.updateSelectedObject()          
