@@ -89,7 +89,6 @@ export class LoadflowBranchInfoWindowComponent extends ComponentBase {
     }
 
     toggleTrip(e: any, branchId: number) {
-        console.log('toggleTrip',branchId,e.target.checked)
         if ( e.target.checked ) {
             this.dataService.addTrip(branchId)
         } else {

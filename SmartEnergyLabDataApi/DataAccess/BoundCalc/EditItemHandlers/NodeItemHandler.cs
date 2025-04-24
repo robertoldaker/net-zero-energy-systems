@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using NHibernate;
 using NHibernate.AdoNet.Util;
+using NHibernate.Criterion;
 
 namespace SmartEnergyLabDataApi.Data.BoundCalc;
 
@@ -108,9 +109,15 @@ public class NodeItemHandler : BaseEditItemHandler
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
             var node = (Node) m.Item;
-            var nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id,m=>m.Id == node.Id, out var locDi);
+            var nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id,m=>m.Id == node.Id);
+
+            // branches that reference this node
+            var nodeIds = nodeDi.Data.Select(m=>m.Id).ToArray();            
+            var branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id,m=>m.Node1.Id.IsIn(nodeIds) || m.Node2.IsIn(nodeIds), out var ctrlId);
+
+            //
             list.Add(nodeDi.getBaseDatasetData());
-            list.Add(locDi.getBaseDatasetData()); 
+            list.Add(branchDi.getBaseDatasetData()); 
             return list;
         }
     }

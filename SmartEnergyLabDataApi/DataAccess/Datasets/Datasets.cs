@@ -101,6 +101,21 @@ public class Datasets : DataSet
         return dict;
     }
 
+    public Dictionary<int,List<UserEdit>> GetUserEditsDict(string className, string key, int[] datasetIds) {
+        var tableName = className;
+        var dict = new Dictionary<int,List<UserEdit>>();
+        var all = Session.QueryOver<UserEdit>().
+            Where(m=>m.Dataset.Id.IsIn(datasetIds)).
+            And(m=>m.TableName == tableName).
+            And( m=>m.Key == key).
+            List();
+        foreach( var id in datasetIds ) {
+            var eds = all.Where(m=>m.Dataset.Id == id).ToList();
+            dict.Add(id,eds);
+        }
+        return dict;
+    }
+
     public IList<T> GetData<T>(
             int datasetId, 
             Func<T,string> keyFcn, 
@@ -125,7 +140,7 @@ public class Datasets : DataSet
         return data;
     }
 
-    public void applyUserEdits<T>(IList<T> data,int[] datasetIds, Func<T,string> keyFcn, out List<UserEdit> userEdits, out List<T> deletedData) {
+    private void applyUserEdits<T>(IList<T> data,int[] datasetIds, Func<T,string> keyFcn, out List<UserEdit> userEdits, out List<T> deletedData) {
         // Gets dictionary of all user edits by version id
         var userEditsDict = GetUserEditsDict<T>(datasetIds);
         // Get properties of the base type
@@ -149,7 +164,10 @@ public class Datasets : DataSet
                 foreach ( var ue in ues) {
                     // See if the object has the property name based on the lower-case column name
                     if ( propDict.TryGetValue(ue.ColumnName, out PropertyInfo prop)) {
-                        if ( vId == lastDatasetId ) {
+                        // Important - need to only set it if not set already
+                        // NHibernate will return same instances of objects so if this userEdit appears again it may set the prevValue
+                        // to the already edited value
+                        if ( vId == lastDatasetId && ue.PrevValue==null ) {
                             ue.PrevValue = getPrevValue(prop, gp);
                         }
                         // if so apply change

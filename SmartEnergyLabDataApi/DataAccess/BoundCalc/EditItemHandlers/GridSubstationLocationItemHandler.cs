@@ -87,27 +87,34 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
         // location
         GridSubstationLocation loc = (GridSubstationLocation) m.Item;
         using ( var da = new DataAccess()) {
+            // get location
+            var locDi = da.NationalGrid.GetLocationDatasetData(m.Dataset.Id, m=>m.Id == loc.Id);
             var nodeIds = da.Session.QueryOver<Node>().Where( m=>m.Location.Id == loc.Id).Select(m=>m.Id).List<int>().ToArray();
             var branchIds = da.Session.QueryOver<Branch>().Where( m=>m.Node1.Id.IsIn(nodeIds) || m.Node2.Id.IsIn(nodeIds) ).Select(m=>m.Id).List<int>().ToArray();
-            if ( nodeIds.Length == 0 ) {
-                // not being used so just return the dataset for this location
-                var locDi = da.NationalGrid.GetLocationDatasetData(m.Dataset.Id, m=>m.Id == loc.Id);
-                list.Add(locDi.getBaseDatasetData());
-            } else if ( branchIds.Length==0) {
-                // 
-                var nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id, m=>m.Location.Id == loc.Id, out var locDi);
-                list.Add(nodeDi.getBaseDatasetData());
-                list.Add(locDi.getBaseDatasetData());
-            } else {
-                // load branches that used the nodes used by the location
-                var branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n=>n.Node1.Id.IsIn(nodeIds) || n.Node2.Id.IsIn(nodeIds), out var ctrlDi, out var nodeDi, out var locDi);
-                // add the datasets returned to the list
-                list.Add(branchDi.getBaseDatasetData()); 
-                list.Add(ctrlDi.getBaseDatasetData());
-                list.Add(nodeDi.getBaseDatasetData());
-                list.Add(locDi.getBaseDatasetData());
-            }
+            
+            // 
+            list.Add(locDi.getBaseDatasetData());
 
+            DatasetData<Node>? nodeDi = null;
+            DatasetData<Branch>? branchDi = null;
+            DatasetData<Ctrl>? ctrlDi = null;
+            if ( nodeIds.Length != 0 ) {
+                // get nodes used by this location
+                nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id, m=>m.Location.Id == loc.Id);
+                if ( branchIds.Length!=0) {
+                    // get branches used by the nodes                
+                    branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n=>n.Node1.Id.IsIn(nodeIds) || n.Node2.Id.IsIn(nodeIds), out ctrlDi);
+                } 
+            } 
+            if ( nodeDi!=null) {
+                list.Add(nodeDi.getBaseDatasetData());
+            }
+            if ( branchDi!=null ) {
+                list.Add(branchDi.getBaseDatasetData()); 
+            }
+            if ( ctrlDi !=null ) {
+                list.Add(ctrlDi.getBaseDatasetData());
+            }
         }
         //
         return list;

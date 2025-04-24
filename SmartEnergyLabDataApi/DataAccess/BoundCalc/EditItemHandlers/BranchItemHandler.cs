@@ -50,6 +50,10 @@ public class BranchItemHandler : BaseEditItemHandler
     {
 
         m.GetString("code",out string code);
+        var branch = m.Da.BoundCalc.GetBranch(code);
+        if ( branch!=null &&  branch.Id != m.ItemId ) {
+            m.AddError("code","Branch code must be unique");
+        }
         
         // demand        
         m.CheckDouble("x",0);
@@ -147,7 +151,7 @@ public class BranchItemHandler : BaseEditItemHandler
                 if ( branchType == BoundCalcBranchType.QB) {
                     ctrlType = BoundCalcCtrlType.QB;
                 } else if ( branchType == BoundCalcBranchType.HVDC) {
-                    ctrlType = BoundCalcCtrlType.HVDC;
+                    ctrlType = BoundCalcCtrlType.HVDC;                    
                 } else {
                     throw new Exception($"Unexpected branch type found [{branchType}]");
                 }
@@ -193,11 +197,9 @@ public class BranchItemHandler : BaseEditItemHandler
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
             var branch = (Branch) m.Item;
-            var branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n=>n.Id == branch.Id, out var ctrlDi, out var nodeDi, out var locDi );
+            var branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n=>n.Id == branch.Id, out var ctrlDi);
             list.Add(branchDi.getBaseDatasetData());
             list.Add(ctrlDi.getBaseDatasetData());
-            list.Add(nodeDi.getBaseDatasetData());
-            list.Add(locDi.getBaseDatasetData());
             return list;
         }
     }

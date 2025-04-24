@@ -25,10 +25,23 @@ export class CellEditorComponent {
 
     onBlur(e: any) {
         this.hasFocus = false;
+        if ( this.changed) {
+            this.saveEdit()
+        } else {
+            this.clear()
+        }
+    }
+
+    private clear() {
         if ( this.input) {
             this.input.nativeElement.value = this.value            
             this.error = ''
-        }
+            this.changed = false
+        }    
+    }
+
+    onChange(e: any) {
+        this.changed = true;
     }
 
     keyDown(e: any) {
@@ -52,6 +65,7 @@ export class CellEditorComponent {
 
     cancel(e: Event) {
         e.stopPropagation()
+        this.clear()
         if ( this.input) {
             this.input.nativeElement.blur()
         }
@@ -111,6 +125,7 @@ export class CellEditorComponent {
     }
 
     hasFocus: boolean = false
+    changed: boolean = false
 
     @Input()
     data: CellEditorData = new CellEditorData({id: 0, name: '',parent: null, type: DatasetType.Elsi, isReadOnly: true})
@@ -159,6 +174,16 @@ export class CellEditorComponent {
         } else {
             return ""
         }
+    }
+
+    get inputClass():string {
+        let classes = this.data.userEdit ? 'existing' : ''
+        if ( typeof this.data?.value == 'number' ) {
+            classes+=" numeric"
+        } else {
+            classes+=" text"
+        }
+        return classes
     }
 }
 

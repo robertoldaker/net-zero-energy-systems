@@ -17,6 +17,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             //
             if ( ctrl.Type == BoundCalcCtrlType.HVDC) {
                 branch.Type = BoundCalcBranchType.HVDC;
+                branch.X = 0; // needs to be 0 to work correctly in BoundCalc model
             } else if ( ctrl.Type == BoundCalcCtrlType.QB) {
                 branch.Type = BoundCalcBranchType.QB;
             }

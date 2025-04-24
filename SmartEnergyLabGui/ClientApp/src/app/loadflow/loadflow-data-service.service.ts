@@ -32,7 +32,7 @@ export class LoadflowDataService {
             boundaries: { tableName: '',data:[], userEdits: [],deletedData: [] },
             zones: { tableName: '',data:[], userEdits: [],deletedData: [] },
             locations: { tableName: '',data:[], userEdits: [],deletedData: [] },
-            boundaryDict: {},
+            //??boundaryDict: {},
         }
         this.locationData = { locations: [], links: []}
         this.locMap = new Map<number,LoadflowLocation>()
@@ -104,10 +104,27 @@ export class LoadflowDataService {
         if ( this.networkData) {
             this.boundaryName = boundaryName
             if ( this.boundaryName ) {
-                this.boundaryBranchIds = this.networkData.boundaryDict[this.boundaryName];
+                this.setBoundaryBranchIds()
             }
         }
         this.BoundarySelected.emit()
+    }
+
+    private setBoundaryBranchIds() {
+        this.boundaryBranchIds = [];
+        let boundary = this.networkData.boundaries.data.find( m=>m.code == this.boundaryName)
+        if ( boundary ) {
+            for( let b of this.networkData.branches.data ) {
+                let in1 = boundary.zones.find( m=>m.id == b.node1ZoneId) ? true : false
+                let in2 = boundary.zones.find( m=>m.id == b.node2ZoneId) ? true : false
+                // 
+                if ( in1 != in2) {
+                    this.boundaryBranchIds.push(b.id)
+                }
+            }    
+        } else {
+            this.boundaryName = undefined
+        }
     }
 
     isBoundaryBranch(branchId: number):boolean {
@@ -159,7 +176,6 @@ export class LoadflowDataService {
                 setPoints.push({ctrlId: ctrl.id, setPoint: ctrl.setPoint ? ctrl.setPoint : 0})
             }
             this.dataClientService.ManualSetPointMode(this.dataset.id, setPoints, (results)=> {
-                console.log('ManualSetPoint',results)
                 this.loadDataset(()=>{                    
                     this.setPointMode = setPointMode
                     this.SetPointModeChanged.emit(this.setPointMode)    
@@ -282,13 +298,14 @@ export class LoadflowDataService {
     }
 
     afterEdit(resp: DatasetData<any>[] ) {
-        //
         this.loadFlowResults = undefined
         //
         for( let r of resp) {
             let dd = this.getDatasetData(r.tableName)
             DatasetsService.updateDatasetData(dd,r)    
         }
+        // this set boundaryBranchIds and checks any selected boundary still exists
+        this.setBoundary(this.boundaryName)
         //
         this.NetworkDataLoaded.emit(this.networkData)
         //

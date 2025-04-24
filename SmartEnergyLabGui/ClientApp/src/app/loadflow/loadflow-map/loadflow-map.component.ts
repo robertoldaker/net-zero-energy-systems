@@ -177,6 +177,9 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     locMarkerDragEnd(e: { mo: IMapData<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLocation>, e: any }) {
         let loc = this.loadflowDataService.getLocation(e.mo.id)
         if (loc && this.datasetsService.currentDataset) {
+            // stops polyLine and markers from being selected that meybe under the cursor after performing a marker drag
+            e.e.domEvent.stopPropagation()
+            // save data
             let data = { latitude: e.e.latLng.lat(), longitude: e.e.latLng.lng() };
             this.dataService.EditItem({ id: loc.id, datasetId: this.datasetsService.currentDataset.id, className: "GridSubstationLocation", data: data }, (resp) => {
                 this.loadflowDataService.afterEdit(resp)

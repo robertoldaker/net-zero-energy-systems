@@ -157,7 +157,7 @@ public class Trip {
         sensmat = new double[nac+1,nac+1];
 
         for(j=0;j<=nac;j++) {
-            tvec = new double[BoundCalc.Nodes.Count - 1];
+            tvec = new double[BoundCalc.Nodes.Count];
             tvec[_ccts[j].pn1] = 1;
             tvec[_ccts[j].pn2] = -1;
             BoundCalc._ufac.Solve(tvec,ref tvec); // calculate vang caused by unit injections at branch ends

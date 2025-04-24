@@ -382,6 +382,8 @@ export interface Branch {
     node2LocationId: number
     node1GISData: GISData | null
     node2GISData: GISData | null
+    node1ZoneId: number
+    node2ZoneId: number
     outaged: boolean
     powerFlow: number | null    
     bFlow: number
@@ -432,7 +434,7 @@ export interface NetworkData {
     boundaries: DatasetData<Boundary>
     zones: DatasetData<Zone>
     locations: DatasetData<GridSubstationLocation>
-    boundaryDict: IBoundaryDict
+    //??boundaryDict: IBoundaryDict
 }
 
 export enum GridSubstationLocationSource { NGET, SHET, SPT, GoogleMaps, Estimated, UserDefined}

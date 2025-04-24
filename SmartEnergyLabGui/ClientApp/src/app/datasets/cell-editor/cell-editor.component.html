@@ -1,16 +1,16 @@
 <div style="white-space: nowrap; position: relative;">
-    <span *ngIf="readOnly; else editableBlock" [ngClass]="{'existing': data.userEdit}">{{value}}</span>
+    <span *ngIf="readOnly; else editableBlock" [ngClass]="inputClass">{{value}}</span>
     <div *ngIf="data.userEdit?.prevValue" class="prevValue" style="line-height: 85%;">
         ({{prevValue}})  
     </div>
     <ng-template #editableBlock>
-        <select *ngIf="options; else textEdit" [ngClass]="{'existing': data.userEdit}" [(ngModel)]="data.value" (ngModelChange)="saveSelect($event)">
+        <select *ngIf="options; else textEdit" [ngClass]="inputClass" [(ngModel)]="data.value" (ngModelChange)="saveSelect($event)">
             <option *ngFor="let o of options" [value]="o">{{o}}</option>
         </select>
         <ng-template #textEdit>
             <div class="input">
-                <input class="editable" [ngClass]="{'existing': data.userEdit}" type="text" [value]="value"
-                (focus)="onFocus()" (blur)="onBlur($event)" (keydown)="keyDown($event)" #input/>    
+                <input class="editable" [ngClass]="inputClass" type="text" [value]="value"
+                (focus)="onFocus()" (blur)="onBlur($event)" (keydown)="keyDown($event)" (change)="onChange($event)" #input/>    
                 <div class="error">{{error}}</div>
             </div>
         </ng-template>
@@ -18,9 +18,6 @@
             <div [class]="{delete: true, button: true, disabled: !canDelete}" *ngIf="data.userEdit && !hasFocus">
                 <mat-icon (click)="delete()" title="Delete edit" [inline]="true">cancel</mat-icon>
             </div>
-            <div class="save button" *ngIf="hasFocus" (click)="save($event)" (mousedown)="mouseDown($event)">
-                <mat-icon title="Save edit" [inline]="true">done</mat-icon>
-            </div>        
             <div class="cancel button" *ngIf="hasFocus" (click)="cancel($event)" (mousedown)="mouseDown($event)">
                 <mat-icon title="Cancel edit" [inline]="true">close</mat-icon>
             </div>    

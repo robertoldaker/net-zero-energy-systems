@@ -3,11 +3,19 @@
 }
 
 .editable {
-    width: 4rem;
     border-radius: 3px;
     border: none;
-    text-align: right;
     border: 1px solid transparent;
+}
+
+.text {
+    width: 100%;
+    text-align: left;
+}
+
+.numeric {
+    width: 4rem;
+    text-align: right;
 }
 
 .existing {
@@ -25,7 +33,7 @@
 .editButtons {
     position:absolute;
     top: 1px;
-    right: -36px;
+    right: -18px;
     display: inline-block;
     cursor: pointer;
     z-index: 5;
@@ -33,7 +41,7 @@
 
 .delete {
     color: darkred;
-    margin-right: 18px;
+    margin-right: 0px;
 }
 
 .disabled {
@@ -55,7 +63,7 @@
 }
 
 .input {
-    display: inline-block;    
+    /*display: inline-block;    */
     position: relative;
 }
 

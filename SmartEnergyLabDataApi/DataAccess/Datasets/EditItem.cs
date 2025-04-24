@@ -195,38 +195,79 @@ public class EditItemModel : DbModel {
     }
 
     public void UpdateUserEditForItem(IId item) {
+        //
         var className = item.GetType().Name;
-        var userEdits = _da.Datasets.GetUserEdits(className,_dataset.Id);
+
+        // get all user edits in the inheritence heirarchy
+        var allDatasetIds = _da.Datasets.GetInheritedDatasetIds(_dataset.Id);
+        var userEditDict = _da.Datasets.GetUserEditsDict(className,((IId) item).Id.ToString(),allDatasetIds);
+
+        // thse are the current user edits for this dataset
+        List<UserEdit> userEdits;
+        if ( userEditDict.ContainsKey(_dataset.Id)) {
+            userEdits = userEditDict[_dataset.Id];
+            // remove it from the dictionary so the dictionary contains just inherited dataset ids
+            userEditDict.Remove(_dataset.Id);
+        } else {
+            userEdits = new List<UserEdit>();
+        }
+        // these are the inheritedDatasetIds without the current one in heirarchical order
+        var inheritedDatasetIds = userEditDict.Keys.OrderBy(m=>m).ToArray();
+
+        // Get properties and propertInfo as a dictionary
         var props = item.GetType().GetProperties();
         var propDict = new Dictionary<string,PropertyInfo>(StringComparer.OrdinalIgnoreCase);
         foreach( var prop in props) {
             propDict.Add(prop.Name.ToLower(),prop);
         }
-        //
+
+        // Loop over each item in the data array and set values for each
         foreach( var name in _editItem.data.Keys) {
+            // Check there is a property with the given name
             if ( propDict.TryGetValue(name, out PropertyInfo prop)) {
-                // 
+                // get the item value
                 var itemValue = prop.GetValue(item);
+                // apply user edits so we get the latest value
+                var itemStrValue = applyUserEdits(name, objToString(itemValue), userEditDict, inheritedDatasetIds);
+                // get the new value
                 var editValue = _editItem.data[name]; 
-                string key = ((IId) item).Id.ToString();
-                var userEdit = userEdits.Where( m=>string.Compare(m.ColumnName,name,true)==0 && m.Key == key).FirstOrDefault();
-                if ( objToString(itemValue) == objToString(editValue)) {
-                    //
+                // get any existing user edit for this 
+                var userEdit = userEdits.Where( m=>string.Compare(m.ColumnName,name,true)==0).FirstOrDefault();
+                if ( itemStrValue == objToString(editValue)) {
+                    // No change so delete
                     if ( userEdit!=null ) {
                         _da.Datasets.Delete(userEdit);
                     }
                 } else {
+                    // No existing userEdit so create new one
                     if ( userEdit==null) {
+                        string key = ((IId) item).Id.ToString();
                         userEdit = new UserEdit() { TableName = className, ColumnName=prop.Name,Dataset = _dataset, Key = key  };
                         _da.Datasets.Add(userEdit);
                     }
+                    // set value of user edit
                     userEdit.Value = objToString(editValue);
                 }
             }
         }
         //
-
     }
+
+    private string applyUserEdits( string name, string initialValue, Dictionary<int,List<UserEdit>> userEditDict, int[] datasetIds ) {
+        string newValue = initialValue;
+        foreach( var datasetId in datasetIds) {
+            if ( userEditDict.ContainsKey(datasetId)) {
+                var userEdits = userEditDict[datasetId];
+                var ue = userEdits.Where( m=>string.Compare(m.ColumnName,name,true)==0).FirstOrDefault();
+                if ( ue!=null ) {
+                    newValue = ue.Value;
+                }
+            }
+        }
+        return newValue;
+    }
+
+
 
     private string objToString(object? obj) {
         return obj!=null ? obj.ToString() : "";

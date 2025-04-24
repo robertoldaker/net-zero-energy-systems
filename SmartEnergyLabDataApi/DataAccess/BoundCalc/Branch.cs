@@ -192,6 +192,17 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
         }
 
+        public virtual int Node1ZoneId {
+            get {
+                return Node1.Zone.Id;
+            }
+        }
+
+        public virtual int Node2ZoneId {
+            get {
+                return Node2.Zone.Id;
+            }
+        }
         // outaged (bout)
         public virtual bool Outaged {get; set;}
 
