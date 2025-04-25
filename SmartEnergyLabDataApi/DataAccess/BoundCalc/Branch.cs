@@ -214,6 +214,16 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         public virtual double? FreePower {get; set;}
 
+        public virtual double? PercentCapacity {
+            get {
+                if ( PowerFlow!=null && Cap>0 ) {
+                    return 100*(Math.Abs((double)PowerFlow)/Cap);
+                } else {
+                    return null;
+                }
+            }
+        } 
+
         public virtual double? km {get; set;}
 
         public virtual double? mwkm {

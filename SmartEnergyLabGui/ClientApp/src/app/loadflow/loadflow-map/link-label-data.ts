@@ -1,7 +1,7 @@
 import { GISData } from "src/app/data/app.data";
 import { IMapData, MapOptions } from "src/app/utils/map-options";
 import { LoadflowMapComponent } from "./loadflow-map.component";
-import { LoadflowLink, UpdateLocationData } from "../loadflow-data-service.service";
+import { LoadflowLink, PercentCapacityThreshold, UpdateLocationData } from "../loadflow-data-service.service";
 
 export class LinkLabelData {
     constructor(private mapComponent: LoadflowMapComponent) {
@@ -40,6 +40,7 @@ export class LinkLabelData {
                     // Can't get setting options to work with advanced map markers so access and set map marker options directly
                     amm.advancedMarker.position = options.position
                     amm.advancedMarker.content = options.content
+                    amm.advancedMarker.zIndex = options.zIndex
                     if ( options.title ) {
                         amm.advancedMarker.title = options.title
                     }
@@ -61,7 +62,8 @@ export class LinkLabelData {
             let amm = this.mapComponent.linkMarkers?.get(index)
             if ( amm ) {
                 let element:any = amm.advancedMarker.content
-                element.className = this.getClassName(link,tol)
+                let className = this.getClassName(link,tol)
+                element.className = className.cn                
             }
         }
     } 
@@ -69,7 +71,8 @@ export class LinkLabelData {
     private getLinkLabelOptions(link: LoadflowLink, tol: number): google.maps.marker.AdvancedMarkerElementOptions {
         const linkLabelDiv = document.createElement('div');
 
-        linkLabelDiv.className = this.getClassName(link,tol)
+        let className = this.getClassName(link,tol)
+        linkLabelDiv.className = className.cn
         linkLabelDiv.textContent = this.getLabel(link)
         let lat = (link.gisData1.latitude + link.gisData2.latitude)/2;
         let lng = (link.gisData1.longitude + link.gisData2.longitude)/2;
@@ -79,7 +82,7 @@ export class LinkLabelData {
                 lng: lng,
             },
             content: linkLabelDiv,            
-            zIndex: 15,
+            zIndex: className.zIndex,
             gmpDraggable: false
         }
     }
@@ -104,17 +107,31 @@ export class LinkLabelData {
         return label
     }
 
-    private getClassName(link: LoadflowLink, tol: number):string {
+    private getClassName(link: LoadflowLink, tol: number):{cn: string, zIndex: number } {
         let label = this.getLabel(link)
-        let className = "hide"
-        if ( label ) {
-            // work out if we should show based on the length of the link and a tolerance
-            let distSqr = this.getPixelDistanceSqr(link.gisData1,link.gisData2)
-            if ( distSqr > tol ) {
-                className = "flowLabel"
+        let ds = this.mapComponent.loadflowDataService
+        let percentThreshold = ds.getPercentCapacityThreshold(link.percentCapacity)
+        if ( percentThreshold === PercentCapacityThreshold.OK) {
+            let className = "hide"
+            if ( label ) {
+                // work out if we should show based on the length of the link and a tolerance
+                let distSqr = this.getPixelDistanceSqr(link.gisData1,link.gisData2)
+                if ( distSqr > tol ) {
+                    className = "flowLabel"
+                }
             }
+            return { cn: className, zIndex: 15}
+        } else {
+            let className = "flowLabel"
+            let zIndex = 20
+            if ( percentThreshold === PercentCapacityThreshold.Warning) {
+                className+= " notOK warning"
+            } else {
+                className+= " notOK critical"
+                zIndex = 25
+            }
+            return { cn: className, zIndex: zIndex}
         }
-        return className
     }
 
     private getPixelDistanceSqr(point1: GISData, point2: GISData):number {

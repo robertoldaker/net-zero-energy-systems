@@ -14,6 +14,8 @@ type NodeDict = {
 
 export type SelectedMapItem = {location: LoadflowLocation | null, link: LoadflowLink | null}
 
+export enum PercentCapacityThreshold { OK, Warning, Critical}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -674,6 +676,16 @@ export class LoadflowDataService {
         }
     }
 
+    public getPercentCapacityThreshold(percentCapacity: number):PercentCapacityThreshold {
+        if (percentCapacity>90 ) {
+            return PercentCapacityThreshold.Critical
+        } else if ( percentCapacity>70) {
+            return PercentCapacityThreshold.Warning
+        } else {
+            return PercentCapacityThreshold.OK
+        }
+    }
+
     ResultsLoaded:EventEmitter<LoadflowResults> = new EventEmitter<LoadflowResults>()
     NetworkDataLoaded:EventEmitter<NetworkData> = new EventEmitter<NetworkData>()
     LocationDataUpdated:EventEmitter<UpdateLocationData> = new EventEmitter<UpdateLocationData>()
@@ -804,6 +816,7 @@ export class LoadflowLink {
         this._branches = [branch]
         this.totalFlow = this.getTotalFlow()
         this.totalFree = this.getTotalFree()
+        this.percentCapacity = this.getPercentCapacity()
     }
 
     get id():number {
@@ -850,6 +863,7 @@ export class LoadflowLink {
         let gisData2 = branches[0].node2GISData ? branches[0].node2GISData : { id:0, latitude: 0, longitude: 0}
         let totalFlow = this.getTotalFlow()
         let totalFree = this.getTotalFree()
+        let percentCapacity = this.getPercentCapacity()
         //
         let result = branches.length!==this.branchCount || 
                         isHVDC!==this.isHVDC || 
@@ -859,6 +873,7 @@ export class LoadflowLink {
                         this.areGISDataDifferent(gisData2,this._gisData2) ||
                         this.totalFlow!=totalFlow ||
                         this.totalFree!=totalFree ||
+                        this.percentCapacity!=percentCapacity ||
                         this._isNew
         this._node1LocationId = node1LocationId
         this._node2LocationId = node2LocationId
@@ -868,6 +883,7 @@ export class LoadflowLink {
         this.branchCount = branches.length
         this.totalFlow = totalFlow
         this.totalFree = totalFree
+        this.percentCapacity = percentCapacity
         this._isNew = false
         return result
     }
@@ -898,6 +914,18 @@ export class LoadflowLink {
         return tf
     }
 
+    private getPercentCapacity():number {
+        let pc = 0
+        for( let b of this._branches) {
+            if ( b.percentCapacity!=null ) {
+                if ( b.percentCapacity>pc) {
+                    pc = b.percentCapacity
+                }
+            }
+        }
+        return pc
+    }
+
     private areGISDataDifferent(gisA: GISData, gisB: GISData) {
         return gisA.latitude!=gisB.latitude || gisA.longitude!=gisB.longitude
     }
@@ -906,4 +934,5 @@ export class LoadflowLink {
     isHVDC: boolean
     totalFlow: number | null = null
     totalFree: number | null = null
+    percentCapacity: number = 0
 }

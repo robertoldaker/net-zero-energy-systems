@@ -391,6 +391,7 @@ export interface Branch {
     km: number | null
     mwkm: number | null
     loss: number | null
+    percentCapacity: number | null
 }
 
 export enum LoadflowCtrlType {  QB=0,  // Quad booster

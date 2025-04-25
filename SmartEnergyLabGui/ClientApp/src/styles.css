@@ -301,6 +301,20 @@ div.flowLabel {
     border-style: solid;
 }
 
+div.flowLabel.notOK {
+    color: white;
+    font-weight: bold;
+    border-color: white;
+}
+
+div.flowLabel.critical {
+    background-color: darkred;
+}
+
+div.flowLabel.warning {
+    background-color: coral;    
+}
+
 .hide {
     display: none;
 }

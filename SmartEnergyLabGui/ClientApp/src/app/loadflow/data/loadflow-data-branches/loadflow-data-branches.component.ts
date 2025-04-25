@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Branch, BranchType } from '../../../data/app.data';
-import { LoadflowDataService } from '../../loadflow-data-service.service';
+import { LoadflowDataService, PercentCapacityThreshold } from '../../loadflow-data-service.service';
 import { ColumnDataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { DataTableBaseComponent } from '../../../datasets/data-table-base/data-table-base.component';
@@ -32,7 +32,7 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
         })
 
         this.createDataSource(dataService.dataset,dataService.networkData.branches)
-        this.displayedColumns = ['buttons','code','node1Code','node2Code','typeStr','x','cap','trip','freePower','powerFlow','km','mwkm','loss']
+        this.displayedColumns = ['buttons','code','node1Code','node2Code','typeStr','x','cap','trip','freePower','powerFlow','percentCapacity','km','mwkm','loss']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.branchCapacityError = false
             this.createDataSource(dataService.dataset,results.branches)
@@ -105,6 +105,23 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
     clearTrips(e:any) {
         this.dataService.clearTrips()
         e.stopPropagation()
+    }
+
+    percentCapStyle(percentCap: any):any {
+        let style = {}
+        if ( percentCap ) {
+            let threshold = this.dataService.getPercentCapacityThreshold(percentCap)
+            let color = ''
+            if ( threshold == PercentCapacityThreshold.Critical) {
+                color = 'darkred'
+            } else if(threshold == PercentCapacityThreshold.Warning) {
+                color = 'coral'
+            }
+            if ( color ) {
+                style= {color: color};
+            }
+        } 
+        return style
     }
 
 }
