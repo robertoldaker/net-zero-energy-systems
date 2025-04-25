@@ -52,11 +52,17 @@ public class BranchItemHandler : BaseEditItemHandler
         m.GetString("code",out string code);
         if ( code!=null ) {
             if ( string.IsNullOrWhiteSpace(code)) {
-                m.AddError("code","Branch code must be set to something");
-            }
-            var branch = m.Da.BoundCalc.GetBranch(code);
-            if ( branch!=null &&  branch.Id != m.ItemId ) {
-                m.AddError("code","Branch code must be unique");
+                // No nothing as later on it will get auto-generated in Save
+            } else if ( m.Item!=null && ((Branch)m.Item).Code != code ) {
+                var regex = new Regex(@"B_\d+");
+                if ( regex.IsMatch(code)) {
+                    m.AddError("code","Branch code must not be of the form B_<digit>");
+                } else {
+                    var branch = m.Da.BoundCalc.GetBranch(m.Dataset.Id, code);
+                    if ( branch!=null &&  branch.Id != m.ItemId ) {
+                        m.AddError("code","Branch code must be unique or empty");
+                    }
+                }
             }
         }
         
@@ -184,6 +190,10 @@ public class BranchItemHandler : BaseEditItemHandler
         //
         if ( b.Id==0) {
             m.Da.BoundCalc.Add(b);
+        }
+        // set a unique code if non-set
+        if ( b.Id!=0 && string.IsNullOrWhiteSpace(b.Code) ) {
+            b.Code = $"B_{b.Id}";
         }
     }
 

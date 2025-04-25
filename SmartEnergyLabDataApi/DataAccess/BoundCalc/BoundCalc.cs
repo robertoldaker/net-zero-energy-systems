@@ -265,8 +265,13 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         {
             Session.Delete(obj);
         }
-        public Branch GetBranch(string code) {
-            return Session.QueryOver<Branch>().Where( m=>m.Code == code).Take(1).SingleOrDefault();
+        
+        public Branch GetBranch(int datasetId, string code) {
+            var datasetIds = this.DataAccess.Datasets.GetInheritedDatasetIds(datasetId);
+            return Session.QueryOver<Branch>().
+                    Where( m=>m.Code == code).
+                    And( m=>m.Dataset.Id.IsIn(datasetIds)).
+                    Take(1).SingleOrDefault();
         }
         public Branch GetBranch(int id) {
             return Session.QueryOver<Branch>().
