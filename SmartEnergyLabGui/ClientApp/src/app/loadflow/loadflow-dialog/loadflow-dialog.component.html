@@ -2,7 +2,7 @@
     <div class="controlGroup">
         <div style="margin-right: 1rem">
             <app-dataset-selector [datasetType]="datasetTypes.BoundCalc"
-            (onSelected)="onDatasetSelected($event)"></app-dataset-selector>
+            (onSelected)="onDatasetSelected($event)" (onReload)="onReload($event)"></app-dataset-selector>
         </div>
         <div>
             <mat-form-field appearance="fill" [color]="'primary'">
@@ -18,20 +18,32 @@
             <mat-checkbox class="example-margin" [disabled]="this.boundaryName=='Unspecified'" [(ngModel)]="boundaryTrips">Boundary trips</mat-checkbox>
         </div>
         <div class="modelGroup"  style="margin-right: 2rem">
-            <div class="miniTitle">Transport model</div>
-            <mat-radio-group aria-label="Select an option" [value]="transportModel"
-                (change)="transportModelChanged($event)">
-                <div style="margin-bottom: 0.2rem"><mat-radio-button [value]="TransportModel.PeakSecurity">Peak security</mat-radio-button></div>
-                <div><mat-radio-button [value]="TransportModel.YearRound">Year round</mat-radio-button></div>
-            </mat-radio-group>
+            <div class="modelItem"  style="margin-right: 1rem">
+                <div class="miniTitle">Transport model</div>
+                <mat-radio-group aria-label="Select an option" [value]="transportModel"
+                    (change)="transportModelChanged($event)">
+                    <div style="margin-bottom: 0.2rem"><mat-radio-button [value]="TransportModel.PeakSecurity">Peak security</mat-radio-button></div>
+                    <div><mat-radio-button [value]="TransportModel.YearRound">Year round</mat-radio-button></div>
+                </mat-radio-group>    
+            </div>
+            <div class="modelItem">
+                <div class="miniTitle">Set point mode</div>
+                <mat-radio-group aria-label="Select an option" [value]="setPointMode"
+                    (change)="setPointModeChanged($event)">
+                    <div style="margin-bottom: 0.2rem"><mat-radio-button [value]="SetPointMode.Auto">Auto</mat-radio-button></div>
+                    <div><mat-radio-button [value]="SetPointMode.Manual" [disabled]="!resultsLoaded">Manual</mat-radio-button></div>
+                </mat-radio-group>    
+            </div>
         </div>
-        <div class="modelGroup"  style="margin-right: 2rem">
-            <div class="miniTitle">Set point mode</div>
-            <mat-radio-group aria-label="Select an option" [value]="setPointMode"
-                (change)="setPointModeChanged($event)">
-                <div style="margin-bottom: 0.2rem"><mat-radio-button [value]="SetPointMode.Auto">Auto</mat-radio-button></div>
-                <div><mat-radio-button [value]="SetPointMode.Manual" [disabled]="!resultsLoaded">Manual</mat-radio-button></div>
-            </mat-radio-group>
+        <div class="totalGroup" style="margin-right: 2rem">
+            <div class="totalItem"  style="margin-right: 1rem">
+                <div>Total Demand</div>
+                <div class="total">{{totalDemand.toFixed(0)}} MW</div>    
+            </div>
+            <div  class="totalItem">
+                <div>Total Generation</div>
+                <div class="total">{{totalGeneration.toFixed(0)}} MW</div>    
+            </div>
         </div>
         <div class="calcGroup">
             <div><button mat-raised-button color="primary" (click)="calc()">Calc</button></div>

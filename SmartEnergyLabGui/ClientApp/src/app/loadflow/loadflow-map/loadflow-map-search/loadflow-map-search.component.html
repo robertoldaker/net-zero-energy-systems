@@ -1,6 +1,6 @@
 <div class="search">
     <span style="vertical-align: middle;"  title="search">
-        <input [hidden]="!isShown" [ngClass]="{ search: true, withAutoComplete: autoCompleteOpen}" type="text" placeholder="Search for location" [matAutocomplete]="auto" #searchInput [(ngModel)]="searchStr"/>
+        <input [hidden]="!isShown" [ngClass]="{ search: true, withAutoComplete: autoCompleteOpen}" type="text" placeholder="Search for location" [matAutocomplete]="auto" #searchInput [(ngModel)]="searchStr" (keydown)="onKeydown($event)"/>
         <button *ngIf="!isShown" mat-icon-button aria-label="Search" (click)="showSearch(true)">
             <mat-icon>search</mat-icon>
         </button>

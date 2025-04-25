@@ -48,6 +48,8 @@ export class LoadflowDataService {
     }
 
     dataset: Dataset = {id: 0, type: DatasetType.BoundCalc, name: '', parent: null, isReadOnly: true}
+    totalDemand: number = 0
+    totalGeneration: number = 0
     gridSubstations: GridSubstation[]
     networkData: NetworkData
     locationData: LocationData
@@ -56,20 +58,22 @@ export class LoadflowDataService {
     loadFlowResults: LoadflowResults | undefined
     boundaryName: string | undefined
     boundaryBranchIds: number[] = []
+    transportModel: TransportModel = TransportModel.PeakSecurity
     inRun: boolean = false
     trips: Map<number,boolean> = new Map()
     setPointMode: SetPointMode = SetPointMode.Auto
     private _locationDragging: boolean = false
+
 
     selectedMapItem: SelectedMapItem | null
 
     setDataset(dataset: Dataset) {
         this.dataset = dataset;
         //
-        this.loadDataset();
+        this.reloadDataset();
     }
 
-    private loadDataset(onLoad: (()=>void) | undefined = undefined) {
+    private reloadDataset(onLoad: (()=>void) | undefined = undefined) {
         this.loadNetworkData(true,onLoad);
     }
 
@@ -84,12 +88,26 @@ export class LoadflowDataService {
             this._locationDragging = false
             this.clearMapSelection()
             this.clearTrips()
+            this.calcTotals()
             this.NetworkDataLoaded.emit(results)
             this.updateLocationData(false)
             if ( onLoad ) {
                 onLoad()
             }
         })
+    }
+
+    private calcTotals() {
+        if ( this.networkData) {
+            this.totalDemand = 0
+            this.networkData.nodes.data.forEach( m=>this.totalDemand+=m.demand)
+            this.totalGeneration = 0
+            if ( this.transportModel === TransportModel.PeakSecurity ) {
+                this.networkData.nodes.data.forEach( m=>this.totalGeneration+=m.generation_A)
+            } else if ( this.transportModel == TransportModel.YearRound ) {
+                this.networkData.nodes.data.forEach( m=>this.totalGeneration+=m.generation_B)
+            }
+        }
     }
 
     private getBranchKeys(b: Branch): { key1: string, key2: string} {
@@ -131,10 +149,15 @@ export class LoadflowDataService {
         return this.boundaryBranchIds.includes(branchId)
     }
 
-    runBoundCalc(transportModel: TransportModel, boundaryName: string, boundaryTrips: boolean) {
+    setTransportModel(transportModel: TransportModel) {
+        this.transportModel = transportModel
+        this.calcTotals()
+    }
+
+    runBoundCalc( boundaryName: string, boundaryTrips: boolean) {
         this.inRun = true;
         let tripStr = this.getTripStr()
-        this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, transportModel, boundaryName, boundaryTrips, tripStr, (results) => {
+        this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, this.transportModel, boundaryName, boundaryTrips, tripStr, (results) => {
             this.inRun = false
             this.loadFlowResults = results
             //
@@ -176,7 +199,7 @@ export class LoadflowDataService {
                 setPoints.push({ctrlId: ctrl.id, setPoint: ctrl.setPoint ? ctrl.setPoint : 0})
             }
             this.dataClientService.ManualSetPointMode(this.dataset.id, setPoints, (results)=> {
-                this.loadDataset(()=>{                    
+                this.reloadDataset(()=>{                    
                     this.setPointMode = setPointMode
                     this.SetPointModeChanged.emit(this.setPointMode)    
                 })
@@ -184,9 +207,9 @@ export class LoadflowDataService {
         }
     }
 
-    adjustBranchCapacities(transportModel: TransportModel) {
+    adjustBranchCapacities() {
         this.inRun = true;
-        this.dataClientService.AdjustBranchCapacities( this.dataset.id, transportModel, (results) => {
+        this.dataClientService.AdjustBranchCapacities( this.dataset.id, this.transportModel, (results) => {
             this.inRun = false;
             this.loadFlowResults = results;
             // need to copy branch userEdits into NetworkData to ensure further edits work
@@ -246,14 +269,23 @@ export class LoadflowDataService {
     }
 
     reload() {
-        this.loadDataset();
+        this.reloadDataset();
     }
 
     searchLocations(str: string, maxResults: number):LoadflowLocation[]  {
         let lowerStr = str.toLocaleLowerCase()
         let upperStr = str.toUpperCase()
         var searchResults = this.locationData.locations.
-            filter(m=>m.name && m.name.toLocaleLowerCase().includes(lowerStr) || m.reference === upperStr).
+            filter(m=>m.name && m.name.toLocaleLowerCase().includes(lowerStr) || m.reference.toLocaleLowerCase().includes(lowerStr)).
+            slice(0,maxResults)
+        return searchResults;
+    }
+
+    search(str: string, maxResults: number):LoadflowLocation[]  {
+        let lowerStr = str.toLocaleLowerCase()
+        let upperStr = str.toUpperCase()
+        var searchResults = this.locationData.locations.
+            filter(m=>m.name && m.name.toLocaleLowerCase().includes(lowerStr) || m.reference.startsWith(upperStr)).
             slice(0,maxResults)
         return searchResults;
     }
@@ -307,6 +339,8 @@ export class LoadflowDataService {
         // this set boundaryBranchIds and checks any selected boundary still exists
         this.setBoundary(this.boundaryName)
         //
+        this.calcTotals()
+        //
         this.NetworkDataLoaded.emit(this.networkData)
         //
         this.updateLocationData(false);
@@ -320,8 +354,14 @@ export class LoadflowDataService {
             if ( branch && branch.ctrlId!==0) {
                 DatasetsService.deleteDatasetData(this.networkData.ctrls,branch.ctrlId, dataset)
             }
-        } 
+        }
+        //
         DatasetsService.deleteDatasetData(dd,id, dataset)
+        //
+        // this set boundaryBranchIds and checks any selected boundary still exists
+        this.setBoundary(this.boundaryName)
+        //
+        this.calcTotals() 
         //
         this.NetworkDataLoaded.emit(this.networkData)
         //

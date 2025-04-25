@@ -33,6 +33,9 @@ export class DatasetSelectorComponent implements OnInit {
     @Output()
     onSelected: EventEmitter<Dataset> = new EventEmitter<Dataset>()
 
+    @Output()
+    onReload: EventEmitter<Dataset> = new EventEmitter<Dataset>()
+
     @Input()
     datasetType: DatasetType = DatasetType.Elsi
     dataset: Dataset | undefined
@@ -127,7 +130,13 @@ export class DatasetSelectorComponent implements OnInit {
                     }
                 })
         }
-    }    
+    } 
+    
+    reloadDataset() {
+        if ( this.dataset ) {
+            this.onReload.emit(this.dataset)
+        }
+    }
     
 }
 

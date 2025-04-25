@@ -1,5 +1,8 @@
 .dialogContainer {
-    padding: 1rem;
+    padding-right: 0rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    padding-left: 1rem;
 }
 
 .controlGroup {
@@ -19,8 +22,26 @@
 
 .modelGroup {
     font-size: 9pt;
-    display: inline-block;
     margin-bottom: 1rem;
+    white-space: nowrap;
+}
+
+.modelItem {
+    display: inline-block;
+}
+
+.totalGroup {
+    font-size: 10pt;
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+}
+
+.total {
+    font-weight: bold;
+}
+
+.totalItem {
+    display: inline-block;
 }
 
 .calcGroup {

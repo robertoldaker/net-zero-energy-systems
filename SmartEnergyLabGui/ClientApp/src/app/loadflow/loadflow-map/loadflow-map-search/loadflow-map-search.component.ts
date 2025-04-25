@@ -26,7 +26,7 @@ export class LoadflowMapSearchComponent implements OnInit {
     showSearch( value: boolean) {
         this.isShown = value
         if (value && this.searchInputRef!=undefined) {
-            this.searchInputRef.nativeElement.focus()
+            //??this.searchInputRef.nativeElement.focus()
             // Not sure why this is required but it does need it
             setTimeout(()=>{ // this will make the execution after the above boolean has changed
                 if ( this.searchInputRef!=undefined) {
@@ -70,7 +70,8 @@ export class LoadflowMapSearchComponent implements OnInit {
         let selectedObj = this.searchOptions.find(m => m.id == id)
         if (selectedObj) {
             this.loadflowService.selectLocation(selectedObj.id)
-            this.searchOptions = []
+            //??this.searchOptions = []
+            this.showSearch(false);
         }
     }
 
@@ -82,6 +83,12 @@ export class LoadflowMapSearchComponent implements OnInit {
     getDisplayStr(loc: LoadflowLocation) {
         let str = `(${loc.reference}) ${loc.name}`
         return str;
+    }
+
+    onKeydown(e: any) {
+        if ( e.keyCode == 27 ) {
+            this.showSearch(false)
+        }
     }
 
 }

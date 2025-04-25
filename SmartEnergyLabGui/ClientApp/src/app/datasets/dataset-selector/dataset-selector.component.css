@@ -22,4 +22,16 @@
 .datasetButtons {
     display: inline-block;
     white-space: nowrap;
+    font-size: 18pt;
 }
+
+.iconButton {
+    cursor: pointer;
+    margin-left: 12px;
+    color: grey;
+}
+
+.iconButton:hover {
+    color: blue;
+}
+

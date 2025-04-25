@@ -50,9 +50,14 @@ public class BranchItemHandler : BaseEditItemHandler
     {
 
         m.GetString("code",out string code);
-        var branch = m.Da.BoundCalc.GetBranch(code);
-        if ( branch!=null &&  branch.Id != m.ItemId ) {
-            m.AddError("code","Branch code must be unique");
+        if ( code!=null ) {
+            if ( string.IsNullOrWhiteSpace(code)) {
+                m.AddError("code","Branch code must be set to something");
+            }
+            var branch = m.Da.BoundCalc.GetBranch(code);
+            if ( branch!=null &&  branch.Id != m.ItemId ) {
+                m.AddError("code","Branch code must be unique");
+            }
         }
         
         // demand        

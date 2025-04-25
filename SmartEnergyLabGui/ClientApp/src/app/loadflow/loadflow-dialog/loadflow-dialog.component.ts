@@ -54,7 +54,7 @@ export class LoadflowDialogComponent extends ComponentBase {
         if ( bn == "Unspecified") {
             bn = "";
         }
-        this.dataService.runBoundCalc(this.transportModel,bn,this.boundaryTrips);
+        this.dataService.runBoundCalc(bn,this.boundaryTrips);
     }
 
     setBoundary() {
@@ -83,7 +83,7 @@ export class LoadflowDialogComponent extends ComponentBase {
     }
 
     transportModelChanged(e: any) {
-        this.transportModel = e.value;
+        this.dataService.setTransportModel(e.value);
     }
 
     setPointModeChanged(e: any) {
@@ -91,7 +91,7 @@ export class LoadflowDialogComponent extends ComponentBase {
     }
 
     adjustBranchCapacities() {
-        this.dataService.adjustBranchCapacities(this.transportModel);
+        this.dataService.adjustBranchCapacities();
     }
 
     get numberOfTrips() {
@@ -106,8 +106,24 @@ export class LoadflowDialogComponent extends ComponentBase {
         return this.dataService.loadFlowResults ? true : false
     }
 
+    get transportModel():TransportModel {
+        return this.dataService.transportModel
+    }
+
+    get totalGeneration():number {
+        return this.dataService.totalGeneration
+    }
+
+    get totalDemand(): number {
+        return this.dataService.totalDemand
+    }
+
     clearTrips(e:any) {
         this.dataService.clearTrips()
+    }
+
+    onReload(e: any) {
+        this.dataService.reload()
     }
 
     currentTrip: string
@@ -121,7 +137,6 @@ export class LoadflowDialogComponent extends ComponentBase {
     clearFlowResult: BoundaryFlowResult = { genInside: 0, genOutside:0, demInside: 0, demOutside: 0, ia: 0 }
     datasetTypes = DatasetType
     boundaryTrips = false
-    transportModel: TransportModel = TransportModel.PeakSecurity
     TransportModel = TransportModel
     hasCapacityError:boolean = false
     SetPointMode = SetPointMode
