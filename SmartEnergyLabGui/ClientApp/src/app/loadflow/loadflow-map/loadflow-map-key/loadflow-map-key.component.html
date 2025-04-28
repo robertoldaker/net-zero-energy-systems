@@ -56,6 +56,26 @@
             </td>
             <td>HVDC</td>
         </tr>
+        <tbody *ngIf="hasResults">
+            <tr>
+                <td>
+                    <div class="flowLabel">123</div>
+                </td>
+                <td>Flow (MW)</td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="flowLabel notOK warning">123</div>
+                </td>
+                <td>Flow (MW, > {{this.warningFlowThreshold}}% capacity)</td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="flowLabel notOK critical">123</div>
+                </td>
+                <td>Flow (MW, > {{criticalFlowThreshold}}% capacity)</td>
+            </tr>    
+        </tbody>
     </table>    
 </div>
 

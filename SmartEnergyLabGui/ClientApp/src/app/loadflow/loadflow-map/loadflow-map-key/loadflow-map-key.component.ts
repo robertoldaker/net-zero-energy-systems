@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ComponentBase } from 'src/app/utils/component-base';
-import { LoadflowDataService } from '../../loadflow-data-service.service';
+import { LoadflowDataService, LoadflowLink } from '../../loadflow-data-service.service';
 
 @Component({
   selector: 'app-loadflow-map-key',
@@ -14,5 +14,17 @@ export class LoadflowMapKeyComponent  extends ComponentBase {
 
     get boundaryName() {
         return this.loadflowDataService.boundaryName
+    }
+
+    get warningFlowThreshold() {
+        return LoadflowDataService.WarningFlowThreshold
+    }
+
+    get criticalFlowThreshold() {
+        return LoadflowDataService.CriticalFlowThreshold
+    }
+
+    get hasResults():boolean {
+        return this.loadflowDataService.loadFlowResults ? true : false
     }
 }

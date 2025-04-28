@@ -36,21 +36,21 @@
 
 .mat-column-trip {
     text-align: right;
-    padding-right:  var(--numeric-padding-right);
+    padding-right:  var(--col-padding-right);
 }
 
 .mat-column-freePower {
     text-align: right;
     font-style: italic;
     color: green;
-    padding-right:  var(--numeric-padding-right);
+    padding-right:  var(--col-padding-right);
 }
 
 .mat-column-powerFlow {
     text-align: right;
     font-style: italic;
     color: green;
-    padding-right:  var(--numeric-padding-right);
+    padding-right:  var(--col-padding-right);
 
 }
 
@@ -58,7 +58,7 @@
     text-align: right;
     font-style: italic;
     color: green;
-    padding-right:  var(--numeric-padding-right);
+    padding-right:  var(--col-padding-right);
 }
 
 .mat-column-km {

@@ -110,7 +110,7 @@ export class LinkLabelData {
     private getClassName(link: LoadflowLink, tol: number):{cn: string, zIndex: number } {
         let label = this.getLabel(link)
         let ds = this.mapComponent.loadflowDataService
-        let percentThreshold = ds.getPercentCapacityThreshold(link.percentCapacity)
+        let percentThreshold = ds.getFlowCapacityThreshold(link.type, link.percentCapacity)
         if ( percentThreshold === PercentCapacityThreshold.OK) {
             let className = "hide"
             if ( label ) {

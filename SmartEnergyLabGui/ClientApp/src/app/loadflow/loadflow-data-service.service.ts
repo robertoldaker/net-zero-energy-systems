@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { Branch, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, LoadflowCtrlType, LoadflowResults, NetworkData, Node, SetPointMode, TransportModel} from '../data/app.data';
+import { Branch, BranchType, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, LoadflowCtrlType, LoadflowResults, NetworkData, Node, SetPointMode, TransportModel} from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { ShowMessageService } from '../main/show-message/show-message.service';
@@ -675,12 +675,18 @@ export class LoadflowDataService {
             return undefined
         }
     }
+    static readonly WarningFlowThreshold: number = 70
+    static readonly CriticalFlowThreshold: number = 90
 
-    public getPercentCapacityThreshold(percentCapacity: number):PercentCapacityThreshold {
-        if (percentCapacity>90 ) {
-            return PercentCapacityThreshold.Critical
-        } else if ( percentCapacity>70) {
-            return PercentCapacityThreshold.Warning
+    getFlowCapacityThreshold(type: BranchType, percentCapacity: number):PercentCapacityThreshold {
+        if ( type!=BranchType.HVDC ) {
+            if (percentCapacity>LoadflowDataService.CriticalFlowThreshold ) {
+                return PercentCapacityThreshold.Critical
+            } else if ( percentCapacity>LoadflowDataService.WarningFlowThreshold) {
+                return PercentCapacityThreshold.Warning
+            } else {
+                return PercentCapacityThreshold.OK
+            }    
         } else {
             return PercentCapacityThreshold.OK
         }
@@ -816,7 +822,7 @@ export class LoadflowLink {
         this._branches = [branch]
         this.totalFlow = this.getTotalFlow()
         this.totalFree = this.getTotalFree()
-        this.percentCapacity = this.getPercentCapacity()
+        this.setPercentCapacity(this.getPercentCapacity())
     }
 
     get id():number {
@@ -845,6 +851,14 @@ export class LoadflowLink {
 
     get branches():Branch[] {
         return this._branches;
+    }
+
+    get type():BranchType {
+        if ( this._branches.length>0) {
+            return this._branches[0].type
+        } else {
+            return BranchType.Other
+        }
     }
 
     update(branches: Branch[],ctrlMap: Map<number,Ctrl>):boolean {
@@ -883,7 +897,7 @@ export class LoadflowLink {
         this.branchCount = branches.length
         this.totalFlow = totalFlow
         this.totalFree = totalFree
-        this.percentCapacity = percentCapacity
+        this.setPercentCapacity(this.getPercentCapacity())
         this._isNew = false
         return result
     }
@@ -928,6 +942,10 @@ export class LoadflowLink {
 
     private areGISDataDifferent(gisA: GISData, gisB: GISData) {
         return gisA.latitude!=gisB.latitude || gisA.longitude!=gisB.longitude
+    }
+
+    private setPercentCapacity(percentCapacity: number) {
+        this.percentCapacity = percentCapacity;
     }
 
     branchCount:number

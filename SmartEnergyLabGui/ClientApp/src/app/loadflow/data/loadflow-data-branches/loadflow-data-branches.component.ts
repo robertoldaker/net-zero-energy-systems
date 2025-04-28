@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Branch, BranchType } from '../../../data/app.data';
-import { LoadflowDataService, PercentCapacityThreshold } from '../../loadflow-data-service.service';
+import { LoadflowDataService, PercentCapacityThreshold as FlowCapacityThreshold } from '../../loadflow-data-service.service';
 import { ColumnDataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { DataTableBaseComponent } from '../../../datasets/data-table-base/data-table-base.component';
@@ -107,14 +107,14 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
         e.stopPropagation()
     }
 
-    percentCapStyle(percentCap: any):any {
+    flowCapStyle(type: BranchType, percentCap: any):any {
         let style = {}
         if ( percentCap ) {
-            let threshold = this.dataService.getPercentCapacityThreshold(percentCap)
+            let threshold = this.dataService.getFlowCapacityThreshold(type, percentCap)
             let color = ''
-            if ( threshold == PercentCapacityThreshold.Critical) {
+            if ( threshold == FlowCapacityThreshold.Critical) {
                 color = 'darkred'
-            } else if(threshold == PercentCapacityThreshold.Warning) {
+            } else if(threshold == FlowCapacityThreshold.Warning) {
                 color = 'coral'
             }
             if ( color ) {
