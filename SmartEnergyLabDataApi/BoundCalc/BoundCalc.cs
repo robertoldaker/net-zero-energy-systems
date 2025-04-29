@@ -990,6 +990,8 @@ namespace SmartEnergyLabDataApi.BoundCalc
         }
 
 
+
+
         public void MiscReport(string msg, object result, BoundCalcStageResultEnum res=BoundCalcStageResultEnum.Pass) {
             var sr = _stageResults.NewStage(msg);
             _stageResults.StageResult(sr,res,$"{result}");
@@ -1152,6 +1154,20 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 }
                 var resp = new BoundCalcResults(bc);
                 bc.ProgressManager.Finish();
+                return resp;
+            }
+        }
+
+        public static BoundCalcResults RunBoundaryTrip(int datasetId, SetPointMode setPointMode, TransportModel transportModel, string boundaryName, string tripName, string tripStr)
+        {
+            using( var bc = new BoundCalc(datasetId, setPointMode, transportModel, true) ) {
+                var bnd = bc.Boundaries.GetBoundary(boundaryName);
+                if ( bnd == null ) {
+                    throw new Exception($"Cannot find boundary with name [{boundaryName}]");
+                }
+                Trip tr = new Trip(tripName,tripStr,bc.Branches);
+                bc.RunTrip(bnd,tr,true);
+                var resp = new BoundCalcResults(bc);
                 return resp;
             }
         }

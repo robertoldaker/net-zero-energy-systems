@@ -74,6 +74,21 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
+        /// Runs a specific boundary trip
+        /// </summary>
+        [HttpPost]
+        [Route("RunBoundaryTrip")]
+        public IActionResult RunBoundaryTrip(int datasetId, SetPointMode setPointMode, TransportModel transportModel, string boundaryName, string tripName, string tripStr )
+        {
+            try {
+                var resp = BoundCalc.BoundCalc.RunBoundaryTrip(datasetId,setPointMode,transportModel, boundaryName, tripName, tripStr);
+                return this.Ok(resp);
+            } catch( Exception e) {
+                return this.Ok(new BoundCalcResults(e.Message));
+            }
+        }
+
+        /// <summary>
         /// Sets up manual setpoint mode for a dataset
         /// </summary>
         /// <param name="datasetId">Id of dataset</param>

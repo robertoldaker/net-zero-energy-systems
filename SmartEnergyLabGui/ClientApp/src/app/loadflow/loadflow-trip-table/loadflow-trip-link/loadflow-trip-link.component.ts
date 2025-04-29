@@ -23,8 +23,9 @@ export class LoadflowTripLinkComponent implements OnInit {
 
     branchCode: string = ''
 
-    showLinkOnMap() {
+    showLinkOnMap(e: any) {
         //
+        e.stopPropagation()
         this.dataComponent.showBranchOnMapByCode(this.branchCode)
         //if ( this.node1LocationId == this.node2LocationId ) { 
         //    this.dataComponent.showLocationOnMapById(this.node1LocationId)
@@ -33,8 +34,8 @@ export class LoadflowTripLinkComponent implements OnInit {
         //}
     }
 
-    showBranch() {
-
+    showBranch(e: any) {
+        e.stopPropagation()
         this.dataComponent.showBranch(this.branchCode)
     }
 

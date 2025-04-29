@@ -286,6 +286,17 @@ export class DataClientService implements ILogs {
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
     }
 
+    RunBoundaryTrip( datasetId: number, setPointMode: SetPointMode, transportModel: TransportModel, boundaryName: string, tripName: string, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
+        let connectionId = this.signalRService.hubConnection?.connectionId;
+        this.showMessageService.showMessage("Calculating ...");
+        this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/RunBoundaryTrip?datasetId=${datasetId}&setPointMode=${setPointMode}&transportModel=${transportModel}&boundaryName=${boundaryName}&tripName=${tripName}&tripStr=${tripStr}&connectionId=${connectionId}`,{}).subscribe( result => {
+            this.showMessageService.clearMessage()
+            if ( onLoad ) {
+                onLoad(result)
+            }
+        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
+    }
+
     AdjustBranchCapacities( datasetId: number, transportModel: TransportModel, onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.showMessageService.showMessage("Calculating ...");

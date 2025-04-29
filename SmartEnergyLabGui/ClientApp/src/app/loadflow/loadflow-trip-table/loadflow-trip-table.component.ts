@@ -2,8 +2,9 @@ import { AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, O
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Subscription } from 'rxjs';
-import { AllTripResult, CtrlResult } from '../../data/app.data';
+import { AllTripResult, BoundaryTrip, CtrlResult } from '../../data/app.data';
 import { LoadflowSplitService } from '../loadflow-split.service';
+import { LoadflowDataService } from '../loadflow-data-service.service';
 
 @Component({
     selector: 'app-loadflow-trip-table',
@@ -13,11 +14,11 @@ import { LoadflowSplitService } from '../loadflow-split.service';
 export class LoadflowTripTableComponent implements OnInit, AfterViewInit, OnDestroy {
 
     subs1: Subscription
-    constructor(private splitService: LoadflowSplitService) {
+    constructor(private splitService: LoadflowSplitService, private dataService: LoadflowDataService) {
         this.sort = null
         this.ctrls=[]
         this.parentWidth = 'calc(100vw - 495px)';
-        this.displayedColumns = ['capacity', 'surplus', 'trip', 'limCct']
+        this.displayedColumns = ['selected','capacity', 'surplus', 'trip', 'limCct']
         this.trips = new MatTableDataSource();
         this.subs1 = splitService.SplitChange.subscribe( (splitData)=> {
             let clientWidth = splitData.left + 45
@@ -65,6 +66,22 @@ export class LoadflowTripTableComponent implements OnInit, AfterViewInit, OnDest
         } else {
             return ""
         }
+    }
+
+    tripSelected(trip: BoundaryTrip | null) {
+        if ( trip ) {
+            this.dataService.runBoundaryTrip(trip)
+        }
+    }
+
+    getSelectedStyle(trip: BoundaryTrip |  null) {
+        let style = {}
+        if ( trip ) {
+            if ( trip == this.dataService.boundaryTrip) {
+                style = {borderLeftColor: 'green'}
+            }
+        }
+        return style
     }
 
     displayedColumns: string[]

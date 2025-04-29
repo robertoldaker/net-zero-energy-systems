@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { Branch, BranchType, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, LoadflowCtrlType, LoadflowResults, NetworkData, Node, SetPointMode, TransportModel} from '../data/app.data';
+import { BoundaryTrip, Branch, BranchType, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, LoadflowCtrlType, LoadflowResults, NetworkData, Node, SetPointMode, TransportModel} from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { ShowMessageService } from '../main/show-message/show-message.service';
@@ -64,6 +64,7 @@ export class LoadflowDataService {
     inRun: boolean = false
     trips: Map<number,boolean> = new Map()
     setPointMode: SetPointMode = SetPointMode.Auto
+    boundaryTrip: BoundaryTrip | undefined
     private _locationDragging: boolean = false
 
 
@@ -73,6 +74,10 @@ export class LoadflowDataService {
         this.dataset = dataset;
         //
         this.reloadDataset();
+    }
+
+    public setBoundaryTrip(boundaryTrip: BoundaryTrip) {
+        this.boundaryTrip = boundaryTrip
     }
 
     private reloadDataset(onLoad: (()=>void) | undefined = undefined) {
@@ -159,14 +164,44 @@ export class LoadflowDataService {
     runBoundCalc( boundaryName: string, boundaryTrips: boolean) {
         this.inRun = true;
         let tripStr = this.getTripStr()
-        this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, this.transportModel, boundaryName, boundaryTrips, tripStr, (results) => {
-            this.inRun = false
-            this.loadFlowResults = results
-            //
-            this.updateLocationData(false)
-            this.updateSelectedObject()          
-            this.ResultsLoaded.emit(results);
+        this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, this.transportModel, boundaryName, boundaryTrips, tripStr, (results)=>{
+            this.afterCalc(results)
         });
+    }
+
+    runBoundaryTrip(trip: BoundaryTrip) {
+        if ( this.boundaryName ) {
+            let tripStr = trip.lineNames.join(',')
+            let tripName = trip.text            
+            this.inRun = true;
+            this.dataClientService.RunBoundaryTrip( this.dataset.id, this.setPointMode, this.transportModel, this.boundaryName, tripName, tripStr, (results)=>{                
+                this.boundaryTrip = trip                
+                this.afterCalc(results, true)
+            });    
+        }
+    }
+
+    afterCalc(results: LoadflowResults, saveTripResults:boolean = false) {
+        let intact = this.loadFlowResults?.intactTrips
+        let singleTrips = this.loadFlowResults?.singleTrips
+        let doubleTrips = this.loadFlowResults?.doubleTrips
+        this.inRun = false
+        this.loadFlowResults = results
+        if ( saveTripResults ) {
+            if ( this.loadFlowResults && intact) {
+                this.loadFlowResults.intactTrips = intact;
+            }
+            if ( this.loadFlowResults && singleTrips) {
+                this.loadFlowResults.singleTrips = singleTrips;
+            }
+            if ( this.loadFlowResults && doubleTrips) {
+                this.loadFlowResults.doubleTrips = doubleTrips;
+            }    
+        }
+        //
+        this.updateLocationData(false)
+        this.updateSelectedObject()          
+        this.ResultsLoaded.emit(results);
     }
 
     private getTripStr():string {
