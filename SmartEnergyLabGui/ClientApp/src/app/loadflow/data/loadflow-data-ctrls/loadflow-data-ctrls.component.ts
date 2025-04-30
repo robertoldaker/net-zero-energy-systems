@@ -32,7 +32,6 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
             this.createDataSource(this.dataService.dataset,results.ctrls)
         }))
         this.addSub(dataService.SetPointModeChanged.subscribe( ( result) => {
-            console.log('setPointMode',result)
         }))
     }
 

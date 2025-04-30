@@ -261,11 +261,9 @@ export interface LoadflowResults {
     nodes: DatasetData<Node>,
     branches: DatasetData<Branch>,
     ctrls: DatasetData<Ctrl>,
+    boundaryTripResults: BoundaryTripResults
     boundaryFlowResult: BoundaryFlowResult,
     boundaryTrips: BoundaryTrips,
-    singleTrips: AllTripResult[],
-    doubleTrips: AllTripResult[]
-    intactTrips: AllTripResult[]
     nodeMismatchError: boolean
     nodeMismatchErrorAsc: boolean
     branchCapacityError: boolean
@@ -295,11 +293,9 @@ export interface BoundaryTrips {
 
 export interface StageResults {
     results: StageResult[]
-    nodeResults: NodeResult[],
-    branchResults: BranchResult[],
-    ctrlResults: CtrlResult[],
-    boundaryFlowResult: BoundaryFlowResult,
-    boundaryTrips: BoundaryTrips
+    nodeResults: NodeResult[]
+    branchResults: BranchResult[]
+    ctrlResults: CtrlResult[]
 }
 
 export enum StageResultEnum { Pass=0, Fail=1, Warn=2 }
@@ -435,7 +431,6 @@ export interface NetworkData {
     boundaries: DatasetData<Boundary>
     zones: DatasetData<Zone>
     locations: DatasetData<GridSubstationLocation>
-    //??boundaryDict: IBoundaryDict
 }
 
 export enum GridSubstationLocationSource { NGET, SHET, SPT, GoogleMaps, Estimated, UserDefined}
@@ -447,6 +442,13 @@ export interface GridSubstationLocation {
     source: GridSubstationLocationSource
     latitude: number
     longitude: number
+}
+
+export interface BoundaryTripResults {
+    singleTrips: AllTripResult[]
+    doubleTrips: AllTripResult[]
+    intactTrips: AllTripResult[]
+    worstTrip: BoundaryTrip
 }
 
 export interface AllTripResult {

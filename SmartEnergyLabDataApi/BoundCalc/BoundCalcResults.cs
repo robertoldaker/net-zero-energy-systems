@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -12,37 +13,38 @@ using static SmartEnergyLabDataApi.BoundCalc.BoundCalcBoundaryTrips;
 namespace SmartEnergyLabDataApi.BoundCalc
 {
     public class BoundCalcResults {
-        public BoundCalcResults(BoundCalc lf, BoundCalcBoundaryFlowResult? bfr=null, BoundCalcBoundaryTrips? bts=null) {
+        public BoundCalcResults(BoundCalc bc, BoundCalcBoundaryFlowResult? bfr=null, BoundCalcBoundaryTrips? bts=null) {
 
-            Dataset = lf.Dataset;
+            Dataset = bc.Dataset;
             // stage results
-            StageResults = lf.StageResults;
+            StageResults = bc.StageResults;
             // Nodes
-            Nodes = lf.Nodes.DatasetData;
+            Nodes = bc.Nodes.DatasetData;
             // Branches
-            Branches = lf.Branches.DatasetData;
+            Branches = bc.Branches.DatasetData;
             // Controls
-            Ctrls = lf.Ctrls.DatasetData;
-            if ( lf.SetPointMode==SetPointMode.Auto) {
-                foreach( var ct in lf.Ctrls.Objs) {
-                    ct.SetPoint = ct.GetSetPoint(lf.SetPointMode);
+            Ctrls = bc.Ctrls.DatasetData;
+            if ( bc.SetPointMode==SetPointMode.Auto) {
+                foreach( var ct in bc.Ctrls.Objs) {
+                    ct.SetPoint = ct.GetSetPoint(bc.SetPointMode);
                 }
+            }
+
+            // Populate BoundaryTripResults if we ave performed a boundary trip
+            if ( bc.WorstTrip!=null ) {
+                BoundaryTripResults = new BoundCalcBoundaryTripResults(bc);
             }
 
             BoundaryFlowResult = bfr;
             BoundaryTrips = bts;
 
-            IntactTrips = lf.IntactTrips;
-            SingleTrips = lf.SingleTrips;
-            DoubleTrips = lf.DoubleTrips;
-
-            var misMatches  = lf.Nodes.DatasetData.Data.Where(nw => nw.Mismatch!=null && Math.Abs((double) nw.Mismatch)>0.01).Select(nw => nw.Mismatch).OrderBy(m=>m).ToList();
+            var misMatches  = bc.Nodes.DatasetData.Data.Where(nw => nw.Mismatch!=null && Math.Abs((double) nw.Mismatch)>0.01).Select(nw => nw.Mismatch).OrderBy(m=>m).ToList();
             NodeMismatchError = misMatches.Count>0;
             if ( NodeMismatchError ) {
                 NodeMismatchErrorAsc = Math.Abs((double) misMatches[0]) > Math.Abs((double) misMatches[misMatches.Count-1]);
             }
-            BranchCapacityError = lf.Branches.DatasetData.Data.Any(nw => nw.FreePower!=null && nw.FreePower<-1e-2);
-            SetPointError = lf.Ctrls.DatasetData.Data.Any(cw => cw.SetPoint!=null && cw.SetPoint>cw.MaxCtrl || cw.SetPoint<cw.MinCtrl);
+            BranchCapacityError = bc.Branches.DatasetData.Data.Any(nw => nw.FreePower!=null && nw.FreePower<-1e-2);
+            SetPointError = bc.Ctrls.DatasetData.Data.Any(cw => cw.SetPoint!=null && cw.SetPoint>cw.MaxCtrl || cw.SetPoint<cw.MinCtrl);
         }
 
         public BoundCalcResults(string errorMsg) {
@@ -58,12 +60,10 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public DatasetData<Branch> Branches {get; private set;}        
         public DatasetData<Ctrl> Ctrls {get; private set;}
 
+        public BoundCalcBoundaryTripResults BoundaryTripResults {get; private set;}
         public BoundCalcBoundaryFlowResult? BoundaryFlowResult {get; private set;}
         public BoundCalcBoundaryTrips? BoundaryTrips {get; private set;}
 
-        public List<BoundCalcAllTripsResult> IntactTrips {get; set;}
-        public List<BoundCalcAllTripsResult> SingleTrips {get; set;}
-        public List<BoundCalcAllTripsResult> DoubleTrips {get; set;}
         public bool NodeMismatchError {get; set;}
         public bool NodeMismatchErrorAsc {get; set;}
         public bool BranchCapacityError {get; set;}
@@ -140,6 +140,21 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public double DemOutside {get; private set;}
 
         public double IA {get; private set;}
+    }
+
+    public class BoundCalcBoundaryTripResults {
+        public BoundCalcBoundaryTripResults(BoundCalc bc) {
+            IntactTrips = bc.IntactTrips;
+            SingleTrips = bc.SingleTrips;
+            DoubleTrips = bc.DoubleTrips;
+            WorstTrip = new BoundCalcBoundaryTrip(bc.WorstTrip);
+        }
+        public List<BoundCalcAllTripsResult> IntactTrips {get; private set;}
+        public List<BoundCalcAllTripsResult> SingleTrips {get; private set;}
+        public List<BoundCalcAllTripsResult> DoubleTrips {get; private set;}
+
+        public BoundCalcBoundaryTrip WorstTrip {get; private set;}
+
     }
 
     public class BoundCalcAllTripsResult {

@@ -64,7 +64,7 @@ export class LoadflowDataService {
     inRun: boolean = false
     trips: Map<number,boolean> = new Map()
     setPointMode: SetPointMode = SetPointMode.Auto
-    boundaryTrip: BoundaryTrip | undefined
+    boundaryTrip: BoundaryTrip | null | undefined
     private _locationDragging: boolean = false
 
 
@@ -74,10 +74,6 @@ export class LoadflowDataService {
         this.dataset = dataset;
         //
         this.reloadDataset();
-    }
-
-    public setBoundaryTrip(boundaryTrip: BoundaryTrip) {
-        this.boundaryTrip = boundaryTrip
     }
 
     private reloadDataset(onLoad: (()=>void) | undefined = undefined) {
@@ -128,6 +124,7 @@ export class LoadflowDataService {
         this.boundaryBranchIds = []
         if ( this.networkData) {
             this.boundaryName = boundaryName
+            this.boundaryTrip = undefined
             if ( this.boundaryName ) {
                 this.setBoundaryBranchIds()
             }
@@ -165,14 +162,17 @@ export class LoadflowDataService {
         this.inRun = true;
         let tripStr = this.getTripStr()
         this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, this.transportModel, boundaryName, boundaryTrips, tripStr, (results)=>{
+            if ( boundaryTrips ) {
+                this.boundaryTrip = results.boundaryTripResults?.worstTrip
+            } 
             this.afterCalc(results)
         });
     }
 
-    runBoundaryTrip(trip: BoundaryTrip) {
+    runBoundaryTrip(trip: BoundaryTrip | null) {
         if ( this.boundaryName ) {
-            let tripStr = trip.lineNames.join(',')
-            let tripName = trip.text            
+            let tripStr = trip!=null ? trip.lineNames.join(',') : ''
+            let tripName = trip!=null ? trip.text : "Intact"
             this.inRun = true;
             this.dataClientService.RunBoundaryTrip( this.dataset.id, this.setPointMode, this.transportModel, this.boundaryName, tripName, tripStr, (results)=>{                
                 this.boundaryTrip = trip                
@@ -182,26 +182,22 @@ export class LoadflowDataService {
     }
 
     afterCalc(results: LoadflowResults, saveTripResults:boolean = false) {
-        let intact = this.loadFlowResults?.intactTrips
-        let singleTrips = this.loadFlowResults?.singleTrips
-        let doubleTrips = this.loadFlowResults?.doubleTrips
+        // Save current boundary trip results
+        let boundaryTripResults = this.loadFlowResults?.boundaryTripResults
         this.inRun = false
         this.loadFlowResults = results
-        if ( saveTripResults ) {
-            if ( this.loadFlowResults && intact) {
-                this.loadFlowResults.intactTrips = intact;
-            }
-            if ( this.loadFlowResults && singleTrips) {
-                this.loadFlowResults.singleTrips = singleTrips;
-            }
-            if ( this.loadFlowResults && doubleTrips) {
-                this.loadFlowResults.doubleTrips = doubleTrips;
-            }    
+        if ( saveTripResults && boundaryTripResults) {
+            // restore saved trip results
+            this.loadFlowResults.boundaryTripResults = boundaryTripResults
         }
         //
         this.updateLocationData(false)
         this.updateSelectedObject()          
         this.ResultsLoaded.emit(results);
+    }
+
+    get hasTripResults():boolean {
+        return this.loadFlowResults?.boundaryTripResults ? true : false
     }
 
     private getTripStr():string {
@@ -649,8 +645,16 @@ export class LoadflowDataService {
     }
 
     public isTripped(branchId : number): boolean {
-        let tripped = this.trips.get(branchId)
-        return tripped ? true : false
+        if ( this.boundaryName ) {
+            if ( this.boundaryTrip ) {
+                return this.boundaryTrip.branchIds.findIndex(m=>m === branchId) >=0 ? true : false
+            } else {
+                return false
+            }
+        } else {
+            let tripped = this.trips.get(branchId)
+            return tripped ? true : false
+        }
     }
 
     public removeTrip(branchId : number) {

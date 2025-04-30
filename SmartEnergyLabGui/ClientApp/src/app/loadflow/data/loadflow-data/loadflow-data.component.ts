@@ -26,10 +26,8 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
 
     constructor(private dataService: LoadflowDataService) { 
         super()
-        this.showAllTripResults = false;
         this.selected = new FormControl(0);
         this.addSub( dataService.ResultsLoaded.subscribe( (results) => {
-            this.showAllTripResults = this.hasTrips(results.singleTrips) || this.hasTrips(results.doubleTrips) || this.hasTrips(results.intactTrips)
             this.hasNodesError = results.nodeMismatchError
             this.hasBranchesError = results.branchCapacityError
             this.hasCtrlsError = results.setPointError
@@ -40,7 +38,7 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
                     this.matTabGroup.selectedIndex = this.BRANCHES_INDEX
                 } else if ( this.hasCtrlsError) {
                     this.matTabGroup.selectedIndex = this.CTRLS_INDEX
-                } else if ( this.showAllTripResults) {
+                } else if ( this.hasTripResults) {
                     this.matTabGroup.selectedIndex = this.ALL_TRIP_RESULTS_INDEX
                 }
             }
@@ -49,7 +47,6 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
             this.hasNodesError = false
             this.hasBranchesError = false
             this.hasCtrlsError = false
-            this.showAllTripResults = false;
         }))
         this.addSub( dataService.SetPointModeChanged.subscribe( (sp)=>{
             if ( sp == SetPointMode.Manual && this.matTabGroup) {
@@ -70,11 +67,10 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
         return this.showMap ? '/assets/images/table.png' : '/assets/images/world.png'
     }
 
-    hasTrips(allTripResults: AllTripResult[]): boolean {
-        return allTripResults!=null && allTripResults.length > 0
+    get hasTripResults(): boolean {
+        return this.dataService.hasTripResults
     }
 
-    showAllTripResults: boolean
     selected: FormControl
     showMap:boolean = false;
     hasNodesError: boolean = false

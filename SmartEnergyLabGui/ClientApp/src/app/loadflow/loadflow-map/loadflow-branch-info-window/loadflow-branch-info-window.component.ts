@@ -96,4 +96,8 @@ export class LoadflowBranchInfoWindowComponent extends ComponentBase {
         }
     }
 
+    get canTrip():boolean {
+        return this.dataService.boundaryName ? true : false
+    }
+
 }

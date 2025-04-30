@@ -18,7 +18,7 @@
                     </app-map-buttons>            
                 </td>
                 <td>
-                    <input type="checkbox" [checked]="isTripped(b.id)" (change)="toggleTrip($event,b.id)"/>
+                    <input type="checkbox" [disabled]="canTrip" [checked]="isTripped(b.id)" (change)="toggleTrip($event,b.id)"/>
                 </td>
                 <td>
                     {{b.powerFlow?.toFixed(0)}}

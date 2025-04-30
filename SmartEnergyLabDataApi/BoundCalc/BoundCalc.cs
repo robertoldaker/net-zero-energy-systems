@@ -1165,7 +1165,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 if ( bnd == null ) {
                     throw new Exception($"Cannot find boundary with name [{boundaryName}]");
                 }
-                Trip tr = new Trip(tripName,tripStr,bc.Branches);
+                Trip? tr = !string.IsNullOrEmpty(tripStr) ? new Trip(tripName,tripStr,bc.Branches) : null;
                 bc.RunTrip(bnd,tr,true);
                 var resp = new BoundCalcResults(bc);
                 return resp;

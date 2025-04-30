@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { LoadflowDataService, LoadflowLink } from '../../loadflow-data-service.service';
+import { LinkLineData } from '../link-line-data';
 
 @Component({
   selector: 'app-loadflow-map-key',
@@ -26,5 +27,9 @@ export class LoadflowMapKeyComponent  extends ComponentBase {
 
     get hasResults():boolean {
         return this.loadflowDataService.loadFlowResults ? true : false
+    }
+
+    get boundaryStyle():object {
+        return {stroke: LinkLineData.BOUNDARY_COLOUR}
     }
 }

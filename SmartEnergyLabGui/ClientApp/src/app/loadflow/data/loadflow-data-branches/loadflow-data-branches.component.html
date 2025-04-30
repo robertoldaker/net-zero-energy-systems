@@ -72,7 +72,7 @@
                 </div>
             </th>
             <td mat-cell *matCellDef="let element">
-                <input type="checkbox" [checked]="isTripped(element.id.value)" (change)="toggleTrip($event,element.id.value)"/>
+                <input type="checkbox" [disabled]="canTrip" [checked]="isTripped(element.id.value)" (change)="toggleTrip($event,element.id.value)"/>
             </td>
         </ng-container>
             

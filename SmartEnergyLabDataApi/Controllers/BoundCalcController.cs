@@ -78,7 +78,7 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("RunBoundaryTrip")]
-        public IActionResult RunBoundaryTrip(int datasetId, SetPointMode setPointMode, TransportModel transportModel, string boundaryName, string tripName, string tripStr )
+        public IActionResult RunBoundaryTrip(int datasetId, SetPointMode setPointMode, TransportModel transportModel, string boundaryName, string tripName, string? tripStr )
         {
             try {
                 var resp = BoundCalc.BoundCalc.RunBoundaryTrip(datasetId,setPointMode,transportModel, boundaryName, tripName, tripStr);

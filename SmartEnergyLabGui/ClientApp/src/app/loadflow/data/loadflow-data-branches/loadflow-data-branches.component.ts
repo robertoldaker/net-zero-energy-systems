@@ -93,8 +93,11 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
         return this.dataService.isTripped(branchId)
     }
 
+    get canTrip():boolean {
+        return this.dataService.boundaryName ? true : false
+    }
+
     toggleTrip(e: any, branchId: number) {
-        console.log('toggleTrip',branchId,e.target.checked)
         if ( e.target.checked ) {
             this.dataService.addTrip(branchId)
         } else {

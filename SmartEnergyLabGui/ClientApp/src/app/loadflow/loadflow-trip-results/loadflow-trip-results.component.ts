@@ -14,24 +14,24 @@ export class LoadflowTripResultsComponent implements OnInit, OnDestroy, AfterVie
 
     subs1: Subscription
     constructor(private dataService: LoadflowDataService) { 
-        if ( dataService.loadFlowResults ) {
-            this.singleTrips = this.createDataSource(dataService.loadFlowResults.singleTrips)
-            this.doubleTrips = this.createDataSource(dataService.loadFlowResults.doubleTrips)
-            this.intactTrips = this.createDataSource(dataService.loadFlowResults.intactTrips)
+        if ( dataService.loadFlowResults?.boundaryTripResults ) {
+            this.singleTrips = this.createDataSource(dataService.loadFlowResults.boundaryTripResults.singleTrips)
+            this.doubleTrips = this.createDataSource(dataService.loadFlowResults.boundaryTripResults.doubleTrips)
+            this.intactTrips = this.createDataSource(dataService.loadFlowResults.boundaryTripResults.intactTrips)
         } else {
             this.singleTrips = this.createDataSource([])
             this.doubleTrips = this.createDataSource([])
             this.intactTrips = this.createDataSource([])
         }
         this.subs1 = dataService.ResultsLoaded.subscribe( (results) => {
-            if ( results.singleTrips ) {
-                this.singleTrips = this.createDataSource(results.singleTrips)
+            if ( results.boundaryTripResults?.singleTrips ) {
+                this.singleTrips = this.createDataSource(results.boundaryTripResults.singleTrips)
             }
-            if ( results.doubleTrips ) {
-                this.doubleTrips = this.createDataSource(results.doubleTrips)
+            if ( results.boundaryTripResults?.doubleTrips ) {
+                this.doubleTrips = this.createDataSource(results.boundaryTripResults.doubleTrips)
             }
-            if ( results.intactTrips ) {
-                this.intactTrips = this.createDataSource(results.intactTrips)
+            if ( results.boundaryTripResults?.intactTrips ) {
+                this.intactTrips = this.createDataSource(results.boundaryTripResults.intactTrips)
             }
         })
     }

@@ -22,7 +22,7 @@
     <mat-tab label="Locations" labelClass="matTabLabelNarrow">
         <app-loadflow-data-locations></app-loadflow-data-locations>
     </mat-tab>
-    <mat-tab *ngIf="showAllTripResults" label="All trip results" labelClass="matTabLabelNarrow output">
+    <mat-tab *ngIf="hasTripResults" label="All trip results" labelClass="matTabLabelNarrow output">
         <app-loadflow-trip-results></app-loadflow-trip-results>
     </mat-tab>    
 </mat-tab-group>    

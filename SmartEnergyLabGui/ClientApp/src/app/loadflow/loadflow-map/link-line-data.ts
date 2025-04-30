@@ -2,13 +2,15 @@ import { IMapData, MapOptions } from "src/app/utils/map-options";
 import { LoadflowMapComponent } from "./loadflow-map.component";
 import { MapPolyline } from "@angular/google-maps";
 import { LoadflowLink, UpdateLocationData } from "../loadflow-data-service.service";
+import { Branch } from "src/app/data/app.data";
 
 export class LinkLineData {
     constructor(private mapComponent: LoadflowMapComponent) {
 
     }
 
-    private readonly BOUNDARY_COLOUR = '#00FF2F'
+    //private readonly BOUNDARY_COLOUR = '#00FF2F'
+    public static readonly BOUNDARY_COLOUR = '#35A938'
 
     private linkLineData: MapOptions<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLink> = new MapOptions()
 
@@ -72,15 +74,11 @@ export class LinkLineData {
 
         let lineSymbol: google.maps.Symbol = { path: "" }
         if (link.branchCount > 1) {
-            lineSymbol.path = "M-1,-1 L-1,1 M1,-1 L1,1" // does a double line
+            lineSymbol.path = "M-1,-1 L-1,1" // does first offset of double line
         } else {
             lineSymbol.path = "M0,-1 L0,1" // single line
         }
-        if (selected || isBoundary) {
-            lineSymbol.strokeOpacity = this.isTripped(link) ? 0.25 : 1
-        } else {
-            lineSymbol.strokeOpacity = this.isTripped(link) ? 0.15 : 0.5
-        }
+        lineSymbol.strokeOpacity = this.getStrokeOpacity(link.branches[0],selected,isBoundary)
         if (isBoundary) {
             lineSymbol.scale = 3
         } else if (selected) {
@@ -89,18 +87,13 @@ export class LinkLineData {
             lineSymbol.scale = 1
         }
 
+        let repeat = ""
         if (link.isHVDC) {
-            options.strokeColor = isBoundary ? this.BOUNDARY_COLOUR : 'black'
-            options.icons = [
-                {
-                    icon: lineSymbol,
-                    offset: "0",
-                    repeat: selected || isBoundary ? "8px" : "4px",
-                },
-            ]
+            options.strokeColor = isBoundary ? LinkLineData.BOUNDARY_COLOUR : 'black'
+            repeat = selected || isBoundary ? "8px" : "4px"
         } else {
             if (isBoundary) {
-                options.strokeColor = this.BOUNDARY_COLOUR;
+                options.strokeColor = LinkLineData.BOUNDARY_COLOUR;
             } else if (link.voltage == 400) {
                 options.strokeColor = 'blue'
             } else if (link.voltage == 275) {
@@ -108,14 +101,25 @@ export class LinkLineData {
             } else {
                 options.strokeColor = 'black';
             }
-            options.icons = [
-                {
-                    icon: lineSymbol,
-                    offset: "0",
-                    repeat: selected || isBoundary ? "4px" : "2px",
-                },
-            ]
+            repeat = selected || isBoundary ? "4px" : "2px"
         }
+        options.icons = [
+            {
+                icon: lineSymbol,
+                offset: "0",
+                repeat: repeat
+            }
+        ]
+        // add second line if multiple branches
+        if ( link.branchCount>1 ) {
+            let secondLineSymbol: google.maps.Symbol = { path: "" }
+            secondLineSymbol.path = "M1,-1 L1,1" // does second offset of double line
+            secondLineSymbol.strokeColor = lineSymbol.strokeColor
+            secondLineSymbol.strokeOpacity = this.getStrokeOpacity(link.branches[1],selected,isBoundary)
+            secondLineSymbol.scale = lineSymbol.scale
+            options.icons.push( { icon: secondLineSymbol, offset: "0", repeat: repeat })
+        }
+        //
         // add arrow if we have some powerFlow available for the link
         if ( link.totalFlow ) {
             let path = link.totalFlow>0 ? google.maps.SymbolPath.FORWARD_CLOSED_ARROW : google.maps.SymbolPath.BACKWARD_CLOSED_ARROW
@@ -126,7 +130,7 @@ export class LinkLineData {
             arrowSymbol.strokeOpacity = lineSymbol.strokeOpacity
             arrowSymbol.strokeColor  = lineSymbol.strokeColor
             arrowSymbol.fillColor = lineSymbol.strokeColor
-            arrowSymbol.fillOpacity = 1
+            arrowSymbol.fillOpacity = lineSymbol.strokeOpacity
             arrowSymbol.scale = isBoundary ? (link.branchCount>1 ? 4 : 3) : 1.5
 
             // 
@@ -138,8 +142,16 @@ export class LinkLineData {
         return options;
     }
 
-    private isTripped(link: LoadflowLink): boolean {
-        return link.branches.find(m => this.mapComponent.loadflowDataService.isTripped(m.id)) ? true : false
+    private getStrokeOpacity(branch: Branch, selected: boolean, isBoundary: boolean):number {
+        if (selected || isBoundary) {
+            return this.isTripped(branch) ? 0.2 : 1
+        } else {
+            return this.isTripped(branch) ? 0.2 : 1
+        }
+    }
+
+    private isTripped(branch: Branch): boolean {
+        return this.mapComponent.loadflowDataService.isTripped(branch.id) ? true : false
     }
     
 }

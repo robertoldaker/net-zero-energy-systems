@@ -18,8 +18,8 @@
         </tr>
         <tr *ngIf="boundaryName">
             <td>
-                <svg width="19" height="15">
-                    <path d="M2 8 h 15" stroke="#00FF2F" stroke-width="2"/>
+                <svg width="19" height="15" [style]="boundaryStyle">
+                    <path d="M2 8 h 15" stroke-width="2"/>
                 </svg>    
             </td>
             <td>{{boundaryName}} Boundary</td>

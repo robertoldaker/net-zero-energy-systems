@@ -118,6 +118,16 @@ export class LoadflowDialogComponent extends ComponentBase {
         return this.dataService.totalDemand
     }
 
+    get boundaryTrip():string {
+        if ( this.dataService.boundaryTrip) {
+            return this.dataService.boundaryTrip.text
+        } else if ( this.dataService.boundaryTrip === null ) {
+            return "Intact"
+        } else {
+            return ""
+        }
+    }
+
     clearTrips(e:any) {
         this.dataService.clearTrips()
     }
@@ -136,7 +146,7 @@ export class LoadflowDialogComponent extends ComponentBase {
     flowResult: BoundaryFlowResult
     clearFlowResult: BoundaryFlowResult = { genInside: 0, genOutside:0, demInside: 0, demOutside: 0, ia: 0 }
     datasetTypes = DatasetType
-    boundaryTrips = false
+    boundaryTrips = true
     TransportModel = TransportModel
     hasCapacityError:boolean = false
     SetPointMode = SetPointMode
