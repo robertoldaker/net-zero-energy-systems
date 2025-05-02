@@ -128,6 +128,11 @@ export class LoadflowDataService {
             if ( this.boundaryName ) {
                 this.setBoundaryBranchIds()
             }
+            // Need to clear out any existing results if set
+            if ( this.loadFlowResults ) {                
+                this.loadFlowResults = undefined
+                this.updateLocationData(true)
+            }
         }
         this.BoundarySelected.emit()
     }
@@ -191,7 +196,7 @@ export class LoadflowDataService {
             this.loadFlowResults.boundaryTripResults = boundaryTripResults
         }
         //
-        this.updateLocationData(false)
+        this.updateLocationData(saveTripResults)
         this.updateSelectedObject()          
         this.ResultsLoaded.emit(results);
     }

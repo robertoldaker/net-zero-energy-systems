@@ -84,7 +84,7 @@ export class LinkLineData {
                 // does both lines together since opacities are the same
                 lineSymbol.path = "M-1,-1 L-1,1 M1,-1 L1,1"
             } else {
-                // does first line spearately since opacities are different
+                // does first line separately since opacities are different
                 lineSymbol.path = "M-1,-1 L-1,1"
             }
         } else {
