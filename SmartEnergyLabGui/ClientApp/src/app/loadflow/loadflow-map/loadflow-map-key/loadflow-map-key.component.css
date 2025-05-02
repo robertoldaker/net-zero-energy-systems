@@ -21,3 +21,17 @@ table.key {
 table.key > tr > td > img {
     height: 30px
 }
+
+.branchLink {
+    cursor: pointer;
+    color: blue;
+    margin-left: 0.5rem;
+}
+
+.branchLink.first {
+    margin-left: 0rem !important;    
+}
+
+.branchLink:hover {
+    text-decoration: underline;
+}

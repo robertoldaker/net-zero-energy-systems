@@ -22,7 +22,10 @@
                     <path d="M2 8 h 15" stroke-width="2"/>
                 </svg>    
             </td>
-            <td>{{boundaryName}} Boundary</td>
+            <td>
+                <div>{{boundaryName}} Boundary</div>
+                <div><span>{{boundaryTrip}}</span>&nbsp;(<span *ngFor="let bc of boundaryTripBranchCodes; index as i;" [class]="{branchLink: true, first: i===0}" (click)="selectBranch(bc)">{{bc}}</span>)</div>
+            </td>
         </tr>
         <tr>
             <td>

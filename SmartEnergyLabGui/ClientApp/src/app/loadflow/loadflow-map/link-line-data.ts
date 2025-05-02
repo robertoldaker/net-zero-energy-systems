@@ -72,13 +72,25 @@ export class LinkLineData {
             strokeWeight: 20 // allows it to be selected when mouse close to line not directly over it
         }
 
+        let firstStrokeOpacity = this.getStrokeOpacity(link.branches[0],selected,isBoundary)
+        let secondStrokeOpacity:number | undefined = undefined
+        if (link.branches.length>1) {
+            secondStrokeOpacity = this.getStrokeOpacity(link.branches[1],selected,isBoundary)
+        }
+
         let lineSymbol: google.maps.Symbol = { path: "" }
-        if (link.branchCount > 1) {
-            lineSymbol.path = "M-1,-1 L-1,1" // does first offset of double line
+        if (link.branches.length > 1) {
+            if ( firstStrokeOpacity == secondStrokeOpacity) {
+                // does both lines together since opacities are the same
+                lineSymbol.path = "M-1,-1 L-1,1 M1,-1 L1,1"
+            } else {
+                // does first line spearately since opacities are different
+                lineSymbol.path = "M-1,-1 L-1,1"
+            }
         } else {
             lineSymbol.path = "M0,-1 L0,1" // single line
         }
-        lineSymbol.strokeOpacity = this.getStrokeOpacity(link.branches[0],selected,isBoundary)
+        lineSymbol.strokeOpacity = firstStrokeOpacity
         if (isBoundary) {
             lineSymbol.scale = 3
         } else if (selected) {
@@ -110,12 +122,12 @@ export class LinkLineData {
                 repeat: repeat
             }
         ]
-        // add second line if multiple branches
-        if ( link.branchCount>1 ) {
+        // add second line if multiple branches with different opacities
+        if ( link.branchCount>1 && firstStrokeOpacity!=secondStrokeOpacity) {
             let secondLineSymbol: google.maps.Symbol = { path: "" }
             secondLineSymbol.path = "M1,-1 L1,1" // does second offset of double line
             secondLineSymbol.strokeColor = lineSymbol.strokeColor
-            secondLineSymbol.strokeOpacity = this.getStrokeOpacity(link.branches[1],selected,isBoundary)
+            secondLineSymbol.strokeOpacity = secondStrokeOpacity
             secondLineSymbol.scale = lineSymbol.scale
             options.icons.push( { icon: secondLineSymbol, offset: "0", repeat: repeat })
         }
@@ -127,10 +139,10 @@ export class LinkLineData {
             const arrowSymbol:google.maps.Symbol = {
                 path: path                
             };
-            arrowSymbol.strokeOpacity = lineSymbol.strokeOpacity
+            arrowSymbol.strokeOpacity = 1
             arrowSymbol.strokeColor  = lineSymbol.strokeColor
             arrowSymbol.fillColor = lineSymbol.strokeColor
-            arrowSymbol.fillOpacity = lineSymbol.strokeOpacity
+            arrowSymbol.fillOpacity = 1
             arrowSymbol.scale = isBoundary ? (link.branchCount>1 ? 4 : 3) : 1.5
 
             // 

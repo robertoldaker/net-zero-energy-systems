@@ -27,11 +27,6 @@ export class LoadflowTripLinkComponent implements OnInit {
         //
         e.stopPropagation()
         this.dataComponent.showBranchOnMapByCode(this.branchCode)
-        //if ( this.node1LocationId == this.node2LocationId ) { 
-        //    this.dataComponent.showLocationOnMapById(this.node1LocationId)
-        //} else {
-        //    this.dataComponent.showBranchOnMap(this.node1LocationId,this.node2LocationId)
-        //}
     }
 
     showBranch(e: any) {
