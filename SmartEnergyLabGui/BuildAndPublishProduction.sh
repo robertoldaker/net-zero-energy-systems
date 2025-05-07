@@ -25,7 +25,7 @@ npm install;
 npm run build || raiseError;
 popd
 echo "Building ASP.NET app .."
-dotnet publish $app.csproj -o "ASP_BUILD" -c "RELEASE" -f "net6.0"
+dotnet publish $app.csproj -o "ASP_BUILD" -c "RELEASE" -f "net8.0"
 if [ $? -ne 0 ]; then
     raiseError;
 fi
