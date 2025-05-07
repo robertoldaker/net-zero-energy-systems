@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { BoundaryTrip, Branch, BranchType, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, LoadflowCtrlType, LoadflowResults, NetworkData, Node, SetPointMode, TransportModel} from '../data/app.data';
+import { BoundaryTrip, BoundaryTripResults, Branch, BranchType, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, LoadflowCtrlType, LoadflowResults, NetworkData, Node, SetPointMode, TransportModel} from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { ShowMessageService } from '../main/show-message/show-message.service';
@@ -65,6 +65,7 @@ export class LoadflowDataService {
     trips: Map<number,boolean> = new Map()
     setPointMode: SetPointMode = SetPointMode.Auto
     boundaryTrip: BoundaryTrip | null | undefined
+    boundaryTrips: (BoundaryTrip | null)[] = []
     private _locationDragging: boolean = false
 
 
@@ -124,17 +125,22 @@ export class LoadflowDataService {
         this.boundaryBranchIds = []
         if ( this.networkData) {
             this.boundaryName = boundaryName
-            this.boundaryTrip = undefined
+            this.setBoundaryTrip(undefined)
             if ( this.boundaryName ) {
                 this.setBoundaryBranchIds()
             }
             // Need to clear out any existing results if set
             if ( this.loadFlowResults ) {                
                 this.loadFlowResults = undefined
-                this.updateLocationData(true)
+                this.updateLocationData(false)
             }
         }
         this.BoundarySelected.emit()
+    }
+
+    setBoundaryTrip(boundaryTrip: BoundaryTrip | null | undefined) {
+        this.boundaryTrip = boundaryTrip
+        this.BoundaryTripSelected.emit()
     }
 
     private setBoundaryBranchIds() {
@@ -166,12 +172,56 @@ export class LoadflowDataService {
     runBoundCalc( boundaryName: string, boundaryTrips: boolean) {
         this.inRun = true;
         let tripStr = this.getTripStr()
+        if ( boundaryTrips) {
+            this.clearBoundaryTrips()
+        }
         this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, this.transportModel, boundaryName, boundaryTrips, tripStr, (results)=>{
-            if ( boundaryTrips ) {
-                this.boundaryTrip = results.boundaryTripResults?.worstTrip
+            if ( boundaryTrips && results.boundaryTripResults) {
+                this.setBoundaryTrips(results.boundaryTripResults)
+                this.setBoundaryTrip(results.boundaryTripResults?.worstTrip)
             } 
             this.afterCalc(results)
         });
+    }
+
+    private clearBoundaryTrips() {
+        this.boundaryTrips = []
+    }
+
+    private setBoundaryTrips(tripResults: BoundaryTripResults) {
+        let tripMap:Map<string,BoundaryTrip> = new Map()
+
+        this.boundaryTrips = [null]
+        for( let tr of tripResults.singleTrips) {
+            if ( tr.trip && !tripMap.has(tr.trip.text) ) {
+                tripMap.set(tr.trip.text,tr.trip) 
+            }
+        }
+        let sTrips = Array.from(tripMap.keys())
+        sTrips.sort()
+        for( let st of sTrips) {
+            let tr = tripMap.get(st)
+            if ( tr ) {
+                this.boundaryTrips.push(tr)
+            }
+        }
+
+        //
+        tripMap.clear()
+        for( let tr of tripResults.doubleTrips) {
+            if ( tr.trip && !tripMap.has(tr.trip.text) ) {
+                tripMap.set(tr.trip.text,tr.trip) 
+            }
+        }
+        let dTrips = Array.from(tripMap.keys())
+        dTrips.sort()
+        for( let st of dTrips) {
+            let tr = tripMap.get(st)
+            if ( tr ) {
+                this.boundaryTrips.push(tr)
+            }
+        }
+
     }
 
     runBoundaryTrip(trip: BoundaryTrip | null) {
@@ -180,7 +230,7 @@ export class LoadflowDataService {
             let tripName = trip!=null ? trip.text : "Intact"
             this.inRun = true;
             this.dataClientService.RunBoundaryTrip( this.dataset.id, this.setPointMode, this.transportModel, this.boundaryName, tripName, tripStr, (results)=>{                
-                this.boundaryTrip = trip                
+                this.setBoundaryTrip(trip)
                 this.afterCalc(results, true)
             });    
         }
@@ -196,7 +246,7 @@ export class LoadflowDataService {
             this.loadFlowResults.boundaryTripResults = boundaryTripResults
         }
         //
-        this.updateLocationData(saveTripResults)
+        this.updateLocationData(false)
         this.updateSelectedObject()          
         this.ResultsLoaded.emit(results);
     }
@@ -742,6 +792,7 @@ export class LoadflowDataService {
     AllTripsProgress:EventEmitter<any> = new EventEmitter<any>()
     ObjectSelected:EventEmitter<SelectedMapItem> = new EventEmitter<SelectedMapItem>()
     BoundarySelected:EventEmitter<void> = new EventEmitter<void>()
+    BoundaryTripSelected:EventEmitter<void> = new EventEmitter<void>()
     TripsChanged:EventEmitter<number[]> = new EventEmitter<number[]>()
     SetPointModeChanged:EventEmitter<SetPointMode> = new EventEmitter<SetPointMode>()
     LocationDraggingChanged:EventEmitter<boolean> = new EventEmitter<boolean>()

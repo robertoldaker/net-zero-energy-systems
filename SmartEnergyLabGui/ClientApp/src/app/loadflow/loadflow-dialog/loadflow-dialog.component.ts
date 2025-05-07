@@ -54,7 +54,7 @@ export class LoadflowDialogComponent extends ComponentBase {
         if ( bn == "Unspecified") {
             bn = "";
         }
-        this.dataService.runBoundCalc(bn,this.boundaryTrips);
+        this.dataService.runBoundCalc(bn,true);
     }
 
     setBoundary() {
@@ -118,14 +118,21 @@ export class LoadflowDialogComponent extends ComponentBase {
         return this.dataService.totalDemand
     }
 
-    get boundaryTrip():string {
-        if ( this.dataService.boundaryTrip) {
-            return this.dataService.boundaryTrip.text
-        } else if ( this.dataService.boundaryTrip === null ) {
-            return "Intact"
+    get boundaryTrip():BoundaryTrip | null | undefined {
+        if ( this.dataService.boundaryTrip == undefined || this.dataService.boundaryTrip==null) {
+            return this.dataService.boundaryTrip
         } else {
-            return ""
+            let bt = this.dataService.boundaryTrips.find(m=>m?.text == this.dataService.boundaryTrip?.text) 
+            return bt
         }
+    }
+
+    boundaryTripChanged(e: any) {
+        console.log('boundaryTripchanged',e.value)
+        this.dataService.runBoundaryTrip(e.value)
+    }
+    get boundaryTrips():(BoundaryTrip|null)[] {
+        return this.dataService.boundaryTrips
     }
 
     clearTrips(e:any) {
@@ -146,7 +153,6 @@ export class LoadflowDialogComponent extends ComponentBase {
     flowResult: BoundaryFlowResult
     clearFlowResult: BoundaryFlowResult = { genInside: 0, genOutside:0, demInside: 0, demOutside: 0, ia: 0 }
     datasetTypes = DatasetType
-    boundaryTrips = true
     TransportModel = TransportModel
     hasCapacityError:boolean = false
     SetPointMode = SetPointMode

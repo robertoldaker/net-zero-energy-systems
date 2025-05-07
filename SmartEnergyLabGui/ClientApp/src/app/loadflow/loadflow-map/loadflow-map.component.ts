@@ -45,6 +45,10 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             // update links to show boundary links
             this.linkPolylineData.updateAll()
         }))
+        this.addSub(this.loadflowDataService.BoundaryTripSelected.subscribe((boundaryLinks) => {
+            // update links to show boundary links
+            this.linkPolylineData.updateAll()
+        }))
         this.addSub(this.loadflowDataService.ObjectSelected.subscribe((selectedItem) => {
             // select an object (link or location)
             this.selectObject(selectedItem)
