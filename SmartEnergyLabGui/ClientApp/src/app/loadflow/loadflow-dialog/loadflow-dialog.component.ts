@@ -127,8 +127,11 @@ export class LoadflowDialogComponent extends ComponentBase {
         }
     }
 
+    get needsCalc():boolean {
+        return this.dataService.needsCalc
+    }
+
     boundaryTripChanged(e: any) {
-        console.log('boundaryTripchanged',e.value)
         this.dataService.runBoundaryTrip(e.value)
     }
     get boundaryTrips():(BoundaryTrip|null)[] {

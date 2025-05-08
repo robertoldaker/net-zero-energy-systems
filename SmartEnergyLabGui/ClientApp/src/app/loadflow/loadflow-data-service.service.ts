@@ -66,6 +66,7 @@ export class LoadflowDataService {
     setPointMode: SetPointMode = SetPointMode.Auto
     boundaryTrip: BoundaryTrip | null | undefined
     boundaryTrips: (BoundaryTrip | null)[] = []
+    needsCalc: boolean = true
     private _locationDragging: boolean = false
 
 
@@ -85,9 +86,10 @@ export class LoadflowDataService {
         if ( withMessage ) {
             this.messageService.showModalMessage('Loading ...')
         }
-        this.dataClientService.GetNetworkData( this.dataset.id, (results)=>{
+        this.dataClientService.GetNetworkData( this.dataset.id, (results)=>{            
             this.networkData = results
             this.messageService.clearMessage()
+            this.needsCalc = true
             this.loadFlowResults = undefined
             this._locationDragging = false
             this.clearMapSelection()
@@ -135,6 +137,7 @@ export class LoadflowDataService {
                 this.updateLocationData(false)
             }
         }
+        this.needsCalc = true
         this.BoundarySelected.emit()
     }
 
@@ -237,6 +240,7 @@ export class LoadflowDataService {
     }
 
     afterCalc(results: LoadflowResults, saveTripResults:boolean = false) {
+        this.needsCalc = false
         // Save current boundary trip results
         let boundaryTripResults = this.loadFlowResults?.boundaryTripResults
         this.inRun = false
@@ -418,6 +422,7 @@ export class LoadflowDataService {
     }
 
     afterEdit(resp: DatasetData<any>[] ) {
+        this.needsCalc = true
         this.loadFlowResults = undefined
         //
         for( let r of resp) {
@@ -435,6 +440,8 @@ export class LoadflowDataService {
     }
 
     afterDelete(id: number, className: string, dataset: Dataset) {
+
+        this.needsCalc = true
 
         let dd = this.getDatasetData(className)
         if ( className === "Branch") {
@@ -457,6 +464,8 @@ export class LoadflowDataService {
     }
 
     afterUnDelete(resp: DatasetData<any>[] ) {
+        //
+        this.needsCalc = true
         //
         for( let r of resp) {
             let dd = this.getDatasetData(r.tableName)
@@ -680,6 +689,7 @@ export class LoadflowDataService {
 
     public addTrip(branchId : number) {
         if ( !this.trips.get(branchId)) {
+            this.needsCalc = true
             this.trips.set(branchId,true)
             this.updateLocationDataForTrip(branchId)
             this.TripsChanged.emit(Array.from(this.trips.keys()))    
@@ -714,6 +724,7 @@ export class LoadflowDataService {
 
     public removeTrip(branchId : number) {
         if ( this.trips.delete(branchId) ) {
+            this.needsCalc = true
             this.updateLocationDataForTrip(branchId)
             this.TripsChanged.emit(Array.from(this.trips.keys()))
         }
@@ -731,6 +742,7 @@ export class LoadflowDataService {
 
     public clearTrips() {
         if ( this.trips.size>0) {
+            this.needsCalc = true
             let branchIds = Array.from(this.trips.keys())
             this.trips.clear()
             for( let branchId of branchIds) {

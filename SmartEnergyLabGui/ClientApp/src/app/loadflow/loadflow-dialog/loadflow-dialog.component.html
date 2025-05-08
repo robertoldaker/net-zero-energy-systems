@@ -55,7 +55,7 @@
             </div>
         </div>
         <div class="calcGroup">
-            <div><button mat-raised-button color="primary" (click)="calc()">Calc</button></div>
+            <div><button mat-raised-button color="primary" (click)="calc()" [disabled]="!needsCalc">Calc</button></div>
             <div><button style="float: right; color: red" *ngIf="hasCapacityError" mat-stroked-button (click)="adjustBranchCapacities()">Adjust Capacities</button></div>
         </div>        
     </div>
