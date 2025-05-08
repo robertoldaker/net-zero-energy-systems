@@ -14,7 +14,7 @@
             </mat-form-field>
         </div>
         <div class="tripsContainer" style="margin-right: 1rem">
-            <div *ngIf="this.boundaryName==='Unspecified'">
+            <div *ngIf="this.boundaryName==='Unspecified'" style="margin-bottom: 1rem">
                 <b>{{numberOfTrips}}</b> trips <span class="cellLink" style="color: navy; text-decoration: underline;" (click)="clearTrips($event);">clear</span>
             </div>
             <div *ngIf="this.boundaryName!=='Unspecified' && boundaryTrips.length>0">
