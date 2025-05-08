@@ -168,6 +168,7 @@ export class LoadflowDataService {
     }
 
     setTransportModel(transportModel: TransportModel) {
+        this.needsCalc = true
         this.transportModel = transportModel
         this.calcTotals()
     }
