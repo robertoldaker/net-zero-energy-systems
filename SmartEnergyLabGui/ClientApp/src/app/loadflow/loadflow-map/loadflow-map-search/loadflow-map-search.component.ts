@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { LoadflowDataService, LoadflowLocation } from '../../loadflow-data-service.service';
+import { LoadflowDataService, LoadflowLink, LoadflowLocation, LoadflowMapSearchItem } from '../../loadflow-data-service.service';
 import { LoadflowMapComponent } from '../loadflow-map.component';
 
 @Component({
@@ -26,7 +26,6 @@ export class LoadflowMapSearchComponent implements OnInit {
     showSearch( value: boolean) {
         this.isShown = value
         if (value && this.searchInputRef!=undefined) {
-            //??this.searchInputRef.nativeElement.focus()
             // Not sure why this is required but it does need it
             setTimeout(()=>{ // this will make the execution after the above boolean has changed
                 if ( this.searchInputRef!=undefined) {
@@ -37,7 +36,7 @@ export class LoadflowMapSearchComponent implements OnInit {
     }
 
     searchTimeoutId: any
-    searchOptions: LoadflowLocation[] = []
+    searchOptions: LoadflowMapSearchItem[] = []
     autoCompleteOpen: boolean = false;
 
     set searchStr(value: string) {
@@ -49,7 +48,7 @@ export class LoadflowMapSearchComponent implements OnInit {
                 clearTimeout(this.searchTimeoutId);
             }
             this.searchTimeoutId = setTimeout(() => {
-                this.searchOptions = this.loadflowService.searchLocations(searchStr, 50)
+                this.searchOptions = this.loadflowService.searchMapData(searchStr, 50)
                 if (this.searchOptions.length == 0) {
                     this.autoCompleteOpen = false;
                 }
@@ -66,12 +65,15 @@ export class LoadflowMapSearchComponent implements OnInit {
     }
 
     searchOptionSelected(e: any) {
-        let id = e.option.value;
-        let selectedObj = this.searchOptions.find(m => m.id == id)
-        if (selectedObj) {
-            this.loadflowService.selectLocation(selectedObj.id)
-            //??this.searchOptions = []
-            this.showSearch(false);
+        let si:LoadflowMapSearchItem = e.option.value;
+        if (si) {
+            if( si.loc ) {
+                this.loadflowService.selectLocation(si.loc.id)
+                this.showSearch(false);    
+            } else if ( si.link ) {
+                this.loadflowService.selectLink(si.link.id)
+                this.showSearch(false);    
+            }
         }
     }
 
@@ -80,9 +82,16 @@ export class LoadflowMapSearchComponent implements OnInit {
         return "";
     }
 
-    getDisplayStr(loc: LoadflowLocation) {
-        let str = `(${loc.reference}) ${loc.name}`
-        return str;
+    getDisplayStr(si: LoadflowMapSearchItem) {
+        if ( si.loc ) {
+            let str = `(${si.loc.reference}) ${si.loc.name}`
+            return str;    
+        } else if ( si.link ) {
+            let str = `${si.link.name}`
+            return str
+        } else {
+            return ''
+        }
     }
 
     onKeydown(e: any) {

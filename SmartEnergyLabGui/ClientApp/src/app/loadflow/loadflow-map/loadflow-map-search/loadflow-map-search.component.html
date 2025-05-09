@@ -1,6 +1,6 @@
 <div class="search">
     <span style="vertical-align: middle;"  title="search">
-        <input [hidden]="!isShown" [ngClass]="{ search: true, withAutoComplete: autoCompleteOpen}" type="text" placeholder="Search for location" [matAutocomplete]="auto" #searchInput [(ngModel)]="searchStr" (keydown)="onKeydown($event)"/>
+        <input [hidden]="!isShown" [ngClass]="{ search: true, withAutoComplete: autoCompleteOpen}" type="text" placeholder="Search for location or link" [matAutocomplete]="auto" #searchInput [(ngModel)]="searchStr" (keydown)="onKeydown($event)"/>
         <button *ngIf="!isShown" mat-icon-button aria-label="Search" (click)="showSearch(true)">
             <mat-icon>search</mat-icon>
         </button>
@@ -8,7 +8,7 @@
             <mat-icon>close</mat-icon>
         </button>
         <mat-autocomplete #auto (optionSelected)="searchOptionSelected($event)" (opened)="autoCompleteOpened()" (closed)="autoCompleteClosed()" [displayWith]="display">
-            <mat-option *ngFor="let option of searchOptions" [value]="option.id">
+            <mat-option *ngFor="let option of searchOptions" [value]="option">
                 <!--<img class="substationIcon" [src]="getImageSrc(option.type)" />-->
                 <span>{{getDisplayStr(option)}}</span>
             </mat-option>

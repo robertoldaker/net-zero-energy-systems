@@ -333,7 +333,7 @@ export class LoadflowDataService {
     }
 
     selectLink(branchId: number) {
-        let branch = this.locationData.links.find(m=>m.id==branchId)
+        let branch = this.locationData.links.find(m=>m.id==branchId || m.branches.find(n=>n.id==branchId))
         if ( branch) {
             this.selectedMapItem = { location: null, link: branch }
             this.ObjectSelected.emit(this.selectedMapItem)    
@@ -371,6 +371,30 @@ export class LoadflowDataService {
         var searchResults = this.locationData.locations.
             filter(m=>m.name && m.name.toLocaleLowerCase().includes(lowerStr) || m.reference.toLocaleLowerCase().includes(lowerStr)).
             slice(0,maxResults)
+        return searchResults;
+    }
+
+    searchMapData(str: string, maxResults: number):LoadflowMapSearchItem[]  {
+        let lowerStr = str.toLocaleLowerCase()
+        let upperStr = str.toUpperCase()
+        var locResults = this.locationData.locations.
+            filter(m=>m.name && m.name.toLocaleLowerCase().includes(lowerStr) || m.reference.toLocaleLowerCase().startsWith(lowerStr)).
+            slice(0,maxResults/2)
+        let linkResults:LoadflowLink[] = []
+        for( let link of this.locationData.links) {
+            if ( link.name.toLocaleLowerCase().includes(lowerStr) ) {
+                linkResults.push(link)
+            } else if ( link.branches.find(m=>m.code.toLocaleLowerCase().startsWith(lowerStr)) ) {
+                linkResults.push(link)
+            }
+        }
+        var searchResults:LoadflowMapSearchItem[] = []
+        for( let loc of locResults) {
+            searchResults.push({loc:loc,link: undefined})
+        }
+        for( let link of linkResults) {
+            searchResults.push({loc:undefined,link: link})
+        }
         return searchResults;
     }
 
@@ -969,6 +993,14 @@ export class LoadflowLink {
         }
     }
 
+    get name():string {
+        if ( this.branches.length>0) {
+            return `${this._branches[0].node1Name} <=> ${this._branches[0].node2Name}`
+        } else {
+            return ''
+        }        
+    }
+
     update(branches: Branch[],ctrlMap: Map<number,Ctrl>):boolean {
         let isHVDC = false
         this._branches = branches;
@@ -1061,4 +1093,9 @@ export class LoadflowLink {
     totalFlow: number | null = null
     totalFree: number | null = null
     percentCapacity: number = 0
+}
+
+export class LoadflowMapSearchItem {
+    loc: LoadflowLocation | undefined
+    link: LoadflowLink | undefined
 }
