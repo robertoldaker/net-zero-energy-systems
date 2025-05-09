@@ -384,7 +384,15 @@ export class LoadflowDataService {
         for( let link of this.locationData.links) {
             if ( link.name.toLocaleLowerCase().includes(lowerStr) ) {
                 linkResults.push(link)
-            } else if ( link.branches.find(m=>m.code.toLocaleLowerCase().startsWith(lowerStr)) ) {
+            } else if ( link.branches.find(m=>m.code?.toLocaleLowerCase().startsWith(lowerStr)) ) {
+                linkResults.push(link)
+            } else if ( link.branches.find(m=>m.node1Code?.toLocaleLowerCase().startsWith(lowerStr)) ) {
+                linkResults.push(link)
+            } else if ( link.branches.find(m=>m.node1Name?.toLocaleLowerCase().includes(lowerStr)) ) {
+                linkResults.push(link)
+            } else if ( link.branches.find(m=>m.node2Code?.toLocaleLowerCase().startsWith(lowerStr)) ) {
+                linkResults.push(link)
+            } else if ( link.branches.find(m=>m.node2Name?.toLocaleLowerCase().includes(lowerStr)) ) {
                 linkResults.push(link)
             }
         }
