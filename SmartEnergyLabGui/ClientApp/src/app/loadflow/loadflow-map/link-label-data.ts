@@ -109,11 +109,12 @@ export class LinkLabelData {
 
     private getClassName(link: LoadflowLink, tol: number):{cn: string, zIndex: number } {
         let label = this.getLabel(link)
+        let flowFilter = this.mapComponent.flowFilter
         let ds = this.mapComponent.loadflowDataService
         let percentThreshold = ds.getFlowCapacityThreshold(link.type, link.percentCapacity)
         if ( percentThreshold === PercentCapacityThreshold.OK) {
             let className = "hide"
-            if ( label ) {
+            if ( label && flowFilter==PercentCapacityThreshold.OK) {
                 // work out if we should show based on the length of the link and a tolerance
                 let distSqr = this.getPixelDistanceSqr(link.gisData1,link.gisData2)
                 if ( distSqr > tol ) {
@@ -121,16 +122,19 @@ export class LinkLabelData {
                 }
             }
             return { cn: className, zIndex: 15}
-        } else {
-            let className = "flowLabel"
-            let zIndex = 20
-            if ( percentThreshold === PercentCapacityThreshold.Warning) {
-                className+= " notOK warning"
+        } else if ( percentThreshold === PercentCapacityThreshold.Warning ) {
+            let className:string
+            if ( flowFilter == PercentCapacityThreshold.OK || flowFilter == PercentCapacityThreshold.Warning ) {
+                className = "flowLabel notOK warning"
             } else {
-                className+= " notOK critical"
-                zIndex = 25
+                className = "hide"
             }
-            return { cn: className, zIndex: zIndex}
+            return { cn: className, zIndex: 20}
+        } else if (percentThreshold === PercentCapacityThreshold.Critical) {
+            let className = "flowLabel notOK critical"
+            return { cn: className, zIndex: 25}
+        } else {
+            throw `Unexpected value for percentThreshold [${percentThreshold}]`
         }
     }
 

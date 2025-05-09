@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { GoogleMap, MapInfoWindow, MapPolyline } from '@angular/google-maps';
 import { ComponentBase } from 'src/app/utils/component-base';
-import { LoadflowDataService, LoadflowLink, LoadflowLocation, SelectedMapItem, UpdateLocationData } from '../loadflow-data-service.service';
+import { LoadflowDataService, LoadflowLink, LoadflowLocation, PercentCapacityThreshold, SelectedMapItem, UpdateLocationData } from '../loadflow-data-service.service';
 import { IMapData } from 'src/app/utils/map-options';
 import { ShowMessageService } from 'src/app/main/show-message/show-message.service';
 import { DialogService } from 'src/app/dialogs/dialog.service';
@@ -59,6 +59,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 
     }
 
+    flowFilter: PercentCapacityThreshold = PercentCapacityThreshold.OK
     addBranchHandler: AddBranchHandler | undefined
     addLocationHandler: AddLocationHandler | undefined
 
@@ -357,6 +358,11 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.addLocationHandler?.start()
     }
 
+    setFlowFilter( flowFilter: PercentCapacityThreshold) {
+        this.flowFilter = flowFilter
+        this.linkLabelData.updateForZoom()
+    }
+
 }
 
 export class AddBranchHandler {
@@ -445,6 +451,5 @@ export class AddLocationHandler {
             this.cancel()
         });
     }
-
 }
 

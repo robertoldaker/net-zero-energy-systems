@@ -26,3 +26,7 @@ img.button {
 img.enabled {
     opacity: 1;
 }
+
+button.isSet {
+    color: black
+}

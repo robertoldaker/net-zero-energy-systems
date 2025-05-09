@@ -1,6 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { LoadflowMapComponent } from '../loadflow-map.component';
-import { LoadflowDataService } from '../../loadflow-data-service.service';
+import { LoadflowDataService, PercentCapacityThreshold } from '../../loadflow-data-service.service';
 import { LoadflowDataComponent } from '../../data/loadflow-data/loadflow-data.component';
 import { ComponentBase } from 'src/app/utils/component-base';
 
@@ -44,6 +44,29 @@ export class LoadflowMapButtonsComponent  extends ComponentBase implements OnIni
 
     get isEditable():boolean {
         return !this.loadflowService.dataset.isReadOnly
+    }
+
+    get hasResults():boolean {
+        let result =  this.loadflowService.loadFlowResults ? true : false
+        return result
+    }
+
+    flowFilters = [
+        { id: PercentCapacityThreshold.OK, text: "All flows" },
+        { id: PercentCapacityThreshold.Warning, text: `Flows > ${LoadflowDataService.WarningFlowThreshold}% capacity` },
+        { id: PercentCapacityThreshold.Critical, text: `Flows > ${LoadflowDataService.CriticalFlowThreshold}% capacity` }
+    ]
+
+    get flowFilter(): PercentCapacityThreshold {
+        return this.mapComponent.flowFilter
+    }
+
+    get isFlowFilterSet(): boolean {
+        return this.mapComponent.flowFilter!==PercentCapacityThreshold.OK
+    }
+
+    selectFlowFilterOption(e: any, f: { id:PercentCapacityThreshold,text: string}) {
+        this.mapComponent.setFlowFilter(f.id)
     }
 
 }

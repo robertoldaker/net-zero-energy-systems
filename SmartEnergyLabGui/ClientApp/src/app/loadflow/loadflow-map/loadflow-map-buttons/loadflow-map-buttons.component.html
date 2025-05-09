@@ -18,4 +18,16 @@
         <img src="assets/icons/drag-and-drop.png" class="button" [class]="{enabled: locationDragging}"/>
     </button>
 </div>
+<div *ngIf="hasResults" class="buttonContainer">
+    <button mat-icon-button aria-label="Filter lables" title="Filter labels" [class]="{isSet: isFlowFilterSet}">
+        <mat-icon [matMenuTriggerFor]="menu" >filter_list</mat-icon>
+    </button>
+</div>
+<mat-menu #menu="matMenu">
+    <button *ngFor="let f of flowFilters" mat-menu-item (click)="selectFlowFilterOption($event,f)">
+        <mat-icon *ngIf="f.id===flowFilter">done</mat-icon>
+        <mat-icon *ngIf="f.id!==flowFilter"></mat-icon>
+        <span>{{f.text}}</span>
+    </button>
+</mat-menu>                
 
