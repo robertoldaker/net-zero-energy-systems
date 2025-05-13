@@ -305,6 +305,7 @@ export class LoadflowDataService {
         this.dataClientService.AdjustBranchCapacities( this.dataset.id, this.transportModel, (results) => {
             this.inRun = false;
             this.loadFlowResults = results;
+            this.needsCalc = true
             // need to copy branch userEdits into NetworkData to ensure further edits work
             this.networkData.branches.userEdits = results.branches.userEdits
             this.ResultsLoaded.emit(results);

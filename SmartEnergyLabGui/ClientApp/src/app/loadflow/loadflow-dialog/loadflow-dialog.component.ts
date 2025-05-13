@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Boundary, BoundaryFlowResult, BoundaryTrip, Branch, Dataset, DatasetType, LoadflowResults, SetPointMode, TransportModel } from '../../data/app.data';
+import { Boundary, BoundaryFlowResult, BoundaryTrip, Branch, Dataset, DatasetType, LoadflowResults, NetworkData, SetPointMode, TransportModel } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { DataClientService } from 'src/app/data/data-client.service';
@@ -15,7 +15,7 @@ export class LoadflowDialogComponent extends ComponentBase {
 
     constructor(private dataService: LoadflowDataService) { 
         super()
-        this.boundaries = dataService.networkData.boundaries.data;
+        this.setBoundaries(dataService.networkData);
         this.branches = dataService.networkData.branches.data;
         this.trips = []
         this.boundaryName="Unspecified"        
@@ -24,7 +24,7 @@ export class LoadflowDialogComponent extends ComponentBase {
         this.percent = 0;
         this.flowResult = this.clearFlowResult;
         this.addSub(dataService.NetworkDataLoaded.subscribe((results=>{
-            this.boundaries = results.boundaries.data
+            this.setBoundaries(results)
             this.branches = results.branches.data
             this.boundaryName = "Unspecified"
             this.setBoundary()
@@ -47,6 +47,11 @@ export class LoadflowDialogComponent extends ComponentBase {
         this.addSub(dataService.NetworkDataLoaded.subscribe((results)=>{
             this.flowResult = this.clearFlowResult
         }))
+    }
+
+    setBoundaries(networkData: NetworkData) {
+        this.boundaries = networkData.boundaries.data
+        this.boundaries.sort( (a,b)=>a.code.localeCompare(b.code))
     }
 
     calc() {
@@ -149,7 +154,7 @@ export class LoadflowDialogComponent extends ComponentBase {
     currentTrip: string
     percent: number
     selectedTrip: string
-    boundaries: Boundary[]
+    boundaries: Boundary[] = []
     branches: any;
     boundaryName: string
     trips: BoundaryTrip[]
