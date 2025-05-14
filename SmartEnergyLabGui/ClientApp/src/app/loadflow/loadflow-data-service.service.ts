@@ -341,11 +341,17 @@ export class LoadflowDataService {
         }
     }
 
-    selectLinkByBranch(branchCode: string) {
+    selectMapItemByBranch(branchCode: string) {
         let link = this.locationData.links.find(m=>m.branches.find(n=>n.code == branchCode))
         if ( link) {
-            this.selectedMapItem = { location: null, link: link }
+            this.selectedMapItem = { location: null, link: link }            
             this.ObjectSelected.emit(this.selectedMapItem)    
+        } else {
+            // this means its an internal branch so select the location
+            let branch = this.networkData.branches.data.find(m=>m.code == branchCode)
+            if ( branch ) {
+                this.selectLocation(branch.node1LocationId)
+            }
         }
     }
 

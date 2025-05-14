@@ -23,7 +23,7 @@ export class LoadflowTripLinkComponent implements OnInit {
 
     branchCode: string = ''
 
-    showLinkOnMap(e: any) {
+    showBranchOnMap(e: any) {
         //
         e.stopPropagation()
         this.dataComponent.showBranchOnMapByCode(this.branchCode)
