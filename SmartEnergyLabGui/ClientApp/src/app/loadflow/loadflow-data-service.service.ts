@@ -12,7 +12,17 @@ type NodeDict = {
     [code: string]:Node
 }
 
-export type SelectedMapItem = {location: LoadflowLocation | null, link: LoadflowLink | null}
+export enum MapItemLocationTab { Node, BranchInt, BranchExt}
+export class SelectedMapItem {
+    constructor(location:LoadflowLocation | null = null,link: LoadflowLink | null = null, locTab: MapItemLocationTab | null = null) {
+        this.location = location
+        this.link = link
+        this.locTab = locTab
+    }
+    location: LoadflowLocation | null = null
+    link: LoadflowLink | null = null
+    locTab: MapItemLocationTab | null = null
+}
 
 export enum PercentCapacityThreshold { OK, Warning, Critical}
 
@@ -312,10 +322,10 @@ export class LoadflowDataService {
         });
     }
 
-    selectLocation(locId: number) {
+    selectLocation(locId: number, locTab: MapItemLocationTab | null = null) {
         let loc = this.locationData.locations.find(m=>m.id==locId)
         if ( loc ) {
-            this.selectedMapItem = { location: loc, link: null }
+            this.selectedMapItem = new SelectedMapItem(loc,null,locTab)
             this.ObjectSelected.emit(this.selectedMapItem)    
         }
     }
@@ -323,7 +333,7 @@ export class LoadflowDataService {
     selectLocationByName(locName: string) {
         let loc = this.locationData.locations.find(m=>m.name == locName)
         if ( loc ) {
-            this.selectedMapItem = { location: loc, link: null }
+            this.selectedMapItem = new SelectedMapItem(loc,null)
             this.ObjectSelected.emit(this.selectedMapItem)    
         }
     }
@@ -334,9 +344,9 @@ export class LoadflowDataService {
     }
 
     selectLink(branchId: number) {
-        let branch = this.locationData.links.find(m=>m.id==branchId || m.branches.find(n=>n.id==branchId))
-        if ( branch) {
-            this.selectedMapItem = { location: null, link: branch }
+        let link = this.locationData.links.find(m=>m.id==branchId || m.branches.find(n=>n.id==branchId))
+        if ( link) {
+            this.selectedMapItem = new SelectedMapItem(null,link)
             this.ObjectSelected.emit(this.selectedMapItem)    
         }
     }
@@ -344,27 +354,27 @@ export class LoadflowDataService {
     selectMapItemByBranch(branchCode: string) {
         let link = this.locationData.links.find(m=>m.branches.find(n=>n.code == branchCode))
         if ( link) {
-            this.selectedMapItem = { location: null, link: link }            
+            this.selectedMapItem = new SelectedMapItem(null,link)
             this.ObjectSelected.emit(this.selectedMapItem)    
         } else {
             // this means its an internal branch so select the location
             let branch = this.networkData.branches.data.find(m=>m.code == branchCode)
             if ( branch ) {
-                this.selectLocation(branch.node1LocationId)
+                this.selectLocation(branch.node1LocationId,MapItemLocationTab.BranchInt)
             }
         }
     }
 
     selectLinkByLocIds(node1LocationId: number, node2LocationId: number) {
-        let branch = this.locationData.links.find(m=>m.node1LocationId == node1LocationId && m.node2LocationId == node2LocationId)
-        if ( branch) {
-            this.selectedMapItem = { location: null, link: branch }
+        let link = this.locationData.links.find(m=>m.node1LocationId == node1LocationId && m.node2LocationId == node2LocationId)
+        if ( link) {
+            this.selectedMapItem = new SelectedMapItem(null, link)
             this.ObjectSelected.emit(this.selectedMapItem)    
         }
     }
 
     clearMapSelection() {
-        this.selectedMapItem = { location: null, link: null} 
+        this.selectedMapItem = new SelectedMapItem()
         this.ObjectSelected.emit(this.selectedMapItem)
     }
 

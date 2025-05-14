@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { LoadflowDataService } from '../../loadflow-data-service.service';
+import { LoadflowDataService, MapItemLocationTab } from '../../loadflow-data-service.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { MatTabGroup, MatTabLabel } from '@angular/material/tabs';
 import { AllTripResult, SetPointMode } from 'src/app/data/app.data';
@@ -184,9 +184,9 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
         this.dataService.selectLocationByName(locName)
     }
 
-    showLocationOnMapById(locId: number) {
+    showLocationOnMapById(locId: number, locTab: MapItemLocationTab | null = null) {
         this.showMap = true
-        this.dataService.selectLocation(locId)
+        this.dataService.selectLocation(locId, locTab)
     }
 
     showBranchOnMap(node1LocationId: number, node2LocationId: number) {

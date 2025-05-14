@@ -115,7 +115,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     linkLabelData: LinkLabelData = new LinkLabelData(this)
     linkPolylineData: LinkLineData = new LinkLineData(this)
     selectedLocMarker: MapAdvancedMarker | null = null
-    selectedItem: SelectedMapItem = { location: null, link: null }
+    selectedItem: SelectedMapItem = new SelectedMapItem()
     selectedLinkLine: MapPolyline | null = null
     private selectObject(selectedItem: SelectedMapItem) {
         // de-select existing location marker 

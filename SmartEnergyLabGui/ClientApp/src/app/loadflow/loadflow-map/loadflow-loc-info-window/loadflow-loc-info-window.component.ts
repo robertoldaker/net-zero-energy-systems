@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
 import { ComponentBase } from 'src/app/utils/component-base';
-import { LoadflowDataService, LoadflowLocation } from '../../loadflow-data-service.service';
+import { LoadflowDataService, LoadflowLocation, MapItemLocationTab } from '../../loadflow-data-service.service';
 import { Branch, Node } from 'src/app/data/app.data';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { IDeleteItem } from 'src/app/datasets/map-buttons/map-buttons.component';
@@ -20,7 +20,13 @@ export class LoadflowLocInfoWindowComponent extends ComponentBase {
             this.loc = selectedMapItem.location
             this.filterData();
             if ( this.matTabGroup) {
-                this.matTabGroup.selectedIndex = 0
+                let selectedIndex = 0
+                if ( selectedMapItem.locTab === MapItemLocationTab.BranchInt ) {
+                    selectedIndex = 1
+                } else if ( selectedMapItem.locTab === MapItemLocationTab.BranchExt ) {
+                    selectedIndex = 2
+                }
+                this.matTabGroup.selectedIndex = selectedIndex
             }
         }))
         this.addSub(this.dataService.NetworkDataLoaded.subscribe( (networkData)=>{

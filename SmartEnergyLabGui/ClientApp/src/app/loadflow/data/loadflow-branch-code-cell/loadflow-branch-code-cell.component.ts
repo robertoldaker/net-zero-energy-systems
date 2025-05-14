@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { LoadflowDataComponent } from '../loadflow-data/loadflow-data.component';
+import { MapItemLocationTab } from '../../loadflow-data-service.service';
 
 @Component({
     selector: 'app-loadflow-branch-code-cell',
@@ -30,7 +31,7 @@ export class LoadflowBranchCodeCellComponent implements OnInit {
 
     showLinkOnMap() {
         if ( this.node1LocationId == this.node2LocationId ) { 
-            this.dataComponent.showLocationOnMapById(this.node1LocationId)
+            this.dataComponent.showLocationOnMapById(this.node1LocationId, MapItemLocationTab.BranchInt)
         } else {
             this.dataComponent.showBranchOnMap(this.node1LocationId,this.node2LocationId)
         }
