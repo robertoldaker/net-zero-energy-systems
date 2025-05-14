@@ -97,14 +97,20 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             var nodeDi = new DatasetData<Node>(DataAccess,datasetId,m=>m.Id.ToString(), nodeQuery);
 
             // update location references
-            var locIds = nodeDi.Data.Where(m=>m.Location!=null).Select(m=>m.Location.Id).ToArray();
+            updateRefs(datasetId, nodeDi.Data);
+            updateRefs(datasetId, nodeDi.DeletedData);
+            return nodeDi;        
+        }
+
+        private void updateRefs(int datasetId, IList<Node> nodes) {
+            // update location references
+            var locIds = nodes.Where(m=>m.Location!=null).Select(m=>m.Location.Id).ToArray();
             var locDi = DataAccess.NationalGrid.GetLocationDatasetData(datasetId,m=>m.Id.IsIn(locIds));
-            foreach( var node in nodeDi.Data) {
+            foreach( var node in nodes) {
                 if ( node.Location!=null ) {
                     node.Location = locDi.GetItem(node.Location.Id);
                 }
             }
-            return nodeDi;        
         }
 
         public int GetNodeCountForLocation(int locationId, bool isSourceEdit) {
@@ -326,16 +332,23 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             //
             var ctrlIds = branchDi.Data.Where( m=>m.Ctrl!=null).Select(m=>m.Ctrl.Id).ToArray();
             ctrlDi = GetCtrlDatasetData(datasetId,m=>m.Id.IsIn(ctrlIds));
+            // Ensure branches reference up-to-date nodes
+            updateRefs(datasetId,branchDi.Data);
+            updateRefs(datasetId,branchDi.DeletedData);
             //
-            var node1Ids = branchDi.Data.Select(m=>m.Node1.Id).ToList<int>();
-            var node2Ids = branchDi.Data.Select(m=>m.Node2.Id).ToList<int>();
-            var nodeDi = GetNodeDatasetData(datasetId, m=>m.Id.IsIn(node1Ids) || m.Id.IsIn(node2Ids));
-            foreach( var b in branchDi.Data) {
-                b.Node1 = nodeDi.GetItem(b.Node1.Id);
-                b.Node2 = nodeDi.GetItem(b.Node2.Id);
-            }
             return branchDi;
         }
+
+        private void updateRefs(int datasetId, IList<Branch> branches) {
+            var node1Ids = branches.Select(m=>m.Node1.Id).ToList<int>();
+            var node2Ids = branches.Select(m=>m.Node2.Id).ToList<int>();
+            var nodeDi = GetNodeDatasetData(datasetId, m=>m.Id.IsIn(node1Ids) || m.Id.IsIn(node2Ids));
+            foreach( var b in branches) {
+                b.Node1 = nodeDi.GetItem(b.Node1.Id);
+                b.Node2 = nodeDi.GetItem(b.Node2.Id);
+            }    
+        }
+
         public int GetBranchCountForNode(int nodeId, bool isSourceEdit) {
             int count;
             if ( isSourceEdit ) {
