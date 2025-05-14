@@ -1,0 +1,31 @@
+<table class="branchTable">
+    <tr>
+        <th>Branch</th>
+        <th>Tripped</th>
+        <th>Flow<br />(MW)</th>
+        <th>Free<br />(MW)</th>
+    </tr>
+    <tr *ngFor="let b of branches">
+        <td>
+            <app-map-buttons typeName="Branch" [element]="b" (onEdit)="edit($event)">
+                <span>{{b.displayName}}</span>
+            </app-map-buttons>
+        </td>
+        <td>
+            <input type="checkbox" [disabled]="canTrip" [checked]="isTripped(b.id)"
+                (change)="toggleTrip($event,b.id)" />
+        </td>
+        <td>
+            {{b.powerFlow?.toFixed(0)}}
+        </td>
+        <td>
+            {{b.freePower?.toFixed(0)}}
+        </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td></td>
+        <td class="totalCell">{{totalFlowStr}}</td>
+        <td class="totalCell">{{totalFreeStr}}</td>
+    </tr>
+</table>

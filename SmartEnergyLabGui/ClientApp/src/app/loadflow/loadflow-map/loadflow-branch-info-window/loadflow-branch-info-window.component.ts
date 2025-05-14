@@ -31,27 +31,8 @@ export class LoadflowBranchInfoWindowComponent extends ComponentBase {
 
     private link: LoadflowLink | null = null
 
-    get totalFlowStr(): string {
-        let tf = ''
-        if ( this.dataService.selectedMapItem?.link) {
-            if ( this.dataService.selectedMapItem?.link.totalFlow!=null ) {
-                tf = this.dataService.selectedMapItem?.link.totalFlow.toFixed(0)
-            }
-        } 
-        return tf
-    }
-
-    get totalFreeStr(): string {
-        let tf = ''
-        if ( this.dataService.selectedMapItem?.link) {
-            if ( this.dataService.selectedMapItem?.link.totalFree!=null ) {
-                tf = this.dataService.selectedMapItem?.link.totalFree.toFixed(0)
-            }
-        } 
-        return tf
-    }
-
     private _branches:Branch[] = []
+    private _deletedBranches:Branch[] = []
 
     get name():string {
         let name = "";
@@ -65,39 +46,21 @@ export class LoadflowBranchInfoWindowComponent extends ComponentBase {
         return this._branches;
     }
 
-    get branchCount():number {
-        return this._branches.length
-    }
-
-    edit(b: Branch) {
-        let itemData = this.dataService.getBranchEditorData(b.id)
-        this.dialogService.showLoadflowBranchDialog(itemData)
+    get deletedBranches():Branch[] {
+        return this._deletedBranches;
     }
 
     filterData() {
         if ( this.link && this.dataService.branches) {
             let node1LocationId = this.link.node1LocationId
             let node2LocationId = this.link.node2LocationId
-            this._branches = this.dataService.branches.data.filter( m=>m.node1LocationId>=0 && m.node2LocationId>=0 && 
+            let p:(m: Branch)=>boolean = m=>m.node1LocationId>=0 && m.node2LocationId>=0 && 
                 ( m.node1LocationId===node1LocationId && m.node2LocationId===node2LocationId) ||
-                ( m.node1LocationId===node2LocationId && m.node2LocationId===node1LocationId))
+                ( m.node1LocationId===node2LocationId && m.node2LocationId===node1LocationId)
+            this._branches = this.dataService.branches.data.filter(p)
+            this._deletedBranches = this.dataService.branches.deletedData.filter(p)
+
         }
-    }
-
-    isTripped(branchId: number) {
-        return this.dataService.isTripped(branchId)
-    }
-
-    toggleTrip(e: any, branchId: number) {
-        if ( e.target.checked ) {
-            this.dataService.addTrip(branchId)
-        } else {
-            this.dataService.removeTrip(branchId)
-        }
-    }
-
-    get canTrip():boolean {
-        return this.dataService.boundaryName ? true : false
     }
 
 }

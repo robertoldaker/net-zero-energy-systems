@@ -1,0 +1,48 @@
+table.nodeTable th {
+    font-weight: 800;
+    padding-bottom: 0.5em;
+    font-size: 0.8em;
+}
+
+table.nodeTable th:nth-child(1) {
+    padding-left: 1.5em;
+}
+
+table.nodeTable th:nth-child(2) {
+    text-align:right;
+    padding-right: 0.5em;
+}
+
+table.nodeTable th:nth-child(3) {
+    text-align:right;
+    padding-right: 0.5em;
+}
+
+table.nodeTable th:nth-child(4) {
+    text-align:right;
+    padding-right: 0.5em;
+}
+
+table.nodeTable td:nth-child(1) {
+    padding-right: 1.5em;   
+}
+
+table.nodeTable td:nth-child(2) {
+    text-align: right;
+    padding-right: 0.5em;
+}
+
+table.nodeTable td:nth-child(3) {
+    text-align: right;
+    padding-right: 0.5em;
+}
+
+table.nodeTable td:nth-child(4) {
+    text-align: right;
+    padding-right: 0.5em;
+}
+
+td.totalCell {
+    border-top: 1px black solid;
+    font-weight: 400;
+}

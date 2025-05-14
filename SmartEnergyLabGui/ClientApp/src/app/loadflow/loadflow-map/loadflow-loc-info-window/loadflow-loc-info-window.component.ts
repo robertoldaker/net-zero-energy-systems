@@ -14,18 +14,23 @@ import { MatTabGroup } from '@angular/material/tabs';
 })
 
 export class LoadflowLocInfoWindowComponent extends ComponentBase {
-    constructor(private loadflowDataService: LoadflowDataService, private dialogService: DialogService, public datasetsService: DatasetsService) {
+    constructor(private dataService: LoadflowDataService, private dialogService: DialogService, public datasetsService: DatasetsService) {
         super()
-        this.addSub(this.loadflowDataService.ObjectSelected.subscribe( (selectedMapItem)=>{
+        this.addSub(this.dataService.ObjectSelected.subscribe( (selectedMapItem)=>{
             this.loc = selectedMapItem.location
             this.filterData();
             if ( this.matTabGroup) {
                 this.matTabGroup.selectedIndex = 0
             }
         }))
-        this.addSub(this.loadflowDataService.NetworkDataLoaded.subscribe( (networkData)=>{
+        this.addSub(this.dataService.NetworkDataLoaded.subscribe( (networkData)=>{
             this.filterData();
         }))
+
+        this.addSub(this.dataService.ResultsLoaded.subscribe( ()=>{
+            this.filterData()
+        }))
+
     }
 
     @ViewChild(MatTabGroup)
@@ -83,7 +88,7 @@ export class LoadflowLocInfoWindowComponent extends ComponentBase {
     }
 
     editNode(node: Node) {
-        let itemData = this.loadflowDataService.getNodeEditorData(node.id)
+        let itemData = this.dataService.getNodeEditorData(node.id)
         this.dialogService.showLoadflowNodeDialog(itemData)
     }
 
@@ -93,7 +98,7 @@ export class LoadflowLocInfoWindowComponent extends ComponentBase {
     }
 
     editBranch(branch: Branch) {
-        let branchEditorData = this.loadflowDataService.getBranchEditorData(branch.id)
+        let branchEditorData = this.dataService.getBranchEditorData(branch.id)
         this.dialogService.showLoadflowBranchDialog(branchEditorData)
     }
 
@@ -125,9 +130,9 @@ export class LoadflowLocInfoWindowComponent extends ComponentBase {
     }
 
     filterData() {
-        let nodes = this.loadflowDataService.networkData.nodes
-        let branches = this.loadflowDataService.networkData.branches
-        if ( this.loc ) {
+        if ( this.loc  && this.dataService.branches && this.dataService.nodes ) {
+            let nodes = this.dataService.nodes
+            let branches = this.dataService.branches
             let locId = this.loc.id
             this._nodes = nodes.data.filter( m=>m.location && m.location.id === locId)
             this._deletedNodes = nodes.deletedData.filter( m=>m.location && m.location.id === locId)

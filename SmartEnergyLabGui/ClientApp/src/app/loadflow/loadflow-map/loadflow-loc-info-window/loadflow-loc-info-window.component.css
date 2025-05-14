@@ -1,11 +1,17 @@
 div.itemContainer {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-    height: 7rem;
+    height: 10rem;
     overflow-y: auto;
     margin-top: 0.5rem;
 }
 
 div.miniButtonContainer {
     margin-top: 0.5rem;
+}
+
+div.noneAvailable {
+    font-style: italic;
+    padding: 0.5rem;
+    text-align: center;
 }

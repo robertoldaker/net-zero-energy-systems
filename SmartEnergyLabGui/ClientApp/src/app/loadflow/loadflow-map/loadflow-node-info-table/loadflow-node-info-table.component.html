@@ -1,0 +1,23 @@
+<table class="nodeTable">
+    <tr>
+        <th>Node</th>
+        <th>Demand<br />(MW)</th>
+        <th>Generation<br />(MW)</th>
+    </tr>
+    <tr *ngFor="let node of nodes">
+        <td>
+            <app-map-buttons typeName="Node" [element]="node" (onEdit)="editNode($event)" >{{node.code}}</app-map-buttons>
+        </td>
+        <td>
+            {{node.demand.toFixed(0)}}
+        </td>
+        <td>
+            {{getGeneration(node).toFixed(0)}}
+        </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td class="totalCell">{{totalDemandStr}}</td>
+        <td class="totalCell">{{totalGenerationStr}}</td>
+    </tr>
+</table>

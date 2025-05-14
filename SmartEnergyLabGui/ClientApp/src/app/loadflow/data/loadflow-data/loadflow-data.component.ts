@@ -196,7 +196,7 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
 
     showBranchOnMapByCode(branchCode: string) {
         this.showMap = true
-        this.dataService.selectLinkByBranch(branchCode)
+        this.dataService.selectMapItemByBranch(branchCode)
     }
 
     showBranchByName(branchName: string) {

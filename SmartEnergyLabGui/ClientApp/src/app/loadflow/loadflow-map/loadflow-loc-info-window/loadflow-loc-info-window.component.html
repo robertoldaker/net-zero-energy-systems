@@ -12,11 +12,8 @@
     <mat-tab-group animationDuration="0ms" [preserveContent]="true">
         <mat-tab label="Nodes" labelClass="matTabLabelInfoWindow">
             <div class="itemContainer">
-                <div *ngFor="let node of nodes">
-                    <app-map-buttons typeName="Node" [element]="node" (onEdit)="editNode($event)" >
-                        {{node.code}}
-                    </app-map-buttons>
-                </div>
+                <app-loadflow-node-info-table *ngIf="this.nodes.length>0" [nodes]="nodes"></app-loadflow-node-info-table>
+                <div *ngIf="this.nodes.length===0" class="noneAvailable">No nodes defined</div>
                 <div style="height: 0.5em"></div>
                 <div *ngFor="let node of deletedNodes">
                     <app-map-buttons typeName="Node" [element]="node" (onEdit)="editNode($event)" [isDeleted]="true">
@@ -33,11 +30,8 @@
         </mat-tab>
         <mat-tab label="Branches (int)" labelClass="matTabLabelInfoWindow">
             <div class="itemContainer">
-                <div *ngFor="let branch of branchesInt">
-                    <app-map-buttons typeName="Branch" [element]="branch" (onEdit)="editBranch($event)">
-                        {{branch.displayName}}
-                    </app-map-buttons>
-                </div>
+                <app-loadflow-branch-info-table *ngIf="this.branchesInt.length>0" [branches]="this.branchesInt"></app-loadflow-branch-info-table>
+                <div *ngIf="this.branchesInt.length===0" class="noneAvailable">No internal branches defined</div>
                 <div style="height: 0.5em"></div>
                 <div *ngFor="let branch of deletedBranchesInt">
                     <app-map-buttons typeName="Branch" [element]="branch" [isDeleted]="true">
@@ -54,11 +48,8 @@
         </mat-tab>
         <mat-tab label="Branches (ext)" labelClass="matTabLabelInfoWindow">
             <div class="itemContainer">
-                <div *ngFor="let branch of branchesExt">
-                    <app-map-buttons typeName="Branch" [element]="branch" (onEdit)="editBranch($event)">
-                        <span>{{branch.displayName}}</span>
-                    </app-map-buttons>
-                </div>
+                <app-loadflow-branch-info-table *ngIf="this.branchesExt.length>0" [branches]="this.branchesExt"></app-loadflow-branch-info-table>
+                <div *ngIf="this.branchesExt.length===0" class="noneAvailable">No external branches defined</div>
                 <div style="height: 0.5em"></div>
                 <div *ngFor="let branch of deletedBranchesExt">
                     <app-map-buttons typeName="Branch" [element]="branch" [isDeleted]="true">

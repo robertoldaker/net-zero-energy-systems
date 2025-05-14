@@ -168,6 +168,8 @@ import { LoadflowBranchCodeCellComponent } from './loadflow/data/loadflow-branch
 import { MapAdvancedMarker } from './loadflow/loadflow-map/map-advanced-marker/map-advanced-marker';
 import { LoadflowTripLinkComponent } from './loadflow/loadflow-trip-table/loadflow-trip-link/loadflow-trip-link.component';
 import { LoadflowTripCellComponent } from './loadflow/loadflow-trip-table/loadflow-trip-cell/loadflow-trip-cell.component';
+import { LoadflowBranchInfoTableComponent } from './loadflow/loadflow-map/loadflow-branch-info-table/loadflow-branch-info-table.component';
+import { LoadflowNodeInfoTableComponent } from './loadflow/loadflow-map/loadflow-node-info-table/loadflow-node-info-table.component';
 
 
 @NgModule({
@@ -290,7 +292,9 @@ import { LoadflowTripCellComponent } from './loadflow/loadflow-trip-table/loadfl
         LoadflowBranchCodeCellComponent,
         MapAdvancedMarker,
         LoadflowTripLinkComponent,
-        LoadflowTripCellComponent
+        LoadflowTripCellComponent,
+        LoadflowBranchInfoTableComponent,
+        LoadflowNodeInfoTableComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
