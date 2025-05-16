@@ -16,6 +16,9 @@
             </td>
             <td>QB/HVDC control</td>
         </tr>
+        <tr>
+            <td colspan="2" class="splitter"></td>
+        </tr>
         <tr *ngIf="boundaryName">
             <td>
                 <svg width="19" height="15" [style]="boundaryStyle">
@@ -24,7 +27,8 @@
             </td>
             <td>
                 <div>{{boundaryName}} Boundary</div>
-                <div><span>{{boundaryTrip}}</span>&nbsp;(<span *ngFor="let bc of boundaryTripBranchCodes; index as i;" [class]="{branchLink: true, first: i===0}" (click)="selectBranch(bc)">{{bc}}</span>)</div>
+                <div>Trip: <span>{{boundaryTrip}}</span>&nbsp;(<span *ngFor="let bc of boundaryTripBranchCodes; index as i;" [class]="{branchLink: true, first: i===0}" (click)="selectBranch(bc)">{{bc}}</span>)</div>
+                <div>Capacity <span class="emphasis">{{boundaryCapacity}}</span> MW</div>
             </td>
         </tr>
         <tr>
@@ -61,6 +65,9 @@
         </tr>
         <tbody *ngIf="hasResults">
             <tr>
+                <td class="splitter" colspan="2"></td>
+            </tr>
+            <tr>
                 <td>
                     <div class="flowLabel">123</div>
                 </td>
@@ -77,6 +84,12 @@
                     <div class="flowLabel notOK critical">123</div>
                 </td>
                 <td>Flow (MW, > {{criticalFlowThreshold}}% capacity)</td>
+            </tr>    
+            <tr *ngIf="boundaryName">
+                <td>
+                    <div class="flowLabel notOK critical">*1*</div>
+                </td>
+                <td>Limiting capacity flow (MW)</td>
             </tr>    
         </tbody>
     </table>    

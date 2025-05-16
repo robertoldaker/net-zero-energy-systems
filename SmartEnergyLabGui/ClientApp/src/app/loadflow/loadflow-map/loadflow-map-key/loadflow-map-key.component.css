@@ -22,16 +22,22 @@ table.key > tr > td > img {
     height: 30px
 }
 
+td.splitter {
+    border-top: 1px solid lightgrey;
+}
+
 .branchLink {
     cursor: pointer;
     color: blue;
     margin-left: 0.5rem;
+    text-decoration: underline;
 }
 
 .branchLink.first {
     margin-left: 0rem !important;    
 }
 
-.branchLink:hover {
-    text-decoration: underline;
+span.emphasis {
+    color: blue;
+    font-size: 1.1em;
 }

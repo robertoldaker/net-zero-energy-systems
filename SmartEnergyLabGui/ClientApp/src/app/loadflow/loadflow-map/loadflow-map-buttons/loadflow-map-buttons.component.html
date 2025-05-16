@@ -24,7 +24,7 @@
     </button>
 </div>
 <mat-menu #menu="matMenu">
-    <button *ngFor="let f of flowFilters" mat-menu-item (click)="selectFlowFilterOption($event,f)">
+    <button *ngFor="let f of flowFilters" mat-menu-item (click)="selectFlowFilterOption($event,f)" [disabled]="isFlowFilterDisabled(f.id)">
         <mat-icon *ngIf="f.id===flowFilter">done</mat-icon>
         <mat-icon *ngIf="f.id!==flowFilter"></mat-icon>
         <span>{{f.text}}</span>

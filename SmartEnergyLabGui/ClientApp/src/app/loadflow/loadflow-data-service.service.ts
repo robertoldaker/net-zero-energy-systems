@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { BoundaryTrip, BoundaryTripResults, Branch, BranchType, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, LoadflowCtrlType, LoadflowResults, NetworkData, Node, SetPointMode, TransportModel} from '../data/app.data';
+import { AllTripResult, BoundaryTrip, BoundaryTripResults, Branch, BranchType, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, LoadflowCtrlType, LoadflowResults, NetworkData, Node, SetPointMode, TransportModel} from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { ShowMessageService } from '../main/show-message/show-message.service';
@@ -76,6 +76,8 @@ export class LoadflowDataService {
     setPointMode: SetPointMode = SetPointMode.Auto
     boundaryTrip: BoundaryTrip | null | undefined
     boundaryTrips: (BoundaryTrip | null)[] = []
+    boundaryTripResultMap: Map<string | null,AllTripResult> = new Map()
+    boundaryTripResult: AllTripResult | undefined
     needsCalc: boolean = true
     private _locationDragging: boolean = false
 
@@ -153,7 +155,22 @@ export class LoadflowDataService {
 
     setBoundaryTrip(boundaryTrip: BoundaryTrip | null | undefined) {
         this.boundaryTrip = boundaryTrip
+        if ( boundaryTrip!==undefined ) {
+            let text = boundaryTrip===null ? null : boundaryTrip.text
+            this.boundaryTripResult = this.boundaryTripResultMap.get(text)
+        } else {
+            this.boundaryTripResult = undefined
+        }
         this.BoundaryTripSelected.emit()
+    }
+
+    isBoundaryTrip(link: LoadflowLink):boolean {
+        if ( this.boundaryTrip ) {
+            let result = link.branches.find(m=>this.boundaryTrip?.branchIds.includes(m.id))
+            return result ? true: false
+        } else {
+            return false
+        }
     }
 
     private setBoundaryBranchIds() {
@@ -175,6 +192,18 @@ export class LoadflowDataService {
 
     isBoundaryBranch(branchId: number):boolean {
         return this.boundaryBranchIds.includes(branchId)
+    }
+
+    isBoundaryLink(link: LoadflowLink):boolean {
+        return link.branches.find(m=>this.boundaryBranchIds.includes(m.id)) ? true : false
+    }
+
+    isBoundaryLimCct(link: LoadflowLink):boolean {
+        if( this.boundaryTrip!==undefined ) {
+            return link.branches.find( m=>this.boundaryTripResult?.limCct.find(n=>n.endsWith(':' + m.code))) ? true : false
+        } else {
+            return false;
+        }
     }
 
     setTransportModel(transportModel: TransportModel) {
@@ -200,42 +229,46 @@ export class LoadflowDataService {
 
     private clearBoundaryTrips() {
         this.boundaryTrips = []
+        this.boundaryTripResultMap.clear()
+        this.boundaryTripResult = undefined
     }
 
     private setBoundaryTrips(tripResults: BoundaryTripResults) {
-        let tripMap:Map<string,BoundaryTrip> = new Map()
+        let tripMap = this.boundaryTripResultMap
+        this.boundaryTripResult = undefined
+        tripMap.clear()
 
+        // set intact trips
         this.boundaryTrips = [null]
+        tripMap.set(null,tripResults.intactTrips[0])
+
+        // single trips
+        let trips = []
         for( let tr of tripResults.singleTrips) {
             if ( tr.trip && !tripMap.has(tr.trip.text) ) {
-                tripMap.set(tr.trip.text,tr.trip) 
+                tripMap.set(tr.trip.text,tr) 
+                trips.push(tr.trip.text)
             }
         }
-        let sTrips = Array.from(tripMap.keys())
-        sTrips.sort()
-        for( let st of sTrips) {
-            let tr = tripMap.get(st)
-            if ( tr ) {
-                this.boundaryTrips.push(tr)
-            }
-        }
-
-        //
-        tripMap.clear()
+        // double trips
+        let dTrips = []
         for( let tr of tripResults.doubleTrips) {
             if ( tr.trip && !tripMap.has(tr.trip.text) ) {
-                tripMap.set(tr.trip.text,tr.trip) 
+                tripMap.set(tr.trip.text,tr) 
+                dTrips.push(tr.trip.text)
             }
         }
-        let dTrips = Array.from(tripMap.keys())
+        // sort single and double trip and concatenate
+        trips.sort()
         dTrips.sort()
-        for( let st of dTrips) {
+        trips = trips.concat(dTrips)
+        //
+        for( let st of trips) {
             let tr = tripMap.get(st)
             if ( tr ) {
-                this.boundaryTrips.push(tr)
+                this.boundaryTrips.push(tr.trip)
             }
         }
-
     }
 
     runBoundaryTrip(trip: BoundaryTrip | null) {

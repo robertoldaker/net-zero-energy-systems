@@ -57,7 +57,7 @@ export class LinkLineData {
     }
 
     getBranchOptions(b: LoadflowLink): google.maps.PolylineOptions {
-        let isBoundary = this.mapComponent.loadflowDataService.isBoundaryBranch(b.id)
+        let isBoundary = this.mapComponent.dataService.isBoundaryBranch(b.id)
         let options = this.getPolylineOptions(b, false, isBoundary);
         options.path = [
             { lat: b.gisData1.latitude, lng: b.gisData1.longitude },
@@ -163,7 +163,7 @@ export class LinkLineData {
     }
 
     private isTripped(branch: Branch): boolean {
-        return this.mapComponent.loadflowDataService.isTripped(branch.id) ? true : false
+        return this.mapComponent.dataService.isTripped(branch.id) ? true : false
     }
     
 }

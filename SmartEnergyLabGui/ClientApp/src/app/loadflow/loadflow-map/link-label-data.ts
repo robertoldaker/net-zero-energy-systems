@@ -1,6 +1,6 @@
 import { GISData } from "src/app/data/app.data";
 import { IMapData, MapOptions } from "src/app/utils/map-options";
-import { LoadflowMapComponent } from "./loadflow-map.component";
+import { LoadflowMapComponent, MapFlowFilter } from "./loadflow-map.component";
 import { LoadflowLink, PercentCapacityThreshold, UpdateLocationData } from "../loadflow-data-service.service";
 
 export class LinkLabelData {
@@ -62,8 +62,8 @@ export class LinkLabelData {
             let amm = this.mapComponent.linkMarkers?.get(index)
             if ( amm ) {
                 let element:any = amm.advancedMarker.content
-                let className = this.getClassName(link,tol)
-                element.className = className.cn                
+                let linkInfo = this.getLinkInfo(link,tol)
+                element.className = linkInfo.cn                
             }
         }
     } 
@@ -71,9 +71,9 @@ export class LinkLabelData {
     private getLinkLabelOptions(link: LoadflowLink, tol: number): google.maps.marker.AdvancedMarkerElementOptions {
         const linkLabelDiv = document.createElement('div');
 
-        let className = this.getClassName(link,tol)
-        linkLabelDiv.className = className.cn
-        linkLabelDiv.textContent = this.getLabel(link)
+        let linkInfo = this.getLinkInfo(link,tol)
+        linkLabelDiv.className = linkInfo.cn
+        linkLabelDiv.textContent = linkInfo.label
         let lat = (link.gisData1.latitude + link.gisData2.latitude)/2;
         let lng = (link.gisData1.longitude + link.gisData2.longitude)/2;
         return {
@@ -82,7 +82,7 @@ export class LinkLabelData {
                 lng: lng,
             },
             content: linkLabelDiv,            
-            zIndex: className.zIndex,
+            zIndex: linkInfo.zIndex,
             gmpDraggable: false
         }
     }
@@ -107,34 +107,56 @@ export class LinkLabelData {
         return label
     }
 
-    private getClassName(link: LoadflowLink, tol: number):{cn: string, zIndex: number } {
+    private getLinkInfo(link: LoadflowLink, tol: number):{cn: string, zIndex: number, label: string } {
         let label = this.getLabel(link)
+        let ds = this.mapComponent.dataService
         let flowFilter = this.mapComponent.flowFilter
-        let ds = this.mapComponent.loadflowDataService
+        if ( label && ds.isBoundaryLimCct(link)) {
+            label = `*${label}*`
+        }
         let percentThreshold = ds.getFlowCapacityThreshold(link.type, link.percentCapacity)
-        if ( percentThreshold === PercentCapacityThreshold.OK) {
-            let className = "hide"
-            if ( label && flowFilter==PercentCapacityThreshold.OK) {
+        let showLabel = this.showLabel(link, flowFilter, percentThreshold)
+        let className:string,zIndex:number
+        if ( showLabel && label) {
+            if ( percentThreshold == PercentCapacityThreshold.OK) {
+                className = "flowLabel"
                 // work out if we should show based on the length of the link and a tolerance
-                let distSqr = this.getPixelDistanceSqr(link.gisData1,link.gisData2)
-                if ( distSqr > tol ) {
-                    className = "flowLabel"
-                }
-            }
-            return { cn: className, zIndex: 15}
-        } else if ( percentThreshold === PercentCapacityThreshold.Warning ) {
-            let className:string
-            if ( flowFilter == PercentCapacityThreshold.OK || flowFilter == PercentCapacityThreshold.Warning ) {
+                if ( flowFilter == MapFlowFilter.All) {
+                    let distSqr = this.getPixelDistanceSqr(link.gisData1,link.gisData2)
+                    if ( distSqr <= tol ) {
+                        className = "hide"
+                    }
+                } 
+                zIndex = 15
+            } else if ( percentThreshold == PercentCapacityThreshold.Warning ) {
                 className = "flowLabel notOK warning"
+                zIndex = 20
+            } else if ( percentThreshold == PercentCapacityThreshold.Critical ) {
+                className = "flowLabel notOK critical"
+                zIndex = 25
             } else {
-                className = "hide"
+                throw `Unexpected value for percentThreshold [${percentThreshold}]`
             }
-            return { cn: className, zIndex: 20}
-        } else if (percentThreshold === PercentCapacityThreshold.Critical) {
-            let className = "flowLabel notOK critical"
-            return { cn: className, zIndex: 25}
         } else {
-            throw `Unexpected value for percentThreshold [${percentThreshold}]`
+            className = "hide"
+            zIndex = 15
+        }
+        //
+        return {cn: className, zIndex: zIndex, label: label}
+    }
+
+    private showLabel(link: LoadflowLink, flowFilter: MapFlowFilter, percentThreshold: PercentCapacityThreshold) {
+        let ds = this.mapComponent.dataService
+        if ( flowFilter === MapFlowFilter.All ) {
+            return true;
+        } else if ( flowFilter === MapFlowFilter.Warning) {
+            return (percentThreshold === PercentCapacityThreshold.Warning || percentThreshold === PercentCapacityThreshold.Critical)
+        } else if ( flowFilter === MapFlowFilter.Critical) {
+            return percentThreshold === PercentCapacityThreshold.Critical
+        } else if ( flowFilter === MapFlowFilter.Boundary)  {
+            return ds.isBoundaryLink(link) || ds.isBoundaryLimCct(link)
+        } else {
+            throw `Unexpected value for MapFlowFilter [${flowFilter}]`
         }
     }
 

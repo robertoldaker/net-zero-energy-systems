@@ -12,6 +12,8 @@ import { LinkLabelData } from './link-label-data';
 import { LocMarkerData } from './loc-marker-data';
 import { LinkLineData } from './link-line-data';
 
+export enum MapFlowFilter { All, Warning, Critical, Boundary }
+
 @Component({
     selector: 'app-loadflow-map',
     templateUrl: './loadflow-map.component.html',
@@ -30,36 +32,42 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     @ViewChild('divContainer') divContainer: ElementRef | undefined
 
     constructor(
-        public loadflowDataService: LoadflowDataService,
+        public dataService: LoadflowDataService,
         private messageService: ShowMessageService,
         private dialogService: DialogService,
-        private dataService: DataClientService,
+        private dataClientService: DataClientService,
         private datasetsService: DatasetsService
     ) {
         super();
-        this.addSub(this.loadflowDataService.LocationDataUpdated.subscribe((updateLocationData) => {
+        this.addSub(this.dataService.LocationDataUpdated.subscribe((updateLocationData) => {
             // add markers and lines to represent loadflow nodes, branches and ctrls 
             this.updateMapData(updateLocationData)
         }))
-        this.addSub(this.loadflowDataService.BoundarySelected.subscribe((boundaryLinks) => {
+        this.addSub(this.dataService.BoundarySelected.subscribe((boundaryLinks) => {
+            // reset filter
+            if ( this.dataService.boundaryName ) {
+                this.flowFilter = MapFlowFilter.Boundary
+            } else {
+                this.flowFilter = MapFlowFilter.All
+            }
             // update links to show boundary links
             this.linkPolylineData.updateAll()
         }))
-        this.addSub(this.loadflowDataService.BoundaryTripSelected.subscribe((boundaryLinks) => {
+        this.addSub(this.dataService.BoundaryTripSelected.subscribe((boundaryLinks) => {
             // update links to show boundary links
             this.linkPolylineData.updateAll()
         }))
-        this.addSub(this.loadflowDataService.ObjectSelected.subscribe((selectedItem) => {
+        this.addSub(this.dataService.ObjectSelected.subscribe((selectedItem) => {
             // select an object (link or location)
             this.selectObject(selectedItem)
         }))
-        this.addSub(loadflowDataService.LocationDraggingChanged.subscribe((value) => {
+        this.addSub(dataService.LocationDraggingChanged.subscribe((value) => {
             this.updateDraggable()
         }))
 
     }
 
-    flowFilter: PercentCapacityThreshold = PercentCapacityThreshold.OK
+    flowFilter: MapFlowFilter = MapFlowFilter.All
     addBranchHandler: AddBranchHandler | undefined
     addLocationHandler: AddLocationHandler | undefined
 
@@ -75,10 +83,10 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             this.map?.controls[google.maps.ControlPosition.TOP_LEFT].push(this.buttons.nativeElement);
         }
         if (this.locInfoWindow) {
-            this.addBranchHandler = new AddBranchHandler(this.locInfoWindow, this.messageService, this.dialogService, this.loadflowDataService)
+            this.addBranchHandler = new AddBranchHandler(this.locInfoWindow, this.messageService, this.dialogService, this.dataService)
         }
         if (this.map?.googleMap) {
-            this.addLocationHandler = new AddLocationHandler(this.map.googleMap, this.messageService, this.dialogService, this.loadflowDataService)
+            this.addLocationHandler = new AddLocationHandler(this.map.googleMap, this.messageService, this.dialogService, this.dataService)
         }
     }
 
@@ -150,7 +158,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     updateDraggable() {
         if (this.locMapMarkers) {
             for (let amm of this.locMapMarkers) {
-                amm.advancedMarker.gmpDraggable = this.loadflowDataService.locationDragging
+                amm.advancedMarker.gmpDraggable = this.dataService.locationDragging
             }
         }
     }
@@ -175,19 +183,19 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         if (this.addBranchHandler?.inProgress) {
             this.addBranchHandler.location2Selected(mapData.id)
         } else {
-            this.loadflowDataService.selectLocation(mapData.id)
+            this.dataService.selectLocation(mapData.id)
         }
     }
 
     locMarkerDragEnd(e: { mo: IMapData<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLocation>, e: any }) {
-        let loc = this.loadflowDataService.getLocation(e.mo.id)
+        let loc = this.dataService.getLocation(e.mo.id)
         if (loc && this.datasetsService.currentDataset) {
             // stops polyLine and markers from being selected that meybe under the cursor after performing a marker drag
             e.e.domEvent.stopPropagation()
             // save data
             let data = { latitude: e.e.latLng.lat(), longitude: e.e.latLng.lng() };
-            this.dataService.EditItem({ id: loc.id, datasetId: this.datasetsService.currentDataset.id, className: "GridSubstationLocation", data: data }, (resp) => {
-                this.loadflowDataService.afterEdit(resp)
+            this.dataClientService.EditItem({ id: loc.id, datasetId: this.datasetsService.currentDataset.id, className: "GridSubstationLocation", data: data }, (resp) => {
+                this.dataService.afterEdit(resp)
             }, (errors) => {
                 console.log(errors)
             })
@@ -195,7 +203,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     }
 
     linkLineClicked(branchId: number) {
-        this.loadflowDataService.selectLink(branchId)
+        this.dataService.selectLink(branchId)
     }
 
     selectMarker(loc: LoadflowLocation, mm: MapAdvancedMarker, select: boolean) {
@@ -247,7 +255,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         if (this.addLocationHandler?.inProgress && e.latLng) {
             this.addLocationHandler.addLocation(e.latLng);
         } else {
-            this.loadflowDataService.clearMapSelection();
+            this.dataService.clearMapSelection();
         }
     }
 
@@ -328,7 +336,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     }
 
     clearSelection() {
-        this.loadflowDataService.clearMapSelection()
+        this.dataService.clearMapSelection()
     }
 
     zoomIn() {
@@ -358,7 +366,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.addLocationHandler?.start()
     }
 
-    setFlowFilter( flowFilter: PercentCapacityThreshold) {
+    setFlowFilter( flowFilter: MapFlowFilter) {
         this.flowFilter = flowFilter
         this.linkLabelData.updateForZoom()
     }

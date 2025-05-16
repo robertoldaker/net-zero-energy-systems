@@ -74,7 +74,7 @@ export class LocMarkerData {
             title: `${loc.reference}: ${loc.name}`,
             content: locSvg,
             zIndex: 15,
-            gmpDraggable: this.mapComponent.loadflowDataService.locationDragging
+            gmpDraggable: this.mapComponent.dataService.locationDragging
         }
     }
     

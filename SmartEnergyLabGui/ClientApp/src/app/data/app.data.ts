@@ -455,7 +455,7 @@ export interface AllTripResult {
     surplus: number
     capacity: number
     trip: BoundaryTrip | null
-    limCCt: string[]
+    limCct: string[]
     ctrls: CtrlResult[]
 }
 

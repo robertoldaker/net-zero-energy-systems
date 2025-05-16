@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { LoadflowMapComponent } from '../loadflow-map.component';
+import { LoadflowMapComponent, MapFlowFilter } from '../loadflow-map.component';
 import { LoadflowDataService, PercentCapacityThreshold } from '../../loadflow-data-service.service';
 import { LoadflowDataComponent } from '../../data/loadflow-data/loadflow-data.component';
 import { ComponentBase } from 'src/app/utils/component-base';
@@ -11,7 +11,10 @@ import { ComponentBase } from 'src/app/utils/component-base';
 })
 export class LoadflowMapButtonsComponent  extends ComponentBase implements OnInit {
 
-    constructor(private mapComponent: LoadflowMapComponent,private dataComponent: LoadflowDataComponent, private loadflowService: LoadflowDataService) { 
+    constructor(
+        private mapComponent: LoadflowMapComponent,
+        private dataComponent: LoadflowDataComponent, 
+        private dataService: LoadflowDataService) { 
         super()
     }
 
@@ -25,7 +28,7 @@ export class LoadflowMapButtonsComponent  extends ComponentBase implements OnIni
     }
 
     resetZoom() {
-        this.loadflowService.clearMapSelection()
+        this.dataService.clearMapSelection()
         this.mapComponent.resetZoom()
     }
 
@@ -34,38 +37,47 @@ export class LoadflowMapButtonsComponent  extends ComponentBase implements OnIni
     }
 
     toggleLocationDragging() {
-        let newValue = !this.loadflowService.locationDragging
-        this.loadflowService.setLocationDragging(newValue)
+        let newValue = !this.dataService.locationDragging
+        this.dataService.setLocationDragging(newValue)
     }
 
     get locationDragging():boolean {
-        return this.loadflowService.locationDragging
+        return this.dataService.locationDragging
     }
 
     get isEditable():boolean {
-        return !this.loadflowService.dataset.isReadOnly
+        return !this.dataService.dataset.isReadOnly
     }
 
     get hasResults():boolean {
-        let result =  this.loadflowService.loadFlowResults ? true : false
+        let result =  this.dataService.loadFlowResults ? true : false
         return result
     }
 
-    flowFilters = [
-        { id: PercentCapacityThreshold.OK, text: "All flows" },
-        { id: PercentCapacityThreshold.Warning, text: `Flows > ${LoadflowDataService.WarningFlowThreshold}% capacity` },
-        { id: PercentCapacityThreshold.Critical, text: `Flows > ${LoadflowDataService.CriticalFlowThreshold}% capacity` }
-    ]
+    flowFilters:any[] = [
+        { id: MapFlowFilter.All, text: "All flows", enabled: true },
+        { id: MapFlowFilter.Boundary, text: "Boundary only", enabled: this.dataService.boundaryName },
+        { id: MapFlowFilter.Warning, text: `Flows > ${LoadflowDataService.WarningFlowThreshold}% capacity`, enabled: true },
+        { id: MapFlowFilter.Critical, text: `Flows > ${LoadflowDataService.CriticalFlowThreshold}% capacity`, enabled: true }
+        ]
 
-    get flowFilter(): PercentCapacityThreshold {
+    get flowFilter(): MapFlowFilter {
         return this.mapComponent.flowFilter
     }
 
-    get isFlowFilterSet(): boolean {
-        return this.mapComponent.flowFilter!==PercentCapacityThreshold.OK
+    isFlowFilterDisabled(id: MapFlowFilter) {
+        if ( id == MapFlowFilter.Boundary && !this.dataService.boundaryName) {
+            return true
+        } else {
+            return false
+        }
     }
 
-    selectFlowFilterOption(e: any, f: { id:PercentCapacityThreshold,text: string}) {
+    get isFlowFilterSet(): boolean {
+        return this.mapComponent.flowFilter!==MapFlowFilter.All
+    }
+
+    selectFlowFilterOption(e: any, f: { id:MapFlowFilter,text: string}) {
         this.mapComponent.setFlowFilter(f.id)
     }
 

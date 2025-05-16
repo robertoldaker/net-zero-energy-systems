@@ -36,6 +36,14 @@ export class LoadflowMapKeyComponent  extends ComponentBase {
         }
     }
 
+    get boundaryCapacity() {
+        if ( this.loadflowDataService.boundaryTripResult ) {
+            return this.loadflowDataService.boundaryTripResult.capacity.toFixed(0)
+        } else {
+            return ''
+        }
+    }
+
     get warningFlowThreshold() {
         return LoadflowDataService.WarningFlowThreshold
     }
