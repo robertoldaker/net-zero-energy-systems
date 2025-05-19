@@ -1,16 +1,18 @@
 #!/bin/bash
-
+#
+# Script to check website
+#
 # --- Configuration ---
 URL="https://lv-data.net-zero-energy-systems.org/LoadProfiles/GridSupplyPointLoadProfiles?id=86&source=3&year=2021" # Website URL to check (passed as the first argument)
 EMAIL_TO="roldaker@gmail.com" # Email address to send error notifications to
-EMAIL_SUBJECT="Website Check Failed"
+EMAIL_SUBJECT="net-zero-energy-systems.org website check failed"
 EMAIL_FROM="admin@net-zero-energy-systems.org"
 SMTP_SERVER="127.0.0.1"   # Your SMTP server address (e.g., smtp.gmail.com)
-SMTP_PORT="25"                # Your SMTP server port (e.g., 587 for TLS)
-SMTP_USER=""   # Your SMTP username (if required)
-SMTP_PASSWORD="" # Your SMTP password (if required)
+SMTP_PORT="25"            # Your SMTP server port (e.g., 587 for TLS)
+SMTP_USER=""              # Your SMTP username (if required)
+SMTP_PASSWORD=""          # Your SMTP password (if required)
 
-LOG_FILE="/tmp/website_check.log" # Optional log file
+LOG_FILE="CheckWebsite.log" # Optional log file
 
 # --- Helper Functions ---
 
@@ -49,12 +51,12 @@ if [ -z "$URL" ]; then
   exit 1
 fi
 
-log_message "Checking website: $URL"
+#log_message "Checking website: $URL"
 
 # Perform the GET request and capture the response code
 response_code=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
 
-log_message "HTTP Response Code: $response_code"
+#log_message "HTTP Response Code: $response_code"
 
 # Check for error conditions (non-2xx or 3xx status codes are often considered errors)
 if [[ ! "$response_code" =~ ^(2|3)[0-9]{2}$ ]]; then
