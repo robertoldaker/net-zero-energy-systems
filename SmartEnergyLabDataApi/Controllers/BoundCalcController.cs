@@ -63,7 +63,7 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("Run")]
-        public IActionResult Run(int datasetId, SetPointMode setPointMode, TransportModel transportModel, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null )
+        public IActionResult Run(int datasetId, SetPointMode setPointMode, TransportModelOld transportModel, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null )
         {
             try {
                 var resp = BoundCalc.BoundCalc.Run(datasetId,setPointMode,transportModel,boundaryName,boundaryTrips,tripStr,connectionId,_hubContext);
@@ -78,7 +78,7 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("RunBoundaryTrip")]
-        public IActionResult RunBoundaryTrip(int datasetId, SetPointMode setPointMode, TransportModel transportModel, string boundaryName, string tripName, string? tripStr )
+        public IActionResult RunBoundaryTrip(int datasetId, SetPointMode setPointMode, TransportModelOld transportModel, string boundaryName, string tripName, string? tripStr )
         {
             try {
                 var resp = BoundCalc.BoundCalc.RunBoundaryTrip(datasetId,setPointMode,transportModel, boundaryName, tripName, tripStr);
@@ -106,7 +106,7 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("AdjustBranchCapacities")]
-        public BoundCalcResults AdjustBranchCapacities(int datasetId, TransportModel transportModel){            
+        public BoundCalcResults AdjustBranchCapacities(int datasetId, TransportModelOld transportModel){            
             return BoundCalc.BoundCalc.AdjustBranchCapacities(datasetId,transportModel,this.GetUserId());
         }
 

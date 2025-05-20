@@ -7,7 +7,7 @@ using SmartEnergyLabDataApi.Data.BoundCalc;
 
 namespace SmartEnergyLabDataApi.BoundCalc
 {
-    public enum TransportModel {PeakSecurity,YearRound};
+    public enum TransportModelOld {PeakSecurity,YearRound};
     public enum SetPointMode {Zero,Auto,Manual}
     public class BoundCalc : IDisposable {
 
@@ -22,7 +22,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         private Boundaries _boundaries;
         private DatasetData<Zone> _zones;
         private NodeOrder _nord;
-        private TransportModel _transportModel;
+        private TransportModelOld _transportModel;
         public SparseMatrix admat;
         public SolveLinSym _ufac;
 
@@ -74,7 +74,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        public TransportModel TransportModel {
+        public TransportModelOld TransportModel {
             get {
                 return _transportModel;
             }
@@ -86,7 +86,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        public BoundCalc(int datasetId, SetPointMode setPointMode=SetPointMode.Auto, TransportModel transportModel = TransportModel.PeakSecurity, bool buildOptimiser=false) {
+        public BoundCalc(int datasetId, SetPointMode setPointMode=SetPointMode.Auto, TransportModelOld transportModel = TransportModelOld.PeakSecurity, bool buildOptimiser=false) {
             _da = new DataAccess();
             _dataset = _da.Datasets.GetDataset(datasetId);
             if ( _dataset == null) {
@@ -1050,7 +1050,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             //}
         }
  
-        public static BoundCalcResults AdjustBranchCapacities(int datasetId, TransportModel transportModel, int userId) {
+        public static BoundCalcResults AdjustBranchCapacities(int datasetId, TransportModelOld transportModel, int userId) {
             int year, targetYear;
 
             // Get branches in separate DataAccess instance to prevent it being overwritten
@@ -1111,7 +1111,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         }
 
-        public static BoundCalcResults Run(int datasetId, SetPointMode setPointMode, TransportModel transportModel, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null, IHubContext<NotificationHub> hubContext=null)
+        public static BoundCalcResults Run(int datasetId, SetPointMode setPointMode, TransportModelOld transportModel, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null, IHubContext<NotificationHub> hubContext=null)
         {
             using( var bc = new BoundCalc(datasetId, setPointMode, transportModel, true) ) {
                 if ( connectionId!=null ) {
@@ -1158,7 +1158,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        public static BoundCalcResults RunBoundaryTrip(int datasetId, SetPointMode setPointMode, TransportModel transportModel, string boundaryName, string tripName, string tripStr)
+        public static BoundCalcResults RunBoundaryTrip(int datasetId, SetPointMode setPointMode, TransportModelOld transportModel, string boundaryName, string tripName, string tripStr)
         {
             using( var bc = new BoundCalc(datasetId, setPointMode, transportModel, true) ) {
                 var bnd = bc.Boundaries.GetBoundary(boundaryName);
