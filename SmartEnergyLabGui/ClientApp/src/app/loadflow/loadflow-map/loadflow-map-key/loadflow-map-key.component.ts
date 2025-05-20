@@ -19,9 +19,9 @@ export class LoadflowMapKeyComponent  extends ComponentBase {
     }
 
     get boundaryTrip() {
-        if ( this.loadflowDataService.boundaryTrip ) {
-            return this.loadflowDataService.boundaryTrip.text
-        } else if ( this.loadflowDataService.boundaryTrip == null ) {
+        if ( this.loadflowDataService.boundaryTripResult?.trip ) {
+            return this.loadflowDataService.boundaryTripResult.trip.text
+        } else if ( this.loadflowDataService.boundaryTripResult?.trip == null ) {
             return "Intact"
         } else {
             return ""
@@ -29,8 +29,8 @@ export class LoadflowMapKeyComponent  extends ComponentBase {
     }
 
     get boundaryTripBranchCodes():string[] {
-        if ( this.loadflowDataService.boundaryTrip ) {
-            return this.loadflowDataService.boundaryTrip.branchCodes
+        if ( this.loadflowDataService.boundaryTripResult?.trip ) {
+            return this.loadflowDataService.boundaryTripResult.trip.branchCodes
         } else {
             return []
         }

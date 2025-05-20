@@ -39,7 +39,7 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="tripSelected(row.trip)" class="tableRow"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="tripSelected(row)" class="tableRow"></tr>
     
     </table>
 <app-div-auto-scroller>

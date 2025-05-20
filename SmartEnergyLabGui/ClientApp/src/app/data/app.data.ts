@@ -262,7 +262,6 @@ export interface LoadflowResults {
     branches: DatasetData<Branch>,
     ctrls: DatasetData<Ctrl>,
     boundaryTripResults: BoundaryTripResults
-    boundaryFlowResult: BoundaryFlowResult,
     boundaryTrips: BoundaryTrips,
     nodeMismatchError: boolean
     nodeMismatchErrorAsc: boolean
@@ -322,14 +321,6 @@ export interface CtrlResult {
     id: number,
     code: string,
     setPoint: number | null
-}
-
-export interface BoundaryFlowResult {
-    genInside: number,
-    demInside: number,
-    genOutside: number,
-    demOutside: number,
-    ia: number
 }
 
 export interface Node {

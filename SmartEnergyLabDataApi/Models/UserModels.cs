@@ -142,7 +142,7 @@ namespace SmartEnergyLabDataApi.Models
             string url = AppEnvironment.Instance.GetGuiUrl("/ResetPassword", new { token=token});
             //
             var email = new Email(Email.SystemEmailAddress.Admin);
-            email.Send(user.Email,"Net Zero Enery Systems password reset",@$"
+            email.Send(user.Email,"Net Zero Energy Systems password reset",@$"
 <div>Please find a link to reset your password below:-</div>
 <br/>
 <div>

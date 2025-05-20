@@ -74,10 +74,9 @@ export class LoadflowDataService {
     inRun: boolean = false
     trips: Map<number,boolean> = new Map()
     setPointMode: SetPointMode = SetPointMode.Auto
-    boundaryTrip: BoundaryTrip | null | undefined
-    boundaryTrips: (BoundaryTrip | null)[] = []
-    boundaryTripResultMap: Map<string | null,AllTripResult> = new Map()
+    boundaryTripResultMap: Map<string,AllTripResult> = new Map()
     boundaryTripResult: AllTripResult | undefined
+    boundaryTripResults: AllTripResult[] = []
     needsCalc: boolean = true
     private _locationDragging: boolean = false
 
@@ -153,20 +152,14 @@ export class LoadflowDataService {
         this.BoundarySelected.emit()
     }
 
-    setBoundaryTrip(boundaryTrip: BoundaryTrip | null | undefined) {
-        this.boundaryTrip = boundaryTrip
-        if ( boundaryTrip!==undefined ) {
-            let text = boundaryTrip===null ? null : boundaryTrip.text
-            this.boundaryTripResult = this.boundaryTripResultMap.get(text)
-        } else {
-            this.boundaryTripResult = undefined
-        }
+    setBoundaryTrip(tripResult: AllTripResult | undefined) {
+        this.boundaryTripResult = tripResult
         this.BoundaryTripSelected.emit()
     }
 
     isBoundaryTrip(link: LoadflowLink):boolean {
-        if ( this.boundaryTrip ) {
-            let result = link.branches.find(m=>this.boundaryTrip?.branchIds.includes(m.id))
+        if ( this.boundaryTripResult ) {
+            let result = link.branches.find(m=>this.boundaryTripResult?.trip?.branchIds.includes(m.id))
             return result ? true: false
         } else {
             return false
@@ -199,7 +192,7 @@ export class LoadflowDataService {
     }
 
     isBoundaryLimCct(link: LoadflowLink):boolean {
-        if( this.boundaryTrip!==undefined ) {
+        if( this.boundaryTripResult!==undefined ) {
             return link.branches.find( m=>this.boundaryTripResult?.limCct.find(n=>n.endsWith(':' + m.code))) ? true : false
         } else {
             return false;
@@ -221,14 +214,12 @@ export class LoadflowDataService {
         this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, this.transportModel, boundaryName, boundaryTrips, tripStr, (results)=>{
             if ( boundaryTrips && results.boundaryTripResults) {
                 this.setBoundaryTrips(results.boundaryTripResults)
-                this.setBoundaryTrip(results.boundaryTripResults?.worstTrip)
             } 
             this.afterCalc(results)
         });
     }
 
     private clearBoundaryTrips() {
-        this.boundaryTrips = []
         this.boundaryTripResultMap.clear()
         this.boundaryTripResult = undefined
     }
@@ -238,46 +229,39 @@ export class LoadflowDataService {
         this.boundaryTripResult = undefined
         tripMap.clear()
 
-        // set intact trips
-        this.boundaryTrips = [null]
-        tripMap.set(null,tripResults.intactTrips[0])
+        // set intact trips        
+        tripMap.set("Intact",tripResults.intactTrips[0])
 
         // single trips
-        let trips = []
         for( let tr of tripResults.singleTrips) {
             if ( tr.trip && !tripMap.has(tr.trip.text) ) {
                 tripMap.set(tr.trip.text,tr) 
-                trips.push(tr.trip.text)
             }
         }
         // double trips
-        let dTrips = []
         for( let tr of tripResults.doubleTrips) {
             if ( tr.trip && !tripMap.has(tr.trip.text) ) {
                 tripMap.set(tr.trip.text,tr) 
-                dTrips.push(tr.trip.text)
             }
         }
-        // sort single and double trip and concatenate
-        trips.sort()
-        dTrips.sort()
-        trips = trips.concat(dTrips)
-        //
-        for( let st of trips) {
-            let tr = tripMap.get(st)
-            if ( tr ) {
-                this.boundaryTrips.push(tr.trip)
-            }
-        }
+        // Order by capacity
+        let btResults = Array.from(tripMap.values())
+        btResults.sort((a: AllTripResult,b: AllTripResult)=> {
+            return a.capacity-b.capacity
+        })
+        // set initial trip to be the worst trip
+        this.boundaryTripResult = btResults.find( m=>m.trip?.text === tripResults.worstTrip.text)
+        this.boundaryTripResults = btResults
     }
 
-    runBoundaryTrip(trip: BoundaryTrip | null) {
+    runBoundaryTrip(tripResult: AllTripResult) {
         if ( this.boundaryName ) {
+            let trip = tripResult.trip
             let tripStr = trip!=null ? trip.lineNames.join(',') : ''
             let tripName = trip!=null ? trip.text : "Intact"
             this.inRun = true;
             this.dataClientService.RunBoundaryTrip( this.dataset.id, this.setPointMode, this.transportModel, this.boundaryName, tripName, tripStr, (results)=>{                
-                this.setBoundaryTrip(trip)
+                this.setBoundaryTrip(tripResult)
                 this.afterCalc(results, true)
             });    
         }
@@ -794,8 +778,8 @@ export class LoadflowDataService {
 
     public isTripped(branchId : number): boolean {
         if ( this.boundaryName ) {
-            if ( this.boundaryTrip ) {
-                return this.boundaryTrip.branchIds.findIndex(m=>m === branchId) >=0 ? true : false
+            if ( this.boundaryTripResult && this.boundaryTripResult.trip ) {
+                return this.boundaryTripResult.trip.branchIds.findIndex(m=>m === branchId) >=0 ? true : false
             } else {
                 return false
             }

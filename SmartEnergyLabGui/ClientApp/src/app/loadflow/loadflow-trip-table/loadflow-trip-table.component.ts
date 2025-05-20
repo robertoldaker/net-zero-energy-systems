@@ -68,13 +68,13 @@ export class LoadflowTripTableComponent implements OnInit, AfterViewInit, OnDest
         }
     }
 
-    tripSelected(trip: BoundaryTrip | null) {
-        this.dataService.runBoundaryTrip(trip)
+    tripSelected(tripResult: AllTripResult) {
+        this.dataService.runBoundaryTrip(tripResult)
     }
 
     getSelectedStyle(trip: BoundaryTrip |  null) {
         let style = {}
-        if ( trip?.text === this.dataService.boundaryTrip?.text ) {
+        if ( trip?.text === this.dataService.boundaryTripResult?.trip?.text ) {
             style = {borderLeftColor: 'green'}
         }
         return style

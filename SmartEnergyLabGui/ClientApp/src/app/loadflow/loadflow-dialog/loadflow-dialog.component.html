@@ -17,11 +17,11 @@
             <div *ngIf="this.boundaryName==='Unspecified'" style="margin-bottom: 1rem">
                 <b>{{numberOfTrips}}</b> trips <span class="cellLink" style="color: navy; text-decoration: underline;" (click)="clearTrips($event);">clear</span>
             </div>
-            <div *ngIf="this.boundaryName!=='Unspecified' && boundaryTrips.length>0">
+            <div *ngIf="this.boundaryName!=='Unspecified' && boundaryTripResults.length>0">
                 <mat-form-field appearance="fill" [color]="'primary'" style="width: 7rem">
                     <mat-label>Trip</mat-label>
-                    <mat-select (selectionChange)="boundaryTripChanged($event)" [ngModel]="this.boundaryTrip">
-                        <mat-option *ngFor="let tr of boundaryTrips" [value]="tr">{{tr==null ? "Intact" : tr.text}}</mat-option>
+                    <mat-select (selectionChange)="boundaryTripChanged($event)" [ngModel]="this.boundaryTripResult">
+                        <mat-option *ngFor="let tr of boundaryTripResults" [value]="tr">{{tr.trip==null ? "Intact" : tr.trip.text}} ({{tr.capacity.toFixed(0)}} MW)</mat-option>
                     </mat-select>
                 </mat-form-field>    
             </div>
