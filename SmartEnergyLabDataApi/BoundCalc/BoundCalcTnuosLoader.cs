@@ -1,3 +1,4 @@
+using System.Configuration;
 using System.Text.RegularExpressions;
 using ExcelDataReader;
 using HaloSoft.DataAccess;
@@ -7,6 +8,7 @@ using NHibernate.Driver;
 using NHibernate.Loader.Custom;
 using NHibernate.Mapping.Attributes;
 using Org.BouncyCastle.Crypto.Parameters;
+using Remotion.Linq.Parsing.Structure.IntermediateModel;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.BoundCalc;
 using SmartEnergyLabDataApi.Models;
@@ -97,6 +99,8 @@ public class BoundCalcTnuosLoader {
     private ObjectCache<Ctrl> _ctrlCache;
     private ObjectCache<Boundary> _boundaryCache;
     private ObjectCache<BoundaryZone> _boundaryZoneCache;
+    private ObjectCache<Generator> _generatorCache;
+    private ObjectCache<TransportModel> _transportModelCache;
     private IList<BoundCalcAdjustment> _branchAdjustments;
     private int _year, _targetYear;
 
@@ -212,6 +216,7 @@ public class BoundCalcTnuosLoader {
                 throw new Exception("Dataset unexpectedly already exists");
             }
             // Caches of existing objects
+            
             var existingNodes = _da.BoundCalc.GetNodes(_dataset);
             _nodeCache = new ObjectCache<Node>(_da, existingNodes, m=>m.Code, (m,code)=>m.Code=code );
             //
@@ -239,6 +244,11 @@ public class BoundCalcTnuosLoader {
                 }
             } );
 
+            var existingGenerators = _da.BoundCalc.GetGenerators(_dataset);
+            _generatorCache = new ObjectCache<Generator>(_da, existingGenerators, m=>m.Name, (m,name)=>m.Name=name );
+
+            var existingTMs = _da.BoundCalc.GetTransportModels(_dataset);
+            _transportModelCache = new ObjectCache<TransportModel>(_da, existingTMs, m=>m.Name, (m,name)=>m.Name=name );
 
             // These are adjustments to the raw data needed to get the model to run
             _branchAdjustments = _da.BoundCalc.GetBoundCalcAdjustments(year,_targetYear);
@@ -246,20 +256,83 @@ public class BoundCalcTnuosLoader {
             msg+=loadBoundaries(formFile) + "\n";
             loadNodes(formFile);
             msg+=loadBranches(formFile) + "\n";
-            msg+=loadInterconnectors(formFile);
+            msg+=loadInterconnectors(formFile) + "\n";
+            msg+=loadGenerators(formFile) + "\n";
+            //
+            msg+=addTransportModels() + "\n";
             //
             _da.CommitChanges();
         }
         return msg;
     }
 
-    private string deleteIfExists(string name) {
+    private string addTransportModels()
+    {
         string msg = "";
-        using( var da = new DataAccess() ) {
-            var dataset = da.Datasets.GetDataset(DatasetType.BoundCalc,name);
-            if ( dataset!=null) {
+        msg += addTransportModel("Peak Security", new Dictionary<GeneratorType, double>()
+        {
+            { GeneratorType.Tidal, 0 },
+            { GeneratorType.Wave, 0 },
+            { GeneratorType.WindOffshore, 0 },
+            { GeneratorType.WindOnshore, 0 },
+        });
+        msg += addTransportModel("Year Round", new Dictionary<GeneratorType, double>()
+        {
+            { GeneratorType.Nuclear, 0.85 },
+            { GeneratorType.OCGT, 0 },
+            { GeneratorType.PumpStorage, 0.5},
+            { GeneratorType.Tidal, 0.7 },
+            { GeneratorType.Wave, 0.7 },
+            { GeneratorType.WindOffshore, 0.7 },
+            { GeneratorType.WindOnshore, 0.7 },
+        });
+        return msg;
+    }
+
+    private string addTransportModel(string name, Dictionary<GeneratorType, double> initialScalingDict)
+    {
+        string msg = "";
+        var tm = _transportModelCache.GetOrCreate(name, out bool created);
+        if (created)
+        {
+            tm.Dataset = _dataset;
+            //
+            foreach (var gt in Enum.GetValues<GeneratorType>())
+            {
+                // ignore interconnectors as modelled as a control
+                if (gt != GeneratorType.Interconnector)
+                {
+                    var autoScaling = true;
+                    double scaling = 0;
+                    if (initialScalingDict.ContainsKey(gt))
+                    {
+                        autoScaling = false;
+                        scaling = initialScalingDict[gt];
+                    }
+                    tm.Entries.Add(new TransportModelEntry()
+                    {
+                        GeneratorType = gt,
+                        TransportModel = tm,
+                        AutoScaling = autoScaling,
+                        Scaling = scaling
+                    });
+                }
+            }
+            msg += $"Added transport model [{name}]\n";
+        }
+        return msg;
+    }
+
+    private string deleteIfExists(string name)
+    {
+        string msg = "";
+        using (var da = new DataAccess())
+        {
+            var dataset = da.Datasets.GetDataset(DatasetType.BoundCalc, name);
+            if (dataset != null)
+            {
                 da.Datasets.Delete(dataset);
-                da.CommitChanges();            
+                da.CommitChanges();
                 msg = $"Deleted existing dataset [{name}]\n";
             }
         }
@@ -280,11 +353,155 @@ public class BoundCalcTnuosLoader {
             throw new Exception($"Problem extracting year from file name [{fileName}]");
         }
     }
-
-    private string loadInterconnectors(IFormFile file) {
+    
+    private string loadGenerators(IFormFile file) {
         using (var stream = file.OpenReadStream()) {
             using (var reader = ExcelReaderFactory.CreateReader(stream)) {
                 moveToSheet(reader,"GenInput");
+                return readGenerators(reader);
+            }
+        }
+    }
+    private string readGenerators(IExcelDataReader reader) {
+        bool foundStart=false;
+        while(reader.Read()) {
+            var firstCol = reader.GetString(0);
+            if ( firstCol=="Station") {
+                foundStart = true;
+                break;
+            }
+        }
+
+        if ( !foundStart ) {
+            throw new Exception("Cannot find start of interconnector data");
+        }
+        int numAdded = 0;
+        int numUpdated = 0;
+        while (reader.Read()) {
+            var name = reader.GetString(0);
+            if ( string.IsNullOrEmpty(name)) {
+                break;
+            }
+            var type = reader.GetString(1);
+            // ignore interconnectors as a generator as these are modelled as controllers and loaded separately
+            if (type == "Interconnectors")
+            {
+                continue;
+            }
+            var generatorType = parseGeneratorType(type);
+            //
+            var maxTEC = reader.GetDouble(2);
+            var node1Code = reader.GetString(4);
+            var node2Code = reader.GetString(5);
+            var node3Code = reader.GetString(6);
+            if (maxTEC > 0)
+            {
+                var gen = _generatorCache.GetOrCreate(name, out bool created);
+                if (created) {
+                    gen.Dataset = _dataset;
+                    numAdded++;
+                } else {
+                    numUpdated++;
+                }
+                // point nodes at this generator if values set
+                Node node;
+                node = getNodeFromCache(node1Code);
+                if ( node!=null) {
+                    node.Generator = gen;
+                }
+                node = getNodeFromCache(node2Code);
+                if ( node!=null) {
+                    node.Generator = gen;
+                }
+                node = getNodeFromCache(node3Code);
+                if ( node!=null) {
+                    node.Generator = gen;
+                }
+                gen.Capacity = maxTEC;
+                gen.Type = generatorType;
+            }
+        }
+        string msg = $"{numAdded} generators added, {numUpdated} generators updated";
+        Logger.Instance.LogInfoEvent($"End reading generators, {msg}");
+        return msg;
+    }
+
+    private Node? getNodeFromCache(string nodeCode)
+    {
+        Node? node = null;
+        if (!string.IsNullOrEmpty(nodeCode))
+        {
+            if (!_nodeCache.TryGetValue(nodeCode, out node))
+            {
+                throw new Exception($"Could not find node with code [{nodeCode}]");
+            }
+        }
+        return node;
+    }
+
+    private GeneratorType parseGeneratorType(string str)
+    {
+        if (str == "Biomass")
+        {
+            return GeneratorType.Biomass;
+        }
+        else if (str == "CCGT")
+        {
+            return GeneratorType.CCGT;
+        }
+        else if (str == "CHP")
+        {
+            return GeneratorType.CHP;
+        }
+        else if (str == "Coal")
+        {
+            return GeneratorType.Coal;
+        }
+        else if (str == "Hydro")
+        {
+            return GeneratorType.Hydro;
+        }
+        else if (str == "Interconnectors")
+        {
+            return GeneratorType.Interconnector;
+        }
+        else if (str == "Nuclear")
+        {
+            return GeneratorType.Nuclear;
+        }
+        else if (str == "OCGT")
+        {
+            return GeneratorType.OCGT;
+        }
+        else if (str == "Pump Storage")
+        {
+            return GeneratorType.PumpStorage;
+        }
+        else if (str == "Tidal")
+        {
+            return GeneratorType.Tidal;
+        }
+        else if (str == "Wind Offshore")
+        {
+            return GeneratorType.WindOffshore;
+        }
+        else if (str == "Wind Onshore")
+        {
+            return GeneratorType.WindOnshore;
+        }
+        else
+        {
+            throw new Exception($"Unknown generator type [{str}]");
+        }
+    }
+
+    private string loadInterconnectors(IFormFile file)
+    {
+        using (var stream = file.OpenReadStream())
+        {
+            using (var reader = ExcelReaderFactory.CreateReader(stream))
+            {
+                moveToSheet(reader, "GenInput");
                 return readInterconnectors(reader);
             }
         }

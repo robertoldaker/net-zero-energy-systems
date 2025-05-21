@@ -649,26 +649,35 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         {
             return Session.Get<Generator>(id);
         }
-        public bool GeneratorExists(int datasetId, string name, out Dataset? dataset)
+        public IList<Generator> GetGenerators(Dataset dataset)
+        {
+            return Session.QueryOver<Generator>().
+            Where(m => m.Dataset == dataset).
+            OrderBy(m => m.Id).Asc.
+            List();
+        }
+
+       public bool GeneratorExists(int itemId, int datasetId, string name, out Dataset? dataset)
         {
             // need to look at all datasets belonging to the user
             var derivedIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
             var inheritedIds = DataAccess.Datasets.GetInheritedDatasetIds(datasetId);
-            var zone = Session.QueryOver<Generator>().
+            var gen = Session.QueryOver<Generator>().
                 Where(m => m.Name.IsInsensitiveLike(name)).
                 Where(m => m.Dataset.Id.IsIn(derivedIds) || m.Dataset.Id.IsIn(inheritedIds)).
+                Where(m=>m.Id!=itemId).
                 Fetch(SelectMode.Fetch, m => m.Dataset).
                 Take(1).
                 SingleOrDefault();
-            if (zone != null)
+            if (gen != null)
             {
-                dataset = zone.Dataset;
+                dataset = gen.Dataset;
             }
             else
             {
                 dataset = null;
             }
-            return zone != null;
+            return gen != null;
         }
         public DatasetData<Generator> GetGeneratorDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Generator, bool>> expression)
         {
@@ -687,6 +696,44 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         public void Delete(TransportModel obj)
         {
             Session.Delete(obj);
+        }
+        public TransportModel GetTransportModel(int id)
+        {
+            return Session.Get<TransportModel>(id);
+        }
+        public IList<TransportModel> GetTransportModels(Dataset dataset)
+        {
+            return Session.QueryOver<TransportModel>().
+            Where(m => m.Dataset == dataset).
+            OrderBy(m => m.Id).Asc.
+            List();
+        }
+        public bool TransportModelExists(int datasetId, string name, out Dataset? dataset)
+        {
+            // need to look at all datasets belonging to the user
+            var derivedIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
+            var inheritedIds = DataAccess.Datasets.GetInheritedDatasetIds(datasetId);
+            var zone = Session.QueryOver<TransportModel>().
+                Where(m => m.Name.IsInsensitiveLike(name)).
+                Where(m => m.Dataset.Id.IsIn(derivedIds) || m.Dataset.Id.IsIn(inheritedIds)).
+                Fetch(SelectMode.Fetch, m => m.Dataset).
+                Take(1).
+                SingleOrDefault();
+            if (zone != null)
+            {
+                dataset = zone.Dataset;
+            }
+            else
+            {
+                dataset = null;
+            }
+            return zone != null;
+        }
+        public DatasetData<TransportModel> GetTransportModelDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<TransportModel, bool>> expression)
+        {
+            var query = Session.QueryOver<TransportModel>().Where(expression);
+            var di = new DatasetData<TransportModel>(DataAccess, datasetId, m => m.Id.ToString(), query);
+            return di;
         }
         #endregion
     }

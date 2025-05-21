@@ -2,6 +2,7 @@ using System.Reflection;
 using HaloSoft.DataAccess;
 using NHibernate;
 using NHibernate.Criterion;
+using NHibernate.Transform;
 using SmartEnergyLabDataApi.Data.BoundCalc;
 
 namespace SmartEnergyLabDataApi.Data;
@@ -121,7 +122,8 @@ public class Datasets : DataSet
             Func<T,string> keyFcn, 
             IQueryOver<T,T> queryOver,
             out List<UserEdit> userEdits,
-            out List<T> deletedData) 
+            out List<T> deletedData,
+            bool distinctRootEntity = false) 
             where T: class {
         // this is the dataset plus the heirarchy going back to root
         var datasetIds = GetInheritedDatasetIds(datasetId);
@@ -135,6 +137,10 @@ public class Datasets : DataSet
             q = q.Where( m=>((IDataset) m).Dataset.Id.IsIn(datasetIds));
         }
         // apply all user edits
+        if (distinctRootEntity)
+        {
+            q = q.TransformUsing(Transformers.DistinctRootEntity);            
+        }
         var data = q.List();
         applyUserEdits<T>(data,datasetIds, keyFcn, out userEdits, out deletedData);
         return data;
@@ -175,6 +181,8 @@ public class Datasets : DataSet
                             prop.SetValue(gp,ue.GetDoubleValue());
                         } else if ( prop.PropertyType == typeof (bool) || prop.PropertyType == typeof(bool?) ) {
                             prop.SetValue(gp,ue.GetBoolValue());
+                        } else if ( prop.PropertyType.IsEnum ) {
+                            prop.SetValue(gp,ue.GetEnumValue(prop.PropertyType));
                         } else {
                             prop.SetValue(gp,ue.Value);
                         }
@@ -265,6 +273,16 @@ public class Datasets : DataSet
             var locations = Session.QueryOver<GridSubstationLocation>().Where( m=>m.Dataset.Id == dataset.Id).List();
             foreach( var l in locations) {
                 Session.Delete(l);
+            }
+            // Generators
+            var generators = Session.QueryOver<Generator>().Where( m=>m.Dataset.Id == dataset.Id).List();
+            foreach( var g in generators) {
+                Session.Delete(g);
+            }
+            // Transport models
+            var tms = Session.QueryOver<TransportModel>().Where( m=>m.Dataset.Id == dataset.Id).List();
+            foreach( var tm in tms) {
+                Session.Delete(tm);
             }
         }
         Session.Delete(dataset);
@@ -386,10 +404,11 @@ public class DatasetData<T> where T : class {
 
     public DatasetData(DataAccess da, int datasetId, 
             Func<T,string> keyFcn, 
-            IQueryOver<T,T> queryOver
+            IQueryOver<T,T> queryOver,
+            bool distinctRootEntity = false
         ) {
         TableName = typeof(T).Name;
-        Data = da.Datasets.GetData<T>(datasetId, keyFcn, queryOver, out var userEdits, out var deletedData);
+        Data = da.Datasets.GetData<T>(datasetId, keyFcn, queryOver, out var userEdits, out var deletedData, distinctRootEntity);
         UserEdits = userEdits;
         DeletedData = deletedData;
     }

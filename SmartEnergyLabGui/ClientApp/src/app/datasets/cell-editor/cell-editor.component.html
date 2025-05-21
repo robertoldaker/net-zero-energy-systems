@@ -4,8 +4,8 @@
         ({{prevValue}})  
     </div>
     <ng-template #editableBlock>
-        <select *ngIf="options; else textEdit" [ngClass]="inputClass" [(ngModel)]="data.value" (ngModelChange)="saveSelect($event)">
-            <option *ngFor="let o of options" [value]="o">{{o}}</option>
+        <select *ngIf="options; else textEdit" [ngClass]="inputClass" (change)="saveSelect($event)">
+            <option *ngFor="let o of options" [value]="o" [selected]="isSelected(o)">{{o}}</option>
         </select>
         <ng-template #textEdit>
             <div class="input">

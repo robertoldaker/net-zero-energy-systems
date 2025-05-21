@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Boundary, BoundaryTrip, Branch, AllTripResult, Dataset, DatasetType, NetworkData, SetPointMode, TransportModel } from '../../data/app.data';
+import { Boundary, BoundaryTrip, Branch, AllTripResult, Dataset, DatasetType, NetworkData, SetPointMode, TransportModelOld } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { DataClientService } from 'src/app/data/data-client.service';
@@ -104,7 +104,7 @@ export class LoadflowDialogComponent extends ComponentBase {
         return this.dataService.loadFlowResults ? true : false
     }
 
-    get transportModel():TransportModel {
+    get transportModel():TransportModelOld {
         return this.dataService.transportModel
     }
 
@@ -148,7 +148,7 @@ export class LoadflowDialogComponent extends ComponentBase {
     boundaryName: string
     trips: BoundaryTrip[]
     datasetTypes = DatasetType
-    TransportModel = TransportModel
+    TransportModel = TransportModelOld
     hasCapacityError:boolean = false
     SetPointMode = SetPointMode
 }

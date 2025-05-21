@@ -253,7 +253,7 @@ export interface EVDemandStatus {
  * BoundCalc
  */
 
-export enum TransportModel {PeakSecurity,YearRound}
+export enum TransportModelOld {PeakSecurity,YearRound}
 export enum SetPointMode {Zero,Auto,Manual}
 
 export interface LoadflowResults {
@@ -341,6 +341,45 @@ export interface Node {
     mismatch: number | undefined
 }
 
+export enum GeneratorType
+    {
+        Biomass,
+        CCGT,
+        CHP,
+        Coal,
+        Hydro,
+        Interconnector,
+        Nuclear,
+        OCGT,
+        PumpStorage,
+        Tidal,
+        Wave,
+        WindOffshore,
+        WindOnshore
+    }
+
+export interface Generator {
+    id: number
+    datasetId: number
+    name: string
+    capacity: number
+    type: GeneratorType
+    typeStr: string
+}
+
+export interface TransportModel {
+    id: number
+    datasetId: number
+    Name: string
+    Entries: TransportModelEntry[]
+}
+
+export interface TransportModelEntry {
+    GeneratorType: GeneratorType
+    AutoScaling: boolean
+    Scaling: number
+}
+
 export enum BranchType { Other, HVDC, OHL, Cable, Composite, Transformer, QB, SSSC, SeriesCapacitor, SeriesReactor }
 export interface Branch {
     id: number
@@ -422,6 +461,8 @@ export interface NetworkData {
     boundaries: DatasetData<Boundary>
     zones: DatasetData<Zone>
     locations: DatasetData<GridSubstationLocation>
+    generators: DatasetData<Generator>
+    transportModels: DatasetData<TransportModel>
 }
 
 export enum GridSubstationLocationSource { NGET, SHET, SPT, GoogleMaps, Estimated, UserDefined}

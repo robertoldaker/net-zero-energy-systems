@@ -1,4 +1,6 @@
 using System.Linq;
+using System.Text.Json.Serialization;
+using NHibernate;
 using Org.BouncyCastle.Asn1.Icao;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
@@ -21,6 +23,8 @@ namespace SmartEnergyLabDataApi.BoundCalc
             // Locations
             using (var da = new DataAccess() ) {
                 Locations = loadLocations(da, bc.Dataset.Id);
+                Generators = loadGenerators(da, bc.Dataset.Id);
+                TransportModels = loadTransportModels(da, bc.Dataset.Id);
             }
             // Boundary branches
             BoundaryDict = new Dictionary<string, int[]>();
@@ -36,6 +40,8 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public DatasetData<Boundary> Boundaries {get; private set;}
         public DatasetData<Zone> Zones {get; private set;}
         public DatasetData<GridSubstationLocation> Locations {get; private set;}
+        public DatasetData<Generator> Generators { get; private set; }
+        public DatasetData<TransportModel> TransportModels {get; private set;}
         public Dictionary<string,int[]> BoundaryDict {get; private set;}
 
         private DatasetData<GridSubstationLocation> loadLocations(DataAccess da, int datasetId) {
@@ -44,23 +50,42 @@ namespace SmartEnergyLabDataApi.BoundCalc
             return locs;
         }
 
-        private void assignNodeLocations() {
+        private DatasetData<Generator> loadGenerators(DataAccess da, int datasetId) {
+            var q = da.Session.QueryOver<Generator>();
+            var objs = new DatasetData<Generator>(da, datasetId,m=>m.Id.ToString(),q);
+            return objs;
+        }
+        
+        private DatasetData<TransportModel> loadTransportModels(DataAccess da, int datasetId) {
+            var q = da.Session.QueryOver<TransportModel>();
+            q = q.Fetch(SelectMode.Fetch,m=>m.Entries[0]);
+            var objs = new DatasetData<TransportModel>(da, datasetId,m=>m.Id.ToString(),q, true);
+            return objs;
+        }
+
+        private void assignNodeLocations()
+        {
             // create dictionary using ref. as key
             var locs = Locations.Data;
             var nodes = Nodes.Data;
-            var locDict = new Dictionary<string,GridSubstationLocation>();
-            foreach( var loc in locs) {
-                if ( !locDict.ContainsKey(loc.Reference)) {
-                    locDict.Add(loc.Reference,loc);
+            var locDict = new Dictionary<string, GridSubstationLocation>();
+            foreach (var loc in locs)
+            {
+                if (!locDict.ContainsKey(loc.Reference))
+                {
+                    locDict.Add(loc.Reference, loc);
                 }
             }
             // look up node location based on first 4 chars of code
-            foreach( var n in nodes) {
-                var locCode = n.Code.Substring(0,4);
-                if ( n.Ext ) {
-                    locCode+="X";
+            foreach (var n in nodes)
+            {
+                var locCode = n.Code.Substring(0, 4);
+                if (n.Ext)
+                {
+                    locCode += "X";
                 }
-                if ( locDict.ContainsKey(locCode)) {
+                if (locDict.ContainsKey(locCode))
+                {
                     n.Location = locDict[locCode];
                 }
             }

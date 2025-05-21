@@ -170,6 +170,8 @@ import { LoadflowTripLinkComponent } from './loadflow/loadflow-trip-table/loadfl
 import { LoadflowTripCellComponent } from './loadflow/loadflow-trip-table/loadflow-trip-cell/loadflow-trip-cell.component';
 import { LoadflowBranchInfoTableComponent } from './loadflow/loadflow-map/loadflow-branch-info-table/loadflow-branch-info-table.component';
 import { LoadflowNodeInfoTableComponent } from './loadflow/loadflow-map/loadflow-node-info-table/loadflow-node-info-table.component';
+import { LoadflowDataGeneratorsComponent } from './loadflow/data/loadflow-data-generators/loadflow-data-generators.component';
+import { LoadflowDataTransportModelsComponent } from './loadflow/data/loadflow-data-transport-models/loadflow-data-transport-models.component';
 
 
 @NgModule({
@@ -294,7 +296,9 @@ import { LoadflowNodeInfoTableComponent } from './loadflow/loadflow-map/loadflow
         LoadflowTripLinkComponent,
         LoadflowTripCellComponent,
         LoadflowBranchInfoTableComponent,
-        LoadflowNodeInfoTableComponent
+        LoadflowNodeInfoTableComponent,
+        LoadflowDataGeneratorsComponent,
+        LoadflowDataTransportModelsComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

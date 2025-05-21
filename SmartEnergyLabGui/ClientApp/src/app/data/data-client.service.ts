@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType, DatasetData, EditItem, DistributionData, TransmissionData, NationalGridNetworkSource, GridSubstationLocationSource, TransportModel, SetPointMode, CtrlSetPoint } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType, DatasetData, EditItem, DistributionData, TransmissionData, NationalGridNetworkSource, GridSubstationLocationSource, TransportModelOld, SetPointMode, CtrlSetPoint } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { DialogService } from '../dialogs/dialog.service';
@@ -275,7 +275,7 @@ export class DataClientService implements ILogs {
         }, error => this.logErrorMessage(error));        
     }
 
-    RunBoundCalc( datasetId: number, setPointMode: SetPointMode, transportModel: TransportModel, boundaryName: string, boundaryTrips: boolean, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
+    RunBoundCalc( datasetId: number, setPointMode: SetPointMode, transportModel: TransportModelOld, boundaryName: string, boundaryTrips: boolean, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.showMessageService.showMessage("Calculating ...");
         this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/Run?datasetId=${datasetId}&setPointMode=${setPointMode}&transportModel=${transportModel}&boundaryName=${boundaryName}&boundaryTrips=${boundaryTrips}&tripStr=${tripStr}&connectionId=${connectionId}`,{}).subscribe( result => {
@@ -286,7 +286,7 @@ export class DataClientService implements ILogs {
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
     }
 
-    RunBoundaryTrip( datasetId: number, setPointMode: SetPointMode, transportModel: TransportModel, boundaryName: string, tripName: string, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
+    RunBoundaryTrip( datasetId: number, setPointMode: SetPointMode, transportModel: TransportModelOld, boundaryName: string, tripName: string, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.showMessageService.showMessage("Calculating ...");
         let url = `/BoundCalc/RunBoundaryTrip?datasetId=${datasetId}&setPointMode=${setPointMode}&transportModel=${transportModel}&boundaryName=${boundaryName}&tripName=${tripName}&tripStr=${tripStr}&connectionId=${connectionId}`
@@ -298,7 +298,7 @@ export class DataClientService implements ILogs {
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
     }
 
-    AdjustBranchCapacities( datasetId: number, transportModel: TransportModel, onLoad: (results: LoadflowResults)=> void | undefined) {
+    AdjustBranchCapacities( datasetId: number, transportModel: TransportModelOld, onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.showMessageService.showMessage("Calculating ...");
         this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/AdjustBranchCapacities?datasetId=${datasetId}&transportModel=${transportModel}`,{}).subscribe( result => {

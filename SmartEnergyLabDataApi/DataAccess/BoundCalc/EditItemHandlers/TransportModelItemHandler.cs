@@ -2,40 +2,36 @@
 namespace SmartEnergyLabDataApi.Data.BoundCalc;
 
 
-public class GeneratorItemHandler : BaseEditItemHandler
+public class TransportModelItemHandler : BaseEditItemHandler
 {
     public override void Check(EditItemModel m)
     {
         // name
         if ( m.GetString("name",out string name)) {
-            if (m.Da.BoundCalc.GeneratorExists(m.ItemId, m.Dataset.Id, name, out Dataset? dataset))
-            {
-                m.AddError("name", $"Generator already exists with name [{name}] in dataset [{dataset?.Name}]");
+            if ( m.Da.BoundCalc.TransportModelExists(m.Dataset.Id,name, out Dataset? dataset) ) {
+                m.AddError("name",$"Transport model already exists with name [{name}] in dataset [{dataset?.Name}]");
             }
         } else if ( m.ItemId==0) {
             m.AddError("name","Name must be set to something");
         }
-
-        // capacity
-        m.CheckDouble("capacity");
     }
 
     public override IId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
-        return id>0 ? m.Da.BoundCalc.GetGenerator(id) : new Generator(m.Dataset);
+        return id>0 ? m.Da.BoundCalc.GetTransportModel(id) : new TransportModel(m.Dataset);
     }
 
     public override void Save(EditItemModel m)
     {
-        Generator gen = (Generator) m.Item;
+        TransportModel obj = (TransportModel) m.Item;
         //
         if ( m.GetString("name",out string name)) {
-            gen.Name = name;
+            obj.Name = name;
         }
         //
-        if ( gen.Id==0) {
-            m.Da.BoundCalc.Add(gen);
+        if ( obj.Id==0) {
+            m.Da.BoundCalc.Add(obj);
         }
     }
 
@@ -43,12 +39,11 @@ public class GeneratorItemHandler : BaseEditItemHandler
     {
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();  
-            var gen = (Generator) m.Item;          
-            var genDi = da.BoundCalc.GetGeneratorDatasetData(m.Dataset.Id, m=>m.Id == gen.Id);
-            list.Add(genDi.getBaseDatasetData());
+            var obj = (TransportModel) m.Item;          
+            var di = da.BoundCalc.GetTransportModelDatasetData(m.Dataset.Id, m=>m.Id == obj.Id);
+            list.Add(di.getBaseDatasetData());
             return list;
         }
     }
 
 }
-

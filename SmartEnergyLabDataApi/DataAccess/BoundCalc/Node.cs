@@ -81,7 +81,6 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
         }
         
-        [JsonIgnore()]
         [ManyToOne(Column = "DatasetId", Cascade = "none")]
         public virtual Dataset Dataset { get; set; }
 

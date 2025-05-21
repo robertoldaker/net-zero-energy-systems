@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { AllTripResult, BoundaryTrip, BoundaryTripResults, Branch, BranchType, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, LoadflowCtrlType, LoadflowResults, NetworkData, Node, SetPointMode, TransportModel} from '../data/app.data';
+import { AllTripResult, BoundaryTrip, BoundaryTripResults, Branch, BranchType, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, LoadflowCtrlType, LoadflowResults, NetworkData, Node, SetPointMode, TransportModelOld} from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { ShowMessageService } from '../main/show-message/show-message.service';
@@ -44,6 +44,8 @@ export class LoadflowDataService {
             boundaries: { tableName: '',data:[], userEdits: [],deletedData: [] },
             zones: { tableName: '',data:[], userEdits: [],deletedData: [] },
             locations: { tableName: '',data:[], userEdits: [],deletedData: [] },
+            generators: { tableName: '', data:[], userEdits: [], deletedData: []},
+            transportModels: { tableName: '', data:[], userEdits: [], deletedData: []}
             //??boundaryDict: {},
         }
         this.locationData = { locations: [], links: []}
@@ -70,7 +72,7 @@ export class LoadflowDataService {
     loadFlowResults: LoadflowResults | undefined
     boundaryName: string | undefined
     boundaryBranchIds: number[] = []
-    transportModel: TransportModel = TransportModel.PeakSecurity
+    transportModel: TransportModelOld = TransportModelOld.PeakSecurity
     inRun: boolean = false
     trips: Map<number,boolean> = new Map()
     setPointMode: SetPointMode = SetPointMode.Auto
@@ -119,9 +121,9 @@ export class LoadflowDataService {
             this.totalDemand = 0
             this.networkData.nodes.data.forEach( m=>this.totalDemand+=m.demand)
             this.totalGeneration = 0
-            if ( this.transportModel === TransportModel.PeakSecurity ) {
+            if ( this.transportModel === TransportModelOld.PeakSecurity ) {
                 this.networkData.nodes.data.forEach( m=>this.totalGeneration+=m.generation_A)
-            } else if ( this.transportModel == TransportModel.YearRound ) {
+            } else if ( this.transportModel == TransportModelOld.YearRound ) {
                 this.networkData.nodes.data.forEach( m=>this.totalGeneration+=m.generation_B)
             }
         }
@@ -199,7 +201,7 @@ export class LoadflowDataService {
         }
     }
 
-    setTransportModel(transportModel: TransportModel) {
+    setTransportModel(transportModel: TransportModelOld) {
         this.needsCalc = true
         this.transportModel = transportModel
         this.calcTotals()
@@ -699,6 +701,10 @@ export class LoadflowDataService {
             return this.networkData.boundaries
         } else if ( typeName == "GridSubstationLocation") {
             return this.networkData.locations
+        } else if ( typeName == "Generator") {
+            return this.networkData.generators
+        } else if ( typeName == "TransportModel") {
+            return this.networkData.transportModels
         } else {
             throw `Unexpected typeName found [${typeName}]`
         }

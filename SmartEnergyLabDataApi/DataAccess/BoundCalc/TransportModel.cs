@@ -10,7 +10,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
     {
         public TransportModel()
         {
-
+            Entries = new List<TransportModelEntry>();
         }
 
         public TransportModel(Dataset dataset)

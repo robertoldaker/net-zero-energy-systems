@@ -16,6 +16,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         OCGT,
         PumpStorage,
         Tidal,
+        Wave,
         WindOffshore,
         WindOnshore
     }
@@ -48,6 +49,12 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         [Property()]
         public virtual GeneratorType Type {get; set;}
+
+        public virtual string TypeStr {
+            get {
+                return Type.ToString();
+            }
+        }
 
         [JsonIgnore()]
         [ManyToOne(Column = "DatasetId", Cascade = "none")]

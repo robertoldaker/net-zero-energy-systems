@@ -19,10 +19,10 @@ import { LoadflowMapComponent } from '../../loadflow-map/loadflow-map.component'
 export class LoadflowDataComponent extends ComponentBase implements AfterViewInit {
 
     private readonly NODES_INDEX = 0
-    private readonly BRANCHES_INDEX = 1
-    private readonly CTRLS_INDEX = 2
-    private readonly LOCATIONS_INDEX = 5
-    private readonly ALL_TRIP_RESULTS_INDEX = 6
+    private readonly BRANCHES_INDEX = 2
+    private readonly CTRLS_INDEX = 3
+    private readonly LOCATIONS_INDEX = 6
+    private readonly ALL_TRIP_RESULTS_INDEX = 8
 
     constructor(private dataService: LoadflowDataService) { 
         super()

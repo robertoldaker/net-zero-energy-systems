@@ -16,6 +16,14 @@ export class CellEditorComponent {
     }
 
     ngOnInit(): void {
+        if ( this.enumeration) {
+            this.options = []
+            for (const key in this.enumeration) {
+                if (isNaN(Number(key))) { // Ensure we only get string keys
+                    this.options.push(key)
+                }
+            }
+        }
 
     }
 
@@ -110,10 +118,20 @@ export class CellEditorComponent {
         }
     }
 
-    saveSelect(e: Event) {
-        if ( typeof this.data.value === 'string') {
-            this.saveValue(this.data.value);    
+    isSelected(v: string) {
+        if ( this.enumeration) {
+            return this.enumeration[v] === this.data.value
+        } else {
+            return v === this.data.value
         }
+    }
+
+    saveSelect(e: any) {
+        console.log('saveSelect',e.target.value)
+        this.saveValue(e.target.value);    
+       //?? if ( typeof this.data.value === 'string') {
+       //??     this.saveValue(this.data.value);    
+       //?? }
     }
 
     delete() {
@@ -145,6 +163,9 @@ export class CellEditorComponent {
 
     @Input()
     options: string[] | undefined
+
+    @Input()
+    enumeration: any
 
     @Output()
     onEdited: EventEmitter<CellEditorData> = new EventEmitter<CellEditorData>()
@@ -178,7 +199,7 @@ export class CellEditorComponent {
 
     get inputClass():string {
         let classes = this.data.userEdit ? 'existing' : ''
-        if ( typeof this.data?.value == 'number' ) {
+        if ( typeof this.data?.value == 'number' && !this.enumeration) {
             classes+=" numeric"
         } else {
             classes+=" text"

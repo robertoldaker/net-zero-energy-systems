@@ -1,0 +1,12 @@
+.mat-column-name {
+    width: 50%;
+}
+
+.mat-column-type {
+    padding-left: 4rem;
+    width: 12rem;
+}
+
+.mat-column-capacity {
+    text-align: right;
+}
