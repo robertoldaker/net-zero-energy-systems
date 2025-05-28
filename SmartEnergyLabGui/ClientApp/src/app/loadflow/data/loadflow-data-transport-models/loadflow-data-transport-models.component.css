@@ -50,3 +50,8 @@
     text-align: right;
     padding-left: 2rem;
 }
+
+div.addButton {
+    text-align: right;
+    padding-right: 0.5rem;
+}

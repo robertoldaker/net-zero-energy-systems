@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using NHibernate.Classic;
 using NHibernate.Mapping.Attributes;
 using SmartEnergyLabDataApi.BoundCalc;
 
@@ -6,7 +7,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_transport_models")]
-    public class TransportModel : IId, IDataset
+    public class TransportModel : IId, IDataset, ILifecycle
     {
         public TransportModel()
         {
@@ -43,5 +44,28 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         [JsonIgnore()]
         public virtual IList<TransportModelEntry> Entries { get; set; }
 
+        public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
+        {
+            // Delete entris pointing at this transport model
+            var entries = s.QueryOver<TransportModelEntry>().Where( m=>m.TransportModel.Id == Id).List();
+            foreach( var tme in entries) {
+                s.Delete(tme);
+            }
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual void OnLoad(NHibernate.ISession s, object id)
+        {
+        }
+
+        public virtual LifecycleVeto OnSave(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
+
+        public virtual LifecycleVeto OnUpdate(NHibernate.ISession s)
+        {
+            return LifecycleVeto.NoVeto;
+        }
     }
 }

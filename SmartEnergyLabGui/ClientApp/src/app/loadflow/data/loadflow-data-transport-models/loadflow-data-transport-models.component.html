@@ -1,6 +1,13 @@
 <div class="pageContainer">
     <div class="models">
-        <div [class]="getModelClass(tm)" *ngFor="let tm of transportModels" (click)="selectModel(tm)">{{tm.name}}</div>
+        <div [class]="getModelClass(tm)" *ngFor="let tm of transportModels" (click)="selectModel(tm)">
+            <ng-container *ngIf="isEditable(tm)">
+                <app-mini-icon-button title="Edit" (click)="edit(tm)" iconName="edit" style="margin-left: 0.3rem"></app-mini-icon-button>
+                <app-mini-icon-button title="Delete" (click)="delete(tm)" iconName="delete_forever" style="margin-right: 0.2rem" [disabled]="disableDelete"></app-mini-icon-button>
+            </ng-container>
+            <span style="vertical-align: top">{{tm.name}}</span>
+        </div>
+        <div class="addButton"><mat-icon class="iconLink" (click)="add()" >add</mat-icon></div>
     </div>
     <div class="entries">
         <div *ngIf="selectedModel">
@@ -12,7 +19,7 @@
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="totalCapacity">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Total TEC (MW)</th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header  arrowPosition="before">Total TEC (MW)</th>
                     <td mat-cell *matCellDef="let element">
                         <div>{{element.totalCapacity.value.toFixed(0)}}</div>
                     </td>

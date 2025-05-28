@@ -311,12 +311,11 @@ public class BoundCalcTnuosLoader {
                     autoScaling = false;
                     scaling = initialScalingDict[gt];
                 }
-                var tme = new TransportModelEntry(tm) {
+                var tme = new TransportModelEntry(tm, _dataset) {
                     GeneratorType = gt,
                     TransportModel = tm,
                     AutoScaling = autoScaling,
                     Scaling = scaling,
-                    Dataset = _dataset
                 };
                 _da.BoundCalc.Add(tme);
             }

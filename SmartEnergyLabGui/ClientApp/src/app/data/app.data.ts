@@ -380,6 +380,7 @@ export interface NodeGenerator {
 export interface TransportModel {
     id: number
     name: string
+    datasetId: number
 }
 
 export interface TransportModelEntry {

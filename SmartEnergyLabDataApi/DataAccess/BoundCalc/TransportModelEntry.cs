@@ -13,9 +13,10 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         }
 
-        public TransportModelEntry(TransportModel tm)
+        public TransportModelEntry(TransportModel tm, Dataset dataset)
         {
             this.TransportModel = tm;
+            this.Dataset = dataset;
         }
 
         /// <summary>
@@ -49,7 +50,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 return TransportModel.Id;
             }
         }
-        
+
         public virtual double TotalCapacity { get; set; }
     }
 }

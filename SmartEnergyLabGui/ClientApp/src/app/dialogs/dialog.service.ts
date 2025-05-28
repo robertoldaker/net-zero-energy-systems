@@ -10,7 +10,7 @@ import { RegisterUserComponent } from '../users/register-user/register-user.comp
 import { DataClientService } from '../data/data-client.service';
 import { MapDataService } from '../low-voltage/map-data.service';
 import { ChangePasswordComponent } from '../users/change-password/change-password.component';
-import { Dataset, Node } from '../data/app.data';
+import { Dataset, Node, TransportModel } from '../data/app.data';
 import { MessageDialog, MessageDialogComponent } from './message-dialog/message-dialog.component';
 import { AboutElsiDialogComponent } from '../elsi/about-elsi-dialog/about-elsi-dialog.component';
 import { ElsiHelpDialogComponent } from '../elsi/elsi-help-dialog/elsi-help-dialog.component';
@@ -25,6 +25,7 @@ import { LoadflowBranchDialogComponent } from '../loadflow/dialogs/loadflow-bran
 import { LoadflowCtrlDialogComponent } from '../loadflow/dialogs/loadflow-ctrl-dialog/loadflow-ctrl-dialog.component';
 import { LoadflowLocationDialogComponent } from '../loadflow/dialogs/loadflow-location-dialog/loadflow-location-dialog.component';
 import { IBranchEditorData } from '../loadflow/loadflow-data-service.service';
+import { LoadflowTransportModelDialogComponent } from '../loadflow/dialogs/loadflow-transport-model-dialog/loadflow-transport-model-dialog.component';
 
 @Injectable({
     providedIn: 'root'
@@ -158,6 +159,17 @@ export class DialogService {
         let options = Object.assign({},this.defaultOptions)
         options.data = cellObj
         let dialogRef = this.dialog.open(LoadflowLocationDialogComponent, options)
+        dialogRef.afterClosed().subscribe((input)=>{
+            if ( onClose ) {
+                onClose(input)
+            }
+        });
+    }
+
+    showLoadflowTransportModelDialog(transportModel:TransportModel | undefined, onClose?: (e: any)=>void) {
+        let options = Object.assign({},this.defaultOptions)
+        options.data = transportModel
+        let dialogRef = this.dialog.open(LoadflowTransportModelDialogComponent, options)
         dialogRef.afterClosed().subscribe((input)=>{
             if ( onClose ) {
                 onClose(input)

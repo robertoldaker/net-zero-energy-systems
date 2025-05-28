@@ -695,7 +695,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
             var di = new DatasetData<TransportModel>(DataAccess, datasetId, m => m.Id.ToString(), query);
             updateRefs(datasetId, di.Data);
-            //?? not convinced this is required
+            //?? not convinced this is required and seems to cause infinte loop if called??
             //??updateRefs(datasetId, di.DeletedData);
             return di;
         }

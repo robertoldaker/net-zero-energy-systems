@@ -39,9 +39,27 @@ public static class TransportModelMethods {
 
     }
 
+    public static void UpdateScaling(this TransportModel tm, DataAccess da, int datasetId)
+    {
+        // get nodes
+        var nodeQuery = da.Session.QueryOver<Node>();
+        var diNode = new DatasetData<Node>(da, datasetId, m => m.Id.ToString(), nodeQuery);
+
+        // get node generators
+        var nodeGenQuery = da.Session.QueryOver<NodeGenerator>();
+        var diNodeGen = new DatasetData<NodeGenerator>(da, datasetId, m => m.Id.ToString(), nodeGenQuery);
+
+        // get generators
+        var genQuery = da.Session.QueryOver<Generator>();
+        var diGen = new DatasetData<Generator>(da, datasetId, m => m.Id.ToString(), genQuery);
+
+        // update scaling
+        tm.UpdateScaling(diNode.Data, diNodeGen.Data, diGen.Data);
+    }
+
     public static void UpdateGenerators(this TransportModel tm, IList<Generator> generators)
     {
-        var nullNodeCount = generators.Where(m=>m.NodeCount == null).FirstOrDefault();
+        var nullNodeCount = generators.Where(m => m.NodeCount == null).FirstOrDefault();
         if (nullNodeCount != null) {
             throw new Exception($"Attempt to update generators with null node count. Please call TransportModel.UpdateScaling to update nodeCount");
         }

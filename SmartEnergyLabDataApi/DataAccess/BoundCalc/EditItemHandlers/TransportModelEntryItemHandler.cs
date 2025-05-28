@@ -51,20 +51,7 @@ public class TransportModelEntryItemHandler : BaseEditItemHandler
             // this should be all sibling entries
             var diTME = da.BoundCalc.GetTransportModelEntryDatasetData(m.Dataset.Id, m=>m.TransportModel.Id == tm.Id);
 
-            // get nodes
-            var nodeQuery = da.Session.QueryOver<Node>();
-            var diNode = new DatasetData<Node>(da, m.Dataset.Id, m => m.Id.ToString(), nodeQuery);
-
-            // get node generators
-            var nodeGenQuery = da.Session.QueryOver<NodeGenerator>();
-            var diNodeGen = new DatasetData<NodeGenerator>(da, m.Dataset.Id, m => m.Id.ToString(), nodeGenQuery);
-
-            // get generators
-            var genQuery = da.Session.QueryOver<Generator>();
-            var diGen = new DatasetData<Generator>(da, m.Dataset.Id, m => m.Id.ToString(), genQuery);
-
-            // update scaling
-            tm.UpdateScaling(diNode.Data, diNodeGen.Data, diGen.Data);
+            tm.UpdateScaling(da, m.Dataset.Id);
 
             list.Add(diTM.getBaseDatasetData());
             list.Add(diTME.getBaseDatasetData());
