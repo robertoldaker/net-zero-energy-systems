@@ -15,7 +15,7 @@ import { LoadflowDataComponent } from '../loadflow-data/loadflow-data.component'
 export class LoadflowDataGeneratorsComponent extends DataTableBaseComponent<Generator> {
 
     constructor(
-        private dataService: LoadflowDataService, 
+        private dataService: LoadflowDataService,
         private dialogService: DialogService,
         private dataComponent: LoadflowDataComponent,
      ) {
@@ -24,9 +24,8 @@ export class LoadflowDataGeneratorsComponent extends DataTableBaseComponent<Gene
 
         //
         this.createDataSource(this.dataService.dataset,dataService.networkData.generators);
-        this.displayedColumns = ['buttons','name','type','capacity']
+        this.displayedColumns = ['buttons','name','type','capacity','scaledGeneration','nodeCount']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
-            console.log('generators',results.generators)
             this.nodeMismatchError = false
             this.createDataSource(this.dataService.dataset,results.generators);
         }))

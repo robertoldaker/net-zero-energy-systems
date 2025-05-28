@@ -56,9 +56,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 j = bc.Nord.NodeId(bc.Nord.nn + 1 + i);
                 node = bc.Nodes.get(j).Obj;
                 dcn = node.Code;
-                mag = node.GetGeneration(bc.TransportModel) - node.Demand;
+                mag = node.Generation - node.Demand;
                 dceqc[i,0] = ctrlmodel.ConsDef($"{dcn}pc", LPhdr.CTLTE, mag, new object[0]);
-                dceqc[i,1] = ctrlmodel.ConsDef($"{dcn}nc", LPhdr.CTGTE, mag, new object[0]);                
+                dceqc[i,1] = ctrlmodel.ConsDef($"{dcn}nc", LPhdr.CTGTE, mag, new object[0]);
             }
 
             foreach( var ct in bc.Ctrls.Objs) {
@@ -131,7 +131,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public double ControlCost() {
             return boun.Value(ctrllp) - ctrllp.Objective();
         }
-        
+
 
         public void ResetLP() {
             int i, cvarpmc, cvarnmc;
@@ -248,7 +248,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 if ( ctrlva[i]!=null ) {
                     s = CctSensitivity(branch, i, ctrlva);
                     sf = si * s / ct.InjMax;
-                    if ( Math.Abs(s) >= CSENS) { 
+                    if ( Math.Abs(s) >= CSENS) {
                         tConsMat.SetCell(cons,ct.CtVar.Vpv.Id, sf);
                         tConsMat.SetCell(cons,ct.CtVar.Vnv.Id, -sf);
                         fc = fc + si * s * ct.GetSetPoint(SetPointMode.Auto) / ct.Obj.MaxCtrl;

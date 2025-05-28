@@ -1,5 +1,5 @@
 import { Component} from '@angular/core';
-import { Node} from 'src/app/data/app.data';
+import { DatasetData, Node, NodeGenerator, Generator} from 'src/app/data/app.data';
 import { LoadflowDataService } from 'src/app/loadflow/loadflow-data-service.service';
 import { ColumnDataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
@@ -16,7 +16,7 @@ import { LoadflowDataComponent } from '../loadflow-data/loadflow-data.component'
 export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
 
     constructor(
-        private dataService: LoadflowDataService, 
+        private dataService: LoadflowDataService,
         private dialogService: DialogService,
         private dataComponent: LoadflowDataComponent,
      ) {
@@ -45,9 +45,11 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         this.dataFilter.columnFilterMap.set(this.zoneDataFilter.columnName, this.zoneDataFilter)
 
         this.createDataSource(this.dataService.dataset,dataService.networkData.nodes);
-        this.displayedColumns = ['buttons','code','voltage','zoneName','demand','generation_A','generation_B','ext','tlf','km','mismatch']
+        this.displayedColumns = ['buttons','code','voltage','zoneName','demand','generation','ext','tlf','km','mismatch']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.nodeMismatchError = false
+            this.nodeGenerators = results.nodeGenerators
+            this.generators = results.generators
             this.createDataSource(this.dataService.dataset,results.nodes);
         }))
         this.addSub( dataService.ResultsLoaded.subscribe( (results) => {
@@ -96,11 +98,29 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         }
     }
 
+    getGenerators(nodeId: number): Generator[] {
+        let gens:Generator[] = []
+        if ( this.nodeGenerators && this.generators) {
+            let genIds = this.nodeGenerators.data.filter(m=>m.nodeId == nodeId).map(m=>m.generatorId)
+            gens = this.generators.data.filter(m=>genIds?.includes(m.id))
+        }
+        return gens
+    }
+
+    hasGenerators(nodeId: number): boolean {
+        let gen
+        if ( this.nodeGenerators && this.generators) {
+            gen = this.nodeGenerators.data.find(m=>m.nodeId == nodeId)
+        }
+        return gen ? true : false
+    }
 
     codeDataFilter: ColumnDataFilter
-    voltageDataFilter: ColumnDataFilter 
-    zoneDataFilter: ColumnDataFilter 
+    voltageDataFilter: ColumnDataFilter
+    zoneDataFilter: ColumnDataFilter
     nodeMismatchError: boolean = false;
+    nodeGenerators: DatasetData<NodeGenerator> | undefined
+    generators: DatasetData<Generator> | undefined
 
 }
 

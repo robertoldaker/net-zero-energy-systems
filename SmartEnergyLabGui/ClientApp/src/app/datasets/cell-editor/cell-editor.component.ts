@@ -11,7 +11,7 @@ import { DataTableBaseComponent } from '../data-table-base/data-table-base.compo
 })
 export class CellEditorComponent {
 
-    constructor(private datasetsService: DatasetsService) { 
+    constructor(private datasetsService: DatasetsService) {
 
     }
 
@@ -42,14 +42,19 @@ export class CellEditorComponent {
 
     private clear() {
         if ( this.input) {
-            this.input.nativeElement.value = this.value            
+            this.input.nativeElement.value = this.value
             this.error = ''
             this.changed = false
-        }    
+        }
     }
 
     onChange(e: any) {
         this.changed = true;
+    }
+
+    onChangeCheckBox(e: any) {
+        let value = e.target.checked
+        this.saveValue(value)
     }
 
     keyDown(e: any) {
@@ -100,7 +105,7 @@ export class CellEditorComponent {
             if ( this.scalingFac && !isNaN(valueDouble)) {
                 value = (valueDouble / this.scalingFac).toString()
             }
-            this.saveValue(value);    
+            this.saveValue(value);
         }
     }
 
@@ -113,8 +118,8 @@ export class CellEditorComponent {
                 this.error = error[this.data.columnName]
                 if ( this.input) {
                     this.input.nativeElement.focus()
-                }        
-            })    
+                }
+            })
         }
     }
 
@@ -127,18 +132,14 @@ export class CellEditorComponent {
     }
 
     saveSelect(e: any) {
-        console.log('saveSelect',e.target.value)
-        this.saveValue(e.target.value);    
-       //?? if ( typeof this.data.value === 'string') {
-       //??     this.saveValue(this.data.value);    
-       //?? }
+        this.saveValue(e.target.value);
     }
 
     delete() {
         if ( this.data && this.canDelete) {
             this.datasetsService.removeUserEditWithPrompt(this.data, (resp)=>{
                 this.onEdited.emit(this.data)
-            })        
+            })
         }
     }
 
@@ -167,19 +168,24 @@ export class CellEditorComponent {
     @Input()
     enumeration: any
 
+    @Input()
+    checkBox: boolean = false
+
     @Output()
     onEdited: EventEmitter<CellEditorData> = new EventEmitter<CellEditorData>()
 
     get value():any {
         let value = this.data?.value
-        if ( typeof value == "number" ) {
+        if ( this.enumeration) {
+            value = this.enumeration[value]
+        } else if ( typeof value == "number" ) {
             if ( this.scalingFac ) {
                 value=value*this.scalingFac
             }
             if ( this.decimalPlaces!==undefined ) {
                 value = value.toFixed(this.decimalPlaces)
             }
-        } 
+        }
         return value
     }
 
@@ -236,14 +242,14 @@ export class CellEditorData {
 
 
 export class DataFilter {
-    constructor(take: number, sort?: Sort) 
+    constructor(take: number, sort?: Sort)
     {
         this.take = take;
         this.sort = sort;
     }
 
-    GetCellDataObjects<T extends IId>(dataset: Dataset, datasetData: DatasetData<T>, 
-            keyFcn: (arg: T, col: string)=>string, 
+    GetCellDataObjects<T extends IId>(dataset: Dataset, datasetData: DatasetData<T>,
+            keyFcn: (arg: T, col: string)=>string,
             colFcn?: (col: string)=>string):ICellEditorDataDict[] {
         let rowData:ICellEditorDataDict[] = []
         let items:T[] = []
@@ -326,7 +332,7 @@ export class DataFilter {
                     dataStr = data.toLowerCase();
                 } else if (typeof(data) === 'number') {
                     dataStr = data.toString().toLowerCase()
-                } 
+                }
                 if ( dataStr && dataStr.includes(lcSearchStr) ) {
                     filter = true;
                 }
@@ -339,7 +345,7 @@ export class DataFilter {
     private filterData(items: any[], customFilter:ICustomDataFilter ):any[] {
         items = items.filter(item=>{
             return customFilter.filterFcn(customFilter, item)
-        })    
+        })
         return items;
     }
 
@@ -355,23 +361,23 @@ export class DataFilter {
                     if ( filter && result ) {
                         filter = true;
                     } else {
-                        filter = false                        
+                        filter = false
                     }
                 })
                 return filter
-            })    
+            })
         }
         return items;
     }
 
     private filterByEdited<T>(
         dataset: Dataset,
-        items: any[], 
+        items: any[],
         columnNames: string[],
         datasetData: DatasetData<T>,
         keyFcn: (arg: T, col: string)=>string,
         colFcn?: (col: string)=>string
-        ):any[] {            
+        ):any[] {
         items = items.filter(item=>{
             let filter = false;
             let data:any = item
@@ -397,14 +403,14 @@ export class DataFilter {
 
     private sortFcnMap: Map<string,(col: string, item1: any,item2: any)=>number> = new Map()
 
-    private sortData(items: any[]):any[] {        
+    private sortData(items: any[]):any[] {
         if ( this.sort) {
             let sortFcnTest = this.sortFcnMap.get(this.sort.active)
             let sortFcn = sortFcnTest ? sortFcnTest : this.defaultSortFcn
             let col:string = this.sort.active
             items.sort((item1,item2) => {
                 let result = sortFcn(col,item1,item2)
-                return this.sort?.direction == 'asc' ? result : -result    
+                return this.sort?.direction === 'asc' ? result : -result
             })
         }
         return items;
@@ -444,7 +450,7 @@ export class DataFilter {
         this.onlyEditedRows = false
         if ( clearFilters ) {
             this.clearFilters()
-        }   
+        }
     }
 
     public clearFilters() {
@@ -502,7 +508,7 @@ export class ColumnDataFilter {
             return this.value
         }
     }
-    
+
     disable() {
         this.enabled = false
         this.baseComponent.newFilterTable()
@@ -516,7 +522,7 @@ export class ColumnDataFilter {
             } else {
                 colItems = items.map(m=>m[this.columnName])
             }
-        
+
             let set = new Set(colItems)
             this.values = [...set]
             if ( this.values.length>0) {

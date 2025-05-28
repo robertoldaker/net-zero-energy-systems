@@ -11,14 +11,14 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
     {
         public Node()
         {
-
+            Generators = new List<Generator>();
         }
 
-        public Node(Dataset dataset)
+        public Node(Dataset dataset) : this()
         {
             this.Dataset = dataset;
         }
-        
+
         /// <summary>
         /// Database identifier
         /// </summary>
@@ -38,13 +38,19 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         [Property()]
         public virtual double Generation_B {get; set;}
 
-        public virtual double GetGeneration(TransportModelOld model) {
-            if ( model == TransportModelOld.PeakSecurity) {
-                return Generation_A;
-            } else if ( model == TransportModelOld.YearRound) {
-                return Generation_B;
-            } else {
-                throw new Exception($"Unexpected transport model found [{model}]");
+        [JsonIgnore()]
+        public virtual IList<Generator> Generators { get; set; }
+        public virtual double Generation
+        {
+            get {
+                double generation = 0;
+                foreach (var gen in Generators) {
+                    if (gen.ScaledGenerationPerNode == null) {
+                        throw new Exception($"Attempt to get ScaledGenerationPerNode when null. Please call TransportModel.UpdateGenerators to set ScaledGeneration");
+                    }
+                    generation += gen.ScaledGenerationPerNode!=null ? (double) gen.ScaledGenerationPerNode : 0;
+                }
+                return generation;
             }
         }
 
@@ -59,11 +65,11 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         [Property()]
         public virtual int Voltage {get; set;}
-        
+
 
         [ManyToOne(Column = "ZoneId", Cascade = "none", Fetch = FetchMode.Join)]
         public virtual Zone Zone {get; set;}
-        
+
 
         /// <summary>
         /// location of node
@@ -71,7 +77,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         [ManyToOne(Column = "locationId", Cascade = "none", Fetch = FetchMode.Join)]
         public virtual GridSubstationLocation Location { get; set; }
 
-        public virtual string Name { 
+        public virtual string Name {
             get {
                 if ( this.Location!=null ) {
                     return Location.Name;
@@ -80,7 +86,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 }
             }
         }
-        
+
         [ManyToOne(Column = "DatasetId", Cascade = "none")]
         public virtual Dataset Dataset { get; set; }
 
@@ -88,11 +94,8 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             get {
                 return this.Dataset.Id;
             }
-        }    
-        
-        [ManyToOne(Column = "GeneratorId", Cascade = "none")]
-        public virtual Generator Generator { get; set; }
-        
+        }
+
         public virtual string ZoneName
         {
             get
@@ -101,11 +104,11 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
         }
 
-        public virtual double? Mismatch {get; set;}    
+        public virtual double? Mismatch {get; set;}
 
-        public virtual double? TLF {get; set;}    
+        public virtual double? TLF {get; set;}
 
-        public virtual double? km {get; set;}    
+        public virtual double? km {get; set;}
 
     }
 }

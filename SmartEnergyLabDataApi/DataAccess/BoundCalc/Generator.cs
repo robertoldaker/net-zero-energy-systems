@@ -33,7 +33,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         {
             this.Dataset = dataset;
         }
-        
+
         /// <summary>
         /// Database identifier
         /// </summary>
@@ -56,6 +56,17 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
         }
 
+        public virtual int? NodeCount { get; set; }
+
+        public virtual double? ScaledGeneration { get; set; }
+
+        public virtual double? ScaledGenerationPerNode
+        {
+            get {
+                return (ScaledGeneration != null && NodeCount != null && NodeCount > 0) ? ScaledGeneration / NodeCount : null;
+            }
+        }
+
         [JsonIgnore()]
         [ManyToOne(Column = "DatasetId", Cascade = "none")]
         public virtual Dataset Dataset { get; set; }
@@ -64,7 +75,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             get {
                 return this.Dataset.Id;
             }
-        }    
-        
+        }
+
     }
 }

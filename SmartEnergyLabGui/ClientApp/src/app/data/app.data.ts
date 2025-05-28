@@ -206,8 +206,8 @@ export interface VehicleChargingCurrentType
 
 
 
-/** 
- * Data definitions for Classification Tool 
+/**
+ * Data definitions for Classification Tool
  */
 export enum SubstationMount { Ground = 0, Pole = 1 }
 
@@ -253,7 +253,6 @@ export interface EVDemandStatus {
  * BoundCalc
  */
 
-export enum TransportModelOld {PeakSecurity,YearRound}
 export enum SetPointMode {Zero,Auto,Manual}
 
 export interface LoadflowResults {
@@ -331,6 +330,7 @@ export interface Node {
     name: string
     location: GridSubstationLocation | undefined
     demand: number
+    generation: number
     generation_A: number
     generation_B: number
     ext: boolean
@@ -363,21 +363,32 @@ export interface Generator {
     datasetId: number
     name: string
     capacity: number
+    nodeCount: number
+    scaledGeneration: number
+    scaledGenerationPerNode: number
     type: GeneratorType
     typeStr: string
 }
 
-export interface TransportModel {
+export interface NodeGenerator {
     id: number
     datasetId: number
-    Name: string
-    Entries: TransportModelEntry[]
+    nodeId: number,
+    generatorId: number
+}
+
+export interface TransportModel {
+    id: number
+    name: string
 }
 
 export interface TransportModelEntry {
-    GeneratorType: GeneratorType
-    AutoScaling: boolean
-    Scaling: number
+    id: number
+    transportModelId: number
+    generatorType: GeneratorType
+    autoScaling: boolean
+    scaling: number
+    totalCapacity: number
 }
 
 export enum BranchType { Other, HVDC, OHL, Cable, Composite, Transformer, QB, SSSC, SeriesCapacitor, SeriesReactor }
@@ -411,7 +422,7 @@ export interface Branch {
     node1ZoneId: number
     node2ZoneId: number
     outaged: boolean
-    powerFlow: number | null    
+    powerFlow: number | null
     bFlow: number
     freePower: number | null
     km: number | null
@@ -421,7 +432,7 @@ export interface Branch {
 }
 
 export enum LoadflowCtrlType {  QB=0,  // Quad booster
-                                HVDC=1 // High-voltage DC 
+                                HVDC=1 // High-voltage DC
                              }
 export interface Ctrl {
     id: number
@@ -462,7 +473,10 @@ export interface NetworkData {
     zones: DatasetData<Zone>
     locations: DatasetData<GridSubstationLocation>
     generators: DatasetData<Generator>
+    nodeGenerators: DatasetData<NodeGenerator>
     transportModels: DatasetData<TransportModel>
+    transportModelEntries: DatasetData<TransportModelEntry>
+    transportModel: TransportModel | null
 }
 
 export enum GridSubstationLocationSource { NGET, SHET, SPT, GoogleMaps, Estimated, UserDefined}
@@ -513,7 +527,7 @@ export interface CtrlSetPoint {
 export enum ModificationTypeEnum  {Enhancement, Bug}
 
  export interface Version {
-     name: string 
+     name: string
      modifications: Modification []
 }
 
@@ -572,10 +586,10 @@ export interface EditItem {
   * Elsi
   */
 export enum ElsiPeriod {
-    Pk, // peak 1 or 2 demand hours per day, 
+    Pk, // peak 1 or 2 demand hours per day,
     Pl, // daytime plateau demand – hours of daytime activity
     So, // daytime solar peak generation period (reduces plateau demand)
-    Pu, // pick up/drop off period – transition from night trough to daytime plateau 
+    Pu, // pick up/drop off period – transition from night trough to daytime plateau
     Tr  // night time trough demand
 }
 export enum ElsiProfile {
@@ -683,7 +697,7 @@ export interface StorePrice extends MarginalPrice {
 export interface LinkPrice {
     name: string,
     from: MarginalPrice,
-    to: MarginalPrice,    
+    to: MarginalPrice,
 }
 
 export interface ZoneEmissionsRate {
@@ -884,7 +898,7 @@ export interface DiskUsage {
     found: boolean
     total: number
     used: number
-    available: number    
+    available: number
 }
 
 export interface DistributionDataRow {
@@ -897,7 +911,7 @@ export interface DistributionDataRow {
     numDist: number;
 }
 
-export interface TransmissionDataRow {    
+export interface TransmissionDataRow {
     source : GridSubstationLocationSource
     sourceStr: string;
     sourceIconUrl: string;
@@ -914,7 +928,7 @@ export interface GridSubstation {
     reference: string,
     voltage: string,
     loadflowNode: Node,
-    gisData: GISData    
+    gisData: GISData
 }
 
 /* generic logs */

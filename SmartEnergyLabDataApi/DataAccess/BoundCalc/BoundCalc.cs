@@ -16,8 +16,7 @@ using SmartEnergyLabDataApi.Models;
 
 namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
-    public class BoundCalcDS : DataSet
-    {
+    public class BoundCalcDS : DataSet {
         public BoundCalcDS(DataAccess da) : base(da)
         {
 
@@ -25,8 +24,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         public DataAccess DataAccess
         {
-            get
-            {
+            get {
                 return (DataAccess)_dataAccess;
             }
         }
@@ -71,8 +69,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         public void SetNodeVoltagesAndLocations(int datasetId)
         {
             var nodes = Session.QueryOver<Node>().Where(m => m.Dataset.Id == datasetId).List();
-            foreach (var node in nodes)
-            {
+            foreach (var node in nodes) {
                 node.SetVoltage();
                 node.SetLocation(this.DataAccess);
             }
@@ -89,12 +86,9 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 Fetch(SelectMode.Fetch, m => m.Dataset).
                 Take(1).
                 SingleOrDefault();
-            if (node != null)
-            {
+            if (node != null) {
                 dataset = node.Dataset;
-            }
-            else
-            {
+            } else {
                 dataset = null;
             }
             return node != null;
@@ -102,7 +96,6 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         public DatasetData<Node> GetNodeDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Node, bool>> expression)
         {
-
             // get Node itself
             var nodeQuery = Session.QueryOver<Node>().Where(expression);
             var nodeDi = new DatasetData<Node>(DataAccess, datasetId, m => m.Id.ToString(), nodeQuery);
@@ -118,10 +111,8 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             // update location references
             var locIds = nodes.Where(m => m.Location != null).Select(m => m.Location.Id).ToArray();
             var locDi = DataAccess.NationalGrid.GetLocationDatasetData(datasetId, m => m.Id.IsIn(locIds));
-            foreach (var node in nodes)
-            {
-                if (node.Location != null)
-                {
+            foreach (var node in nodes) {
+                if (node.Location != null) {
                     node.Location = locDi.GetItem(node.Location.Id);
                 }
             }
@@ -130,13 +121,10 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         public int GetNodeCountForLocation(int locationId, bool isSourceEdit)
         {
             int count;
-            if (isSourceEdit)
-            {
+            if (isSourceEdit) {
                 var q = Session.QueryOver<Node>().Where(m => m.Location != null && m.Location.Id == locationId);
                 count = q.RowCount();
-            }
-            else
-            {
+            } else {
                 var nodeIds = Session.QueryOver<Node>().Where(m => m.Location != null && m.Location.Id == locationId).Select(m => m.Id).List<int>();
                 // exclude user deleted branches
                 var nodeIdKeys = nodeIds.Select(m => m.ToString()).ToArray<string>();
@@ -186,12 +174,9 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 Fetch(SelectMode.Fetch, m => m.Dataset).
                 Take(1).
                 SingleOrDefault();
-            if (zone != null)
-            {
+            if (zone != null) {
                 dataset = zone.Dataset;
-            }
-            else
-            {
+            } else {
                 dataset = null;
             }
             return zone != null;
@@ -238,14 +223,10 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             var boundDi = new DatasetData<Boundary>(DataAccess, datasetId, m => m.Id.ToString(), boundQuery);
             // add zones they belong to
             var boundDict = GetBoundaryZoneDict(boundDi.Data);
-            foreach (var b in boundDi.Data)
-            {
-                if (boundDict.ContainsKey(b))
-                {
+            foreach (var b in boundDi.Data) {
+                if (boundDict.ContainsKey(b)) {
                     b.Zones = boundDict[b];
-                }
-                else
-                {
+                } else {
                     b.Zones = new List<Zone>();
                 }
             }
@@ -359,12 +340,9 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 Fetch(SelectMode.Fetch, m => m.Dataset).
                 Take(1).
                 SingleOrDefault();
-            if (branch != null)
-            {
+            if (branch != null) {
                 dataset = branch.Dataset;
-            }
-            else
-            {
+            } else {
                 dataset = null;
             }
             return branch != null;
@@ -390,8 +368,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             var node1Ids = branches.Select(m => m.Node1.Id).ToList<int>();
             var node2Ids = branches.Select(m => m.Node2.Id).ToList<int>();
             var nodeDi = GetNodeDatasetData(datasetId, m => m.Id.IsIn(node1Ids) || m.Id.IsIn(node2Ids));
-            foreach (var b in branches)
-            {
+            foreach (var b in branches) {
                 b.Node1 = nodeDi.GetItem(b.Node1.Id);
                 b.Node2 = nodeDi.GetItem(b.Node2.Id);
             }
@@ -400,13 +377,10 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         public int GetBranchCountForNode(int nodeId, bool isSourceEdit)
         {
             int count;
-            if (isSourceEdit)
-            {
+            if (isSourceEdit) {
                 var q = Session.QueryOver<Branch>().Where(m => m.Node1.Id == nodeId || m.Node2.Id == nodeId);
                 count = q.RowCount();
-            }
-            else
-            {
+            } else {
                 var branchIds = Session.QueryOver<Branch>().Where(m => m.Node1.Id == nodeId || m.Node2.Id == nodeId).Select(m => m.Id).List<int>();
                 // exclude user deleted branches
                 var branchIdKeys = branchIds.Select(m => m.ToString()).ToArray<string>();
@@ -446,8 +420,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         public string LoadFromXlsm(IFormFile formFile)
         {
-            using (var da = new DataAccess())
-            {
+            using (var da = new DataAccess()) {
                 var loader = new BoundCalcXlsmLoader();
                 return loader.Load(formFile);
             }
@@ -456,22 +429,18 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         public FileStreamResult SaveBranchesAsCsv(string? region = null)
         {
             var q = Session.QueryOver<Branch>();
-            if (region != null)
-            {
+            if (region != null) {
                 q = q.Where(m => m.Region == region);
             }
             var branches = q.List();
 
             //
             MemoryStream mms;
-            using (var ms = new MemoryStream())
-            {
-                using (var sw = new StreamWriter(ms, new UTF8Encoding(false)))
-                {
+            using (var ms = new MemoryStream()) {
+                using (var sw = new StreamWriter(ms, new UTF8Encoding(false))) {
                     //
                     sw.WriteLine($"\"Region\",\"Node1\",\"Node2\",\"Code\",\"R\",\"X\",\"OHL\",\"Cap\",\"LinkType\"");
-                    foreach (var b in branches)
-                    {
+                    foreach (var b in branches) {
                         sw.WriteLine($"\"{b.Region}\",\"{b.Node1.Code}\",\"{b.Node2.Code}\",\"{b.Code}\",\"{b.R}\",\"{b.X}\",\"{b.OHL}\",\"{b.Cap}\",\"{b.LinkType}\"");
                     }
                     sw.Flush();
@@ -489,8 +458,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             Node node = null;
 
             var sq = QueryOver.Of<Branch>().Where(m => m.Node1.Id == node.Id || m.Node2.Id == node.Id);
-            if (region != null)
-            {
+            if (region != null) {
                 sq = sq.Where(m => m.Region == region);
             }
             sq = sq.Select(m => m.Id);
@@ -500,15 +468,12 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
             //
             MemoryStream mms;
-            using (var ms = new MemoryStream())
-            {
-                using (var sw = new StreamWriter(ms, new UTF8Encoding(false)))
-                {
+            using (var ms = new MemoryStream()) {
+                using (var sw = new StreamWriter(ms, new UTF8Encoding(false))) {
                     //
-                    sw.WriteLine($"\"Code\",\"Demand\",\"Generation\",\"Zone\"");
-                    foreach (var n in nodes)
-                    {
-                        sw.WriteLine($"\"{n.Code}\",\"{n.Demand}\",\"{n.GetGeneration(TransportModelOld.PeakSecurity)}\",\"{n.Zone.Code}\"");
+                    sw.WriteLine($"\"Code\",\"Demand\",\"Zone\"");
+                    foreach (var n in nodes) {
+                        sw.WriteLine($"\"{n.Code}\",\"{n.Demand}\",\"{n.Zone.Code}\"");
                     }
                     sw.Flush();
                     mms = new MemoryStream(ms.ToArray());
@@ -526,14 +491,11 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
             //
             MemoryStream mms;
-            using (var ms = new MemoryStream())
-            {
-                using (var sw = new StreamWriter(ms, new UTF8Encoding(false)))
-                {
+            using (var ms = new MemoryStream()) {
+                using (var sw = new StreamWriter(ms, new UTF8Encoding(false))) {
                     //
                     sw.WriteLine($"\"Boundary\",\"Zone\"");
-                    foreach (var bz in bzs)
-                    {
+                    foreach (var bz in bzs) {
                         sw.WriteLine($"\"{bz.Boundary.Code}\",\"{bz.Zone.Code}\"");
                     }
                     sw.Flush();
@@ -606,8 +568,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             var results = Session.QueryOver<BoundCalcResult>().
                 Where(m => m.Dataset.Id.IsIn(dsIds)).
                 List();
-            foreach (var r in results)
-            {
+            foreach (var r in results) {
                 Delete(r);
             }
         }
@@ -657,7 +618,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             List();
         }
 
-       public bool GeneratorExists(int itemId, int datasetId, string name, out Dataset? dataset)
+        public bool GeneratorExists(int itemId, int datasetId, string name, out Dataset? dataset)
         {
             // need to look at all datasets belonging to the user
             var derivedIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
@@ -665,28 +626,28 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             var gen = Session.QueryOver<Generator>().
                 Where(m => m.Name.IsInsensitiveLike(name)).
                 Where(m => m.Dataset.Id.IsIn(derivedIds) || m.Dataset.Id.IsIn(inheritedIds)).
-                Where(m=>m.Id!=itemId).
+                Where(m => m.Id != itemId).
                 Fetch(SelectMode.Fetch, m => m.Dataset).
                 Take(1).
                 SingleOrDefault();
-            if (gen != null)
-            {
+            if (gen != null) {
                 dataset = gen.Dataset;
-            }
-            else
-            {
+            } else {
                 dataset = null;
             }
             return gen != null;
         }
-        public DatasetData<Generator> GetGeneratorDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Generator, bool>> expression)
+        public DatasetData<Generator> GetGeneratorDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Generator, bool>> expression=null)
         {
-            var genQuery = Session.QueryOver<Generator>().Where(expression);
+            var genQuery = Session.QueryOver<Generator>();
+            if (expression != null) {
+                genQuery = genQuery.Where(expression);
+            }
             var genDi = new DatasetData<Generator>(DataAccess, datasetId, m => m.Id.ToString(), genQuery);
             return genDi;
         }
 
-       #endregion
+        #endregion
 
         #region TransportModel
         public void Add(TransportModel obj)
@@ -719,22 +680,93 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 Fetch(SelectMode.Fetch, m => m.Dataset).
                 Take(1).
                 SingleOrDefault();
-            if (zone != null)
-            {
+            if (zone != null) {
                 dataset = zone.Dataset;
-            }
-            else
-            {
+            } else {
                 dataset = null;
             }
             return zone != null;
         }
-        public DatasetData<TransportModel> GetTransportModelDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<TransportModel, bool>> expression)
+        public DatasetData<TransportModel> GetTransportModelDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<TransportModel, bool>> expression=null)
         {
-            var query = Session.QueryOver<TransportModel>().Where(expression);
+            var query = Session.QueryOver<TransportModel>();
+            if (expression != null) {
+                query = query.Where(expression);
+            }
             var di = new DatasetData<TransportModel>(DataAccess, datasetId, m => m.Id.ToString(), query);
+            updateRefs(datasetId, di.Data);
+            //?? not convinced this is required
+            //??updateRefs(datasetId, di.DeletedData);
             return di;
         }
+        private void updateRefs(int datasetId, IList<TransportModel> tms)
+        {
+            // update location references
+            var tmIds = tms.Select(m => m.Id).ToArray();
+            var tmeDi = GetTransportModelEntryDatasetData(datasetId, m => m.TransportModel.Id.IsIn(tmIds));
+            foreach (var tm in tms) {
+                tm.Entries = tmeDi.Data.Where(m => m.TransportModel.Id == tm.Id).ToList();
+            }
+        }
+
+        #endregion
+        #region TransportModelEntry
+        public void Add(TransportModelEntry obj)
+        {
+            Session.Save(obj);
+        }
+        public void Delete(TransportModelEntry obj)
+        {
+            Session.Delete(obj);
+        }
+        public TransportModelEntry GetTransportModelEntry(int id)
+        {
+            return Session.Get<TransportModelEntry>(id);
+        }
+        public DatasetData<TransportModelEntry> GetTransportModelEntryDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<TransportModelEntry, bool>> expression)
+        {
+            var query = Session.QueryOver<TransportModelEntry>().Where(expression);
+            var di = new DatasetData<TransportModelEntry>(DataAccess, datasetId, m => m.Id.ToString(), query);
+            return di;
+        }
+
+        #endregion
+
+        #region NodeGenerator
+        public IList<NodeGenerator> GetNodeGenerators(Dataset dataset)
+        {
+            return Session.QueryOver<NodeGenerator>().
+            Where(m => m.Dataset == dataset).
+            OrderBy(m => m.Id).Asc.
+            List();
+        }
+        public DatasetData<NodeGenerator> GetNodeGeneratorDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<NodeGenerator, bool>> expression=null)
+        {
+            // get Node itself
+            var ngQuery = Session.QueryOver<NodeGenerator>();
+            if (expression != null) {
+                ngQuery = ngQuery.Where(expression);
+            }
+            var ngDi = new DatasetData<NodeGenerator>(DataAccess, datasetId, m => m.Id.ToString(), ngQuery);
+
+            // update location references
+            updateRefs(datasetId, ngDi.Data);
+            updateRefs(datasetId, ngDi.DeletedData);
+            return ngDi;
+        }
+
+        private void updateRefs(int datasetId, IList<NodeGenerator> nodeGenerators)
+        {
+            // update location references
+            var genIds = nodeGenerators.Where(m => m.Generator != null).Select(m => m.Generator.Id).ToArray();
+            var genDi = GetGeneratorDatasetData(datasetId, m => m.Id.IsIn(genIds));
+            foreach (var ng in nodeGenerators) {
+                if (ng.Generator != null) {
+                    ng.Generator = genDi.GetItem(ng.Generator.Id);
+                }
+            }
+        }
+
         #endregion
     }
 }

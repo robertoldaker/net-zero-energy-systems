@@ -1,7 +1,7 @@
 <app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)" (onAdd)="add()" [typeName]="'Generator'"></app-table-paginator>
 
 <app-div-auto-scroller name="generators">
-    
+
     <table class="dataTable" #table mat-table [dataSource]="data" [trackBy]="getDataId" matSort [matSortActive]="sortColumn" [matSortDirection]="sortDirection" matSortDisableClear (matSortChange)="sortTable($event)">
 
         <!-- buttons Column -->
@@ -35,7 +35,23 @@
             </td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true">        
+        <!-- Scaled generation -->
+        <ng-container matColumnDef="scaledGeneration">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Generation (MW)</th>
+            <td mat-cell *matCellDef="let element">
+                <div>{{element.scaledGeneration.value!=null ? element.scaledGeneration.value.toFixed(0) : ''}}</div>
+            </td>
+        </ng-container>
+
+        <!-- Node count -->
+        <ng-container matColumnDef="nodeCount">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Nodes</th>
+            <td mat-cell *matCellDef="let element">
+                <div>{{element.nodeCount.value!=null ? element.nodeCount.value.toFixed(0) : ''}}</div>
+            </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true">
         </tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{isDeleted: row._isDeleted}"></tr>
     </table>

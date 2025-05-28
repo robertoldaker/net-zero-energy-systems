@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { AllTripResult, BoundaryTrip, BoundaryTripResults, Branch, BranchType, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, LoadflowCtrlType, LoadflowResults, NetworkData, Node, SetPointMode, TransportModelOld} from '../data/app.data';
+import { AllTripResult, BoundaryTrip, BoundaryTripResults, Branch, BranchType, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, LoadflowCtrlType, LoadflowResults, NetworkData, Node, SetPointMode, TransportModel} from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { ShowMessageService } from '../main/show-message/show-message.service';
@@ -32,21 +32,23 @@ export enum PercentCapacityThreshold { OK, Warning, Critical}
 
 export class LoadflowDataService {
 
-    constructor(private dataClientService: DataClientService, 
-        private signalRService: SignalRService, 
+    constructor(private dataClientService: DataClientService,
+        private signalRService: SignalRService,
         private messageService: ShowMessageService,
-        private dialogService: DialogService) { 
+        private dialogService: DialogService) {
         this.gridSubstations = [];
-        this.networkData = { 
-            nodes: { tableName: '',data:[], userEdits: [], deletedData: [] }, 
-            branches: { tableName: '',data:[], userEdits: [], deletedData: [] }, 
+        this.networkData = {
+            nodes: { tableName: '',data:[], userEdits: [], deletedData: [] },
+            branches: { tableName: '',data:[], userEdits: [], deletedData: [] },
             ctrls: { tableName: '',data:[], userEdits: [],deletedData: [] },
             boundaries: { tableName: '',data:[], userEdits: [],deletedData: [] },
             zones: { tableName: '',data:[], userEdits: [],deletedData: [] },
             locations: { tableName: '',data:[], userEdits: [],deletedData: [] },
             generators: { tableName: '', data:[], userEdits: [], deletedData: []},
-            transportModels: { tableName: '', data:[], userEdits: [], deletedData: []}
-            //??boundaryDict: {},
+            nodeGenerators: { tableName: '', data:[], userEdits: [], deletedData: []},
+            transportModels: { tableName: '', data:[], userEdits: [], deletedData: []},
+            transportModelEntries: { tableName: '', data:[], userEdits: [], deletedData: []},
+            transportModel: null
         }
         this.locationData = { locations: [], links: []}
         this.locMap = new Map<number,LoadflowLocation>()
@@ -72,7 +74,7 @@ export class LoadflowDataService {
     loadFlowResults: LoadflowResults | undefined
     boundaryName: string | undefined
     boundaryBranchIds: number[] = []
-    transportModel: TransportModelOld = TransportModelOld.PeakSecurity
+    transportModel: TransportModel | null = null
     inRun: boolean = false
     trips: Map<number,boolean> = new Map()
     setPointMode: SetPointMode = SetPointMode.Auto
@@ -88,22 +90,29 @@ export class LoadflowDataService {
     setDataset(dataset: Dataset) {
         this.dataset = dataset;
         //
-        this.reloadDataset();
+        this.loadNetworkData(true,true);
     }
 
     private reloadDataset(onLoad: (()=>void) | undefined = undefined) {
-        this.loadNetworkData(true,onLoad);
+        this.loadNetworkData(true,false, onLoad);
     }
 
-    private loadNetworkData(withMessage: boolean, onLoad: (()=>void) | undefined) {
+    private loadNetworkData(withMessage: boolean, newDataset:boolean, onLoad?: (()=>void)) {
         if ( withMessage ) {
             this.messageService.showModalMessage('Loading ...')
         }
-        this.dataClientService.GetNetworkData( this.dataset.id, (results)=>{            
+        let transportModelId:number
+        if ( newDataset) {
+            transportModelId = 0
+        } else {
+            transportModelId = this.transportModel!=null ? this.transportModel.id : 0
+        }
+        this.dataClientService.GetNetworkData( this.dataset.id, transportModelId, (results)=>{
             this.networkData = results
             this.messageService.clearMessage()
             this.needsCalc = true
             this.loadFlowResults = undefined
+            this.transportModel = results.transportModel
             this._locationDragging = false
             this.clearMapSelection()
             this.clearTrips()
@@ -121,11 +130,7 @@ export class LoadflowDataService {
             this.totalDemand = 0
             this.networkData.nodes.data.forEach( m=>this.totalDemand+=m.demand)
             this.totalGeneration = 0
-            if ( this.transportModel === TransportModelOld.PeakSecurity ) {
-                this.networkData.nodes.data.forEach( m=>this.totalGeneration+=m.generation_A)
-            } else if ( this.transportModel == TransportModelOld.YearRound ) {
-                this.networkData.nodes.data.forEach( m=>this.totalGeneration+=m.generation_B)
-            }
+            this.networkData.nodes.data.forEach( m=>this.totalGeneration+=m.generation)
         }
     }
 
@@ -145,7 +150,7 @@ export class LoadflowDataService {
                 this.setBoundaryBranchIds()
             }
             // Need to clear out any existing results if set
-            if ( this.loadFlowResults ) {                
+            if ( this.loadFlowResults ) {
                 this.loadFlowResults = undefined
                 this.updateLocationData(false)
             }
@@ -175,11 +180,11 @@ export class LoadflowDataService {
             for( let b of this.networkData.branches.data ) {
                 let in1 = boundary.zones.find( m=>m.id == b.node1ZoneId) ? true : false
                 let in2 = boundary.zones.find( m=>m.id == b.node2ZoneId) ? true : false
-                // 
+                //
                 if ( in1 != in2) {
                     this.boundaryBranchIds.push(b.id)
                 }
-            }    
+            }
         } else {
             this.boundaryName = undefined
         }
@@ -201,10 +206,9 @@ export class LoadflowDataService {
         }
     }
 
-    setTransportModel(transportModel: TransportModelOld) {
-        this.needsCalc = true
+    setTransportModel(transportModel: TransportModel) {
         this.transportModel = transportModel
-        this.calcTotals()
+        this.reloadDataset()
     }
 
     runBoundCalc( boundaryName: string, boundaryTrips: boolean) {
@@ -213,12 +217,14 @@ export class LoadflowDataService {
         if ( boundaryTrips) {
             this.clearBoundaryTrips()
         }
-        this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, this.transportModel, boundaryName, boundaryTrips, tripStr, (results)=>{
-            if ( boundaryTrips && results.boundaryTripResults) {
-                this.setBoundaryTrips(results.boundaryTripResults)
-            } 
-            this.afterCalc(results)
-        });
+        if ( this.transportModel) {
+            this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, this.transportModel.id, boundaryName, boundaryTrips, tripStr, (results)=>{
+                if ( boundaryTrips && results.boundaryTripResults) {
+                    this.setBoundaryTrips(results.boundaryTripResults)
+                }
+                this.afterCalc(results)
+            });
+        }
     }
 
     private clearBoundaryTrips() {
@@ -231,19 +237,19 @@ export class LoadflowDataService {
         this.boundaryTripResult = undefined
         tripMap.clear()
 
-        // set intact trips        
+        // set intact trips
         tripMap.set("Intact",tripResults.intactTrips[0])
 
         // single trips
         for( let tr of tripResults.singleTrips) {
             if ( tr.trip && !tripMap.has(tr.trip.text) ) {
-                tripMap.set(tr.trip.text,tr) 
+                tripMap.set(tr.trip.text,tr)
             }
         }
         // double trips
         for( let tr of tripResults.doubleTrips) {
             if ( tr.trip && !tripMap.has(tr.trip.text) ) {
-                tripMap.set(tr.trip.text,tr) 
+                tripMap.set(tr.trip.text,tr)
             }
         }
         // Order by capacity
@@ -257,15 +263,16 @@ export class LoadflowDataService {
     }
 
     runBoundaryTrip(tripResult: AllTripResult) {
-        if ( this.boundaryName ) {
+        if ( this.boundaryName && this.transportModel ) {
             let trip = tripResult.trip
             let tripStr = trip!=null ? trip.lineNames.join(',') : ''
             let tripName = trip!=null ? trip.text : "Intact"
             this.inRun = true;
-            this.dataClientService.RunBoundaryTrip( this.dataset.id, this.setPointMode, this.transportModel, this.boundaryName, tripName, tripStr, (results)=>{                
+
+            this.dataClientService.RunBoundaryTrip( this.dataset.id, this.setPointMode, this.transportModel.id, this.boundaryName, tripName, tripStr, (results)=>{
                 this.setBoundaryTrip(tripResult)
                 this.afterCalc(results, true)
-            });    
+            });
         }
     }
 
@@ -281,7 +288,7 @@ export class LoadflowDataService {
         }
         //
         this.updateLocationData(false)
-        this.updateSelectedObject()          
+        this.updateSelectedObject()
         this.ResultsLoaded.emit(results);
     }
 
@@ -299,7 +306,7 @@ export class LoadflowDataService {
                     first = false
                 } else {
                     tripStr += ","
-                }    
+                }
                 tripStr+=br.lineName
             }
         }
@@ -321,31 +328,33 @@ export class LoadflowDataService {
                 setPoints.push({ctrlId: ctrl.id, setPoint: ctrl.setPoint ? ctrl.setPoint : 0})
             }
             this.dataClientService.ManualSetPointMode(this.dataset.id, setPoints, (results)=> {
-                this.reloadDataset(()=>{                    
+                this.reloadDataset(()=>{
                     this.setPointMode = setPointMode
-                    this.SetPointModeChanged.emit(this.setPointMode)    
+                    this.SetPointModeChanged.emit(this.setPointMode)
                 })
-            })    
+            })
         }
     }
 
     adjustBranchCapacities() {
         this.inRun = true;
-        this.dataClientService.AdjustBranchCapacities( this.dataset.id, this.transportModel, (results) => {
-            this.inRun = false;
-            this.loadFlowResults = results;
-            this.needsCalc = true
-            // need to copy branch userEdits into NetworkData to ensure further edits work
-            this.networkData.branches.userEdits = results.branches.userEdits
-            this.ResultsLoaded.emit(results);
-        });
+        if ( this.transportModel ) {
+            this.dataClientService.AdjustBranchCapacities( this.dataset.id, this.transportModel.id, (results) => {
+                this.inRun = false;
+                this.loadFlowResults = results;
+                this.needsCalc = true
+                // need to copy branch userEdits into NetworkData to ensure further edits work
+                this.networkData.branches.userEdits = results.branches.userEdits
+                this.ResultsLoaded.emit(results);
+            });
+        }
     }
 
     selectLocation(locId: number, locTab: MapItemLocationTab | null = null) {
         let loc = this.locationData.locations.find(m=>m.id==locId)
         if ( loc ) {
             this.selectedMapItem = new SelectedMapItem(loc,null,locTab)
-            this.ObjectSelected.emit(this.selectedMapItem)    
+            this.ObjectSelected.emit(this.selectedMapItem)
         }
     }
 
@@ -353,7 +362,7 @@ export class LoadflowDataService {
         let loc = this.locationData.locations.find(m=>m.name == locName)
         if ( loc ) {
             this.selectedMapItem = new SelectedMapItem(loc,null)
-            this.ObjectSelected.emit(this.selectedMapItem)    
+            this.ObjectSelected.emit(this.selectedMapItem)
         }
     }
 
@@ -366,7 +375,7 @@ export class LoadflowDataService {
         let link = this.locationData.links.find(m=>m.id==branchId || m.branches.find(n=>n.id==branchId))
         if ( link) {
             this.selectedMapItem = new SelectedMapItem(null,link)
-            this.ObjectSelected.emit(this.selectedMapItem)    
+            this.ObjectSelected.emit(this.selectedMapItem)
         }
     }
 
@@ -374,7 +383,7 @@ export class LoadflowDataService {
         let link = this.locationData.links.find(m=>m.branches.find(n=>n.code == branchCode))
         if ( link) {
             this.selectedMapItem = new SelectedMapItem(null,link)
-            this.ObjectSelected.emit(this.selectedMapItem)    
+            this.ObjectSelected.emit(this.selectedMapItem)
         } else {
             // this means its an internal branch so select the location
             let branch = this.networkData.branches.data.find(m=>m.code == branchCode)
@@ -388,7 +397,7 @@ export class LoadflowDataService {
         let link = this.locationData.links.find(m=>m.node1LocationId == node1LocationId && m.node2LocationId == node2LocationId)
         if ( link) {
             this.selectedMapItem = new SelectedMapItem(null, link)
-            this.ObjectSelected.emit(this.selectedMapItem)    
+            this.ObjectSelected.emit(this.selectedMapItem)
         }
     }
 
@@ -491,12 +500,21 @@ export class LoadflowDataService {
     }
 
     afterEdit(resp: DatasetData<any>[] ) {
+        // do a reload if edited the current transport model
+        let tms = resp.find(m=>m.tableName == "TransportModel");
+        if ( tms && this.transportModel) {
+            let tm = tms.data.find(m=>m.id == this.transportModel?.id)
+            if ( tm ) {
+                this.reload()
+                return;
+            }
+        }
         this.needsCalc = true
         this.loadFlowResults = undefined
         //
         for( let r of resp) {
             let dd = this.getDatasetData(r.tableName)
-            DatasetsService.updateDatasetData(dd,r)    
+            DatasetsService.updateDatasetData(dd,r)
         }
         // this set boundaryBranchIds and checks any selected boundary still exists
         this.setBoundary(this.boundaryName)
@@ -525,7 +543,7 @@ export class LoadflowDataService {
         // this set boundaryBranchIds and checks any selected boundary still exists
         this.setBoundary(this.boundaryName)
         //
-        this.calcTotals() 
+        this.calcTotals()
         //
         this.NetworkDataLoaded.emit(this.networkData)
         //
@@ -538,7 +556,7 @@ export class LoadflowDataService {
         //
         for( let r of resp) {
             let dd = this.getDatasetData(r.tableName)
-            DatasetsService.updateDatasetData(dd,r)    
+            DatasetsService.updateDatasetData(dd,r)
         }
         //
         this.NetworkDataLoaded.emit(this.networkData)
@@ -610,7 +628,7 @@ export class LoadflowDataService {
                     }
                 } else {
                     deleteLocs.push(loc)
-                    deleteLocKeys.push(key)    
+                    deleteLocKeys.push(key)
                 }
             }
         }
@@ -633,7 +651,7 @@ export class LoadflowDataService {
         if ( !this.branches || !this.ctrls) {
             return
         }
-        let extBranches = this.branches.data.filter(m=>this.isBranchExternal(m))        
+        let extBranches = this.branches.data.filter(m=>this.isBranchExternal(m))
         let branchMap = new Map<string,Branch[]>()
         for( let b of extBranches) {
             let key = this.getBranchKeys(b)
@@ -646,7 +664,7 @@ export class LoadflowDataService {
             //
             if ( !this.linkMap.has(key.key1) && !this.linkMap.has(key.key2)) {
                 let link = new LoadflowLink(b)
-                this.linkMap.set(key.key1,link)  
+                this.linkMap.set(key.key1,link)
             }
         }
         //
@@ -670,7 +688,7 @@ export class LoadflowDataService {
                     }
                 } else {
                     deleteLinks.push(link)
-                    deleteLinkKeys.push(key)    
+                    deleteLinkKeys.push(key)
                 }
             }
         }
@@ -703,8 +721,12 @@ export class LoadflowDataService {
             return this.networkData.locations
         } else if ( typeName == "Generator") {
             return this.networkData.generators
+        } else if ( typeName == "NodeGenerator") {
+            return this.networkData.nodeGenerators
         } else if ( typeName == "TransportModel") {
             return this.networkData.transportModels
+        } else if ( typeName == "TransportModelEntry") {
+            return this.networkData.transportModelEntries
         } else {
             throw `Unexpected typeName found [${typeName}]`
         }
@@ -716,39 +738,39 @@ export class LoadflowDataService {
         let df = new DataFilter(1)
         let branch = this.networkData.branches.data.find(m=>m.id === branchId)
         if ( branch ) {
-            let branchDataset = { 
-                tableName: this.networkData.branches.tableName, 
+            let branchDataset = {
+                tableName: this.networkData.branches.tableName,
                 data: [branch],
                 deletedData: [],
                 userEdits: this.networkData.branches.userEdits
                 }
             let branches = df.GetCellDataObjects(this.dataset,branchDataset,(item)=>item.id.toString())
             branchData = branches[0]
-            let ctrlId = branch.ctrlId   
+            let ctrlId = branch.ctrlId
             if ( ctrlId!=0 ) {
                 let ctrl = this.networkData.ctrls.data.find(m=>m.id === ctrlId)
                 if ( ctrl ) {
-                    let ctrlDataset = { tableName: this.networkData.ctrls.tableName, 
+                    let ctrlDataset = { tableName: this.networkData.ctrls.tableName,
                         data: [ctrl],
                         deletedData: [],
                         userEdits: this.networkData.ctrls.userEdits
                         }
                     let ctrls = df.GetCellDataObjects(this.dataset,ctrlDataset,(item)=>item.id.toString())
-                    ctrlData = ctrls[0]    
+                    ctrlData = ctrls[0]
                 }
             }
         } else {
             throw `Cannot find branch with id [${branchId}]`
         }
         return { branch: branchData, ctrl: ctrlData}
-    }    
+    }
 
     public getNodeEditorData(nodeId: number):ICellEditorDataDict {
         let df = new DataFilter(1)
         let node = this.networkData.nodes.data.find(m=>m.id === nodeId)
         if ( node ) {
-            let branchDataset = { 
-                tableName: this.networkData.nodes.tableName, 
+            let branchDataset = {
+                tableName: this.networkData.nodes.tableName,
                 data: [node],
                 deletedData: [],
                 userEdits: this.networkData.nodes.userEdits
@@ -758,14 +780,14 @@ export class LoadflowDataService {
          } else {
             throw `Cannot find node with id [${nodeId}]`
         }
-    }    
+    }
 
     public addTrip(branchId : number) {
         if ( !this.trips.get(branchId)) {
             this.needsCalc = true
             this.trips.set(branchId,true)
             this.updateLocationDataForTrip(branchId)
-            this.TripsChanged.emit(Array.from(this.trips.keys()))    
+            this.TripsChanged.emit(Array.from(this.trips.keys()))
         }
     }
 
@@ -821,7 +843,7 @@ export class LoadflowDataService {
             for( let branchId of branchIds) {
                 this.updateLocationDataForTrip(branchId)
             }
-            this.TripsChanged.emit(branchIds)    
+            this.TripsChanged.emit(branchIds)
         }
     }
 
@@ -865,7 +887,7 @@ export class LoadflowDataService {
                 return PercentCapacityThreshold.Warning
             } else {
                 return PercentCapacityThreshold.OK
-            }    
+            }
         } else {
             return PercentCapacityThreshold.OK
         }
@@ -958,9 +980,9 @@ export class LoadflowLocation {
     update(nodes: Node[], ctrls: Ctrl[]):boolean {
         let hasNodes = nodes.length>0
         let isQB = ctrls.find(m=>m.node1.location?.id === this._gsl.id && m.type == LoadflowCtrlType.QB)!==undefined
-        let result = hasNodes!=this._hasNodes || 
-                        isQB!=this._isQB || 
-                        this._isNew 
+        let result = hasNodes!=this._hasNodes ||
+                        isQB!=this._isQB ||
+                        this._isNew
         this._hasNodes = hasNodes
         this._isQB = isQB
         this._isNew = false
@@ -1046,7 +1068,7 @@ export class LoadflowLink {
             return `${this._branches[0].node1Name} <=> ${this._branches[0].node2Name}`
         } else {
             return ''
-        }        
+        }
     }
 
     update(branches: Branch[],ctrlMap: Map<number,Ctrl>):boolean {
@@ -1067,8 +1089,8 @@ export class LoadflowLink {
         let totalFree = this.getTotalFree()
         let percentCapacity = this.getPercentCapacity()
         //
-        let result = branches.length!==this.branchCount || 
-                        isHVDC!==this.isHVDC || 
+        let result = branches.length!==this.branchCount ||
+                        isHVDC!==this.isHVDC ||
                         node1LocationId !== this.node1LocationId ||
                         node2LocationId !== this.node2LocationId ||
                         this.areGISDataDifferent(gisData1,this._gisData1) ||

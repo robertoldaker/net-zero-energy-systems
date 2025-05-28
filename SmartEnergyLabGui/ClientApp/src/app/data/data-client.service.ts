@@ -1,11 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, Boundary, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LoadNetworkDataSource, SubstationSearchResult, EVDemandStatus, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType, DatasetData, EditItem, DistributionData, TransmissionData, NationalGridNetworkSource, GridSubstationLocationSource, TransportModelOld, SetPointMode, CtrlSetPoint } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LoadNetworkDataSource, SubstationSearchResult, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType, DatasetData, EditItem, DistributionData, TransmissionData, NationalGridNetworkSource, GridSubstationLocationSource, SetPointMode, CtrlSetPoint } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
-import { DialogService } from '../dialogs/dialog.service';
-import { MessageDialogIcon } from '../dialogs/message-dialog/message-dialog.component';
-import { DialogFooterButtonsEnum } from '../dialogs/dialog-footer/dialog-footer.component';
 
 @Injectable({
     providedIn: 'root',
@@ -13,7 +10,7 @@ import { DialogFooterButtonsEnum } from '../dialogs/dialog-footer/dialog-footer.
 
 export class DataClientService implements ILogs {
     constructor(
-        private http: HttpClient, 
+        private http: HttpClient,
         private showMessageService: ShowMessageService,
         private signalRService: SignalRService,
         @Inject('DATA_URL') private baseUrl: string) {
@@ -235,11 +232,11 @@ export class DataClientService implements ILogs {
                 if (onLoad !== undefined) {
                     onLoad(result);
                 }
-            }, 
-            error => { this.logErrorMessage(error) }, 
-            ()=> { 
+            },
+            error => { this.logErrorMessage(error) },
+            ()=> {
                 this.showMessageService.clearMessage();
-                if ( onComplete ) onComplete() 
+                if ( onComplete ) onComplete()
             }
         );
     }
@@ -267,52 +264,52 @@ export class DataClientService implements ILogs {
      *  BoundCalc
      */
     controller='BoundCalc'
-    GetNetworkData( datasetId: number, onLoad: (networkData: NetworkData)=> void | undefined) {
-        this.http.get<NetworkData>(this.baseUrl + `/${this.controller}/NetworkData?datasetId=${datasetId}`).subscribe( result => {
+    GetNetworkData( datasetId: number, transportModelId: number, onLoad: (networkData: NetworkData)=> void | undefined) {
+        this.http.get<NetworkData>(this.baseUrl + `/${this.controller}/NetworkData?datasetId=${datasetId}&transportModelId=${transportModelId}`).subscribe( result => {
             if ( onLoad ) {
                 onLoad(result)
             }
-        }, error => this.logErrorMessage(error));        
+        }, error => this.logErrorMessage(error));
     }
 
-    RunBoundCalc( datasetId: number, setPointMode: SetPointMode, transportModel: TransportModelOld, boundaryName: string, boundaryTrips: boolean, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
+    RunBoundCalc( datasetId: number, setPointMode: SetPointMode, transportModelId: number, boundaryName: string, boundaryTrips: boolean, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/Run?datasetId=${datasetId}&setPointMode=${setPointMode}&transportModel=${transportModel}&boundaryName=${boundaryName}&boundaryTrips=${boundaryTrips}&tripStr=${tripStr}&connectionId=${connectionId}`,{}).subscribe( result => {
+        this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/Run?datasetId=${datasetId}&setPointMode=${setPointMode}&transportModelId=${transportModelId}&boundaryName=${boundaryName}&boundaryTrips=${boundaryTrips}&tripStr=${tripStr}&connectionId=${connectionId}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
                 onLoad(result)
             }
-        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
+        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );
     }
 
-    RunBoundaryTrip( datasetId: number, setPointMode: SetPointMode, transportModel: TransportModelOld, boundaryName: string, tripName: string, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
+    RunBoundaryTrip( datasetId: number, setPointMode: SetPointMode, transportModelId: number, boundaryName: string, tripName: string, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.showMessageService.showMessage("Calculating ...");
-        let url = `/BoundCalc/RunBoundaryTrip?datasetId=${datasetId}&setPointMode=${setPointMode}&transportModel=${transportModel}&boundaryName=${boundaryName}&tripName=${tripName}&tripStr=${tripStr}&connectionId=${connectionId}`
+        let url = `/BoundCalc/RunBoundaryTrip?datasetId=${datasetId}&setPointMode=${setPointMode}&transportModelId=${transportModelId}&boundaryName=${boundaryName}&tripName=${tripName}&tripStr=${tripStr}&connectionId=${connectionId}`
         this.http.post<LoadflowResults>(this.baseUrl + url,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
                 onLoad(result)
             }
-        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
+        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );
     }
 
-    AdjustBranchCapacities( datasetId: number, transportModel: TransportModelOld, onLoad: (results: LoadflowResults)=> void | undefined) {
+    AdjustBranchCapacities( datasetId: number, transportModelId: number, onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.showMessageService.showMessage("Calculating ...");
-        this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/AdjustBranchCapacities?datasetId=${datasetId}&transportModel=${transportModel}`,{}).subscribe( result => {
+        this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/AdjustBranchCapacities?datasetId=${datasetId}&transportModelId=${transportModelId}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
                 onLoad(result)
             }
-        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );        
+        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );
     }
 
     ManualSetPointMode( datasetId: number, setPoints: CtrlSetPoint[], onOk: (results: any)=>void) {
         this.http.post(this.baseUrl + `/BoundCalc/ManualSetPointMode?datasetId=${datasetId}`,setPoints).subscribe( result => {
             onOk(result)
-        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );                
+        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );
     }
 
     /**
@@ -356,20 +353,20 @@ export class DataClientService implements ILogs {
 
     /**
      * Elsi
-     */    
+     */
     RunSingleDay(day: number, scenario: ElsiScenario, datasetId: number, onLoad: (results: ElsiDayResult)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.getRequestWithMessage<ElsiDayResult>(
             "Calculating ...",
             `/Elsi/RunSingleDay?day=${day}&scenario=${scenario}&datasetId=${datasetId}&connectionId=${connectionId}`,
             onLoad
-        )     
+        )
     }
 
     RunDays(startDay: number, endDay: number, scenario: ElsiScenario, datasetId: number,  onLoad: (results: string)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.getRequestWithMessage<string>(
-            'Starting calculation ...', 
+            'Starting calculation ...',
             `/Elsi/RunDays?startDay=${startDay}&endDay=${endDay}&scenario=${scenario}&datasetId=${datasetId}&connectionId=${connectionId}`,
             onLoad);
 
@@ -418,7 +415,7 @@ export class DataClientService implements ILogs {
             `/Elsi/DayResult?elsiResultId=${elsiResultId}`,
             onLoad);
     }
-    
+
     /* users */
     SaveNewUser(newUser: NewUser, onOk: (resp: string)=> void | undefined, onError: (error: any)=>void | undefined) {
         this.postDialogRequest<NewUser>('/Users/SaveNewUser', newUser, onOk, onError);
@@ -507,7 +504,7 @@ export class DataClientService implements ILogs {
             if ( onLoad ) {
                 onLoad(result)
             }
-        }, error => this.logErrorMessage(error));        
+        }, error => this.logErrorMessage(error));
     }
 
     NationalGridLoadNetwork( source: NationalGridNetworkSource, onComplete: (resp: any)=> void | undefined) {
@@ -542,7 +539,7 @@ export class DataClientService implements ILogs {
             if ( onLoad ) {
                 onLoad(result)
             }
-        }, error => this.logErrorMessage(error));        
+        }, error => this.logErrorMessage(error));
     }
 
     GetSolarInstallationsByPrimarySubstation(pssId: number,year: number,onLoad: (boundaries: SolarInstallation[])=> void) {
@@ -550,7 +547,7 @@ export class DataClientService implements ILogs {
             if ( onLoad ) {
                 onLoad(result)
             }
-        }, error => this.logErrorMessage(error));        
+        }, error => this.logErrorMessage(error));
     }
 
     GetSolarInstallationsByDistributionSubstation(dssId: number,year: number,onLoad: (boundaries: SolarInstallation[])=> void) {
@@ -558,7 +555,7 @@ export class DataClientService implements ILogs {
             if ( onLoad ) {
                 onLoad(result)
             }
-        }, error => this.logErrorMessage(error));        
+        }, error => this.logErrorMessage(error));
     }
 
     /* shared */
@@ -567,7 +564,7 @@ export class DataClientService implements ILogs {
             if ( onLoad) {
                 onLoad(resp);
             }
-        },resp => { 
+        },resp => {
             this.logErrorMessage(resp);
         })
     }
@@ -577,7 +574,7 @@ export class DataClientService implements ILogs {
             if ( onLoad) {
                 onLoad(resp);
             }
-        },resp => { 
+        },resp => {
             this.logErrorMessage(resp);
         })
     }
@@ -589,7 +586,7 @@ export class DataClientService implements ILogs {
             if ( onLoad) {
                 onLoad(resp);
             }
-        },resp => { 
+        },resp => {
             this.showMessageService.clearMessage()
             this.logErrorMessage(resp);
         })
@@ -600,7 +597,7 @@ export class DataClientService implements ILogs {
             if ( onOk) {
                 onOk(resp);
             }
-        },resp => { 
+        },resp => {
             this.logErrorMessage(resp);
         })
     }
@@ -610,7 +607,7 @@ export class DataClientService implements ILogs {
             if ( onOk) {
                 onOk(resp);
             }
-        },resp => { 
+        },resp => {
             this.logErrorMessage(resp);
         })
     }
@@ -622,7 +619,7 @@ export class DataClientService implements ILogs {
             if ( onOk) {
                 onOk(resp);
             }
-        },resp => { 
+        },resp => {
             this.showMessageService.clearMessage()
             this.logErrorMessage(resp);
         })
@@ -633,9 +630,9 @@ export class DataClientService implements ILogs {
             if ( onOk) {
                 onOk(resp);
             }
-        },resp => { 
-            if ( onError && resp.status == 422) { 
-                onError(resp.error) 
+        },resp => {
+            if ( onError && resp.status == 422) {
+                onError(resp.error)
             } else {
                 this.logErrorMessage(resp);
             }
@@ -646,7 +643,7 @@ export class DataClientService implements ILogs {
         let message:string = error.message;
         if ( typeof error.error === 'string') {
             message += '\n\n' + error.error;
-        }        
+        }
         this.showMessageService.showModalErrorMessage(message)
     }
 

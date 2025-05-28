@@ -39,12 +39,9 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 return this.Dataset.Id;
             }
         }
-        
-        [Bag(0, Inverse = true, Cascade = "all-delete-orphan")]
-        [Key(1, Column = "TransportModelId")]
-        [OneToMany(2, ClassType = typeof(TransportModelEntry))]
+
+        [JsonIgnore()]
         public virtual IList<TransportModelEntry> Entries { get; set; }
 
-        
     }
 }

@@ -62,8 +62,8 @@ public class BoundCalcReference {
                     throw new Exception($"Cannot find dataset [{name}]");
                 }
             }
-            using( var bc = new BoundCalc(ds.Id,SetPointMode.Auto,TransportModelOld.PeakSecurity) ) {
-                bc.RunBoundCalc(null,null,false,true); 
+            using( var bc = new BoundCalc(ds.Id, 0) ) {
+                bc.RunBoundCalc(null,null,false,true);
                 var lfr = new BoundCalcResults(bc);
                 // nodes
                 foreach( var nw in bc.Nodes.Objs) {
@@ -114,7 +114,7 @@ public class BoundCalcReference {
                     throw new Exception($"Cannot find dataset [{name}]");
                 }
             }
-            using( var bc = new BoundCalc(ds.Id,SetPointMode.Auto,TransportModelOld.PeakSecurity) ) {
+            using( var bc = new BoundCalc(ds.Id,0) ) {
                 var bnd = bc.Boundaries.GetBoundary(boundaryName);
                 if ( bnd == null ) {
                     throw new Exception($"Cannot find boundary with name [{boundaryName}]");
@@ -189,7 +189,7 @@ public class BoundCalcReference {
                 return list;
             }
         }
-        
+
         public void AddCtrlResult(string name, CtrlWrapper cw, BoundCalcXlsmReader.CtrlResult cr) {
             var sp = new BoundCalcRefError(name,BoundCalcRefErrorType.Ctrl,"Set point",cw.SetPoint,cr.SetPoint);
             _allErrors.Add(sp);
@@ -239,7 +239,7 @@ public class BoundCalcReference {
 
     public enum BoundCalcRefErrorType { Node, Branch, Ctrl, SingleTrip, DualTrip }
 
-    public class BoundCalcRefError {  
+    public class BoundCalcRefError {
         public BoundCalcRefError(string objName,BoundCalcRefErrorType objType,string var, double? calc, double? r) {
             ObjectName = objName;
             ObjectType = objType;

@@ -43,9 +43,9 @@ public class BoundCalcTnuosLoader {
         public bool IsValid {get; set;}
 
         // These are used to know which other interconnector to connect to
-        public GridGroup Group {get; set;} 
-        public int Index {get; set;} 
-    }    
+        public GridGroup Group {get; set;}
+        public int Index {get; set;}
+    }
 
     private class NodeData {
         public string Code {get; set;}
@@ -65,7 +65,7 @@ public class BoundCalcTnuosLoader {
         // Island of Ireland
         {"Greenlink",new InterConnector("GreenLink",GridGroup.Ireland,10)},
         {"MARES",new InterConnector("MARES",GridGroup.Ireland,20)},
-        {"East West Interconnector",new InterConnector("EWLink",GridGroup.Ireland,30)},        
+        {"East West Interconnector",new InterConnector("EWLink",GridGroup.Ireland,30)},
         {"Auchencrosh (interconnector CCT)",new InterConnector("Moyle",GridGroup.Ireland,40)},
         {"LIRIC Interconnector",new InterConnector("LIRIC",GridGroup.Ireland,50)},
 
@@ -100,6 +100,7 @@ public class BoundCalcTnuosLoader {
     private ObjectCache<Boundary> _boundaryCache;
     private ObjectCache<BoundaryZone> _boundaryZoneCache;
     private ObjectCache<Generator> _generatorCache;
+    private ObjectCache<NodeGenerator> _nodeGeneratorCache;
     private ObjectCache<TransportModel> _transportModelCache;
     private IList<BoundCalcAdjustment> _branchAdjustments;
     private int _year, _targetYear;
@@ -210,13 +211,13 @@ public class BoundCalcTnuosLoader {
             _dataset = _da.Datasets.GetDataset(DatasetType.BoundCalc,name);
             if ( _dataset==null) {
                 var root = _da.Datasets.GetRootDataset(DatasetType.BoundCalc);
-                _dataset = new Dataset() { Type = DatasetType.BoundCalc, Parent = root, Name = name };                
+                _dataset = new Dataset() { Type = DatasetType.BoundCalc, Parent = root, Name = name };
                 _da.Datasets.Add(_dataset);
             } else {
                 throw new Exception("Dataset unexpectedly already exists");
             }
             // Caches of existing objects
-            
+
             var existingNodes = _da.BoundCalc.GetNodes(_dataset);
             _nodeCache = new ObjectCache<Node>(_da, existingNodes, m=>m.Code, (m,code)=>m.Code=code );
             //
@@ -250,13 +251,16 @@ public class BoundCalcTnuosLoader {
             var existingTMs = _da.BoundCalc.GetTransportModels(_dataset);
             _transportModelCache = new ObjectCache<TransportModel>(_da, existingTMs, m=>m.Name, (m,name)=>m.Name=name );
 
+            var existingNodeGenerators = _da.BoundCalc.GetNodeGenerators(_dataset);
+            _nodeGeneratorCache = new ObjectCache<NodeGenerator>(_da, existingNodeGenerators, m=>$"{m.Node.Id}:{m.Generator.Id}" );
+
             // These are adjustments to the raw data needed to get the model to run
             _branchAdjustments = _da.BoundCalc.GetBoundCalcAdjustments(year,_targetYear);
 
             msg+=loadBoundaries(formFile) + "\n";
             loadNodes(formFile);
             msg+=loadBranches(formFile) + "\n";
-            msg+=loadInterconnectors(formFile) + "\n";
+            //??msg+=loadInterconnectors(formFile) + "\n";
             msg+=loadGenerators(formFile) + "\n";
             //
             msg+=addTransportModels() + "\n";
@@ -271,6 +275,7 @@ public class BoundCalcTnuosLoader {
         string msg = "";
         msg += addTransportModel("Peak Security", new Dictionary<GeneratorType, double>()
         {
+            { GeneratorType.Interconnector, 0 },
             { GeneratorType.Tidal, 0 },
             { GeneratorType.Wave, 0 },
             { GeneratorType.WindOffshore, 0 },
@@ -278,6 +283,7 @@ public class BoundCalcTnuosLoader {
         });
         msg += addTransportModel("Year Round", new Dictionary<GeneratorType, double>()
         {
+            { GeneratorType.Interconnector, 1 },
             { GeneratorType.Nuclear, 0.85 },
             { GeneratorType.OCGT, 0 },
             { GeneratorType.PumpStorage, 0.5},
@@ -297,26 +303,22 @@ public class BoundCalcTnuosLoader {
         {
             tm.Dataset = _dataset;
             //
-            foreach (var gt in Enum.GetValues<GeneratorType>())
-            {
+            foreach (var gt in Enum.GetValues<GeneratorType>()) {
                 // ignore interconnectors as modelled as a control
-                if (gt != GeneratorType.Interconnector)
-                {
-                    var autoScaling = true;
-                    double scaling = 0;
-                    if (initialScalingDict.ContainsKey(gt))
-                    {
-                        autoScaling = false;
-                        scaling = initialScalingDict[gt];
-                    }
-                    tm.Entries.Add(new TransportModelEntry()
-                    {
-                        GeneratorType = gt,
-                        TransportModel = tm,
-                        AutoScaling = autoScaling,
-                        Scaling = scaling
-                    });
+                var autoScaling = true;
+                double scaling = 0;
+                if (initialScalingDict.ContainsKey(gt)) {
+                    autoScaling = false;
+                    scaling = initialScalingDict[gt];
                 }
+                var tme = new TransportModelEntry(tm) {
+                    GeneratorType = gt,
+                    TransportModel = tm,
+                    AutoScaling = autoScaling,
+                    Scaling = scaling,
+                    Dataset = _dataset
+                };
+                _da.BoundCalc.Add(tme);
             }
             msg += $"Added transport model [{name}]\n";
         }
@@ -353,7 +355,7 @@ public class BoundCalcTnuosLoader {
             throw new Exception($"Problem extracting year from file name [{fileName}]");
         }
     }
-    
+
     private string loadGenerators(IFormFile file) {
         using (var stream = file.OpenReadStream()) {
             using (var reader = ExcelReaderFactory.CreateReader(stream)) {
@@ -377,25 +379,22 @@ public class BoundCalcTnuosLoader {
         }
         int numAdded = 0;
         int numUpdated = 0;
+        int numConnectorsAdded = 0;
+        int numConnectorsUpdated = 0;
         while (reader.Read()) {
             var name = reader.GetString(0);
-            if ( string.IsNullOrEmpty(name)) {
+            if (string.IsNullOrEmpty(name)) {
                 break;
             }
             var type = reader.GetString(1);
-            // ignore interconnectors as a generator as these are modelled as controllers and loaded separately
-            if (type == "Interconnectors")
-            {
-                continue;
-            }
+            //
             var generatorType = parseGeneratorType(type);
             //
             var maxTEC = reader.GetDouble(2);
             var node1Code = reader.GetString(4);
             var node2Code = reader.GetString(5);
             var node3Code = reader.GetString(6);
-            if (maxTEC > 0)
-            {
+            if (maxTEC > 0) {
                 var gen = _generatorCache.GetOrCreate(name, out bool created);
                 if (created) {
                     gen.Dataset = _dataset;
@@ -403,22 +402,23 @@ public class BoundCalcTnuosLoader {
                 } else {
                     numUpdated++;
                 }
-                // point nodes at this generator if values set
-                Node node;
-                node = getNodeFromCache(node1Code);
-                if ( node!=null) {
-                    node.Generator = gen;
-                }
-                node = getNodeFromCache(node2Code);
-                if ( node!=null) {
-                    node.Generator = gen;
-                }
-                node = getNodeFromCache(node3Code);
-                if ( node!=null) {
-                    node.Generator = gen;
-                }
                 gen.Capacity = maxTEC;
                 gen.Type = generatorType;
+                // link nodes with genertors
+                if (generatorType == GeneratorType.Interconnector) {
+                    if (!string.IsNullOrEmpty(node3Code)) {
+                        throw new Exception($"Unexpected non-null node3 code for interconnector [{name}]");
+                    } else {
+                        // add new interconnectors
+                        var extNodeCode = addInterConnectors(node1Code, node2Code, gen, ref numConnectorsAdded, ref numConnectorsUpdated);
+                        // add the generator to the new external node
+                        addNodeGenerator(extNodeCode, gen);
+                    }
+                } else {
+                    addNodeGenerator(node1Code, gen);
+                    addNodeGenerator(node2Code, gen);
+                    addNodeGenerator(node3Code, gen);
+                }
             }
         }
         string msg = $"{numAdded} generators added, {numUpdated} generators updated";
@@ -426,13 +426,69 @@ public class BoundCalcTnuosLoader {
         return msg;
     }
 
+    private void addNodeGenerator(string nodeCode, Generator gen)
+    {
+        if (string.IsNullOrEmpty(nodeCode)) {
+            return;
+        }
+        Node node;
+        node = getNodeFromCache(nodeCode);
+        if (node != null) {
+            var nodeGen = _nodeGeneratorCache.GetOrCreate($"{node.Id}:{gen.Id}", out bool created);
+            if (created) {
+                nodeGen.Dataset = _dataset;
+                nodeGen.Node = node;
+                nodeGen.Generator = gen;
+            }
+        } else {
+            throw new Exception($"Could not find node with code [{nodeCode}]");
+        }
+    }
+
+    private string addInterConnectors(string node1Code, string node2Code, Generator gen, ref int numAdded, ref int numUpdated)
+    {
+        var name = gen.Name;
+        if (_interConnectors.ContainsKey(name)) {
+            //
+            var ic = _interConnectors[name];
+            var extNode1Code = getExtNodeCode(node1Code, ic.ExtCode);
+            if (!string.IsNullOrEmpty(node2Code)) {
+                var extNode2Code = getExtNodeCode(node2Code, ic.ExtCode);
+                if (extNode1Code != extNode2Code) {
+                    throw new Exception($"Unexpected different root nodes for interconnector [{gen.Name}]");
+                }
+            }
+            // mark it as being used for later use when adding interconnector links
+            ic.IsValid = true;
+            double capacity = gen.Capacity;
+            if (!string.IsNullOrEmpty(node2Code)) {
+                capacity = capacity / 2;
+            }
+            if (addInterConnector(name, capacity, node1Code, ic.BranchCode1, ic.ExtCode)) {
+                numAdded++;
+            } else {
+                numUpdated++;
+            }
+            //
+            if (!string.IsNullOrEmpty(node2Code)) {
+                if (addInterConnector(name, capacity, node2Code, ic.BranchCode2, ic.ExtCode)) {
+                    numAdded++;
+                } else {
+                    numUpdated++;
+                }
+            }
+            //
+            return extNode1Code;
+        } else {
+            throw new Exception($"Interconnector [{name}] has not been configured");
+        }
+    }
+
     private Node? getNodeFromCache(string nodeCode)
     {
         Node? node = null;
-        if (!string.IsNullOrEmpty(nodeCode))
-        {
-            if (!_nodeCache.TryGetValue(nodeCode, out node))
-            {
+        if (!string.IsNullOrEmpty(nodeCode)) {
+            if (!_nodeCache.TryGetValue(nodeCode, out node)) {
                 throw new Exception($"Could not find node with code [{nodeCode}]");
             }
         }
@@ -537,7 +593,7 @@ public class BoundCalcTnuosLoader {
             var node1Code = reader.GetString(4);
             var node2Code = reader.GetString(5);
             if ( maxTEC>0 ) {
-                if ( _interConnectors.ContainsKey(name) ) {                    
+                if ( _interConnectors.ContainsKey(name) ) {
                     //
                     var ic = _interConnectors[name];
                     // mark it as being used for later use when adding interconnector links
@@ -553,7 +609,7 @@ public class BoundCalcTnuosLoader {
                     }
                     //
                     if ( !string.IsNullOrEmpty(node2Code) ) {
-                        if ( addInterConnector(name,maxTEC,node1Code,ic.BranchCode2,ic.ExtCode) ) {
+                        if ( addInterConnector(name,maxTEC,node2Code,ic.BranchCode2,ic.ExtCode) ) {
                             numAdded++;
                         } else {
                             numUpdated++;
@@ -744,7 +800,7 @@ public class BoundCalcTnuosLoader {
             extNodeIds.Add(extNode.Id);
             var linkBranch = interConnectorLinkBranches.Where( m=>m.Node1.Id == extNode.Id  || m.Node2.Id == extNode.Id ).FirstOrDefault();
             if ( linkBranch==null ) {
-                // find interconnector 
+                // find interconnector
                 var ic = getInterConnector(ib.Code);
                 var nextIc = getNextInterConnector(ic);
                 if ( nextIc!=null) {
@@ -802,7 +858,7 @@ public class BoundCalcTnuosLoader {
         var existingBranches = da.BoundCalc.GetBranches(dataset);
         // this is a transformer between 2 nodes that have the same voltage
         var ctrlBranches=existingBranches.Where( m=>
-            m.Node1.Voltage==m.Node2.Voltage && 
+            m.Node1.Voltage==m.Node2.Voltage &&
             m.Type == BoundCalcBranchType.Transformer && m.Code.StartsWith("Q")).ToList();
         foreach( var b in ctrlBranches) {
             Logger.Instance.LogInfoEvent($"QB Ctrl branch?=[{b.Node1.Code}] [{b.Node2.Code}]");
@@ -817,7 +873,7 @@ public class BoundCalcTnuosLoader {
                     MinCtrl = (voltage == '4') ? -0.2 : -0.15,
                     MaxCtrl = (voltage == '4') ?  0.2 :  0.15,
                     //
-                    Type = BoundCalcCtrlType.QB,                        
+                    Type = BoundCalcCtrlType.QB,
                     Cost = 10.0,
                     //
                     Dataset = dataset,
@@ -879,8 +935,8 @@ public class BoundCalcTnuosLoader {
                 var nodeData = _nodeDataDict[node1Code];
                 (node1,var added) = addNode(nodeData);
                 if ( added ) {
-                    numNodesAdded++;                    
-                } 
+                    numNodesAdded++;
+                }
             } else {
                 throw new Exception($"Cannot find node [{node1Code}], referenced in branch [{code}]");
             }
@@ -889,15 +945,15 @@ public class BoundCalcTnuosLoader {
                 var nodeData = _nodeDataDict[node2Code];
                 (node2,var added) = addNode(nodeData);
                 if ( added ) {
-                    numNodesAdded++;                    
-                } 
+                    numNodesAdded++;
+                }
             } else {
                 throw new Exception($"Cannot find node [{node2Code}], referenced in branch [{code}]");
             }
             // branches
             var branch = _branchCache.GetOrCreate($"{node1Code}-{node2Code}:{code}", out bool created);
             if ( created ) {
-                branch.Dataset = _dataset;                
+                branch.Dataset = _dataset;
                 numBranchesAdded++;
             } else {
                 numBranchesUpdated++;
@@ -921,8 +977,8 @@ public class BoundCalcTnuosLoader {
                     ctrl.Cost = 10;
                     branch.X = 0; // HVDC branches have no reactance
                     branch.SetCtrl(ctrl);
-                    _da.BoundCalc.Add(ctrl);                
-                }                
+                    _da.BoundCalc.Add(ctrl);
+                }
             }
             // Compare link flows from the spreadsheet with line capacities
             var linkFlowPS = reader.GetDouble(branchIndex+14);
@@ -968,11 +1024,11 @@ public class BoundCalcTnuosLoader {
             node.SetVoltage();
             node.SetLocation(_da);
             added = true;
-        } 
+        }
         var zone = _zoneCache.GetOrCreate(nodeData.ZoneCode, out created);
         if ( created ) {
             zone.Dataset = _dataset;
-        } 
+        }
         node.Demand = nodeData.Demand;
         node.Generation_A = nodeData.GenA;
         node.Generation_B = nodeData.GenB;
@@ -1013,7 +1069,7 @@ public class BoundCalcTnuosLoader {
             if ( string.IsNullOrEmpty(boundaryCode)) {
                 break;
             }
-            // B8 has a trailing space - so trim all 
+            // B8 has a trailing space - so trim all
             boundaryCode = boundaryCode.Trim();
             var boundary = _boundaryCache.GetOrCreate(boundaryCode, out bool created);
             if ( created ) {
@@ -1029,7 +1085,7 @@ public class BoundCalcTnuosLoader {
             if (string.IsNullOrEmpty(zoneCode)) {
                 break;
             }
-            // 
+            //
             var zone = _zoneCache.GetOrCreate(zoneCode, out bool created);
             if ( created ) {
                 zone.Dataset = _dataset;
@@ -1058,7 +1114,7 @@ public class BoundCalcTnuosLoader {
                         _da.BoundCalc.Delete(bz);
                         numBoundaryZonesUpdated++;
                     }
-                } 
+                }
             }
         }
         string msg = $"{numZonesAdded} zones added, {numBoundariesAdded} boundaries added, {numBoundaryZonesUpdated} boundary/zones entries updated";

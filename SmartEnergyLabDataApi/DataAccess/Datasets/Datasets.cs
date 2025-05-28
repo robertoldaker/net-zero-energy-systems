@@ -36,7 +36,7 @@ public class Datasets : DataSet
         var tableName = obj.GetType().Name;
         var key = obj.Id.ToString();
         // Check one doesn;t already exist
-        var ue = GetDeleteUserEdit(dataset.Id, tableName, key);        
+        var ue = GetDeleteUserEdit(dataset.Id, tableName, key);
         if ( ue==null ) {
             var userEdit = new UserEdit() {
                 Dataset = dataset,
@@ -118,12 +118,12 @@ public class Datasets : DataSet
     }
 
     public IList<T> GetData<T>(
-            int datasetId, 
-            Func<T,string> keyFcn, 
+            int datasetId,
+            Func<T,string> keyFcn,
             IQueryOver<T,T> queryOver,
             out List<UserEdit> userEdits,
             out List<T> deletedData,
-            bool distinctRootEntity = false) 
+            bool distinctRootEntity = false)
             where T: class {
         // this is the dataset plus the heirarchy going back to root
         var datasetIds = GetInheritedDatasetIds(datasetId);
@@ -139,10 +139,10 @@ public class Datasets : DataSet
         // apply all user edits
         if (distinctRootEntity)
         {
-            q = q.TransformUsing(Transformers.DistinctRootEntity);            
+            q = q.TransformUsing(Transformers.DistinctRootEntity);
         }
         var data = q.List();
-        applyUserEdits<T>(data,datasetIds, keyFcn, out userEdits, out deletedData);
+        applyUserEdits<T>(data, datasetIds, keyFcn, out userEdits, out deletedData);
         return data;
     }
 
@@ -221,7 +221,7 @@ public class Datasets : DataSet
     }
 
     public void Delete(Dataset dataset) {
-        
+
         // Delete children
         var children = Session.QueryOver<Dataset>().Where(m=>m.Parent.Id == dataset.Id).List();
         foreach( var dv in children) {
@@ -239,6 +239,11 @@ public class Datasets : DataSet
                 Session.Delete(er);
             }
         } else if ( dataset.Type == DatasetType.BoundCalc ) {
+            // Node Generators
+            var nodeGenerators = Session.QueryOver<NodeGenerator>().Where( m=>m.Dataset.Id == dataset.Id).List();
+            foreach( var g in nodeGenerators) {
+                Session.Delete(g);
+            }
             // Branches
             var branches = Session.QueryOver<Branch>().Where( m=>m.Dataset.Id == dataset.Id).List();
             foreach( var b in branches) {
@@ -390,7 +395,7 @@ public class Datasets : DataSet
     #endregion
 }
 
-public interface IDataset 
+public interface IDataset
 {
     public Dataset Dataset {get; set;}
 }
@@ -402,8 +407,8 @@ public interface IId
 
 public class DatasetData<T> where T : class {
 
-    public DatasetData(DataAccess da, int datasetId, 
-            Func<T,string> keyFcn, 
+    public DatasetData(DataAccess da, int datasetId,
+            Func<T,string> keyFcn,
             IQueryOver<T,T> queryOver,
             bool distinctRootEntity = false
         ) {
@@ -438,6 +443,5 @@ public class DatasetData<T> where T : class {
 }
 
 
-        
 
- 
+

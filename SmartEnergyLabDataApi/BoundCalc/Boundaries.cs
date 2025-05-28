@@ -135,9 +135,9 @@ public class BoundaryWrapper : ObjectWrapper<Boundary> {
             var zn = nd.Obj.Zone;
             if ( !nd.Obj.Ext ) {
                 if ( Obj.Zones.FirstOrDefault(m=>m.Id == zn.Id)!=null) {
-                    itfr[p] = kgin * nd.Obj.GetGeneration(_boundCalc.TransportModel) - kdin * nd.Obj.Demand;
+                    itfr[p] = kgin * nd.Obj.Generation - kdin * nd.Obj.Demand;
                 } else {
-                    itfr[p] = kgout * nd.Obj.GetGeneration(_boundCalc.TransportModel) - kdout * nd.Obj.Demand;
+                    itfr[p] = kgout * nd.Obj.Generation - kdout * nd.Obj.Demand;
                 }
             }
         }

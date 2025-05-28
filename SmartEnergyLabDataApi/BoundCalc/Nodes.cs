@@ -5,24 +5,30 @@ using SmartEnergyLabDataApi.Data.BoundCalc;
 namespace SmartEnergyLabDataApi.BoundCalc
 {
     public class Nodes : DataStore<NodeWrapper> {
-        public Nodes(DataAccess da,int datasetId, DatasetData<GridSubstationLocation> locDatasetData) : base() {
-            //  
+        public Nodes(DataAccess da,int datasetId, DatasetData<GridSubstationLocation> locDatasetData, DatasetData<NodeGenerator> ngDatasetData) : base() {
+            //
             var q = da.Session.QueryOver<Node>();
             q = q.Fetch(SelectMode.Fetch,m=>m.Zone);
-            q = q.Fetch(SelectMode.Fetch,m=>m.Generator);
             q = q.OrderBy(m=>m.Code).Asc;
             var di = new DatasetData<Node>(da,datasetId,m=>m.Id.ToString(), q);
-            foreach( var node in di.Data) {                
-                if ( node.Location!=null ){
+            // update references to locations
+            foreach (var node in di.Data) {
+                if (node.Location != null) {
                     node.Location = locDatasetData.GetItem(node.Location.Id);
                 }
             }
+            // and generators
+            foreach (var node in di.Data) {
+                // extract generators for each node
+                node.Generators = ngDatasetData.Data.Where(m => m.Node.Id == node.Id).Select(m => m.Generator).ToList();
+            }
+
             int index=1;
             //?? Not sure why this is necessary??
             //?? Without it get a different ref. node?
             var diData = di.Data.OrderBy(m=>m.Id);
-            foreach( var node in diData) {                
-            //??foreach( var node in di.Data) {                
+            foreach( var node in diData) {
+            //??foreach( var node in di.Data) {
                 var key = node.Code;
                 var objWrapper = new NodeWrapper(node,index);
                 base.add(key,objWrapper);
@@ -42,10 +48,10 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         public int Pn {get; set;} // Row/Column position of node in admittance matrix
 
-        public double? Mismatch { 
+        public double? Mismatch {
             get {
                 return Obj.Mismatch;
-            } 
+            }
             set {
                 Obj.Mismatch = value;
             }

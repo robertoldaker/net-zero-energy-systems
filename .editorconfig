@@ -1,0 +1,26 @@
+# Root helps stop applying rules from higher level .editorconfig files
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+tab_width = 4
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.cs]
+# C# specific formatting options (some examples)
+csharp_new_line_before_open_brace = methods, properties
+csharp_new_line_before_else = false
+csharp_new_line_before_catch = false
+csharp_new_line_before_finally = false
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_between_parentheses = false
+csharp_space_after_comma_in_argument_lists = true
+csharp_indent_braces = false # Or true for K&R style
+csharp_indent_case_contents = true
+csharp_indent_namespace_body = true
+csharp_space_around_binary_operators = space
+csharp_space_around_assignment_operators = space

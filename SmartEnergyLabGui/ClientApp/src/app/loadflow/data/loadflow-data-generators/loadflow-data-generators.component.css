@@ -10,3 +10,11 @@
 .mat-column-capacity {
     text-align: right;
 }
+
+.mat-column-scaledGeneration {
+    text-align: right;
+}
+
+.mat-column-nodeCount {
+    text-align: right;
+}

@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Node, TransportModelOld } from '../../../data/app.data'
+import { Node } from '../../../data/app.data'
 import { LoadflowDataService } from '../../loadflow-data-service.service';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 
@@ -19,14 +19,15 @@ export class LoadflowNodeInfoTableComponent implements OnInit {
     nodes:Node[] = []
 
     getGeneration(node: Node):number {
-        return this.dataService.transportModel===TransportModelOld.PeakSecurity ? node.generation_A : node.generation_B
+        //return this.dataService.transportModel===TransportModelOld.PeakSecurity ? node.generation_A : node.generation_B
+        return 0
     }
 
     get totalDemandStr():string {
         let total = 0
         for(let n of this.nodes ) {
             total+=n.demand
-        }        
+        }
         return total.toFixed(0)
     }
 
@@ -34,7 +35,7 @@ export class LoadflowNodeInfoTableComponent implements OnInit {
         let total = 0
         for(let n of this.nodes ) {
             total+=this.getGeneration(n)
-        }        
+        }
         return total.toFixed(0)
     }
 

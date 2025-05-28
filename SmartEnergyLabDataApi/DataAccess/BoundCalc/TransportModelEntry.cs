@@ -6,7 +6,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_transport_model_entries")]
-    public class TransportModelEntry : IId
+    public class TransportModelEntry : IId, IDataset
     {
         public TransportModelEntry()
         {
@@ -17,7 +17,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         {
             this.TransportModel = tm;
         }
-        
+
         /// <summary>
         /// Database identifier
         /// </summary>
@@ -25,18 +25,31 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         [Generator(1, Class = "identity")]
         public virtual int Id { get; set; }
 
-        [Property()]
-        public virtual GeneratorType GeneratorType {get; set;}
+        [JsonIgnore()]
+        [ManyToOne(Column = "DatasetId", Cascade = "none")]
+        public virtual Dataset Dataset { get; set; }
 
         [Property()]
-        public virtual bool AutoScaling {get; set;}
+        public virtual GeneratorType GeneratorType { get; set; }
 
         [Property()]
-        public virtual double Scaling {get; set;}
+        public virtual bool AutoScaling { get; set; }
+
+        [Property()]
+        public virtual double Scaling { get; set; }
 
         [JsonIgnore()]
         [ManyToOne(Column = "TransportModelId", Cascade = "none")]
         public virtual TransportModel TransportModel { get; set; }
+
+        public virtual int TransportModelId
+        {
+            get
+            {
+                return TransportModel.Id;
+            }
+        }
         
+        public virtual double TotalCapacity { get; set; }
     }
 }

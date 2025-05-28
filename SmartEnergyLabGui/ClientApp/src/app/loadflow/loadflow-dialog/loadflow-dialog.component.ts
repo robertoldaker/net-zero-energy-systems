@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Boundary, BoundaryTrip, Branch, AllTripResult, Dataset, DatasetType, NetworkData, SetPointMode, TransportModelOld } from '../../data/app.data';
+import { Boundary, BoundaryTrip, Branch, AllTripResult, Dataset, DatasetType, NetworkData, SetPointMode, TransportModel } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { DataClientService } from 'src/app/data/data-client.service';
@@ -13,12 +13,12 @@ import { DataClientService } from 'src/app/data/data-client.service';
 
 export class LoadflowDialogComponent extends ComponentBase {
 
-    constructor(private dataService: LoadflowDataService) { 
+    constructor(private dataService: LoadflowDataService) {
         super()
         this.setBoundaries(dataService.networkData);
         this.branches = dataService.networkData.branches.data;
         this.trips = []
-        this.boundaryName="Unspecified"        
+        this.boundaryName="Unspecified"
         this.selectedTrip=""
         this.currentTrip="";
         this.percent = 0;
@@ -31,14 +31,14 @@ export class LoadflowDialogComponent extends ComponentBase {
         this.addSub(dataService.ResultsLoaded.subscribe((results)=>{
             if ( results.boundaryTrips ) {
                 this.selectedTrip = "";
-                this.trips = results.boundaryTrips.trips                
-            } 
+                this.trips = results.boundaryTrips.trips
+            }
             // this enables the adjustCapacities button and should only appear if we have a capacity error and the dataset is not read only
             this.hasCapacityError = results.branchCapacityError && !this.dataService.dataset.isReadOnly;
         }))
         this.addSub(dataService.AllTripsProgress.subscribe((data)=>{
             this.currentTrip = data.msg;
-            this.percent = data.percent; 
+            this.percent = data.percent;
         }))
     }
 
@@ -70,7 +70,7 @@ export class LoadflowDialogComponent extends ComponentBase {
         }
         return str;
     }
-    
+
     tripSelected(e: any) {
         let trip = this.trips.find( m=>m.text==e.value);
     }
@@ -81,7 +81,10 @@ export class LoadflowDialogComponent extends ComponentBase {
     }
 
     transportModelChanged(e: any) {
-        this.dataService.setTransportModel(e.value);
+        let tm = this.transportModels.find(m=>m.id === e.value)
+        if ( tm ) {
+            this.dataService.setTransportModel(tm);
+        }
     }
 
     setPointModeChanged(e: any) {
@@ -104,7 +107,7 @@ export class LoadflowDialogComponent extends ComponentBase {
         return this.dataService.loadFlowResults ? true : false
     }
 
-    get transportModel():TransportModelOld {
+    get transportModel():TransportModel | null {
         return this.dataService.transportModel
     }
 
@@ -132,6 +135,14 @@ export class LoadflowDialogComponent extends ComponentBase {
         return this.dataService.boundaryTripResult
     }
 
+    get transportModels():TransportModel[] {
+        if ( this.dataService.networkData ) {
+            return this.dataService.networkData.transportModels.data
+        } else {
+            return []
+        }
+    }
+
     clearTrips(e:any) {
         this.dataService.clearTrips()
     }
@@ -148,7 +159,6 @@ export class LoadflowDialogComponent extends ComponentBase {
     boundaryName: string
     trips: BoundaryTrip[]
     datasetTypes = DatasetType
-    TransportModel = TransportModelOld
     hasCapacityError:boolean = false
     SetPointMode = SetPointMode
 }

@@ -7,22 +7,23 @@ using SmartEnergyLabDataApi.Data.BoundCalc;
 
 namespace SmartEnergyLabDataApi.BoundCalc
 {
-    public enum TransportModelOld {PeakSecurity,YearRound};
     public enum SetPointMode {Zero,Auto,Manual}
     public class BoundCalc : IDisposable {
 
         // Data from the database - nodes, branches and controls
         private DataAccess _da;
         private Dataset _dataset;
-        
+
         private Nodes _nodes;
         private double[] _btfr;
         private Branches _branches;
-        private Ctrls _ctrls;        
+        private Ctrls _ctrls;
         private Boundaries _boundaries;
         private DatasetData<Zone> _zones;
+        private DatasetData<NodeGenerator> _nodeGenerators;
+        private DatasetData<Generator> _generators;
+        private TransportModel _transportModel;
         private NodeOrder _nord;
-        private TransportModelOld _transportModel;
         public SparseMatrix admat;
         public SolveLinSym _ufac;
 
@@ -46,11 +47,6 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public double WTCapacity;
 
         private SetPointMode _setPointMode;
-        //
-        //public const int SPZero = 0;          // controls at zero cost points
-        //??public const int SPMan = 1;           // given by ISetPt input data
-        //??public const int SPAuto = 2;          // determined by optimiser values
-        //??public const int SPBLANK = -1;        // do not display
 
         public const double PUCONV = 10000;   // Conversion for % on 100MVA to pu on 1MVA
         public const double SCAP = 1;         // Ignore branches with cap < 1 MW
@@ -58,7 +54,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public const int MAXCPI = 20;         // Maximum cct constraints added per iteration
         public const int LRGCAP = 50000;
 
-        // Used to store results        
+        // Used to store results
         private BoundCalcStageResults _stageResults;
         private Optimiser opt;
 
@@ -74,7 +70,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        public TransportModelOld TransportModel {
+        public TransportModel TransportModel {
             get {
                 return _transportModel;
             }
@@ -86,19 +82,43 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        public BoundCalc(int datasetId, SetPointMode setPointMode=SetPointMode.Auto, TransportModelOld transportModel = TransportModelOld.PeakSecurity, bool buildOptimiser=false) {
+        public BoundCalc(int datasetId, int transportModelId=0, SetPointMode setPointMode=SetPointMode.Auto, bool buildOptimiser=false) {
             _da = new DataAccess();
             _dataset = _da.Datasets.GetDataset(datasetId);
             if ( _dataset == null) {
                 throw new Exception($"Cannot find dataset with id=[{datasetId}]");
             }
             _setPointMode = setPointMode;
-            _transportModel = transportModel;
             //
             _stageResults = new BoundCalcStageResults();
+
+
+            // work out the transport model
+            if (transportModelId > 0) {
+                var tmDi = _da.BoundCalc.GetTransportModelDatasetData(_dataset.Id, m => m.Id == transportModelId);
+                if (tmDi.Data.Count() == 0) {
+                    throw new Exception($"Cannot find transport model with id=[{transportModelId}]");
+                }
+                _transportModel = tmDi.Data[0];
+            } else {
+                // set the first one available
+                var tmDi = _da.BoundCalc.GetTransportModelDatasetData(_dataset.Id);
+                _transportModel = tmDi.Data.Count() > 0 ? tmDi.Data[0] : null;
+            }
+
+            //
+            _nodeGenerators = _da.BoundCalc.GetNodeGeneratorDatasetData(_dataset.Id);
+            _generators = _da.BoundCalc.GetGeneratorDatasetData(_dataset.Id);
+
             // create nodes wrapper
             var locDi = _da.NationalGrid.GetLocationDatasetData(_dataset.Id);
-            _nodes = new Nodes(_da,_dataset.Id,locDi);
+            _nodes = new Nodes(_da,_dataset.Id,locDi,_nodeGenerators);
+            // work out scaling for the transport model and set the ScaledGenerationPerNode for each generator
+            // This get used by a node to work out its total generation
+            if (_transportModel != null) {
+                _transportModel.UpdateScaling(_nodes.DatasetData.Data, _nodeGenerators.Data, _generators.Data);
+                _transportModel.UpdateGenerators(_generators.Data);
+            }
             // create branches wrapper
             _branches = new Branches(_da,_dataset.Id,_nodes, buildOptimiser);
             // create ctrl wrapper
@@ -108,6 +128,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             // boundaries
             Trip.BoundCalc = this;
             _boundaries = new Boundaries(_da,_dataset.Id,this);
+
             //
             _acctOut = new TopTrips(this,20);
             _scctOut = new TopTrips(this,30);
@@ -170,7 +191,22 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        public NodeOrder Nord {
+        public DatasetData<NodeGenerator> NodeGenerators
+        {
+            get {
+                return _nodeGenerators;
+            }
+        }
+
+        public DatasetData<Generator> Generators
+        {
+            get {
+                return _generators;
+            }
+        }
+
+        public NodeOrder Nord
+        {
             get {
                 return _nord;
             }
@@ -183,7 +219,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        public Optimiser Optimiser 
+        public Optimiser Optimiser
         {
             get {
                 return opt;
@@ -240,7 +276,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             var dodgySnets = snet.Where(m=>m>0).ToList();
             for( i=0; i<snet.Length; i++) {
                 if ( snet[i] != 0) {
-                    return (i,_nodes.DatasetData.Data[snet[i]]);                    
+                    return (i,_nodes.DatasetData.Data[snet[i]]);
                 }
             }
 
@@ -289,7 +325,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
 
             return adm;
-        } 
+        }
 
         // Setup transfer vector
         private void BaseTransfers(out double[] tvec) {
@@ -297,7 +333,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             tvec = new double[_nodes.Count];
 
             foreach( var node in _nodes.Objs) {
-                tvec[node.Pn] = node.Obj.GetGeneration(_transportModel) - node.Obj.Demand;
+                tvec[node.Pn] = node.Obj.Generation - node.Obj.Demand;
             }
 
         }
@@ -355,7 +391,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             civang[0] = vang;
             CalcFlows( vang, SetPointMode.Zero, false, out flow, mism);
             return _nord.NodeId(_nord.nn); // Index of refnode
-        }        
+        }
 
         public bool NetCheck() {
 
@@ -438,7 +474,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
             ActiveBound = null;
             ActiveTrip = null;
-    
+
             return true;
         }
 
@@ -449,7 +485,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             double sf2, sp;
             double[] tv;
 
-            n = _ctrls.Count + 1;            
+            n = _ctrls.Count + 1;
             vang = Utilities.CopyArray(ctrlva[0]);    // base vangs
 
             if ( isaf!=0 && ctrlva[n]!=null) {
@@ -468,7 +504,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                         vang[j] = vang[j] + tv[j] * sf2;
                     }
                 }
-            }            
+            }
         }
 
         // Return node position of largest mismatch
@@ -553,7 +589,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 if ( br.Obj.Cap > SCAP) {
                     mfree = br.Obj.Cap - mflow[i] * Math.Sign(iflow);
                 } else {
-                    mfree = 99999;                    
+                    mfree = 99999;
                 }
                 if ( Math.Abs(iflow) < LPhdr.lpEpsilon) {
                     bc[i] = 99999;
@@ -592,7 +628,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             CalcVang(isaf, cvang, out vang);
             CalcFlows( vang, _setPointMode, true, out lflow, mism);
             //
-            // Power flow in branch wrappers            
+            // Power flow in branch wrappers
             foreach( var br in _branches.Objs) {
                 br.PowerFlow = lflow[br.Index-1];
             }
@@ -695,10 +731,10 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
                 title = "Capacity of boundary circuits";
                 r1 = opt.ctrllp.SolveLP(ref r2);
-                
+
                 if ( r1 == LPhdr.lpOptimum) {
                     iasf = opt.boun.Value(opt.ctrllp) / Math.Abs( ActiveBound.InterconAllowance);
-                    MiscReport(title, $"{opt.BoundCap():0.00}");                    
+                    MiscReport(title, $"{opt.BoundCap():0.00}");
                 } else {
                     if ( r1 == LPhdr.lpInfeasible ) {
                         MiscReport(title, $"Unresolvable constraint ${opt.ctrllp.GetCname(r2)}", BoundCalcStageResultEnum.Fail);
@@ -825,7 +861,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 if ( bnd!=null ) {
                     // calc interconnection vang for new boundary
                     bnd.InterconnectionTransfers(out itfer,_nodes);
-                    mism = Utilities.CopyArray(itfer);                    
+                    mism = Utilities.CopyArray(itfer);
                     _ufac.Solve(itfer, ref ivang);
                     civang[_ctrls.Count+1] = ivang;
                     CalcFlows(ivang,SetPointMode.Zero, false, out iflow, mism);
@@ -834,7 +870,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     var nd = _nodes.get(_nord.NodeId(mi));
                     MiscReport($"{bnd.name} setup mismatch {nd.Obj.Code}",$"{mm:g5}");
                     MiscReport("Planned Transfer", $"{bnd.PlannedTransfer:0.00}");
-                    MiscReport("Interconnection Allowance",$"{bnd.InterconAllowance:0.00}");                
+                    MiscReport("Interconnection Allowance",$"{bnd.InterconAllowance:0.00}");
                 } else {
                     civang[_ctrls.Count+1] = null;
                     MiscReport("Boundary unspecified","");
@@ -953,10 +989,10 @@ namespace SmartEnergyLabDataApi.BoundCalc
                         if ( _setPointMode == SetPointMode.Auto) {
                             limccts = opt.Limitccts();
                         }
-                        _scctOut.Insert( tr, bc, mord, limccts); 
+                        _scctOut.Insert( tr, bc, mord, limccts);
                     }
                 } else {
-                    _dcctOut.SetBoundary(bn, bn.PlannedTransfer + 0.5*bn.InterconAllowance); // use half interconnection for double cct trips 
+                    _dcctOut.SetBoundary(bn, bn.PlannedTransfer + 0.5*bn.InterconAllowance); // use half interconnection for double cct trips
                     res = RunBoundCalc(bn, tr, false, save);
                     if ( res!=LPhdr.lpOptimum) {
                         //??
@@ -1010,10 +1046,10 @@ namespace SmartEnergyLabDataApi.BoundCalc
             foreach( var nd in nodes.DatasetData.Data) {
                 if ( nd.Ext) {
                     nd.Zone.UnscaleDem+=nd.Demand;
-                    nd.Zone.UnscaleGen+=nd.GetGeneration(_transportModel);
+                    nd.Zone.UnscaleGen+=nd.Generation;
                 } else {
                     nd.Zone.Tdemand+=nd.Demand;
-                    nd.Zone.TGeneration+=nd.GetGeneration(_transportModel);
+                    nd.Zone.TGeneration+=nd.Generation;
                 }
             }
             //
@@ -1049,8 +1085,8 @@ namespace SmartEnergyLabDataApi.BoundCalc
             //    throw new Exception("LPModel internal test failed");
             //}
         }
- 
-        public static BoundCalcResults AdjustBranchCapacities(int datasetId, TransportModelOld transportModel, int userId) {
+
+        public static BoundCalcResults AdjustBranchCapacities(int datasetId, int transportModelId, int userId) {
             int year, targetYear;
 
             // Get branches in separate DataAccess instance to prevent it being overwritten
@@ -1061,8 +1097,8 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
 
             using( var da = new DataAccess() ) {
-                // Check the dataset is owned by the user            
-                var dataset = da.Datasets.GetDataset(datasetId);            
+                // Check the dataset is owned by the user
+                var dataset = da.Datasets.GetDataset(datasetId);
                 if ( dataset==null ) {
                     throw new Exception($"Cannot find dataset with id [{datasetId}]");
                 } else {
@@ -1103,7 +1139,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
 
             // lastly run base case again using the requested transport model
-            using( var bc = new BoundCalc(datasetId,SetPointMode.Auto,transportModel,true) ) {
+            using( var bc = new BoundCalc(datasetId,transportModelId,SetPointMode.Auto,true) ) {
                 // run base case
                 bc.RunBoundCalc(null,null,false,true);
                 return new BoundCalcResults(bc);
@@ -1111,11 +1147,11 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         }
 
-        public static BoundCalcResults Run(int datasetId, SetPointMode setPointMode, TransportModelOld transportModel, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null, IHubContext<NotificationHub> hubContext=null)
+        public static BoundCalcResults Run(int datasetId, SetPointMode setPointMode, int transportModelId, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null, IHubContext<NotificationHub> hubContext=null)
         {
-            using( var bc = new BoundCalc(datasetId, setPointMode, transportModel, true) ) {
+            using( var bc = new BoundCalc(datasetId, transportModelId,setPointMode, true) ) {
                 if ( connectionId!=null ) {
-                    bc.ProgressManager.ProgressUpdate+=(m,p)=>{                    
+                    bc.ProgressManager.ProgressUpdate+=(m,p)=>{
                     hubContext.Clients.Client(connectionId).SendAsync("BoundCalc_AllTripsProgress",new {msg=m,percent=p});
                     };
                 }
@@ -1136,7 +1172,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     if ( !string.IsNullOrEmpty(tripStr)) {
                         tr = new Trip("T1",tripStr,bc.Branches);
                     }
-                    bc.RunBoundCalc(null, tr, true, true); 
+                    bc.RunBoundCalc(null, tr, true, true);
                 } else {
                     if ( boundaryTrips) {
                         bc.RunAllTrips(bnd);
@@ -1158,9 +1194,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        public static BoundCalcResults RunBoundaryTrip(int datasetId, SetPointMode setPointMode, TransportModelOld transportModel, string boundaryName, string tripName, string tripStr)
+        public static BoundCalcResults RunBoundaryTrip(int datasetId, SetPointMode setPointMode, int transportModelId, string boundaryName, string tripName, string tripStr)
         {
-            using( var bc = new BoundCalc(datasetId, setPointMode, transportModel, true) ) {
+            using( var bc = new BoundCalc(datasetId, transportModelId, setPointMode, true) ) {
                 var bnd = bc.Boundaries.GetBoundary(boundaryName);
                 if ( bnd == null ) {
                     throw new Exception($"Cannot find boundary with name [{boundaryName}]");
@@ -1181,7 +1217,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             using ( var da = new DataAccess() ) {
                 var dataset = da.Datasets.GetDataset(datasetId);
                 if ( dataset == null ) {
-                    throw new Exception($"Cannot find dataset with id={datasetId}");                    
+                    throw new Exception($"Cannot find dataset with id={datasetId}");
                 }
                 if ( dataset.User?.Id != userId) {
                     throw new Exception($"Not authorised");

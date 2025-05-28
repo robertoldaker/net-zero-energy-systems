@@ -16,7 +16,7 @@ using SmartEnergyLabDataApi.Models;
 public static class Program
 {
     // Start the data access - this will check schema and run any startup scripts as needed
-    private const int SCHEMA_VERSION = 64;
+    private const int SCHEMA_VERSION = 66;
     private const int SCRIPT_VERSION = 9;
 
     public const string DB_NAME = "smart_energy_lab";
@@ -32,7 +32,7 @@ public static class Program
         //
         AppEnvironment.Initialise(builder.Environment);
         Logger.Initialise(builder.Environment.ContentRootPath);
-        AppFolders.Initialise(builder.Environment.ContentRootPath, builder.Environment.WebRootPath);        
+        AppFolders.Initialise(builder.Environment.ContentRootPath, builder.Environment.WebRootPath);
 
         // Add initial entry in log file
         Logger.Instance.LogInfoEvent($"Starting Smart Energy Lab...");
@@ -90,7 +90,7 @@ public static class Program
         builder.Services.AddSingleton<IElectricityCostFetcher,ElectricityCostFetcher>();
 
         builder.Services.AddControllers(options => options.Filters.Add<ExceptionLoggerFilter>())
-                        .AddJsonOptions(options => options.JsonSerializerOptions.NumberHandling = 
+                        .AddJsonOptions(options => options.JsonSerializerOptions.NumberHandling =
                                 System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals);
 
         var app = builder.Build();
@@ -104,7 +104,7 @@ public static class Program
         app.UseStaticFiles(new StaticFileOptions
         {
             ContentTypeProvider = provider
-        });        
+        });
 
         // Configure the HTTP request pipeline.
         app.UseSwagger();
@@ -130,7 +130,7 @@ public static class Program
             DatabaseBackupBackgroundTask.Register(backgroundTasks);
             LoadDistributionDataBackgroundTask.Register(backgroundTasks);
         }
-        
+
         var hostName = getDbHostName();
         var cpnts = hostName.Split(':');
         if ( cpnts.Length>1) {
@@ -163,6 +163,7 @@ public static class Program
         EditItemModel.AddHandler<GridSubstationLocation>(new GridSubstationLocationItemHandler());
         EditItemModel.AddHandler<Generator>(new GeneratorItemHandler());
         EditItemModel.AddHandler<TransportModel>(new TransportModelItemHandler());
+        EditItemModel.AddHandler<TransportModelEntry>(new TransportModelEntryItemHandler());
         // Elsi
         EditItemModel.AddHandler<GenCapacity>(new GenCapacityItemHandler());
         EditItemModel.AddHandler<GenParameter>(new GenParameterItemHandler());

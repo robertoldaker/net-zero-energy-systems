@@ -2,20 +2,26 @@
     width: 25%;
 }
 
+.mat-column-voltage {
+    text-align:right;
+    padding-right: 1rem;
+}
+
+.mat-column-zoneName {
+    text-align:right;
+    padding-right: 1rem;
+}
+
 .mat-column-demand {
     text-align: right;
     padding-right: 2.5rem;
 }
 
-.mat-column-generation_A {
-    text-align: right;
-    padding-right: 2.5rem;
+.mat-column-generation {
+    width: 25%;
+    padding-right: 1rem;
 }
 
-.mat-column-generation_B {
-    text-align: right;
-    padding-right: 2.5rem;
-}
 
 .mat-column-tlf {
     text-align: right;
@@ -42,3 +48,26 @@
     font-weight: 300;
     color: black;
 }
+
+table.genTable {
+    width: 100%;
+}
+
+table.genTable > tbody {
+    font-size: 0.8rem;
+}
+
+table.genTable td:nth-child(1) {
+    padding-right: 0.5rem;
+}
+
+table.genTable td:nth-child(2) {
+    text-align: right;
+}
+
+table.genTable > tfoot {
+    font-size: 0.8rem;
+    font-weight: bold;
+    border-top: 1px dotted lightgrey;
+}
+

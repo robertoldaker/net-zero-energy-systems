@@ -1,12 +1,22 @@
 <div style="white-space: nowrap; position: relative;">
-    <span *ngIf="readOnly; else editableBlock" [ngClass]="inputClass">{{value}}</span>
+    <span *ngIf="readOnly; else editableBlock" [ngClass]="inputClass">
+        <input *ngIf="checkBox; else anyValue" type="checkbox" disabled [checked]="value"/>
+        <ng-template #anyValue>
+            <span>{{value}}</span>
+        </ng-template>
+    </span>
     <div *ngIf="data.userEdit?.prevValue" class="prevValue" style="line-height: 85%;">
         ({{prevValue}})  
     </div>
     <ng-template #editableBlock>
-        <select *ngIf="options; else textEdit" [ngClass]="inputClass" (change)="saveSelect($event)">
-            <option *ngFor="let o of options" [value]="o" [selected]="isSelected(o)">{{o}}</option>
-        </select>
+        <div *ngIf="checkBox; else select" class="checkBox">
+            <input type="checkbox" [class]="inputClass" [checked]="value" (change)="onChangeCheckBox($event)"/>
+        </div>
+        <ng-template #select>
+            <select *ngIf="options; else textEdit" [ngClass]="inputClass" (change)="saveSelect($event)">
+                <option *ngFor="let o of options" [value]="o" [selected]="isSelected(o)">{{o}}</option>
+            </select>
+        </ng-template>
         <ng-template #textEdit>
             <div class="input">
                 <input class="editable" [ngClass]="inputClass" type="text" [value]="value"
