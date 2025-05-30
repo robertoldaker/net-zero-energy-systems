@@ -7,6 +7,7 @@ import { DialogService } from '../dialogs/dialog.service';
 import { MessageDialog } from '../dialogs/message-dialog/message-dialog.component';
 import { DatasetsService } from '../datasets/datasets.service';
 import { DataFilter, ICellEditorDataDict } from '../datasets/cell-editor/cell-editor.component';
+import { IFormControlDict } from '../dialogs/dialog-base';
 
 type NodeDict = {
     [code: string]:Node
@@ -911,6 +912,18 @@ export class LoadflowDataService {
             }
         } else {
             return PercentCapacityThreshold.OK
+        }
+    }
+
+    saveDialog(id: number, className:string, data: IFormControlDict, onOK: ()=>void, onError: (errors: any)=>void) {
+        data['_transportModelId'] = this.transportModel?.id
+        if ( this.datasetsService.currentDataset) {
+            this.dataClientService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: className, data: data }, (resp)=>{
+                this.afterEdit(resp)
+                onOK();
+            }, (errors)=>{
+                onError(errors);
+            })
         }
     }
 
