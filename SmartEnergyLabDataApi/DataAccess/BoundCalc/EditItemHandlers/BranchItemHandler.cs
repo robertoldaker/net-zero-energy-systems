@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.ObjectPool;
 using NHibernate;
+using NHibernate.Criterion;
 using NHibernate.Driver;
 
 namespace SmartEnergyLabDataApi.Data.BoundCalc;
@@ -65,8 +66,8 @@ public class BranchItemHandler : BaseEditItemHandler
                 }
             }
         }
-        
-        // demand        
+
+        // demand
         m.CheckDouble("x",0);
         // generation
         m.CheckDouble("cap",0);
@@ -86,7 +87,7 @@ public class BranchItemHandler : BaseEditItemHandler
         }
         var type = m.CheckInt("type");
         if ( type!=null ) {
-            var branchType = (BoundCalcBranchType) type;            
+            var branchType = (BoundCalcBranchType) type;
             if ( branchType == BoundCalcBranchType.QB || branchType == BoundCalcBranchType.HVDC ) {
                 var minCtrl = m.CheckDouble("minCtrl");
                 if ( minCtrl == null ) {
@@ -108,7 +109,7 @@ public class BranchItemHandler : BaseEditItemHandler
         if ( nodeId1!=null && nodeId2!=null) {
             if ( m.Da.BoundCalc.BranchExists(m.Dataset.Id,code, (int) nodeId1, (int) nodeId2,out Dataset ds) ) {
                 m.AddError("code",$"Branch with same code and end-points already exists in dataset [{ds.Name}]");
-            }            
+            }
         }
     }
 
@@ -137,21 +138,21 @@ public class BranchItemHandler : BaseEditItemHandler
         // capacity
         var cap = m.CheckDouble("cap",0);
         if ( cap!=null ) {
-            b.Cap = (double) cap;            
+            b.Cap = (double) cap;
         }
         // node id 1
         var nodeId1 = m.CheckInt("nodeId1");
         if ( nodeId1!=null ) {
             var node = m.Da.BoundCalc.GetNode((int) nodeId1);
             b.Node1 = node;
-        } 
+        }
 
         // node id 2
         var nodeId2 = m.CheckInt("nodeId2");
         if ( nodeId2!=null ) {
             var node = m.Da.BoundCalc.GetNode((int) nodeId2);
             b.Node2 = node;
-        } 
+        }
         //
         var type = m.CheckInt("type");
         if ( type!=null && b.Id ==0 ) {
@@ -162,13 +163,13 @@ public class BranchItemHandler : BaseEditItemHandler
                 if ( branchType == BoundCalcBranchType.QB) {
                     ctrlType = BoundCalcCtrlType.QB;
                 } else if ( branchType == BoundCalcBranchType.HVDC) {
-                    ctrlType = BoundCalcCtrlType.HVDC;                    
+                    ctrlType = BoundCalcCtrlType.HVDC;
                 } else {
                     throw new Exception($"Unexpected branch type found [{branchType}]");
                 }
                 var ctrl = new Ctrl(m.Dataset,b);
                 ctrl.Type = ctrlType; // note needs to be done before SetCtrl
-                b.SetCtrl(ctrl);                
+                b.SetCtrl(ctrl);
                 b.Ctrl.Type = ctrlType; // also need to reset this as SetCtrl changes branch type
             }
         }
@@ -212,7 +213,11 @@ public class BranchItemHandler : BaseEditItemHandler
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
             var branch = (Branch) m.Item;
-            var branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n=>n.Id == branch.Id, out var ctrlDi);
+            //
+            var branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n=>n.Id == branch.Id, true);
+            var ctrlIds = branchDi.Data.Where(m => m.Ctrl != null).Select(m => m.Ctrl.Id).ToArray();
+            var ctrlDi = da.BoundCalc.GetCtrlDatasetData(m.Dataset.Id, m => m.Id.IsIn(ctrlIds), true);
+
             list.Add(branchDi.getBaseDatasetData());
             list.Add(ctrlDi.getBaseDatasetData());
             return list;

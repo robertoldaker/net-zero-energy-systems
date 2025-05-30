@@ -26,6 +26,7 @@ import { LoadflowCtrlDialogComponent } from '../loadflow/dialogs/loadflow-ctrl-d
 import { LoadflowLocationDialogComponent } from '../loadflow/dialogs/loadflow-location-dialog/loadflow-location-dialog.component';
 import { IBranchEditorData } from '../loadflow/loadflow-data-service.service';
 import { LoadflowTransportModelDialogComponent } from '../loadflow/dialogs/loadflow-transport-model-dialog/loadflow-transport-model-dialog.component';
+import { LoadflowGeneratorDialogComponent } from '../loadflow/dialogs/loadflow-generator-dialog/loadflow-generator-dialog.component';
 
 @Injectable({
     providedIn: 'root'
@@ -170,6 +171,17 @@ export class DialogService {
         let options = Object.assign({},this.defaultOptions)
         options.data = transportModel
         let dialogRef = this.dialog.open(LoadflowTransportModelDialogComponent, options)
+        dialogRef.afterClosed().subscribe((input)=>{
+            if ( onClose ) {
+                onClose(input)
+            }
+        });
+    }
+
+    showLoadflowGeneratorDialog(cellObj?: ICellEditorDataDict, onClose?: (e: any)=>void) {
+        let options = Object.assign({},this.defaultOptions)
+        options.data = cellObj
+        let dialogRef = this.dialog.open(LoadflowGeneratorDialogComponent, options)
         dialogRef.afterClosed().subscribe((input)=>{
             if ( onClose ) {
                 onClose(input)

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,7 @@ using NHibernate.Dialect.Function;
 using NHibernate.Hql.Ast.ANTLR.Tree;
 using SmartEnergyLabDataApi.Controllers;
 using SmartEnergyLabDataApi.Data;
+using SmartEnergyLabDataApi.Data.BoundCalc;
 using SmartEnergyLabDataApi.Models;
 
 namespace SmartEnergyLabDataApi.Data;
@@ -230,8 +232,8 @@ public class EditItemModel : DbModel {
                 // apply user edits so we get the latest value
                 var itemStrValue = applyUserEdits(name, objToString(itemValue), userEditDict, inheritedDatasetIds);
                 // get the new value
-                var editValue = _editItem.data[name]; 
-                // get any existing user edit for this 
+                var editValue = _editItem.data[name];
+                // get any existing user edit for this
                 var userEdit = userEdits.Where( m=>string.Compare(m.ColumnName,name,true)==0).FirstOrDefault();
                 if ( itemStrValue == objToString(editValue)) {
                     // No change so delete
@@ -275,7 +277,7 @@ public class EditItemModel : DbModel {
 
     public bool GetString(string name, out string value) {
         if ( _editItem.data.TryGetValue(name,out object valueObj)) {
-            value = valueObj.ToString();
+            value = valueObj!=null ? valueObj.ToString() : "";
             return true;
         } else {
             value = null;
@@ -283,9 +285,15 @@ public class EditItemModel : DbModel {
         }
     }
 
-    public bool? CheckBoolean(string name) {
-        if ( GetString(name, out string boolStr)) {
-            if ( bool.TryParse(boolStr, out bool value) ) {
+    public bool HasDataField(string name)
+    {
+        return _editItem.data.ContainsKey(name);
+    }
+
+    public bool? CheckBoolean(string name)
+    {
+        if (GetString(name, out string boolStr)) {
+            if (boolStr != null && bool.TryParse(boolStr, out bool value)) {
                 return value;
             } else {
                 throw new Exception($"Cannot parse bool value [{boolStr}]");
@@ -297,7 +305,7 @@ public class EditItemModel : DbModel {
 
     public int? CheckInt(string name) {
         if ( GetString(name, out string intStr)) {
-            if ( int.TryParse(intStr, out int value) ) {
+            if ( intStr!=null && int.TryParse(intStr, out int value) ) {
                 return value;
             } else {
                 throw new Exception($"Cannot parse int value [{intStr}]");
@@ -307,17 +315,35 @@ public class EditItemModel : DbModel {
         }
     }
 
-    public double? CheckDouble(string name, double? low=null, double? high=null) {
-        if ( GetString(name, out string valueStr)) {
-            if ( double.TryParse(valueStr, out double value)) {
-                if ( low!=null && value<low) {
-                    this.addError(name,$"Must be >= {low}");
+    public T? CheckEnum<T>(string name) where T : struct, System.Enum {
+        if ( GetString(name, out string intStr)) {
+            if ( int.TryParse(intStr, out int value) ) {
+                if (!Enum.IsDefined(typeof(T), value)) {
+                    this.addError(name, $"Unexpected problem parsing value [{value}] for field [{name}]");
+                    return default;
                 }
-                if ( high!=null && value>high) {
-                    this.addError(name,$"Must be <= {high}");
+                return (T)Enum.ToObject(typeof(T), value);
+            } else {
+                this.addError(name, $"Needs to be set to something");
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public double? CheckDouble(string name, double? low = null, double? high = null)
+    {
+        if (GetString(name, out string valueStr)) {
+            if (double.TryParse(valueStr, out double value)) {
+                if (low != null && value < low) {
+                    this.addError(name, $"Must be >= {low}");
+                }
+                if (high != null && value > high) {
+                    this.addError(name, $"Must be <= {high}");
                 }
             } else {
-                this.addError(name,$"Needs to be a number");
+                this.addError(name, $"Needs to be a number");
             }
             return value;
         } else {
@@ -351,8 +377,11 @@ public class EditItemModel : DbModel {
                 }
             } else {
                 _da.Datasets.AddDeleteUserEdit((IId) _item,_dataset);
-            }       
+            }
             _da.CommitChanges();
+        }
+        if (string.IsNullOrEmpty(msg)) {
+            _datasetData = _handler.GetDatasetData(this);
         }
         return msg;
     }

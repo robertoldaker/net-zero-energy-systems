@@ -10,15 +10,15 @@ public class CtrlItemHandler : BaseEditItemHandler
     public override string BeforeUndelete(EditItemModel m)
     {
         Ctrl c = (Ctrl) m.Item;
-        
+
         // see if we already have a ctrl pointing at the branch referenced by this ctrl
         var q = m.Da.Session.QueryOver<Ctrl>();
         q = q.Fetch(SelectMode.Fetch,m=>m.Node1);
-        q = q.Fetch(SelectMode.Fetch,m=>m.Node2);            
+        q = q.Fetch(SelectMode.Fetch,m=>m.Node2);
         var di = new DatasetData<Ctrl>(m.Da,m.Dataset.Id,m=>m.Id.ToString(),q);
         //
         var ctrl = di.Data.Where( m=>m.Branch.Id == c.Branch.Id).FirstOrDefault();
-        if ( ctrl!=null ) { 
+        if ( ctrl!=null ) {
             return $"There is already a ctrl pointing at the same branch so this ctrl cannot be undeleted.\n\n(called <b>{ctrl.DisplayName}</b> in dataset <b>{ctrl.Dataset.Name}</b>)";
         } else {
             return "";
@@ -37,7 +37,7 @@ public class CtrlItemHandler : BaseEditItemHandler
         m.CheckDouble("maxCtrl",0);
         // Cost
         m.CheckDouble("cost",0);
-        // 
+        //
         var bId = m.CheckInt("branchId");
         if (  bId!=null ) {
             var branch = m.Da.BoundCalc.GetBranch((int) bId);
@@ -100,7 +100,7 @@ public class CtrlItemHandler : BaseEditItemHandler
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
             var ctrl = (Ctrl) m.Item;
-            var ctrlDi = da.BoundCalc.GetCtrlDatasetData(m.Dataset.Id,m=>m.Id == ctrl.Id);
+            var ctrlDi = da.BoundCalc.GetCtrlDatasetData(m.Dataset.Id,m=>m.Id == ctrl.Id, true);
             list.Add(ctrlDi.getBaseDatasetData());
             return list;
         }

@@ -32,22 +32,22 @@ public class NodeItemHandler : BaseEditItemHandler
     {
         if ( m.GetString("code",out string code)) {
             Regex regex = new Regex(@"^[A-Z]{4}\d");
-            var codeMatch = regex.Match(code);        
+            var codeMatch = regex.Match(code);
             if ( !codeMatch.Success) {
                 m.AddError("code","Code must be in form <uppercase-4-letter-code><voltage id><anything>");
-            } 
+            }
             if ( m.Da.BoundCalc.NodeExists(m.Dataset.Id,code, out Dataset ds) ) {
                 m.AddError("code",$"Node already exists in dataset [{ds.Name}]");
             }
         } else if ( m.ItemId == 0 ) {
             m.AddError("code","Code must be set");
         }
-        // demand        
+        // demand
         m.CheckDouble("demand");
         // generation A
-        m.CheckDouble("generation_A");
+        //??m.CheckDouble("generation_A");
         // generation B
-        m.CheckDouble("generation_B");
+        //??m.CheckDouble("generation_B");
         // external
         m.CheckBoolean("ext");
         // zone id
@@ -71,32 +71,60 @@ public class NodeItemHandler : BaseEditItemHandler
             node.SetVoltage();
             node.SetLocation(m.Da);
         }
-        // demand        
+        // demand
         var demand = m.CheckDouble("demand");
         if ( demand!=null ) {
             node.Demand = (double) demand;
         }
         // generation A
-        var generation_A = m.CheckDouble("generation_A");
+        /*var generation_A = m.CheckDouble("generation_A");
         if ( generation_A!=null ) {
-            node.Generation_A = (double) generation_A;            
+            node.Generation_A = (double) generation_A;
         }
         // generation B
         var generation_B = m.CheckDouble("generation_B");
         if ( generation_B!=null ) {
-            node.Generation_B = (double) generation_B;            
+            node.Generation_B = (double) generation_B;
+        }*/
+        var generatorIds = m.GetIntArray("generatorIds");
+        if ( generatorIds!=null ) {
+            // and node generators
+            var existingNodeGenerators = m.Da.BoundCalc.GetNodeGenerators(node.Id);
+            var newNodeGenerators = new List<NodeGenerator>();
+            // Add new ones
+            foreach( var genId in generatorIds) {
+                var ng = existingNodeGenerators.Where(m=>m.Generator.Id == genId).FirstOrDefault();
+                if ( ng==null) {
+                    var gen = m.Da.BoundCalc.GetGenerator(genId);
+                    if ( gen!=null ) {
+                        var newNg = new NodeGenerator() {
+                            Node = node,
+                            Generator = gen,
+                            Dataset = m.Dataset
+                        };
+                        m.Da.BoundCalc.Add(newNg);
+                    }
+                }
+            }
+            // Delete ones not defined anymore
+            foreach( var ng in existingNodeGenerators) {
+                if ( !generatorIds.Contains(ng.Generator.Id)) {
+                    m.Da.BoundCalc.Delete(ng);
+                }
+            }
         }
+
         // external
         var ext = m.CheckBoolean("ext");
         if ( ext!=null) {
             node.Ext = (bool) ext;
-        }        
+        }
         // zone id
         var zoneId = m.CheckInt("zoneId");
         if ( zoneId!=null ) {
             var zone = m.Da.BoundCalc.GetZone((int) zoneId);
             node.Zone = zone;
-        } 
+        }
 
         //
         if ( node.Id==0) {
@@ -109,15 +137,28 @@ public class NodeItemHandler : BaseEditItemHandler
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
             var node = (Node) m.Item;
-            var nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id,m=>m.Id == node.Id);
+            // return all nodes since they can change if demand changes or generator mapping
+            var nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id, null,  true);
 
-            // branches that reference this node
-            var nodeIds = nodeDi.Data.Select(m=>m.Id).ToArray();            
-            var branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id,m=>m.Node1.Id.IsIn(nodeIds) || m.Node2.IsIn(nodeIds), out var ctrlId);
+            // branches and controls that reference this node
+            var branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id,m=>m.Node1.Id == node.Id || m.Node2.Id == node.Id, true);
+            var ctrlIds = branchDi.Data.Where(m => m.Ctrl != null).Select(m => m.Ctrl.Id).ToArray();
+            var ctrlDi = da.BoundCalc.GetCtrlDatasetData(m.Dataset.Id, m => m.Id.IsIn(ctrlIds), true);
 
-            //
+            var genDi = da.BoundCalc.GetGeneratorDatasetData(m.Dataset.Id);
+            var tmDi = da.BoundCalc.GetTransportModelDatasetData(m.Dataset.Id, null, true);
+            var tmeDi = da.BoundCalc.GetTransportModelEntryDatasetData(m.Dataset.Id);
+
+            foreach (var tm in tmDi.Data) {
+                tm.UpdateScaling(da, m.Dataset.Id);
+                tm.UpdateGenerators(genDi.Data);
+            }
+
             list.Add(nodeDi.getBaseDatasetData());
-            list.Add(branchDi.getBaseDatasetData()); 
+            list.Add(genDi.getBaseDatasetData());
+            list.Add(branchDi.getBaseDatasetData());
+            list.Add(ctrlDi.getBaseDatasetData());
+            list.Add(tmeDi.getBaseDatasetData());
             return list;
         }
     }

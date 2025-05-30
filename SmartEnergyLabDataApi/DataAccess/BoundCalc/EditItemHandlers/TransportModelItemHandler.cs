@@ -55,7 +55,7 @@ public class TransportModelItemHandler : BaseEditItemHandler
             var list = new List<DatasetData<object>>();
             var tm = (TransportModel) m.Item;
             // the trnasport model we have just created
-            var di = da.BoundCalc.GetTransportModelDatasetData(m.Dataset.Id, m=>m.Id == tm.Id);
+            var di = da.BoundCalc.GetTransportModelDatasetData(m.Dataset.Id, m=>m.Id == tm.Id, true);
             // the entries for this transport model
             var diTME = da.BoundCalc.GetTransportModelEntryDatasetData(m.Dataset.Id, m=>m.TransportModel.Id == tm.Id);
 

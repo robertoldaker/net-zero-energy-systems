@@ -132,7 +132,11 @@ export class CellEditorComponent {
     }
 
     saveSelect(e: any) {
-        this.saveValue(e.target.value);
+        if ( this.enumeration) {
+            this.saveValue(this.enumeration[e.target.value]);
+        } else {
+            this.saveValue(e.target.value);
+        }
     }
 
     delete() {

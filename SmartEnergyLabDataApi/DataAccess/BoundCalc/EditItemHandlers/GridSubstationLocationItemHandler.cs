@@ -25,7 +25,7 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
         // reference
         if ( m.GetString("code", out string reference)) {
             if ( string.IsNullOrEmpty(reference)) {
-                m.AddError("code","Please enter a 4-letter uppercase code with optional trailing X");                
+                m.AddError("code","Please enter a 4-letter uppercase code with optional trailing X");
             } else {
                 if ( !regex.IsMatch(reference) ) {
                     m.AddError("code","Please enter a 4-letter uppercase code with optional trailing X");
@@ -39,8 +39,8 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
         // name
         if ( m.GetString("name", out string name)) {
             if ( string.IsNullOrEmpty(name)) {
-                m.AddError("name","Please enter a name");                
-            } 
+                m.AddError("name","Please enter a name");
+            }
         }
         // Ctrls
         m.CheckDouble("latitude");
@@ -83,7 +83,7 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
 
     public override List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
-        var list = new List<DatasetData<object>>();        
+        var list = new List<DatasetData<object>>();
         // location
         GridSubstationLocation loc = (GridSubstationLocation) m.Item;
         using ( var da = new DataAccess()) {
@@ -91,8 +91,8 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
             var locDi = da.NationalGrid.GetLocationDatasetData(m.Dataset.Id, m=>m.Id == loc.Id);
             var nodeIds = da.Session.QueryOver<Node>().Where( m=>m.Location.Id == loc.Id).Select(m=>m.Id).List<int>().ToArray();
             var branchIds = da.Session.QueryOver<Branch>().Where( m=>m.Node1.Id.IsIn(nodeIds) || m.Node2.Id.IsIn(nodeIds) ).Select(m=>m.Id).List<int>().ToArray();
-            
-            // 
+
+            //
             list.Add(locDi.getBaseDatasetData());
 
             DatasetData<Node>? nodeDi = null;
@@ -100,17 +100,19 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
             DatasetData<Ctrl>? ctrlDi = null;
             if ( nodeIds.Length != 0 ) {
                 // get nodes used by this location
-                nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id, m=>m.Location.Id == loc.Id);
-                if ( branchIds.Length!=0) {
-                    // get branches used by the nodes                
-                    branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n=>n.Node1.Id.IsIn(nodeIds) || n.Node2.Id.IsIn(nodeIds), out ctrlDi);
-                } 
-            } 
+                nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id, m=>m.Location.Id == loc.Id, true);
+                if (branchIds.Length != 0) {
+                    // get branches used by the nodes
+                    branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n => n.Node1.Id.IsIn(nodeIds) || n.Node2.Id.IsIn(nodeIds), true);
+                    var ctrlIds = branchDi.Data.Where(m => m.Ctrl != null).Select(m => m.Ctrl.Id).ToArray();
+                    ctrlDi = da.BoundCalc.GetCtrlDatasetData(m.Dataset.Id, m => m.Id.IsIn(ctrlIds), true);
+                }
+            }
             if ( nodeDi!=null) {
                 list.Add(nodeDi.getBaseDatasetData());
             }
             if ( branchDi!=null ) {
-                list.Add(branchDi.getBaseDatasetData()); 
+                list.Add(branchDi.getBaseDatasetData());
             }
             if ( ctrlDi !=null ) {
                 list.Add(ctrlDi.getBaseDatasetData());

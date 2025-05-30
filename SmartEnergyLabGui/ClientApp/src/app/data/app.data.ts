@@ -330,6 +330,7 @@ export interface Node {
     name: string
     location: GridSubstationLocation | undefined
     demand: number
+    generators: Generator[]
     generation: number
     generation_A: number
     generation_B: number
@@ -474,7 +475,6 @@ export interface NetworkData {
     zones: DatasetData<Zone>
     locations: DatasetData<GridSubstationLocation>
     generators: DatasetData<Generator>
-    nodeGenerators: DatasetData<NodeGenerator>
     transportModels: DatasetData<TransportModel>
     transportModelEntries: DatasetData<TransportModelEntry>
     transportModel: TransportModel | null

@@ -49,9 +49,9 @@
         <ng-container matColumnDef="generation">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Generation (MW)
             <td mat-cell *matCellDef="let element">
-                <table *ngIf="hasGenerators(element.id.value)" class="genTable">
+                <table *ngIf="element.generators.value.length>0" class="genTable">
                     <tbody>
-                        <tr *ngFor="let g of getGenerators(element.id.value)">
+                        <tr *ngFor="let g of element.generators.value">
                             <td>{{g.name}}</td>
                             <td>{{g.scaledGenerationPerNode.toFixed(0)}}</td>
                         </tr>

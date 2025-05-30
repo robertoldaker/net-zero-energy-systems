@@ -45,7 +45,6 @@ export class LoadflowDataService {
             zones: { tableName: '',data:[], userEdits: [],deletedData: [] },
             locations: { tableName: '',data:[], userEdits: [],deletedData: [] },
             generators: { tableName: '', data:[], userEdits: [], deletedData: []},
-            nodeGenerators: { tableName: '', data:[], userEdits: [], deletedData: []},
             transportModels: { tableName: '', data:[], userEdits: [], deletedData: []},
             transportModelEntries: { tableName: '', data:[], userEdits: [], deletedData: []},
             transportModel: null
@@ -500,10 +499,11 @@ export class LoadflowDataService {
     }
 
     afterEdit(resp: DatasetData<any>[] ) {
+        console.log('afterEdit',resp)
         // do a reload if edited the current transport model
-        let tms = resp.find(m=>m.tableName == "TransportModel");
+        let tms = resp.find(m=>m.tableName === "TransportModel");
         if ( tms && this.transportModel) {
-            let tm = tms.data.find(m=>m.id == this.transportModel?.id)
+            let tm = tms.data.find(m=>m.id === this.transportModel?.id)
             if ( tm ) {
                 this.reload()
                 return;
@@ -528,8 +528,17 @@ export class LoadflowDataService {
 
     afterDelete(id: number, className: string, dataset: Dataset) {
 
-        this.needsCalc = true
+        console.log('afterDelete')
+        // Check we haven't deleted the currently selected transport model
+        if ( className==='TransportModel') {
+            if ( this.transportModel && this.transportModel.id === id) {
+                this.transportModel = null
+                // do a reload since any data will be stale
+                this.reload()
+            }
+        }
 
+        this.needsCalc = true
         let dd = this.getDatasetData(className)
         if ( className === "Branch") {
             let branch = dd.data.find(m=>m.id == id)
@@ -721,8 +730,6 @@ export class LoadflowDataService {
             return this.networkData.locations
         } else if ( typeName == "Generator") {
             return this.networkData.generators
-        } else if ( typeName == "NodeGenerator") {
-            return this.networkData.nodeGenerators
         } else if ( typeName == "TransportModel") {
             return this.networkData.transportModels
         } else if ( typeName == "TransportModelEntry") {

@@ -31,13 +31,8 @@ export class LoadflowDataTransportModelsComponent extends DataTableBaseComponent
             sm = this.transportModels.find(m=>m.id == this.selectedModel?.id)
             // select a new model (means the dataset has changed)
             if ( !sm ) {
-                if ( this.dataService.transportModel  ) {
-                    // choose currently selected one??
-                    sm = this.transportModels.find(m=>m.id == this.dataService.transportModel?.id)
-                } else {
-                    // else first one in the list
-                    sm = this.transportModels.length>0 ? this.transportModels[0] : undefined
-                }
+                // else first one in the list
+                sm = this.transportModels.length>0 ? this.transportModels[0] : undefined
             }
             this.selectModel(sm)
         }))

@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Dataset, Node, Zone } from 'src/app/data/app.data';
+import { Generator, Node, Zone } from 'src/app/data/app.data';
 import { DataClientService } from 'src/app/data/data-client.service';
 import { DatasetDialogComponent } from 'src/app/datasets/dataset-dialog/dataset-dialog.component';
 import { DialogBase } from 'src/app/dialogs/dialog-base';
@@ -17,37 +17,35 @@ import { DialogService } from 'src/app/dialogs/dialog.service';
 })
 export class LoadflowNodeDialogComponent extends DialogBase implements OnInit {
 
-    constructor(public dialogRef: MatDialogRef<DatasetDialogComponent>, 
+    constructor(public dialogRef: MatDialogRef<DatasetDialogComponent>,
         @Inject(MAT_DIALOG_DATA) dialogData:ICellEditorDataDict | undefined,
-        private dataService: DataClientService, 
+        private dataService: DataClientService,
         private loadflowService: LoadflowDataService,
         private datasetsService: DatasetsService,
         private dialogService: DialogService
-    ) { 
+    ) {
         super()
         let fCode = this.addFormControl('code')
+        fCode.addValidators( [Validators.required])
         let fDemand = this.addFormControl('demand')
-        let fGeneration_A = this.addFormControl('generation_A')
-        let fGeneration_B = this.addFormControl('generation_B')
         let fZoneId = this.addFormControl('zoneId')
         let fExt = this.addFormControl('ext')
-        fCode.addValidators( [Validators.required])
+        let fGeneratorIds = this.addFormControl('generatorIds')
         if ( dialogData?._data?.id ) {
             let data:Node = dialogData._data
             this.title = `Edit node [${data.code}]`
             fCode.setValue(data.code)
             fDemand.setValue(data.demand.toFixed(0))
-            fGeneration_A.setValue(data.generation_A.toFixed(0))
-            fGeneration_B.setValue(data.generation_B.toFixed(0))
             fZoneId.setValue(data.zone?.id)
             fExt.setValue(data.ext)
+            let generatorIds:number[] = this.getGeneratorIds(data)
+            fGeneratorIds.setValue(generatorIds)
         } else {
             this.title = `Add node`
             let code = dialogData?._data.code ? dialogData._data.code : ''
             fCode.setValue(code)
             fCode.markAsDirty()
             fDemand.setValue(0)
-            fGeneration_A.setValue(0)
             fZoneId.setValue("")
             fExt.setValue(false)
         }
@@ -58,19 +56,34 @@ export class LoadflowNodeDialogComponent extends DialogBase implements OnInit {
             fZoneId.disable()
             fExt.disable()
         }
-        this.zones = loadflowService.networkData.zones.data;
+        this.zones = loadflowService.networkData.zones.data
+        this.generators = loadflowService.networkData.generators.data
     }
 
     ngOnInit(): void {
-    }    
+    }
+
+    getGeneratorIds(node: Node) {
+        let genIds = node.generators.map(m=>m.id)
+        return genIds
+    }
 
     title: string
     zones: Zone[] = []
     zoneId: string | undefined
+    generators: Generator[] = []
 
     displayZone(z: any) {
         if ( z.code ) {
             return z.code
+        } else {
+            return "??"
+        }
+    }
+
+    displayGen(g: any) {
+        if ( g.name ) {
+            return g.name
         } else {
             return "??"
         }
@@ -87,7 +100,7 @@ export class LoadflowNodeDialogComponent extends DialogBase implements OnInit {
             }, (errors)=>{
                 this.fillErrors(errors)
             })
-            
+
         }
     }
 

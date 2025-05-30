@@ -46,7 +46,7 @@ public class TransportModelEntryItemHandler : BaseEditItemHandler
             var tme = (TransportModelEntry) m.Item;
 
             // get transport model
-            var diTM = da.BoundCalc.GetTransportModelDatasetData(m.Dataset.Id,m => m.Id == tme.TransportModelId);
+            var diTM = da.BoundCalc.GetTransportModelDatasetData(m.Dataset.Id,m => m.Id == tme.TransportModelId, true);
             var tm = diTM.Data[0];
             // this should be all sibling entries
             var diTME = da.BoundCalc.GetTransportModelEntryDatasetData(m.Dataset.Id, m=>m.TransportModel.Id == tm.Id);

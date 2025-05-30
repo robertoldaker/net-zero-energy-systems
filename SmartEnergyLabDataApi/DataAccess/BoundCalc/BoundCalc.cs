@@ -7,9 +7,11 @@ using System.Web;
 using ExcelDataReader;
 using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
+using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.AspNetCore.Mvc;
 using NHibernate;
 using NHibernate.Criterion;
+using NHibernate.Mapping.Attributes;
 using SmartEnergyLabDataApi.BoundCalc;
 using SmartEnergyLabDataApi.Loadflow;
 using SmartEnergyLabDataApi.Models;
@@ -94,27 +96,41 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             return node != null;
         }
 
-        public DatasetData<Node> GetNodeDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Node, bool>> expression)
+        public DatasetData<Node> GetNodeDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Node, bool>> expression, bool updateRefs)
         {
             // get Node itself
-            var nodeQuery = Session.QueryOver<Node>().Where(expression);
+            var nodeQuery = Session.QueryOver<Node>();
+            if (expression != null) {
+                nodeQuery = nodeQuery.Where(expression);
+            }
             var nodeDi = new DatasetData<Node>(DataAccess, datasetId, m => m.Id.ToString(), nodeQuery);
 
-            // update location references
-            updateRefs(datasetId, nodeDi.Data);
-            updateRefs(datasetId, nodeDi.DeletedData);
-            return nodeDi;
+            if (updateRefs) {
+                this.updateRefs(datasetId, nodeDi.Data);
+                //??this.updateRefs(datasetId, nodeDi.DeletedData);
+            }
+
+             return nodeDi;
         }
 
         private void updateRefs(int datasetId, IList<Node> nodes)
         {
-            // update location references
+            // update node.Location
             var locIds = nodes.Where(m => m.Location != null).Select(m => m.Location.Id).ToArray();
             var locDi = DataAccess.NationalGrid.GetLocationDatasetData(datasetId, m => m.Id.IsIn(locIds));
             foreach (var node in nodes) {
                 if (node.Location != null) {
                     node.Location = locDi.GetItem(node.Location.Id);
                 }
+            }
+            // update node.Generators
+            var nodeIds = nodes.Select(m => m.Id).ToArray();
+            var nodeGenDi = DataAccess.BoundCalc.GetNodeGeneratorDatasetData(datasetId, m => m.Node.Id.IsIn(nodeIds));
+            var genIds = nodeGenDi.Data.Where(m => m.Generator != null).Select(m => m.Generator.Id).ToArray();
+            var genDi = GetGeneratorDatasetData(datasetId, m => m.Id.IsIn(genIds));
+            // update
+            foreach (var node in nodes) {
+                node.Generators = nodeGenDi.Data.Where(m => m.Node.Id == node.Id).Select(m => m.Generator).ToList();
             }
         }
 
@@ -349,16 +365,16 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         }
         public DatasetData<Branch> GetBranchDatasetData(int datasetId,
             System.Linq.Expressions.Expression<Func<Branch, bool>> expression,
-            out DatasetData<Ctrl> ctrlDi)
+            bool updateRefs)
         {
             var q = Session.QueryOver<Branch>().Where(expression);
             var branchDi = new DatasetData<Branch>(DataAccess, datasetId, m => m.Id.ToString(), q);
             //
-            var ctrlIds = branchDi.Data.Where(m => m.Ctrl != null).Select(m => m.Ctrl.Id).ToArray();
-            ctrlDi = GetCtrlDatasetData(datasetId, m => m.Id.IsIn(ctrlIds));
             // Ensure branches reference up-to-date nodes
-            updateRefs(datasetId, branchDi.Data);
-            updateRefs(datasetId, branchDi.DeletedData);
+            if (updateRefs) {
+                this.updateRefs(datasetId, branchDi.Data);
+                //??this.updateRefs(datasetId, branchDi.DeletedData);
+            }
             //
             return branchDi;
         }
@@ -367,7 +383,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         {
             var node1Ids = branches.Select(m => m.Node1.Id).ToList<int>();
             var node2Ids = branches.Select(m => m.Node2.Id).ToList<int>();
-            var nodeDi = GetNodeDatasetData(datasetId, m => m.Id.IsIn(node1Ids) || m.Id.IsIn(node2Ids));
+            var nodeDi = GetNodeDatasetData(datasetId, m => m.Id.IsIn(node1Ids) || m.Id.IsIn(node2Ids),true);
             foreach (var b in branches) {
                 b.Node1 = nodeDi.GetItem(b.Node1.Id);
                 b.Node2 = nodeDi.GetItem(b.Node2.Id);
@@ -524,18 +540,36 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             return branches;
         }
 
-        public DatasetData<Ctrl> GetCtrlDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Ctrl, bool>> expression)
+        public DatasetData<Ctrl> GetCtrlDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Ctrl, bool>> expression, bool updateRefs)
         {
             var ctrlQuery = Session.QueryOver<Ctrl>().Where(expression);
-            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch);
+            /*ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch);
             ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch.Node1.Location);
             ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch.Node1.Location.GISData);
             ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch.Node1.Zone);
             ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch.Node2.Location);
             ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch.Node2.Location.GISData);
-            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch.Node2.Zone);
+            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch.Node2.Zone);*/
+
             var ctrlDi = new DatasetData<Ctrl>(DataAccess, datasetId, m => m.Id.ToString(), ctrlQuery);
+            if (updateRefs) {
+                this.updateRefs(datasetId, ctrlDi.Data);
+            }
             return ctrlDi;
+        }
+
+        private void updateRefs(int datasetId, IList<Ctrl> ctrls)
+        {
+            var ctrlIds = ctrls.Select(m => m.Id).ToArray();
+            var branchDi = GetBranchDatasetData(datasetId, m => m.Ctrl.Id.IsIn(ctrlIds), true);
+            foreach (var ctrl in ctrls) {
+                var branch = branchDi.GetItem(ctrl.BranchId);
+                if (branch != null) {
+                    ctrl.Branch = branch;
+                } else {
+                    throw new Exception($"Could not find branch ref [{ctrl.BranchId}]");
+                }
+            }
         }
 
         #region LoadflowResults
@@ -687,16 +721,18 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
             return zone != null;
         }
-        public DatasetData<TransportModel> GetTransportModelDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<TransportModel, bool>> expression=null)
+        public DatasetData<TransportModel> GetTransportModelDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<TransportModel, bool>> expression, bool updateRefs)
         {
             var query = Session.QueryOver<TransportModel>();
             if (expression != null) {
                 query = query.Where(expression);
             }
             var di = new DatasetData<TransportModel>(DataAccess, datasetId, m => m.Id.ToString(), query);
-            updateRefs(datasetId, di.Data);
-            //?? not convinced this is required and seems to cause infinte loop if called??
-            //??updateRefs(datasetId, di.DeletedData);
+            if (updateRefs) {
+                this.updateRefs(datasetId, di.Data);
+                //?? not convinced this is required and seems to cause infinte loop if called??
+                //??updateRefs(datasetId, di.DeletedData);
+            }
             return di;
         }
         private void updateRefs(int datasetId, IList<TransportModel> tms)
@@ -723,9 +759,12 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         {
             return Session.Get<TransportModelEntry>(id);
         }
-        public DatasetData<TransportModelEntry> GetTransportModelEntryDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<TransportModelEntry, bool>> expression)
+        public DatasetData<TransportModelEntry> GetTransportModelEntryDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<TransportModelEntry, bool>> expression = null)
         {
-            var query = Session.QueryOver<TransportModelEntry>().Where(expression);
+            var query = Session.QueryOver<TransportModelEntry>();
+            if (expression != null) {
+                query = query.Where(expression);
+            }
             var di = new DatasetData<TransportModelEntry>(DataAccess, datasetId, m => m.Id.ToString(), query);
             return di;
         }
@@ -733,11 +772,25 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         #endregion
 
         #region NodeGenerator
+        public void Add(NodeGenerator ng)
+        {
+            Session.Save(ng);
+        }
+        public void Delete(NodeGenerator ng)
+        {
+            Session.Delete(ng);
+        }
         public IList<NodeGenerator> GetNodeGenerators(Dataset dataset)
         {
             return Session.QueryOver<NodeGenerator>().
             Where(m => m.Dataset == dataset).
             OrderBy(m => m.Id).Asc.
+            List();
+        }
+        public IList<NodeGenerator> GetNodeGenerators(int nodeId)
+        {
+            return Session.QueryOver<NodeGenerator>().
+            Where(m => m.Node.Id == nodeId).
             List();
         }
         public DatasetData<NodeGenerator> GetNodeGeneratorDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<NodeGenerator, bool>> expression=null)
@@ -749,22 +802,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
             var ngDi = new DatasetData<NodeGenerator>(DataAccess, datasetId, m => m.Id.ToString(), ngQuery);
 
-            // update location references
-            updateRefs(datasetId, ngDi.Data);
-            updateRefs(datasetId, ngDi.DeletedData);
             return ngDi;
-        }
-
-        private void updateRefs(int datasetId, IList<NodeGenerator> nodeGenerators)
-        {
-            // update location references
-            var genIds = nodeGenerators.Where(m => m.Generator != null).Select(m => m.Generator.Id).ToArray();
-            var genDi = GetGeneratorDatasetData(datasetId, m => m.Id.IsIn(genIds));
-            foreach (var ng in nodeGenerators) {
-                if (ng.Generator != null) {
-                    ng.Generator = genDi.GetItem(ng.Generator.Id);
-                }
-            }
         }
 
         #endregion

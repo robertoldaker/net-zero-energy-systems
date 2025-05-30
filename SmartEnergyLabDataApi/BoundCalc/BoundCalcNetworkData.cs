@@ -24,8 +24,6 @@ namespace SmartEnergyLabDataApi.BoundCalc
             Zones = bc.Zones;
             // Generators
             Generators = bc.Generators;
-            // NodeGenerators
-            NodeGenerators = bc.NodeGenerators;
             //
             using (var da = new DataAccess()) {
                 // Locations
@@ -34,6 +32,8 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 TransportModels = loadTransportModels(da, bc.Dataset.Id);
                 // Transport model entries
                 TransportModelEntries = loadTransportModelEntries(da, bc.Dataset.Id);
+                //
+                setTransportModelScalings(da, bc.Dataset.Id);
             }
             // Boundary branches
             BoundaryDict = new Dictionary<string, int[]>();
@@ -41,8 +41,6 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 var boundaries = b.BoundCcts.Items.Select(m => m.Obj.Id).ToArray();
                 BoundaryDict.Add(b.name, boundaries);
             }
-            //
-            setTransportModelScalings();
             //
             TransportModel = bc.TransportModel;
         }
@@ -54,7 +52,6 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public DatasetData<Zone> Zones {get; private set;}
         public DatasetData<GridSubstationLocation> Locations {get; private set;}
         public DatasetData<Generator> Generators { get; private set; }
-        public DatasetData<NodeGenerator> NodeGenerators { get; private set; }
         public DatasetData<TransportModel> TransportModels {get; private set;}
         public TransportModel? TransportModel { get; private set; }
         public DatasetData<TransportModelEntry> TransportModelEntries { get; private set; }
@@ -73,7 +70,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         private DatasetData<TransportModel> loadTransportModels(DataAccess da, int datasetId)
         {
-            var data = da.BoundCalc.GetTransportModelDatasetData(datasetId);
+            var data = da.BoundCalc.GetTransportModelDatasetData(datasetId, null, true);
             return data;
         }
 
@@ -90,10 +87,11 @@ namespace SmartEnergyLabDataApi.BoundCalc
             return objs;
         }
 
-        private void setTransportModelScalings()
+        private void setTransportModelScalings(DataAccess da, int datasetId)
         {
+            var nodeGenDi = da.BoundCalc.GetNodeGeneratorDatasetData(datasetId, null);
             foreach (var tm in this.TransportModels.Data) {
-                tm.UpdateScaling(Nodes.Data, this.NodeGenerators.Data, this.Generators.Data);
+                tm.UpdateScaling(Nodes.Data, nodeGenDi.Data, this.Generators.Data);
             }
         }
 

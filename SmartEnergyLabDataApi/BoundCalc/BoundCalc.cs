@@ -95,14 +95,14 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
             // work out the transport model
             if (transportModelId > 0) {
-                var tmDi = _da.BoundCalc.GetTransportModelDatasetData(_dataset.Id, m => m.Id == transportModelId);
+                var tmDi = _da.BoundCalc.GetTransportModelDatasetData(_dataset.Id, m => m.Id == transportModelId, true);
                 if (tmDi.Data.Count() == 0) {
                     throw new Exception($"Cannot find transport model with id=[{transportModelId}]");
                 }
                 _transportModel = tmDi.Data[0];
             } else {
                 // set the first one available
-                var tmDi = _da.BoundCalc.GetTransportModelDatasetData(_dataset.Id);
+                var tmDi = _da.BoundCalc.GetTransportModelDatasetData(_dataset.Id, null, true);
                 _transportModel = tmDi.Data.Count() > 0 ? tmDi.Data[0] : null;
             }
 

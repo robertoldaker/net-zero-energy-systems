@@ -35,11 +35,11 @@ export class LoadflowDataGeneratorsComponent extends DataTableBaseComponent<Gene
     generatorTypeEnum = GeneratorType
 
     edit( e: ICellEditorDataDict) {
-        //??this.dialogService.showLoadflowGeneratorDialog(e);
+        this.dialogService.showLoadflowGeneratorDialog(e);
     }
 
     add() {
-        //??this.dialogService.showLoadflowGeneratorDialog();
+        this.dialogService.showLoadflowGeneratorDialog();
     }
 
     getMismatchStyle(mm: number | undefined): any {

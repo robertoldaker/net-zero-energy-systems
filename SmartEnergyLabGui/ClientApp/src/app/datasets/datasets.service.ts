@@ -17,12 +17,12 @@ import { IFormControlDict } from "../dialogs/dialog-base";
 export class DatasetsService {
 
     constructor(
-        private dataService:DataClientService, 
-        private dialogService: DialogService, 
+        private dataService:DataClientService,
+        private dialogService: DialogService,
         private elsiDataService: ElsiDataService,
         private loadflowDataService: LoadflowDataService,
         private userService: UserService ) {
-        
+
     }
 
     currentDataset: Dataset | undefined
@@ -50,8 +50,8 @@ export class DatasetsService {
                     buttons: DialogFooterButtonsEnum.OKCancel
                     }, ()=>{
                         this.saveUserEdit(value,cellData,onEdited,onError)
-                    })        
-                    
+                    })
+
             } else {
                 this.saveUserEdit(value,cellData,onEdited,onError)
             }
@@ -68,7 +68,7 @@ export class DatasetsService {
                 this.afterEdit(cellData,resp, onEdited)
             }, (errors)=>{
                 onError(errors)
-            })    
+            })
         }
     }
 
@@ -83,7 +83,7 @@ export class DatasetsService {
                         if ( cellData.userEdit ) {
                             this.saveUserEdit(cellData.userEdit.prevValue,cellData,onEdited, ()=>{})
                         }
-                    })                            
+                    })
             } else {
                 if ( cellData.userEdit ) {
                     this.saveUserEdit(cellData.userEdit.prevValue,cellData,onEdited, ()=>{})
@@ -97,7 +97,7 @@ export class DatasetsService {
             this.elsiDataService.loadDataset()
         } else if ( this.currentDataset?.type === DatasetType.BoundCalc ) {
             this.loadflowDataService.afterEdit(resp)
-        }    
+        }
         if ( onEdited) {
             onEdited(resp)
         }
@@ -116,11 +116,11 @@ export class DatasetsService {
                     buttons: DialogFooterButtonsEnum.OKCancel
                     }, ()=>{
                         onEdit()
-                    })                            
+                    })
             } else {
                 onEdit();
             }
-        })    
+        })
     }
 
     canAdd( onEdit: ()=>void) {
@@ -136,11 +136,11 @@ export class DatasetsService {
                     buttons: DialogFooterButtonsEnum.OKCancel
                     }, ()=>{
                         onEdit()
-                    })                            
+                    })
             } else {
                 onEdit();
             }
-        })    
+        })
     }
 
     deleteItemWithCheck(id: number, className: string) {
@@ -156,16 +156,16 @@ export class DatasetsService {
                     buttons: DialogFooterButtonsEnum.OKCancel
                     }, ()=>{
                         this.deleteItem(id, className, dataset)
-                    })                            
+                    })
             } else {
                 this.deleteItem(id, className, dataset)
             }
-        })    
+        })
     }
 
     private deleteItem(id: number, className: string, dataset: Dataset) {
         this.dataService.DeleteItem({id: id, className: className, datasetId: dataset.id}, (resp)=>{
-            // this means it couldn't be delete
+            // this means it couldn't be deleted
             if ( resp.msg ) {
                 this.dialogService.showMessageDialog(new MessageDialog(resp.msg))
             } else {
@@ -193,12 +193,12 @@ export class DatasetsService {
                     buttons: DialogFooterButtonsEnum.OKCancel
                     }, ()=>{
                         this.unDeleteItem(id, className, dataset)
-                    })                            
+                    })
             } else {
                 this.unDeleteItem(id, className, dataset)
             }
-        })    
-    }    
+        })
+    }
 
     private unDeleteItem(id: number, className: string, dataset: Dataset) {
         this.dataService.UnDeleteItem({id: id, className: className, datasetId: dataset.id}, (resp)=>{
@@ -216,7 +216,7 @@ export class DatasetsService {
             this.elsiDataService.loadDataset()
         } else if ( this.currentDataset?.type === DatasetType.BoundCalc ) {
             this.loadflowDataService.afterUnDelete(datasets)
-        }  
+        }
     }
 
     public static deleteDatasetData(dd: DatasetData<any>, id: number, dataset: Dataset) {
@@ -246,12 +246,12 @@ export class DatasetsService {
             if ( index>=0 ) {
                 dd.deletedData.splice(index,1)
             }
-            // Remove any user edits referencing this data as these will be added later          
+            // Remove any user edits referencing this data as these will be added later
             let ues = dd.userEdits.filter(m=>m.key == d.id)
             for (let ue of ues) {
                 let index = dd.userEdits.findIndex(m=>m.id === ue.id)
                 dd.userEdits.splice(index,1)
-            }              
+            }
         }
         for( let d of resp.deletedData) {
             // add or replace in deletedData
@@ -290,5 +290,5 @@ export class NewItemData<T> implements ICellEditorDataDict {
     _data: any
     _isDeleted: any
     _isLocalDataset: any
-    _isLocalEdit: any 
+    _isLocalEdit: any
 }

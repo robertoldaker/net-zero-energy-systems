@@ -48,7 +48,6 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         this.displayedColumns = ['buttons','code','voltage','zoneName','demand','generation','ext','tlf','km','mismatch']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.nodeMismatchError = false
-            this.nodeGenerators = results.nodeGenerators
             this.generators = results.generators
             this.createDataSource(this.dataService.dataset,results.nodes);
         }))
@@ -98,28 +97,10 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         }
     }
 
-    getGenerators(nodeId: number): Generator[] {
-        let gens:Generator[] = []
-        if ( this.nodeGenerators && this.generators) {
-            let genIds = this.nodeGenerators.data.filter(m=>m.nodeId == nodeId).map(m=>m.generatorId)
-            gens = this.generators.data.filter(m=>genIds?.includes(m.id))
-        }
-        return gens
-    }
-
-    hasGenerators(nodeId: number): boolean {
-        let gen
-        if ( this.nodeGenerators && this.generators) {
-            gen = this.nodeGenerators.data.find(m=>m.nodeId == nodeId)
-        }
-        return gen ? true : false
-    }
-
     codeDataFilter: ColumnDataFilter
     voltageDataFilter: ColumnDataFilter
     zoneDataFilter: ColumnDataFilter
     nodeMismatchError: boolean = false;
-    nodeGenerators: DatasetData<NodeGenerator> | undefined
     generators: DatasetData<Generator> | undefined
 
 }

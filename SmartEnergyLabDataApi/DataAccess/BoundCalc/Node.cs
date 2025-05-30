@@ -38,16 +38,15 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         [Property()]
         public virtual double Generation_B {get; set;}
 
-        [JsonIgnore()]
         public virtual IList<Generator> Generators { get; set; }
         public virtual double Generation
         {
             get {
                 double generation = 0;
                 foreach (var gen in Generators) {
-                    if (gen.ScaledGenerationPerNode == null) {
-                        throw new Exception($"Attempt to get ScaledGenerationPerNode when null. Please call TransportModel.UpdateGenerators to set ScaledGeneration");
-                    }
+                   //?? if (gen.ScaledGenerationPerNode == null) {
+                   //??     throw new Exception($"Attempt to get ScaledGenerationPerNode when null. Please call TransportModel.UpdateGenerators to set ScaledGeneration");
+                   //?? }
                     generation += gen.ScaledGenerationPerNode!=null ? (double) gen.ScaledGenerationPerNode : 0;
                 }
                 return generation;

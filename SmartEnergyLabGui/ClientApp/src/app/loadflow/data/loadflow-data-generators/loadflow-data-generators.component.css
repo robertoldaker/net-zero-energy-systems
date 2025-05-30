@@ -1,9 +1,10 @@
 .mat-column-name {
-    width: 50%;
+    width: 30%;
+    padding-right: 1rem;
 }
 
 .mat-column-type {
-    padding-left: 4rem;
+    padding-right: 1rem;
     width: 12rem;
 }
 

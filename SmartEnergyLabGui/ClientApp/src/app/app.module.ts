@@ -173,6 +173,7 @@ import { LoadflowNodeInfoTableComponent } from './loadflow/loadflow-map/loadflow
 import { LoadflowDataGeneratorsComponent } from './loadflow/data/loadflow-data-generators/loadflow-data-generators.component';
 import { LoadflowDataTransportModelsComponent } from './loadflow/data/loadflow-data-transport-models/loadflow-data-transport-models.component';
 import { LoadflowTransportModelDialogComponent } from './loadflow/dialogs/loadflow-transport-model-dialog/loadflow-transport-model-dialog.component';
+import { LoadflowGeneratorDialogComponent } from './loadflow/dialogs/loadflow-generator-dialog/loadflow-generator-dialog.component';
 
 
 @NgModule({
@@ -300,7 +301,8 @@ import { LoadflowTransportModelDialogComponent } from './loadflow/dialogs/loadfl
         LoadflowNodeInfoTableComponent,
         LoadflowDataGeneratorsComponent,
         LoadflowDataTransportModelsComponent,
-        LoadflowTransportModelDialogComponent
+        LoadflowTransportModelDialogComponent,
+        LoadflowGeneratorDialogComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
