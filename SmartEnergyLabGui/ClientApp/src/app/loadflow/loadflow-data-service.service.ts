@@ -32,10 +32,13 @@ export enum PercentCapacityThreshold { OK, Warning, Critical}
 
 export class LoadflowDataService {
 
-    constructor(private dataClientService: DataClientService,
+    constructor(
+        private dataClientService: DataClientService,
         private signalRService: SignalRService,
         private messageService: ShowMessageService,
-        private dialogService: DialogService) {
+        private dialogService: DialogService,
+        private datasetsService: DatasetsService
+    ) {
         this.gridSubstations = [];
         this.networkData = {
             nodes: { tableName: '',data:[], userEdits: [], deletedData: [] },
@@ -60,6 +63,7 @@ export class LoadflowDataService {
         })
         //
         this.selectedMapItem = null
+        datasetsService.setEditFcns(this,this.afterEdit,this.afterDelete,this.afterUnDelete)
     }
 
     dataset: Dataset = {id: 0, type: DatasetType.BoundCalc, name: '', parent: null, isReadOnly: true}
@@ -111,7 +115,9 @@ export class LoadflowDataService {
             this.messageService.clearMessage()
             this.needsCalc = true
             this.loadFlowResults = undefined
-            this.transportModel = results.transportModel
+            if ( results.transportModel) {
+                this.setTransportModel(results.transportModel, false)
+            }
             this._locationDragging = false
             this.clearMapSelection()
             this.clearTrips()
@@ -205,9 +211,17 @@ export class LoadflowDataService {
         }
     }
 
-    setTransportModel(transportModel: TransportModel) {
+    setTransportModel(transportModel: TransportModel, reload: boolean=true) {
         this.transportModel = transportModel
-        this.reloadDataset()
+        // This gets sent to the datasets edit/delete/undelete methods as an extra data field
+        if ( this.transportModel ) {
+            this.datasetsService.customData = {name: '_transportModelId', value: this.transportModel.id}
+        } else {
+            this.datasetsService.customData = undefined
+        }
+        if ( reload ) {
+            this.reloadDataset()
+        }
     }
 
     runBoundCalc( boundaryName: string, boundaryTrips: boolean) {

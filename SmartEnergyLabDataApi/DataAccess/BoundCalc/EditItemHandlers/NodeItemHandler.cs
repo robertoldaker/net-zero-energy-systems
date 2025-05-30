@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using NHibernate;
 using NHibernate.AdoNet.Util;
 using NHibernate.Criterion;
+using Org.BouncyCastle.Crypto.Digests;
 
 namespace SmartEnergyLabDataApi.Data.BoundCalc;
 
@@ -137,22 +138,16 @@ public class NodeItemHandler : BaseEditItemHandler
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
             var node = (Node) m.Item;
-            // return all nodes since they can change if demand changes or generator mapping
+            // need all nodes since they can all change since generation
             var nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id, null,  true);
+            var genDi = m.EditItem.UpdateNodeGeneration(da, m.Dataset.Id, nodeDi);
 
             // branches and controls that reference this node
             var branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id,m=>m.Node1.Id == node.Id || m.Node2.Id == node.Id, true);
             var ctrlIds = branchDi.Data.Where(m => m.Ctrl != null).Select(m => m.Ctrl.Id).ToArray();
             var ctrlDi = da.BoundCalc.GetCtrlDatasetData(m.Dataset.Id, m => m.Id.IsIn(ctrlIds), true);
 
-            var genDi = da.BoundCalc.GetGeneratorDatasetData(m.Dataset.Id);
-            var tmDi = da.BoundCalc.GetTransportModelDatasetData(m.Dataset.Id, null, true);
             var tmeDi = da.BoundCalc.GetTransportModelEntryDatasetData(m.Dataset.Id);
-
-            foreach (var tm in tmDi.Data) {
-                tm.UpdateScaling(da, m.Dataset.Id);
-                tm.UpdateGenerators(genDi.Data);
-            }
 
             list.Add(nodeDi.getBaseDatasetData());
             list.Add(genDi.getBaseDatasetData());

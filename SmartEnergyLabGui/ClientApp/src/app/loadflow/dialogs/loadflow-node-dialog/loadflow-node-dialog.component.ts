@@ -92,7 +92,7 @@ export class LoadflowNodeDialogComponent extends DialogBase implements OnInit {
     save() {
         if ( this.datasetsService.currentDataset) {
             let changedControls = this.getUpdatedControls()
-
+            changedControls['_transportModelId'] = this.loadflowService.transportModel?.id
             let id = this.dialogData?._data ? this.dialogData._data.id : 0
             this.dataService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: "Node", data: changedControls }, (resp)=>{
                 this.loadflowService.afterEdit(resp)

@@ -2,7 +2,6 @@ import { Injectable } from "@angular/core";
 import { DialogService } from "../dialogs/dialog.service";
 import { DataClientService } from "../data/data-client.service";
 import { ElsiDataService } from "../elsi/elsi-data.service";
-import { LoadflowDataService } from "../loadflow/loadflow-data-service.service";
 import { CellEditorData, ICellEditorDataDict } from "./cell-editor/cell-editor.component";
 import { MessageDialog, MessageDialogIcon } from "../dialogs/message-dialog/message-dialog.component";
 import { DialogFooterButtonsEnum } from "../dialogs/dialog-footer/dialog-footer.component";
@@ -20,7 +19,6 @@ export class DatasetsService {
         private dataService:DataClientService,
         private dialogService: DialogService,
         private elsiDataService: ElsiDataService,
-        private loadflowDataService: LoadflowDataService,
         private userService: UserService ) {
 
     }
@@ -29,6 +27,23 @@ export class DatasetsService {
     setDataset(dataset: Dataset | undefined) {
         this.currentDataset = dataset;
     }
+    customData: {name: string, value: any} | undefined
+    //
+    setEditFcns(thisObj: any,
+        afterEditFcn: (datasets: DatasetData<any>[])=>void,
+        afterDeleteFcn: (id: number, className: string, dataset: Dataset)=>void ,
+        afterUnDeleteFcn: (datasets: DatasetData<any>[])=>void ) {
+        this.editFcns={thisObj: thisObj,
+            afterEditFcn: afterEditFcn,
+            afterDeleteFcn: afterDeleteFcn,
+            afterUnDeleteFcn: afterUnDeleteFcn }
+    }
+    editFcns: {thisObj: any,
+        afterEditFcn: (datasets: DatasetData<any>[]) => void,
+        afterDeleteFcn: (id: number, className: string, dataset: Dataset) =>void,
+        afterUnDeleteFcn: (datasets: DatasetData<any>[]) => void
+        } | undefined
+
     get isEditable():boolean {
         if ( this.currentDataset) {
             if ( !this.currentDataset.isReadOnly || this.userService.isAdmin ) {
@@ -63,6 +78,9 @@ export class DatasetsService {
             let id = parseInt(cellData.key)
             let data:IFormControlDict = {}
             data[cellData.columnName] = value
+            if ( this.customData) {
+                data[this.customData.name] = this.customData.value
+            }
             let editItemData = {id: id, datasetId: this.currentDataset?.id, className: cellData.tableName, data: data }
             this.dataService.EditItem(editItemData, (resp)=>{
                 this.afterEdit(cellData,resp, onEdited)
@@ -95,8 +113,8 @@ export class DatasetsService {
     afterEdit(cellData: CellEditorData, resp: any, onEdited: (resp:DatasetData<any>)=>void ) {
         if ( this.currentDataset?.type === DatasetType.Elsi ) {
             this.elsiDataService.loadDataset()
-        } else if ( this.currentDataset?.type === DatasetType.BoundCalc ) {
-            this.loadflowDataService.afterEdit(resp)
+        } else if ( this.editFcns ) {
+            this.editFcns.afterEditFcn.call(this.editFcns.thisObj,resp)
         }
         if ( onEdited) {
             onEdited(resp)
@@ -175,8 +193,8 @@ export class DatasetsService {
     }
 
     private afterDeleteItem(id: number, className: string, dataset: Dataset) {
-        if ( dataset.type == DatasetType.BoundCalc) {
-            this.loadflowDataService.afterDelete(id, className, dataset)
+        if ( this.editFcns) {
+            this.editFcns.afterDeleteFcn.call(this.editFcns.thisObj,id, className, dataset)
         }
     }
 
@@ -214,8 +232,8 @@ export class DatasetsService {
     private afterUnDeleteItem(datasets: DatasetData<any>[]) {
         if ( this.currentDataset?.type === DatasetType.Elsi ) {
             this.elsiDataService.loadDataset()
-        } else if ( this.currentDataset?.type === DatasetType.BoundCalc ) {
-            this.loadflowDataService.afterUnDelete(datasets)
+        } else if ( this.editFcns ) {
+            this.editFcns.afterUnDeleteFcn.call(this.editFcns.thisObj,datasets)
         }
     }
 

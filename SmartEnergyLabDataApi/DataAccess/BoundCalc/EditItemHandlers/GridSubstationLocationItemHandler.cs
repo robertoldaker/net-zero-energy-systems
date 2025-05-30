@@ -1,9 +1,11 @@
 
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.ObjectPool;
 using NHibernate;
 using NHibernate.Criterion;
 using NHibernate.Util;
+using Org.BouncyCastle.Crypto.Signers;
 
 namespace SmartEnergyLabDataApi.Data.BoundCalc;
 
@@ -108,7 +110,9 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
                     ctrlDi = da.BoundCalc.GetCtrlDatasetData(m.Dataset.Id, m => m.Id.IsIn(ctrlIds), true);
                 }
             }
-            if ( nodeDi!=null) {
+            if (nodeDi != null) {
+                // update the generation field for each generator attached to the nodes
+                m.EditItem.UpdateNodeGeneration(da, m.Dataset.Id, nodeDi);
                 list.Add(nodeDi.getBaseDatasetData());
             }
             if ( branchDi!=null ) {

@@ -14,11 +14,10 @@ using SmartEnergyLabDataApi.Models;
 namespace SmartEnergyLabDataApi.Data;
 
 public class EditItem {
-    public int id {get; set;}
-    public string className {get; set;}
-    public int datasetId {get; set;}
-    public Dictionary<string,object>? data {get; set;}
-
+    public int id { get; set; }
+    public string className { get; set; }
+    public int datasetId { get; set; }
+    public Dictionary<string, object>? data { get; set; }
 }
 
 public interface IEditItemHandler {
@@ -154,7 +153,15 @@ public class EditItemModel : DbModel {
         }
     }
 
-    public List<DatasetData<object>> DatasetData {
+    public EditItem EditItem
+    {
+        get {
+            return _editItem;
+        }
+    }
+
+    public List<DatasetData<object>> DatasetData
+    {
         get {
             return _datasetData;
         }
