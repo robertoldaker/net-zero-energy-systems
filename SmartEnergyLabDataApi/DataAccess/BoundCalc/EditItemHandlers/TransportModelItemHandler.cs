@@ -18,7 +18,7 @@ public class TransportModelItemHandler : BaseEditItemHandler
         }
     }
 
-    public override IId GetItem(EditItemModel m)
+    public override IDatasetIId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
         if (id > 0) {

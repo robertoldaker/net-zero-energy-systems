@@ -6,10 +6,10 @@ using System.Text.Json.Serialization;
 namespace SmartEnergyLabDataApi.Data
 {
     public enum GridSubstationLocationSource { NGET, SHET, SPT, GoogleMaps, Estimated, UserDefined}
-    
+
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "grid_substation_locations")]
-    public class GridSubstationLocation : IId, IDataset, ILifecycle
+    public class GridSubstationLocation : IDatasetIId, ILifecycle
     {
         public GridSubstationLocation()
         {
@@ -29,7 +29,7 @@ namespace SmartEnergyLabDataApi.Data
         /// Database identifier
         /// </summary>
         [Id(0, Name = "Id", Type = "int")]
-        [Generator(1, Class = "identity")]        
+        [Generator(1, Class = "identity")]
         public virtual int Id { get; set; }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace SmartEnergyLabDataApi.Data
         /// Reference for grid substation
         /// </summary>
         [Property()]
-        public virtual string Reference { get; set; } 
+        public virtual string Reference { get; set; }
 
         /// <summary>
         /// Source of location
@@ -51,11 +51,11 @@ namespace SmartEnergyLabDataApi.Data
         [Property()]
         [Column(Name = "source",Default = "0")]
         public virtual GridSubstationLocationSource Source {get; set;}
-        
+
         /// <summary>
         /// Latitude
         /// </summary>
-        public virtual double Latitude { 
+        public virtual double Latitude {
             get {
                 return GISData.Latitude;
             }
@@ -67,7 +67,7 @@ namespace SmartEnergyLabDataApi.Data
         /// <summary>
         /// Longitude
         /// </summary>
-        public virtual double Longitude { 
+        public virtual double Longitude {
             get {
                 return GISData.Longitude;
             }
@@ -90,8 +90,8 @@ namespace SmartEnergyLabDataApi.Data
             get {
                 return this.Dataset.Id;
             }
-        }    
-        
+        }
+
         public virtual LifecycleVeto OnSave(NHibernate.ISession s)
         {
             return LifecycleVeto.NoVeto;

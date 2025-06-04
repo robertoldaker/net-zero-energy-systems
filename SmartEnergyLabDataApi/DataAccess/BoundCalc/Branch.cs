@@ -8,10 +8,10 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
 
     public enum BoundCalcBranchType {Other, HVDC, OHL, Cable, Composite, Transformer, QB, SSSC, SeriesCapacitor, SeriesReactor}
-    
+
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_branches")]
-    public class Branch : IId, IDataset, ILifecycle
+    public class Branch : IDatasetIId, ILifecycle
     {
         public Branch()
         {
@@ -125,7 +125,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 return Node1.Code;
             }
         }
-        
+
         public virtual string Node2Code {
             get {
                 return Node2.Code;
@@ -137,7 +137,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 return Node1.Name;
             }
         }
-        
+
         public virtual string Node2Name {
             get {
                 return Node2.Name;
@@ -149,7 +149,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 return Node1.Voltage;
             }
         }
-        
+
         public virtual int Node2Voltage {
             get {
                 return Node2.Voltage;
@@ -161,7 +161,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 return Node1.Location!=null ? Node1.Location.Id : 0;
             }
         }
-        
+
         public virtual int Node2LocationId {
             get {
                 return Node2.Location!=null ? Node2.Location.Id : 0;
@@ -173,7 +173,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 return Node1.Location!=null ? Node1.Location.GISData : null;
             }
         }
-        
+
         public virtual GISData Node2GISData {
             get {
                 return Node2.Location!=null ? Node2.Location.GISData : null;
@@ -185,7 +185,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 return Node1.Id;
             }
         }
-        
+
         public virtual int Node2Id {
             get {
                 return Node2.Id;
@@ -222,7 +222,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                     return null;
                 }
             }
-        } 
+        }
 
         public virtual double? km {get; set;}
 

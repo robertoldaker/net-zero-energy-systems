@@ -97,6 +97,33 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         }
     }
 
+    deleteGenerator(nodeId: number, gen: Generator) {
+        let node = this.dataService.networkData.nodes.data.find(m=>m.id == nodeId)
+        if ( node ) {
+            // save data
+            let generatorIds = node.generators.filter(m=>m.id!=gen.id).map(m=>m.id)
+            let data = { generatorIds: generatorIds };
+            this.dataService.saveDialog(node.id, "Node", data, () => {
+            }, (errors) => {
+                console.log(errors)
+            })
+        }
+    }
+
+    unDeleteGenerator(nodeId: number, gen: Generator) {
+        let node = this.dataService.networkData.nodes.data.find(m=>m.id == nodeId)
+        if ( node ) {
+            // save data
+            let generatorIds = node.generators.map(m=>m.id)
+            generatorIds.push(gen.id)
+            let data = { generatorIds: generatorIds };
+            this.dataService.saveDialog(node.id, "Node", data, () => {
+            }, (errors) => {
+                console.log(errors)
+            })
+        }
+    }
+
     codeDataFilter: ColumnDataFilter
     voltageDataFilter: ColumnDataFilter
     zoneDataFilter: ColumnDataFilter

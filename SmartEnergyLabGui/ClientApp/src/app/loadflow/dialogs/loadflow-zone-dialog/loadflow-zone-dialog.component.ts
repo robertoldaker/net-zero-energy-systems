@@ -19,7 +19,7 @@ export class LoadflowZoneDialogComponent extends DialogBase implements OnInit {
         @Inject(MAT_DIALOG_DATA) dialogData: ICellEditorDataDict | undefined,
         private dataService: DataClientService,
         private loadflowService: LoadflowDataService,
-        private datasetsService: DatasetsService) { 
+        private datasetsService: DatasetsService) {
         super()
         let fCode = this.addFormControl('code')
         if ( dialogData?._data ) {
@@ -46,13 +46,12 @@ export class LoadflowZoneDialogComponent extends DialogBase implements OnInit {
         if ( this.datasetsService.currentDataset) {
             let changedControls = this.getUpdatedControls()
             let id = this.dialogData?._data ? this.dialogData._data.id : 0
-            this.dataService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: "Zone", data: changedControls }, (resp)=>{
-                this.loadflowService.afterEdit(resp)
-                this.dialogRef.close();
-            }, (errors)=>{
+            this.loadflowService.saveDialog(id, "Zone",changedControls, () => {
+                this.dialogRef.close()
+            }, (errors) => {
                 this.fillErrors(errors)
             })
-            
+
         }
     }
 

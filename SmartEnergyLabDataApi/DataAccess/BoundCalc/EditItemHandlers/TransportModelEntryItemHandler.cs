@@ -14,7 +14,7 @@ public class TransportModelEntryItemHandler : BaseEditItemHandler
         m.CheckDouble("scaling");
     }
 
-    public override IId GetItem(EditItemModel m)
+    public override IDatasetIId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
         return id > 0 ? m.Da.BoundCalc.GetTransportModelEntry(id) : throw new Exception("Unexpected zero id found for TransportModelEntry");

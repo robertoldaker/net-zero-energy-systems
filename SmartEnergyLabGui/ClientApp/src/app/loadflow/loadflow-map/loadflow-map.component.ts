@@ -40,7 +40,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     ) {
         super();
         this.addSub(this.dataService.LocationDataUpdated.subscribe((updateLocationData) => {
-            // add markers and lines to represent loadflow nodes, branches and ctrls 
+            // add markers and lines to represent loadflow nodes, branches and ctrls
             this.updateMapData(updateLocationData)
         }))
         this.addSub(this.dataService.BoundarySelected.subscribe((boundaryLinks) => {
@@ -126,7 +126,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     selectedItem: SelectedMapItem = new SelectedMapItem()
     selectedLinkLine: MapPolyline | null = null
     private selectObject(selectedItem: SelectedMapItem) {
-        // de-select existing location marker 
+        // de-select existing location marker
         if (this.selectedLocMarker && this.selectedItem.location) {
             this.selectMarker(this.selectedItem.location, this.selectedLocMarker, false);
             this.selectedLocMarker = null;
@@ -190,15 +190,15 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     locMarkerDragEnd(e: { mo: IMapData<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLocation>, e: any }) {
         let loc = this.dataService.getLocation(e.mo.id)
         if (loc && this.datasetsService.currentDataset) {
-            // stops polyLine and markers from being selected that meybe under the cursor after performing a marker drag
+            // stops polyLine and markers from being selected that maybe under the cursor after performing a marker drag
             e.e.domEvent.stopPropagation()
             // save data
             let data = { latitude: e.e.latLng.lat(), longitude: e.e.latLng.lng() };
-            this.dataClientService.EditItem({ id: loc.id, datasetId: this.datasetsService.currentDataset.id, className: "GridSubstationLocation", data: data }, (resp) => {
-                this.dataService.afterEdit(resp)
+            this.dataService.saveDialog(loc.id, "GridSubstationLocation",data, () => {
             }, (errors) => {
                 console.log(errors)
             })
+
         }
     }
 

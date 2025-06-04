@@ -22,7 +22,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
     }
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_generators")]
-    public class Generator : IId, IDataset
+    public class Generator : IDatasetIId, IDataset
     {
         public Generator()
         {

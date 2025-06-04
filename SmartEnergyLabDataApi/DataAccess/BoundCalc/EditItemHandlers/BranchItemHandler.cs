@@ -113,7 +113,7 @@ public class BranchItemHandler : BaseEditItemHandler
         }
     }
 
-    public override IId GetItem(EditItemModel model)
+    public override IDatasetIId GetItem(EditItemModel model)
     {
         var id = model.ItemId;
         var branch = id>0 ? model.Da.BoundCalc.GetBranch(id) : new Branch(model.Dataset);
@@ -214,9 +214,7 @@ public class BranchItemHandler : BaseEditItemHandler
             var list = new List<DatasetData<object>>();
             var branch = (Branch) m.Item;
             //
-            var branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n=>n.Id == branch.Id, true);
-            var ctrlIds = branchDi.Data.Where(m => m.Ctrl != null).Select(m => m.Ctrl.Id).ToArray();
-            var ctrlDi = da.BoundCalc.GetCtrlDatasetData(m.Dataset.Id, m => m.Id.IsIn(ctrlIds), true);
+            var (branchDi,ctrlDi) = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n=>n.Id == branch.Id, true);
 
             list.Add(branchDi.getBaseDatasetData());
             list.Add(ctrlDi.getBaseDatasetData());

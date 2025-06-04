@@ -65,6 +65,11 @@ table.genTable td:nth-child(2) {
     text-align: right;
 }
 
+table.genTable tr.deleted td {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
 table.genTable > tfoot {
     font-size: 0.8rem;
     font-weight: bold;

@@ -10,28 +10,28 @@ namespace SmartEnergyLabDataApi.Data
     /// <summary>
     /// Generation zone
     /// </summary>
-    public enum ElsiZone {BE,  
-                            DE,  
-                            DKe,  
-                            DKw, 
-                            FR, 
-                            GB_EA, 
-                            GB_EA_Dx, 
-                            GB_MC, 
-                            GB_MC_Dx, 
-                            GB_NW, 
-                            GB_NW_Dx, 
-                            GB_SC, 
+    public enum ElsiZone {BE,
+                            DE,
+                            DKe,
+                            DKw,
+                            FR,
+                            GB_EA,
+                            GB_EA_Dx,
+                            GB_MC,
+                            GB_MC_Dx,
+                            GB_NW,
+                            GB_NW_Dx,
+                            GB_SC,
                             GB_SC_Dx,
                             GB_SH,
-                            GB_SH_Dx, 
-                            GB_SP, 
-                            GB_SP_Dx, 
-                            GB_UN, 
-                            GB_UN_Dx, 
-                            IE, 
-                            NI, 
-                            NL, 
+                            GB_SH_Dx,
+                            GB_SP,
+                            GB_SP_Dx,
+                            GB_UN,
+                            GB_UN_Dx,
+                            IE,
+                            NI,
+                            NL,
                             NO}
     /// <summary>
     /// Main generation zone main (includes distribution connected generators)
@@ -54,16 +54,16 @@ namespace SmartEnergyLabDataApi.Data
     /// <summary>
     /// Periods of day
     /// </summary>
-    public enum ElsiPeriod {Pk, // peak 1 or 2 demand hours per day, 
+    public enum ElsiPeriod {Pk, // peak 1 or 2 demand hours per day,
                             Pl, // daytime plateau demand – hours of daytime activity
                             So, // daytime solar peak generation period (reduces plateau demand)
-                            Pu, // pick up/drop off period – transition from night trough to daytime plateau 
+                            Pu, // pick up/drop off period – transition from night trough to daytime plateau
                             Tr // night time trough demand
                             }
 
     [ApplicationGroup(ApplicationGroup.Elsi)]
     [Class(0, Table = "elsi_gen_parameters")]
-    public class GenParameter : IDataset, IId
+    public class GenParameter : IDatasetIId
     {
 
         public GenParameter()
@@ -101,12 +101,12 @@ namespace SmartEnergyLabDataApi.Data
         /// <value></value>
         [Property()]
         public virtual double Efficiency {get; set;}
-        
+
         /// <summary>
         /// Emission rate of fuel (before plant conversion losses) in KG CO2/GJ
         /// </summary>
         /// <value></value>
-        [Property()]        
+        [Property()]
         public virtual double EmissionsRate {get; set;}
 
         /// <summary>
@@ -163,5 +163,5 @@ namespace SmartEnergyLabDataApi.Data
         public virtual Dataset Dataset { get; set; }
 
 
-    }    
+    }
 }

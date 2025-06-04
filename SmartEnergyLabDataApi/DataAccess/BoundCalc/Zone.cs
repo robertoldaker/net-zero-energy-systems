@@ -6,7 +6,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_zones")]
-    public class Zone : IId, IDataset, ILifecycle
+    public class Zone : IDatasetIId, ILifecycle
     {
         public Zone()
         {

@@ -8,7 +8,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_boundaries")]
-    public class Boundary : IId, IDataset, ILifecycle
+    public class Boundary : IDatasetIId, ILifecycle
     {
         public Boundary()
         {
@@ -19,7 +19,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         {
             Dataset = dataset;
         }
-        
+
         /// <summary>
         /// Database identifier
         /// </summary>

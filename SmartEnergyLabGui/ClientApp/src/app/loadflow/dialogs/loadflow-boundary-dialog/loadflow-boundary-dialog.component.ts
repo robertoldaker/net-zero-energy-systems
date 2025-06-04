@@ -16,12 +16,12 @@ import { Boundary, Zone } from 'src/app/data/app.data';
 })
 export class LoadflowBoundaryDialogComponent extends DialogBase implements OnInit {
 
-    constructor(public dialogRef: MatDialogRef<DatasetDialogComponent>, 
+    constructor(public dialogRef: MatDialogRef<DatasetDialogComponent>,
         @Inject(MAT_DIALOG_DATA) dialogData:ICellEditorDataDict | undefined,
-        private dataService: DataClientService, 
+        private dataService: DataClientService,
         private loadflowService: LoadflowDataService,
         private datasetsService: DatasetsService
-    ) { 
+    ) {
         super()
         let fCode = this.addFormControl('code')
         fCode.addValidators( [Validators.required]) // Adds the start next to the control
@@ -33,7 +33,7 @@ export class LoadflowBoundaryDialogComponent extends DialogBase implements OnIni
             fCode.setValue(data.code)
             let zoneIds:number[] = []
             data.zones.forEach((z)=>{ zoneIds.push(z.id) })
-            fZoneIds.setValue(zoneIds)            
+            fZoneIds.setValue(zoneIds)
         } else {
             this.title = `Add boundary`
             fCode.setValue("")
@@ -45,7 +45,7 @@ export class LoadflowBoundaryDialogComponent extends DialogBase implements OnIni
         }
         this.zones = loadflowService.networkData.zones.data;
     }
-    
+
     ngOnInit(): void {
     }
 
@@ -65,13 +65,11 @@ export class LoadflowBoundaryDialogComponent extends DialogBase implements OnIni
         if ( this.datasetsService.currentDataset) {
             let changedControls = this.getUpdatedControls()
             let id = this.dialogData?._data ? this.dialogData._data.id : 0
-            this.dataService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: "Boundary", data: changedControls }, (resp)=>{
-                this.loadflowService.afterEdit(resp)
-                this.dialogRef.close();
-            }, (errors)=>{
+            this.loadflowService.saveDialog(id, "Boundary",changedControls, () => {
+                this.dialogRef.close()
+            }, (errors) => {
                 this.fillErrors(errors)
             })
-            
         }
     }
 

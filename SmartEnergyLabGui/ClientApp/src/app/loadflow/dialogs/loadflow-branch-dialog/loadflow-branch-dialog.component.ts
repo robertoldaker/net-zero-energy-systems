@@ -18,12 +18,12 @@ import { ISearchResults } from 'src/app/datasets/dialog-auto-complete/dialog-aut
 
 export class LoadflowBranchDialogComponent extends DialogBase {
 
-    constructor(public dialogRef: MatDialogRef<DatasetDialogComponent>, 
+    constructor(public dialogRef: MatDialogRef<DatasetDialogComponent>,
         @Inject(MAT_DIALOG_DATA) editorData:IBranchEditorData | undefined,
-        private dataService: DataClientService, 
+        private dataService: DataClientService,
         private loadflowService: LoadflowDataService,
         private datasetsService: DatasetsService
-    ) { 
+    ) {
         super()
         let fType = this.addFormControl('type')
         let fCode = this.addFormControl('code')
@@ -113,7 +113,7 @@ export class LoadflowBranchDialogComponent extends DialogBase {
     branchTypes:{id: number, name: string}[] = []
     editorData: IBranchEditorData | undefined
 
-    title: string    
+    title: string
 
     displayNode(n: any) {
         if ( n.code ) {
@@ -153,7 +153,7 @@ export class LoadflowBranchDialogComponent extends DialogBase {
             let fMaxCtrl = this.form.get('maxCtrl')
             if ( fMinCtrl && fMaxCtrl) {
                 let nodeId1 = this.form.get('nodeId1')?.value
-                let node1 = this.nodes1.find(m=>m.id == nodeId1);        
+                let node1 = this.nodes1.find(m=>m.id == nodeId1);
                 if ( node1  ) {
                     let ctrl = node1.voltage < 400 ? 0.15 : 0.2
                     fMinCtrl.setValue(-ctrl);
@@ -176,7 +176,7 @@ export class LoadflowBranchDialogComponent extends DialogBase {
     private updateType() {
         let nodeId1 = this.form.get('nodeId1')?.value
         let node1 = this.nodes1.find(m=>m.id == nodeId1);
-        
+
         let nodeId2 = this.form.get('nodeId2')?.value
         let node2 = this.nodes2.find(m=>m.id == nodeId2);
 
@@ -227,13 +227,12 @@ export class LoadflowBranchDialogComponent extends DialogBase {
         if ( this.datasetsService.currentDataset) {
             let changedControls = this.getUpdatedControls()
             let id = this.editorData?.branch?._data ? this.editorData.branch._data.id : 0
-            this.dataService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: "Branch", data: changedControls }, (resp)=>{
-                this.loadflowService.afterEdit(resp)
-                this.dialogRef.close();
-            }, (errors)=>{
+            this.loadflowService.saveDialog(id, "Branch",changedControls, () => {
+                this.dialogRef.close()
+            }, (errors) => {
                 this.fillErrors(errors)
             })
-            
+
         }
     }
 

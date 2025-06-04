@@ -14,8 +14,9 @@
             <div>
                 <app-dialog-text-input [dialog]="dialog" name="demand" placeholder="Enter demand in MW" label="Demand (MW)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
             </div>
-            <div>
+            <div class="zone">
                 <app-dialog-selector [dialog]="dialog"  name="generatorIds" label="Generators" [data]="generators" [displayFcn]="displayGen" [multiple]="true"></app-dialog-selector>
+                <mat-icon class="iconLink addButton" (click)="addGenerator()" [title]="'Add a new generator'">add</mat-icon>
             </div>
         </div>
         <div class="row leftAlign">

@@ -16,7 +16,7 @@ public class ZoneItemHandler : BaseEditItemHandler
         }
     }
 
-    public override IId GetItem(EditItemModel m)
+    public override IDatasetIId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
         return id>0 ? m.Da.BoundCalc.GetZone(id) : new Zone(m.Dataset);
@@ -38,8 +38,8 @@ public class ZoneItemHandler : BaseEditItemHandler
     public override List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
         using( var da = new DataAccess() ) {
-            var list = new List<DatasetData<object>>();  
-            var zone = (Zone) m.Item;          
+            var list = new List<DatasetData<object>>();
+            var zone = (Zone) m.Item;
             var zoneDi = da.BoundCalc.GetZoneDatasetData(m.Dataset.Id, m=>m.Id == zone.Id);
             list.Add(zoneDi.getBaseDatasetData());
             return list;

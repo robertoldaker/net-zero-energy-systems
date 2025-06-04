@@ -61,7 +61,7 @@ public class GeneratorItemHandler : BaseEditItemHandler {
         m.CheckDouble("capacity");
     }
 
-    public override IId GetItem(EditItemModel m)
+    public override IDatasetIId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
         return id > 0 ? m.Da.BoundCalc.GetGenerator(id) : new Generator(m.Dataset);

@@ -18,12 +18,12 @@ import { ISearchResults } from 'src/app/datasets/dialog-auto-complete/dialog-aut
 export class LoadflowCtrlDialogComponent extends DialogBase {
 
     constructor(
-        public dialogRef: MatDialogRef<DatasetDialogComponent>, 
+        public dialogRef: MatDialogRef<DatasetDialogComponent>,
         @Inject(MAT_DIALOG_DATA) dialogData:ICellEditorDataDict | undefined,
-        private dataService: DataClientService, 
+        private dataService: DataClientService,
         private loadflowService: LoadflowDataService,
         private datasetsService: DatasetsService
-    ) { 
+    ) {
         super()
         let fBranch = this.addFormControl('branchId')
         let fType = this.addFormControl('type')
@@ -71,8 +71,8 @@ export class LoadflowCtrlDialogComponent extends DialogBase {
         let lcStr = e.text.toLowerCase()
         let ctrlBranches = this.loadflowService.networkData.branches.data.filter( m=>m.node1Code.substring(0,5) == m.node2Code.substring(0,5))
         let brs = ctrlBranches.filter(
-            m=>m.node1Code.toLowerCase().includes(lcStr) || 
-            m.node1Code.toLowerCase().includes(lcStr) || 
+            m=>m.node1Code.toLowerCase().includes(lcStr) ||
+            m.node1Code.toLowerCase().includes(lcStr) ||
             (m.code && m.code.toLowerCase().includes(lcStr)))
         e.results = brs
         return
@@ -86,18 +86,18 @@ export class LoadflowCtrlDialogComponent extends DialogBase {
 
     updateCtrls() {
         if ( this.selectedBranch) {
-            let type = this.form.get('type')?.value  
+            let type = this.form.get('type')?.value
             if ( type == LoadflowCtrlType.HVDC) {
                 this.form.get('minCtrl')?.setValue(-this.selectedBranch.cap)
-                this.form.get('maxCtrl')?.setValue(this.selectedBranch.cap)    
+                this.form.get('maxCtrl')?.setValue(this.selectedBranch.cap)
             } else if ( type == LoadflowCtrlType.QB) {
                 let v = this.selectedBranch.node1Code.charAt(4);
                 let ctrl:number = v == '4' ? 0.2 : 0.15
                 this.form.get('minCtrl')?.setValue(-ctrl)
-                this.form.get('maxCtrl')?.setValue(ctrl)    
-            } 
+                this.form.get('maxCtrl')?.setValue(ctrl)
+            }
             this.form.get('minCtrl')?.markAsDirty()
-            this.form.get('maxCtrl')?.markAsDirty()  
+            this.form.get('maxCtrl')?.markAsDirty()
         }
     }
 
@@ -112,15 +112,13 @@ export class LoadflowCtrlDialogComponent extends DialogBase {
     save() {
         if ( this.datasetsService.currentDataset) {
             let changedControls = this.getUpdatedControls()
-
             let id = this.dialogData?._data ? this.dialogData._data.id : 0
-            this.dataService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: "Ctrl", data: changedControls }, (resp)=>{
-                this.loadflowService.afterEdit(resp)
-                this.dialogRef.close();
-            }, (errors)=>{
+            this.loadflowService.saveDialog(id, "Ctrl",changedControls, () => {
+                this.dialogRef.close()
+            }, (errors) => {
                 this.fillErrors(errors)
             })
-            
+
         }
     }
 

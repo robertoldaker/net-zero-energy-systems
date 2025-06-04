@@ -15,7 +15,7 @@ public class BoundaryItemHandler : BaseEditItemHandler
         }
     }
 
-    public override IId GetItem(EditItemModel m)
+    public override IDatasetIId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
         return id>0 ? m.Da.BoundCalc.GetBoundary(id) : new Boundary(m.Dataset);
@@ -27,7 +27,7 @@ public class BoundaryItemHandler : BaseEditItemHandler
         //
         if ( m.GetString("code",out string code)) {
             b.Code = code;
-        }         
+        }
         if ( b.Id == 0) {
             m.Da.BoundCalc.Add(b);
         }

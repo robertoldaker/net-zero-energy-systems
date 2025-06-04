@@ -49,16 +49,26 @@
         <ng-container matColumnDef="generation">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Generation (MW)
             <td mat-cell *matCellDef="let element">
-                <table *ngIf="element.generators.value.length>0" class="genTable">
+                <table *ngIf="element.generators.value.length>0 || element.deletedGenerators.value.length> 0" class="genTable">
                     <tbody>
                         <tr *ngFor="let g of element.generators.value">
-                            <td>{{g.name}}</td>
+                            <td>
+                                <app-mini-icon-button title="Delete" (click)="deleteGenerator(element.id.value,g)" iconName="delete_forever" style="font-size: 1rem; vertical-align: middle;"></app-mini-icon-button>
+                                <span>{{g.name}}</span>
+                            </td>
                             <td>{{g.scaledGenerationPerNode.toFixed(0)}}</td>
+                        </tr>
+                        <tr *ngFor="let g of element.deletedGenerators.value" class="deleted">
+                            <td>
+                                <app-mini-icon-button title="Un-delete" (click)="unDeleteGenerator(element.id.value,g)" iconName="restore_from_trash" style="font-size: 1rem; vertical-align: middle;"></app-mini-icon-button>
+                                <span>{{g.name}}</span>
+                            </td>
+                            <td></td>
                         </tr>
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td>Total</td>
+                            <td><span style="margin-left: 17px">Total</span></td>
                             <td>{{element.generation.value.toFixed(0)}}</td>
                         </tr>
                     </tfoot>

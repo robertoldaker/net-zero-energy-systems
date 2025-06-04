@@ -47,7 +47,7 @@ public class CtrlItemHandler : BaseEditItemHandler
         }
     }
 
-    public override IId GetItem(EditItemModel model)
+    public override IDatasetIId GetItem(EditItemModel model)
     {
         var id = model.ItemId;
         return id>0 ? model.Da.BoundCalc.GetCtrl(id) : new Ctrl(model.Dataset, null);
@@ -100,7 +100,7 @@ public class CtrlItemHandler : BaseEditItemHandler
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
             var ctrl = (Ctrl) m.Item;
-            var ctrlDi = da.BoundCalc.GetCtrlDatasetData(m.Dataset.Id,m=>m.Id == ctrl.Id, true);
+            (var branchDi, var ctrlDi) = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id,m=>m.Ctrl.Id == ctrl.Id, true);
             list.Add(ctrlDi.getBaseDatasetData());
             return list;
         }

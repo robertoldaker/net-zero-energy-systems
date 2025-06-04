@@ -5,7 +5,7 @@ namespace SmartEnergyLabDataApi.Data
 {
     [ApplicationGroup(ApplicationGroup.Elsi)]
     [Class(0, Table = "elsi_gen_capacities")]
-    public class GenCapacity : IDataset, IId
+    public class GenCapacity : IDatasetIId
     {
         public GenCapacity()
         {
@@ -40,7 +40,7 @@ namespace SmartEnergyLabDataApi.Data
         /// <summary>
         /// Main generation zone main (includes distribution connected generators)
         /// </summary>
-        /// <value></value>        
+        /// <value></value>
         [Property()]
         public virtual ElsiMainZone MainZone {get; set;}
 

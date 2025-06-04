@@ -7,7 +7,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_node_generators")]
-    public class NodeGenerator : IId, IDataset {
+    public class NodeGenerator : IDatasetIId {
         public NodeGenerator()
         {
         }

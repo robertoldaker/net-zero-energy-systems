@@ -16,12 +16,12 @@ import { Validators } from '@angular/forms';
 })
 export class LoadflowLocationDialogComponent extends DialogBase implements OnInit {
 
-    constructor(public dialogRef: MatDialogRef<DatasetDialogComponent>, 
+    constructor(public dialogRef: MatDialogRef<DatasetDialogComponent>,
         @Inject(MAT_DIALOG_DATA) dialogData:ICellEditorDataDict | undefined,
-        private dataService: DataClientService, 
+        private dataService: DataClientService,
         private loadflowService: LoadflowDataService,
         private datasetsService: DatasetsService
-    ) { 
+    ) {
         super()
         let fCode = this.addFormControl('code')
         fCode.addValidators( [Validators.required])
@@ -57,7 +57,7 @@ export class LoadflowLocationDialogComponent extends DialogBase implements OnIni
     }
 
     ngOnInit(): void {
-    }    
+    }
 
     title: string
 
@@ -66,13 +66,12 @@ export class LoadflowLocationDialogComponent extends DialogBase implements OnIni
             let changedControls = this.getUpdatedControls()
 
             let id = this.dialogData?._data ? this.dialogData._data.id : 0
-            this.dataService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: "GridSubstationLocation", data: changedControls }, (resp)=>{
-                this.loadflowService.afterEdit(resp)
-                this.dialogRef.close();
-            }, (errors)=>{
+            this.loadflowService.saveDialog(id, "GridSubstationLocation",changedControls, () => {
+                this.dialogRef.close()
+            }, (errors) => {
                 this.fillErrors(errors)
             })
-            
+
         }
     }
 

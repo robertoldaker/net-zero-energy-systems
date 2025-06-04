@@ -20,7 +20,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             // and generators
             foreach (var node in di.Data) {
                 // extract generators for each node
-                node.Generators = ngDatasetData.Data.Where(m => m.Node.Id == node.Id).Select(m => m.Generator).ToList();
+                node.UpdateGenerators(ngDatasetData);
             }
 
             int index=1;

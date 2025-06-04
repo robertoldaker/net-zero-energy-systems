@@ -7,7 +7,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_transport_models")]
-    public class TransportModel : IId, IDataset, ILifecycle
+    public class TransportModel : IDatasetIId, ILifecycle
     {
         public TransportModel()
         {

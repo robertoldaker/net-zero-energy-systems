@@ -49,7 +49,7 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
         m.CheckDouble("longitude");
     }
 
-    public override IId GetItem(EditItemModel m)
+    public override IDatasetIId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
         return id>0 ? m.Da.NationalGrid.GetGridSubstationLocation(id) : new GridSubstationLocation() { Dataset = m.Dataset};
@@ -105,9 +105,7 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
                 nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id, m=>m.Location.Id == loc.Id, true);
                 if (branchIds.Length != 0) {
                     // get branches used by the nodes
-                    branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n => n.Node1.Id.IsIn(nodeIds) || n.Node2.Id.IsIn(nodeIds), true);
-                    var ctrlIds = branchDi.Data.Where(m => m.Ctrl != null).Select(m => m.Ctrl.Id).ToArray();
-                    ctrlDi = da.BoundCalc.GetCtrlDatasetData(m.Dataset.Id, m => m.Id.IsIn(ctrlIds), true);
+                    (branchDi,ctrlDi) = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n => n.Node1.Id.IsIn(nodeIds) || n.Node2.Id.IsIn(nodeIds), true);
                 }
             }
             if (nodeDi != null) {

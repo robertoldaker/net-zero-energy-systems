@@ -5,7 +5,7 @@ namespace SmartEnergyLabDataApi.Data
 {
     [ApplicationGroup(ApplicationGroup.Elsi)]
     [Class(0, Table = "elsi_links")]
-    public class Link : IDataset, IId
+    public class Link : IDatasetIId
     {
         public Link()
         {

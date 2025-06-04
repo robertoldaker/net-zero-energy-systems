@@ -122,7 +122,7 @@ public class DatasetsController : ControllerBase
     public object DeleteItem([FromBody] EditItem editItem) {
         using ( var m = new EditItemModel(this,editItem)) {
             var msg = m.Delete();
-            return new { msg=msg, datasets = m.DatasetData };
+            return new { msg=msg, deletedItems = m.DeletedItems, datasets = m.DatasetData };
         }
     }
 

@@ -5,7 +5,7 @@ namespace SmartEnergyLabDataApi.Data
 {
     [ApplicationGroup(ApplicationGroup.Elsi)]
     [Class(0, Table = "elsi_peak_demands")]
-    public class PeakDemand : IDataset, IId
+    public class PeakDemand : IDatasetIId
     {
         public PeakDemand()
         {
@@ -93,5 +93,5 @@ namespace SmartEnergyLabDataApi.Data
         public virtual Dataset Dataset { get; set; }
 
 
-    }    
+    }
 }

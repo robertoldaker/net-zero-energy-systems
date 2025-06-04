@@ -9,6 +9,7 @@ using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
 using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.ObjectPool;
 using NHibernate;
 using NHibernate.Criterion;
 using NHibernate.Mapping.Attributes;
@@ -130,7 +131,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             var genDi = GetGeneratorDatasetData(datasetId, m => m.Id.IsIn(genIds));
             // update
             foreach (var node in nodes) {
-                node.Generators = nodeGenDi.Data.Where(m => m.Node.Id == node.Id).Select(m => m.Generator).ToList();
+                node.UpdateGenerators(nodeGenDi);
             }
         }
 
@@ -363,30 +364,44 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
             return branch != null;
         }
-        public DatasetData<Branch> GetBranchDatasetData(int datasetId,
+        public (DatasetData<Branch> branchDi, DatasetData<Ctrl>? ctrlDi) GetBranchDatasetData(int datasetId,
             System.Linq.Expressions.Expression<Func<Branch, bool>> expression,
             bool updateRefs)
         {
             var q = Session.QueryOver<Branch>().Where(expression);
             var branchDi = new DatasetData<Branch>(DataAccess, datasetId, m => m.Id.ToString(), q);
             //
+            DatasetData<Ctrl> ctrlDi = null;
             // Ensure branches reference up-to-date nodes
             if (updateRefs) {
-                this.updateRefs(datasetId, branchDi.Data);
-                //??this.updateRefs(datasetId, branchDi.DeletedData);
+                var ctrlIds = branchDi.Data.Where(m => m.Ctrl != null).Select(m => m.Ctrl.Id).ToArray();
+                var delCtrlIds = branchDi.DeletedData.Where(m => m.Ctrl != null).Select(m => m.Ctrl.Id).ToArray();
+                ctrlDi = GetCtrlDatasetData(datasetId, m => m.Id.IsIn(ctrlIds) || m.Id.IsIn(delCtrlIds));
+                this.updateRefs(datasetId, branchDi.Data, ctrlDi);
+                this.updateRefs(datasetId, branchDi.DeletedData, ctrlDi);
             }
+
             //
-            return branchDi;
+            return (branchDi, ctrlDi);
         }
 
-        private void updateRefs(int datasetId, IList<Branch> branches)
+        private void updateRefs(int datasetId, IList<Branch> branches, DatasetData<Ctrl> ctrlDi)
         {
             var node1Ids = branches.Select(m => m.Node1.Id).ToList<int>();
             var node2Ids = branches.Select(m => m.Node2.Id).ToList<int>();
             var nodeDi = GetNodeDatasetData(datasetId, m => m.Id.IsIn(node1Ids) || m.Id.IsIn(node2Ids),true);
             foreach (var b in branches) {
-                b.Node1 = nodeDi.GetItem(b.Node1.Id);
-                b.Node2 = nodeDi.GetItem(b.Node2.Id);
+                // nodes
+                b.Node1 = nodeDi.GetItemOrDeletedItem(b.Node1.Id);
+                b.Node2 = nodeDi.GetItemOrDeletedItem(b.Node2.Id);
+                // ctrls
+                if (b.Ctrl != null) {
+                    var ctrl = ctrlDi.GetItem(b.Ctrl.Id);
+                    if (ctrl != null) {
+                        b.Ctrl = ctrl;
+                        ctrl.Branch = b;
+                    }
+                }
             }
         }
 
@@ -540,36 +555,12 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             return branches;
         }
 
-        public DatasetData<Ctrl> GetCtrlDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Ctrl, bool>> expression, bool updateRefs)
+        public DatasetData<Ctrl> GetCtrlDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Ctrl, bool>> expression)
         {
             var ctrlQuery = Session.QueryOver<Ctrl>().Where(expression);
-            /*ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch);
-            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch.Node1.Location);
-            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch.Node1.Location.GISData);
-            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch.Node1.Zone);
-            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch.Node2.Location);
-            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch.Node2.Location.GISData);
-            ctrlQuery = ctrlQuery.Fetch(SelectMode.Fetch, m => m.Branch.Node2.Zone);*/
 
             var ctrlDi = new DatasetData<Ctrl>(DataAccess, datasetId, m => m.Id.ToString(), ctrlQuery);
-            if (updateRefs) {
-                this.updateRefs(datasetId, ctrlDi.Data);
-            }
             return ctrlDi;
-        }
-
-        private void updateRefs(int datasetId, IList<Ctrl> ctrls)
-        {
-            var ctrlIds = ctrls.Select(m => m.Id).ToArray();
-            var branchDi = GetBranchDatasetData(datasetId, m => m.Ctrl.Id.IsIn(ctrlIds), true);
-            foreach (var ctrl in ctrls) {
-                var branch = branchDi.GetItem(ctrl.BranchId);
-                if (branch != null) {
-                    ctrl.Branch = branch;
-                } else {
-                    throw new Exception($"Could not find branch ref [{ctrl.BranchId}]");
-                }
-            }
         }
 
         #region LoadflowResults

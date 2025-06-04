@@ -49,10 +49,9 @@ export class LoadflowTransportModelDialogComponent extends DialogBase implements
             let changedControls = this.getUpdatedControls()
 
             let id:number = this.tm ? this.tm.id : 0
-            this.dataService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: "TransportModel", data: changedControls }, (resp)=>{
-                this.loadflowService.afterEdit(resp)
-                this.dialogRef.close(resp);
-            }, (errors)=>{
+            this.loadflowService.saveDialog(id, "TransportModel",changedControls, () => {
+                this.dialogRef.close()
+            }, (errors) => {
                 this.fillErrors(errors)
             })
 

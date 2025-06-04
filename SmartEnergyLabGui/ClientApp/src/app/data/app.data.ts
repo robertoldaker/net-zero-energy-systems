@@ -331,6 +331,8 @@ export interface Node {
     location: GridSubstationLocation | undefined
     demand: number
     generators: Generator[]
+    deletedGenerators: Generator[]
+    newGenerators: Generator[]
     generation: number
     generation_A: number
     generation_B: number

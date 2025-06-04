@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Routing;
 using NHibernate;
 using NHibernate.AdoNet.Util;
 using NHibernate.Criterion;
@@ -10,21 +11,68 @@ public class NodeItemHandler : BaseEditItemHandler
 {
     public override string BeforeUndelete(EditItemModel m)
     {
-        // undelete any location that the node is pointing to
+        // Location
         var node = (Node) m.Item;
         if ( node.Location!=null) {
-            var ue = m.Da.Datasets.GetDeleteUserEdit(m.Dataset.Id, node.Location);
-            if ( ue!=null ) {
-                m.Da.Datasets.Delete(ue);
+            m.UnDeleteObject<GridSubstationLocation>(node.Location);
+        }
+        // branches
+        (var branchDi,var ctrlDi) = m.Da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, m => m.Node1.Id == node.Id || m.Node2.Id == node.Id, false);
+        var nodeIds = branchDi.DeletedData.Where(m=>m.Node1.Id != node.Id).Select(m => m.Node1.Id).ToArray();
+        // ensure node1 is undeleted
+        foreach (var nodeId in nodeIds) {
+            m.UnDeleteObject<Node>(nodeId);
+        }
+        nodeIds = branchDi.DeletedData.Where(m=>m.Node2.Id != node.Id).Select(m => m.Node2.Id).ToArray();
+        // and node 2
+        foreach (var nodeId in nodeIds) {
+            m.UnDeleteObject<Node>(nodeId);
+        }
+        // undelete the branch
+        foreach (var br in branchDi.DeletedData) {
+            m.UnDeleteObject(br);
+            if (br.Ctrl != null) {
+                m.UnDeleteObject(br.Ctrl);
             }
+        }
+
+        // NodeGenerators
+        var nodeGenDi = m.Da.BoundCalc.GetNodeGeneratorDatasetData(m.Dataset.Id, m => m.Node.Id == node.Id);
+        var genIds = nodeGenDi.DeletedData.Select(m => m.Generator.Id).ToArray();
+        foreach (var genId in genIds) {
+            m.UnDeleteObject<Generator>(genId);
+        }
+        foreach (var ng in nodeGenDi.DeletedData) {
+            m.UnDeleteObject(ng);
         }
         return "";
     }
 
     public override string BeforeDelete(EditItemModel m, bool isSourceEdit) {
-        var numBranches = m.Da.BoundCalc.GetBranchCountForNode(m.ItemId, isSourceEdit);
+        /*var numBranches = m.Da.BoundCalc.GetBranchCountForNode(m.ItemId, isSourceEdit);
         if ( numBranches > 0 ) {
             return $"Cannot delete node as used by <b>{numBranches}</b> branches";
+        }*/
+
+        var node = (Node)m.Item;
+        // Branches
+        (var branchDi, var ctrlDi) = m.Da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, m => m.Node1.Id == node.Id || m.Node2.Id == node.Id, false);
+        foreach (var br in branchDi.Data) {
+            var deleteItem = m.DeleteObject(br);
+            // If source deleted is a ctrl branch add the ctrl to the list of deletedItems
+            if (br.Ctrl != null ) {
+                if (deleteItem.isSourceDelete) {
+                    m.DeletedItems.Add(new DeletedItem(br.Ctrl) { isSourceDelete = true });
+                } else {
+                    m.DeleteObject(br.Ctrl);
+                }
+            }
+        }
+
+        // Node Generators
+        var nodeGenDi = m.Da.BoundCalc.GetNodeGeneratorDatasetData(m.Dataset.Id, m => m.Node.Id == node.Id);
+        foreach (var nd in nodeGenDi.Data) {
+            m.DeleteObject(nd, false);
         }
         return "";
     }
@@ -57,7 +105,7 @@ public class NodeItemHandler : BaseEditItemHandler
         }
     }
 
-    public override IId GetItem(EditItemModel model)
+    public override IDatasetIId GetItem(EditItemModel model)
     {
         var id = model.ItemId;
         return id>0 ? model.Da.BoundCalc.GetNode(id) : new Node(model.Dataset);
@@ -87,33 +135,7 @@ public class NodeItemHandler : BaseEditItemHandler
         if ( generation_B!=null ) {
             node.Generation_B = (double) generation_B;
         }*/
-        var generatorIds = m.GetIntArray("generatorIds");
-        if ( generatorIds!=null ) {
-            // and node generators
-            var existingNodeGenerators = m.Da.BoundCalc.GetNodeGenerators(node.Id);
-            var newNodeGenerators = new List<NodeGenerator>();
-            // Add new ones
-            foreach( var genId in generatorIds) {
-                var ng = existingNodeGenerators.Where(m=>m.Generator.Id == genId).FirstOrDefault();
-                if ( ng==null) {
-                    var gen = m.Da.BoundCalc.GetGenerator(genId);
-                    if ( gen!=null ) {
-                        var newNg = new NodeGenerator() {
-                            Node = node,
-                            Generator = gen,
-                            Dataset = m.Dataset
-                        };
-                        m.Da.BoundCalc.Add(newNg);
-                    }
-                }
-            }
-            // Delete ones not defined anymore
-            foreach( var ng in existingNodeGenerators) {
-                if ( !generatorIds.Contains(ng.Generator.Id)) {
-                    m.Da.BoundCalc.Delete(ng);
-                }
-            }
-        }
+        updateGenerators(m);
 
         // external
         var ext = m.CheckBoolean("ext");
@@ -133,20 +155,69 @@ public class NodeItemHandler : BaseEditItemHandler
         }
     }
 
+    public override void UpdateUserEdits(EditItemModel m)
+    {
+        // base class
+        base.UpdateUserEdits(m);
+        //
+        updateGenerators(m);
+    }
+
+    private void updateGenerators(EditItemModel m)
+    {
+        Node node = (Node) m.Item;
+        var generatorIds = m.GetIntArray("generatorIds");
+        if ( generatorIds!=null ) {
+            // and node generators
+            int datasetId = m.Dataset.Id;
+            var nodeDi = m.Da.BoundCalc.GetNodeGeneratorDatasetData(datasetId, m => m.Node.Id == node.Id);
+            var currentNodeGenerators = nodeDi.Data;
+            var deletedNodeGenerators = nodeDi.DeletedData;
+            var newNodeGenerators = new List<NodeGenerator>();
+            // Add new ones
+            foreach( var genId in generatorIds) {
+                var ng = currentNodeGenerators.Where(m=>m.Generator.Id == genId).FirstOrDefault();
+                if (ng == null) {
+                    var ngDeleted = deletedNodeGenerators.Where(m => m.Generator.Id == genId).FirstOrDefault();
+                    if (ngDeleted != null) {
+                        m.UnDeleteObject(ngDeleted);
+                        // make sure the geberator is undeleted
+                        m.UnDeleteObject<Generator>(genId);
+                    } else {
+                        var gen = m.Da.BoundCalc.GetGenerator(genId);
+                        if (gen != null) {
+                            var newNg = new NodeGenerator() {
+                                Node = node,
+                                Generator = gen,
+                                Dataset = m.Dataset
+                            };
+                            m.Da.BoundCalc.Add(newNg);
+                        }
+                    }
+                }
+            }
+            // Delete ones not defined anymore
+            foreach( var ng in currentNodeGenerators) {
+                if ( !generatorIds.Contains(ng.Generator.Id)) {
+                    m.DeleteObject(ng, false);
+                }
+            }
+        }
+    }
+
     public override List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
-        using( var da = new DataAccess() ) {
+        using (var da = new DataAccess()) {
             var list = new List<DatasetData<object>>();
-            var node = (Node) m.Item;
+            var node = (Node)m.Item;
             // need all nodes since they can all change since generation
-            var nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id, null,  true);
-            var genDi = m.EditItem.UpdateNodeGeneration(da, m.Dataset.Id, nodeDi);
+            var nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id, null, true);
+            m.EditItem.UpdateNodeGeneration(da, m.Dataset.Id, nodeDi);
+            // also all generators since this will include any deleted from the node
+            var genDi = da.BoundCalc.GetGeneratorDatasetData(m.Dataset.Id, null);
 
             // branches and controls that reference this node
-            var branchDi = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id,m=>m.Node1.Id == node.Id || m.Node2.Id == node.Id, true);
-            var ctrlIds = branchDi.Data.Where(m => m.Ctrl != null).Select(m => m.Ctrl.Id).ToArray();
-            var ctrlDi = da.BoundCalc.GetCtrlDatasetData(m.Dataset.Id, m => m.Id.IsIn(ctrlIds), true);
-
+            (var branchDi, var ctrlDi) = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, m => m.Node1.Id == node.Id || m.Node2.Id == node.Id, true);
             var tmeDi = da.BoundCalc.GetTransportModelEntryDatasetData(m.Dataset.Id);
 
             list.Add(nodeDi.getBaseDatasetData());

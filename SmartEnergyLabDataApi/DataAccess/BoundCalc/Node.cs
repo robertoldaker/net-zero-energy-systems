@@ -1,17 +1,20 @@
 using System.Text.Json.Serialization;
 using NHibernate.Linq.Functions;
 using NHibernate.Mapping.Attributes;
+using Org.BouncyCastle.Asn1.Mozilla;
 using SmartEnergyLabDataApi.BoundCalc;
 
 namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_nodes")]
-    public class Node : IId, IDataset
+    public class Node : IDatasetIId
     {
         public Node()
         {
             Generators = new List<Generator>();
+            DeletedGenerators = new List<Generator>();
+            NewGenerators = new List<Generator>();
         }
 
         public Node(Dataset dataset) : this()
@@ -52,6 +55,9 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 return generation;
             }
         }
+        public virtual IList<Generator> DeletedGenerators { get; set; }
+
+        public virtual IList<Generator> NewGenerators { get; set; }
 
         [Property()]
         public virtual int? Gen_Zone {get; set;}

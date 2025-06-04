@@ -9,7 +9,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                                                             }
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_ctrls")]
-    public class Ctrl : IId, IDataset
+    public class Ctrl : IDatasetIId
     {
         public Ctrl()
         {
@@ -99,7 +99,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 return Node1.Code;
             }
         }
-        
+
         public virtual string Node2Code {
             get {
                 return Node2.Code;
@@ -111,7 +111,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 return Node1.Name;
             }
         }
-        
+
         public virtual string Node2Name {
             get {
                 return Node2.Name;

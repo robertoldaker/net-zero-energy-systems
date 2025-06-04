@@ -7,8 +7,7 @@ using SmartEnergyLabDataApi.Data.BoundCalc;
 
 namespace SmartEnergyLabDataApi.Data;
 
-public class Datasets : DataSet
-{
+public class Datasets : DataSet {
     public Datasets(DataAccess da) : base(da)
     {
 
@@ -16,9 +15,8 @@ public class Datasets : DataSet
 
     public DataAccess DataAccess
     {
-        get
-        {
-            return (DataAccess) _dataAccess;
+        get {
+            return (DataAccess)_dataAccess;
         }
     }
 
@@ -37,7 +35,7 @@ public class Datasets : DataSet
         var key = obj.Id.ToString();
         // Check one doesn;t already exist
         var ue = GetDeleteUserEdit(dataset.Id, tableName, key);
-        if ( ue==null ) {
+        if (ue == null) {
             var userEdit = new UserEdit() {
                 Dataset = dataset,
                 TableName = tableName,
@@ -54,91 +52,111 @@ public class Datasets : DataSet
         var key = obj.Id.ToString();
         //
         var data = Session.QueryOver<UserEdit>().
-            Where(m=>m.Dataset.Id == datasetId).
-            And(m=>m.TableName == tableName).
-            And(m=>m.IsRowDelete).
-            And(m=>m.Key == key).
+            Where(m => m.Dataset.Id == datasetId).
+            And(m => m.TableName == tableName).
+            And(m => m.IsRowDelete).
+            And(m => m.Key == key).
             Take(1).SingleOrDefault();
         return data;
     }
 
     public UserEdit GetDeleteUserEdit(int datasetId, string tableName, string key) {
         var data = Session.QueryOver<UserEdit>().
-            Where(m=>m.Dataset.Id == datasetId).
-            And(m=>m.TableName == tableName).
-            And(m=>m.IsRowDelete).
-            And(m=>m.Key == key).
+            Where(m => m.Dataset.Id == datasetId).
+            And(m => m.TableName == tableName).
+            And(m => m.IsRowDelete).
+            And(m => m.Key == key).
             Take(1).SingleOrDefault();
         return data;
     }
 
+    public UserEdit GetDeleteUserEdit<T>(int datasetId, string key) {
+        var tableName = typeof(T).Name;
+        var data = Session.QueryOver<UserEdit>().
+            Where(m => m.Dataset.Id == datasetId).
+            And(m => m.TableName == tableName).
+            And(m => m.IsRowDelete).
+            And(m => m.Key == key).
+            Take(1).SingleOrDefault();
+        return data;
+    }
+
+    public bool UnDelete<T>(int datasetId, string key) {
+        var ue = GetDeleteUserEdit<T>(datasetId, key);
+        if (ue != null) {
+            Delete(ue);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public IList<UserEdit> GetUserEdits(string tableName, int datasetId) {
         var data = Session.QueryOver<UserEdit>().
-            Where(m=>m.Dataset.Id == datasetId).
-            And(m=>m.TableName == tableName).
+            Where(m => m.Dataset.Id == datasetId).
+            And(m => m.TableName == tableName).
             List();
         return data;
     }
 
     public IList<UserEdit> GetUserEdits(string tableName, string key) {
         var data = Session.QueryOver<UserEdit>().
-            Where(m=>m.Key == key).
-            And(m=>m.TableName == tableName).
+            Where(m => m.Key == key).
+            And(m => m.TableName == tableName).
             List();
         return data;
     }
 
-    public Dictionary<int,List<UserEdit>> GetUserEditsDict<T>(int[] datasetIds) {
+    public Dictionary<int, List<UserEdit>> GetUserEditsDict<T>(int[] datasetIds) {
         var tableName = typeof(T).Name;
-        var dict = new Dictionary<int,List<UserEdit>>();
+        var dict = new Dictionary<int, List<UserEdit>>();
         var all = Session.QueryOver<UserEdit>().
-            Where(m=>m.Dataset.Id.IsIn(datasetIds)).
-            And(m=>m.TableName == tableName).
+            Where(m => m.Dataset.Id.IsIn(datasetIds)).
+            And(m => m.TableName == tableName).
             List();
-        foreach( var id in datasetIds ) {
-            var eds = all.Where(m=>m.Dataset.Id == id).ToList();
-            dict.Add(id,eds);
+        foreach (var id in datasetIds) {
+            var eds = all.Where(m => m.Dataset.Id == id).ToList();
+            dict.Add(id, eds);
         }
         return dict;
     }
 
-    public Dictionary<int,List<UserEdit>> GetUserEditsDict(string className, string key, int[] datasetIds) {
+    public Dictionary<int, List<UserEdit>> GetUserEditsDict(string className, string key, int[] datasetIds) {
         var tableName = className;
-        var dict = new Dictionary<int,List<UserEdit>>();
+        var dict = new Dictionary<int, List<UserEdit>>();
         var all = Session.QueryOver<UserEdit>().
-            Where(m=>m.Dataset.Id.IsIn(datasetIds)).
-            And(m=>m.TableName == tableName).
-            And( m=>m.Key == key).
+            Where(m => m.Dataset.Id.IsIn(datasetIds)).
+            And(m => m.TableName == tableName).
+            And(m => m.Key == key).
             List();
-        foreach( var id in datasetIds ) {
-            var eds = all.Where(m=>m.Dataset.Id == id).ToList();
-            dict.Add(id,eds);
+        foreach (var id in datasetIds) {
+            var eds = all.Where(m => m.Dataset.Id == id).ToList();
+            dict.Add(id, eds);
         }
         return dict;
     }
 
     public IList<T> GetData<T>(
             int datasetId,
-            Func<T,string> keyFcn,
-            IQueryOver<T,T> queryOver,
+            Func<T, string> keyFcn,
+            IQueryOver<T, T> queryOver,
             out List<UserEdit> userEdits,
             out List<T> deletedData,
             bool distinctRootEntity = false)
-            where T: class {
+            where T : class {
         // this is the dataset plus the heirarchy going back to root
         var datasetIds = GetInheritedDatasetIds(datasetId);
         //
-        if ( datasetIds.Length==0) {
+        if (datasetIds.Length == 0) {
             throw new Exception($"No datasets found for datasetId=[{datasetId}]");
         }
         // look for objects defined in datas
         var q = queryOver;
-        if ( typeof(IDataset).GetTypeInfo().IsAssignableFrom(typeof(T).Ge‌​tTypeInfo())) {
-            q = q.Where( m=>((IDataset) m).Dataset.Id.IsIn(datasetIds));
+        if (typeof(IDataset).GetTypeInfo().IsAssignableFrom(typeof(T).Ge‌​tTypeInfo())) {
+            q = q.Where(m => ((IDataset)m).Dataset.Id.IsIn(datasetIds));
         }
         // apply all user edits
-        if (distinctRootEntity)
-        {
+        if (distinctRootEntity) {
             q = q.TransformUsing(Transformers.DistinctRootEntity);
         }
         var data = q.List();
@@ -146,67 +164,67 @@ public class Datasets : DataSet
         return data;
     }
 
-    private void applyUserEdits<T>(IList<T> data,int[] datasetIds, Func<T,string> keyFcn, out List<UserEdit> userEdits, out List<T> deletedData) {
+    private void applyUserEdits<T>(IList<T> data, int[] datasetIds, Func<T, string> keyFcn, out List<UserEdit> userEdits, out List<T> deletedData) {
         // Gets dictionary of all user edits by version id
         var userEditsDict = GetUserEditsDict<T>(datasetIds);
         // Get properties of the base type
         var props = typeof(T).GetProperties();
-        var propDict = new Dictionary<string,PropertyInfo>(StringComparer.OrdinalIgnoreCase);
-        foreach( var prop in props) {
-            propDict.Add(prop.Name.ToLower(),prop);
+        var propDict = new Dictionary<string, PropertyInfo>(StringComparer.OrdinalIgnoreCase);
+        foreach (var prop in props) {
+            propDict.Add(prop.Name.ToLower(), prop);
         }
         //
         int lastDatasetId = datasetIds.Last();
-        userEdits = userEditsDict[lastDatasetId].Where(m=>!m.IsRowDelete).ToList();
+        userEdits = userEditsDict[lastDatasetId].Where(m => !m.IsRowDelete).ToList();
         deletedData = new List<T>();
         //
-        foreach( var gp in data) {
+        foreach (var gp in data) {
             // key key to uniquely identifiy row
             var key = keyFcn(gp);
             // Loop over each version and apply each set of edits in order
-            foreach( var vId in datasetIds) {
+            foreach (var vId in datasetIds) {
                 // These are the edits to apply at this version
-                var ues = userEditsDict[vId].Where(m=>!m.IsRowDelete && m.Key == key);
-                foreach ( var ue in ues) {
+                var ues = userEditsDict[vId].Where(m => !m.IsRowDelete && m.Key == key);
+                foreach (var ue in ues) {
                     // See if the object has the property name based on the lower-case column name
-                    if ( propDict.TryGetValue(ue.ColumnName, out PropertyInfo prop)) {
+                    if (propDict.TryGetValue(ue.ColumnName, out PropertyInfo prop)) {
                         // Important - need to only set it if not set already
                         // NHibernate will return same instances of objects so if this userEdit appears again it may set the prevValue
                         // to the already edited value
-                        if ( vId == lastDatasetId && ue.PrevValue==null ) {
+                        if (vId == lastDatasetId && ue.PrevValue == null) {
                             ue.PrevValue = getPrevValue(prop, gp);
                         }
                         // if so apply change
-                        if ( prop.PropertyType == typeof (double) || prop.PropertyType == typeof(double?) ) {
-                            prop.SetValue(gp,ue.GetDoubleValue());
-                        } else if ( prop.PropertyType == typeof (bool) || prop.PropertyType == typeof(bool?) ) {
-                            prop.SetValue(gp,ue.GetBoolValue());
-                        } else if ( prop.PropertyType.IsEnum ) {
-                            prop.SetValue(gp,ue.GetEnumValue(prop.PropertyType));
+                        if (prop.PropertyType == typeof(double) || prop.PropertyType == typeof(double?)) {
+                            prop.SetValue(gp, ue.GetDoubleValue());
+                        } else if (prop.PropertyType == typeof(bool) || prop.PropertyType == typeof(bool?)) {
+                            prop.SetValue(gp, ue.GetBoolValue());
+                        } else if (prop.PropertyType.IsEnum) {
+                            prop.SetValue(gp, ue.GetEnumValue(prop.PropertyType));
                         } else {
-                            prop.SetValue(gp,ue.Value);
+                            prop.SetValue(gp, ue.Value);
                         }
                     }
                 }
-                var ueds = userEditsDict[vId].Where(m=>m.IsRowDelete && m.Key == key);
-                if ( ueds.Count()>0) {
+                var ueds = userEditsDict[vId].Where(m => m.IsRowDelete && m.Key == key);
+                if (ueds.Count() > 0) {
                     deletedData.Add(gp);
                 }
             }
         }
 
         // Ignore user edits that have not been referenced
-        userEdits = userEdits.Where(m=>m.PrevValue!=null).ToList();
+        userEdits = userEdits.Where(m => m.PrevValue != null).ToList();
 
         // remove deletes from main list
-        foreach( var dgp in deletedData) {
+        foreach (var dgp in deletedData) {
             data.Remove(dgp);
         }
     }
 
     private string getPrevValue<T>(PropertyInfo prop, T pv) {
         var prevValue = prop.GetValue(pv);
-        if ( prevValue == null) {
+        if (prevValue == null) {
             return "";
         } else {
             return prevValue.ToString();
@@ -223,70 +241,70 @@ public class Datasets : DataSet
     public void Delete(Dataset dataset) {
 
         // Delete children
-        var children = Session.QueryOver<Dataset>().Where(m=>m.Parent.Id == dataset.Id).List();
-        foreach( var dv in children) {
+        var children = Session.QueryOver<Dataset>().Where(m => m.Parent.Id == dataset.Id).List();
+        foreach (var dv in children) {
             Delete(dv);
         }
         // Delete all user edits that reference this version
-        var ues = Session.QueryOver<UserEdit>().Where( m=>m.Dataset.Id == dataset.Id).List();
-        foreach( var ue in ues) {
+        var ues = Session.QueryOver<UserEdit>().Where(m => m.Dataset.Id == dataset.Id).List();
+        foreach (var ue in ues) {
             Session.Delete(ue);
         }
-        if ( dataset.Type == DatasetType.Elsi ) {
+        if (dataset.Type == DatasetType.Elsi) {
             // Delete all results that reference this version
-            var ers = Session.QueryOver<ElsiResult>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var er in ers) {
+            var ers = Session.QueryOver<ElsiResult>().Where(m => m.Dataset.Id == dataset.Id).List();
+            foreach (var er in ers) {
                 Session.Delete(er);
             }
-        } else if ( dataset.Type == DatasetType.BoundCalc ) {
+        } else if (dataset.Type == DatasetType.BoundCalc) {
             // Node Generators
-            var nodeGenerators = Session.QueryOver<NodeGenerator>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var g in nodeGenerators) {
+            var nodeGenerators = Session.QueryOver<NodeGenerator>().Where(m => m.Dataset.Id == dataset.Id).List();
+            foreach (var g in nodeGenerators) {
                 Session.Delete(g);
             }
             // Branches
-            var branches = Session.QueryOver<Branch>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var b in branches) {
+            var branches = Session.QueryOver<Branch>().Where(m => m.Dataset.Id == dataset.Id).List();
+            foreach (var b in branches) {
                 Session.Delete(b);
             }
             // Ctrls
-            var ctrls = Session.QueryOver<Ctrl>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var c in ctrls) {
+            var ctrls = Session.QueryOver<Ctrl>().Where(m => m.Dataset.Id == dataset.Id).List();
+            foreach (var c in ctrls) {
                 Session.Delete(c);
             }
             // Nodes
-            var nodes = Session.QueryOver<Node>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var n in nodes) {
+            var nodes = Session.QueryOver<Node>().Where(m => m.Dataset.Id == dataset.Id).List();
+            foreach (var n in nodes) {
                 Session.Delete(n);
             }
             // BoundaryZones
-            var bzs = Session.QueryOver<BoundaryZone>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var bz in bzs) {
+            var bzs = Session.QueryOver<BoundaryZone>().Where(m => m.Dataset.Id == dataset.Id).List();
+            foreach (var bz in bzs) {
                 Session.Delete(bz);
             }
             // Boundaries
-            var bs = Session.QueryOver<Boundary>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var b in bs) {
+            var bs = Session.QueryOver<Boundary>().Where(m => m.Dataset.Id == dataset.Id).List();
+            foreach (var b in bs) {
                 Session.Delete(b);
             }
             // Zones
-            var zones = Session.QueryOver<Zone>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var z in zones) {
+            var zones = Session.QueryOver<Zone>().Where(m => m.Dataset.Id == dataset.Id).List();
+            foreach (var z in zones) {
                 Session.Delete(z);
             }
             // Locations
-            var locations = Session.QueryOver<GridSubstationLocation>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var l in locations) {
+            var locations = Session.QueryOver<GridSubstationLocation>().Where(m => m.Dataset.Id == dataset.Id).List();
+            foreach (var l in locations) {
                 Session.Delete(l);
             }
             // Generators
-            var generators = Session.QueryOver<Generator>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var g in generators) {
+            var generators = Session.QueryOver<Generator>().Where(m => m.Dataset.Id == dataset.Id).List();
+            foreach (var g in generators) {
                 Session.Delete(g);
             }
             // Transport models
-            var tms = Session.QueryOver<TransportModel>().Where( m=>m.Dataset.Id == dataset.Id).List();
-            foreach( var tm in tms) {
+            var tms = Session.QueryOver<TransportModel>().Where(m => m.Dataset.Id == dataset.Id).List();
+            foreach (var tm in tms) {
                 Session.Delete(tm);
             }
         }
@@ -300,28 +318,28 @@ public class Datasets : DataSet
 
     public Dataset GetDataset(DatasetType type, string name, int userId, int id) {
         return Session.QueryOver<Dataset>().
-            Where(m=>m.Name.IsInsensitiveLike(name)).
-            And(m=>m.Type ==type).
-            And(m=>m.Id!=id).
-            And(m=>m.User.Id==userId || m.User==null).
+            Where(m => m.Name.IsInsensitiveLike(name)).
+            And(m => m.Type == type).
+            And(m => m.Id != id).
+            And(m => m.User.Id == userId || m.User == null).
             Take(1).SingleOrDefault();
     }
 
     public Dataset GetDataset(DatasetType type, string name) {
         return Session.QueryOver<Dataset>().
-            Where(m=>m.Name.IsLike(name)).
-            And(m=>m.Type ==type).
-            And(m=>m.User==null).
+            Where(m => m.Name.IsLike(name)).
+            And(m => m.Type == type).
+            And(m => m.User == null).
             Take(1).SingleOrDefault();
     }
 
     public Dataset GetRootDataset(DatasetType type) {
         var rootDs = Session.QueryOver<Dataset>().
-            And(m=>m.Type ==type).
-            And(m=>m.User==null).
-            And(m=>m.Parent==null).
+            And(m => m.Type == type).
+            And(m => m.User == null).
+            And(m => m.Parent == null).
             Take(1).SingleOrDefault();
-        if ( rootDs == null ) {
+        if (rootDs == null) {
             rootDs = new Dataset() {
                 Name = "Empty",
                 Type = type
@@ -331,36 +349,36 @@ public class Datasets : DataSet
         return rootDs;
     }
 
-    public IList<Dataset> GetDatasets( DatasetType type, int userId) {
+    public IList<Dataset> GetDatasets(DatasetType type, int userId) {
 
         return Session.QueryOver<Dataset>().
-            Where( m=>(m.User.Id == userId) || m.User==null).
-            And(m=>m.Type == type).
-            OrderBy(m=>m.Name).Asc.
+            Where(m => (m.User.Id == userId) || m.User == null).
+            And(m => m.Type == type).
+            OrderBy(m => m.Name).Asc.
             List();
     }
-    public Dataset GetDataset( DatasetType type, int userId, string name) {
+    public Dataset GetDataset(DatasetType type, int userId, string name) {
         return Session.QueryOver<Dataset>().
-            Where( m=>m.User.Id == userId).
-            And(m=>m.Type == type).
-            And(m=>m.Name.IsLike(name)).
+            Where(m => m.User.Id == userId).
+            And(m => m.Type == type).
+            And(m => m.Name.IsLike(name)).
             Take(1).SingleOrDefault();
     }
 
     public int[] GetInheritedDatasetIds(int datasetId) {
 
         var q = Session.QueryOver<Dataset>().
-            Where(m=>m.Id == datasetId).
-            Fetch(SelectMode.Fetch,m=>m.Parent);
+            Where(m => m.Id == datasetId).
+            Fetch(SelectMode.Fetch, m => m.Parent);
         var ds = q.Take(1).SingleOrDefault();
 
         var dss = new List<int>();
         //
-        if ( ds.Parent == null ) {
+        if (ds.Parent == null) {
             // root dataset is a special case
             dss.Add(ds.Id);
         } else {
-            while (ds!=null && ds.Parent!=null) {
+            while (ds != null && ds.Parent != null) {
                 dss.Add(ds.Id);
                 ds = ds.Parent;
             }
@@ -378,17 +396,38 @@ public class Datasets : DataSet
     /// <returns></returns> <summary>
     public int[] GetDerivedDatasetIds(int datasetId) {
         var dsIds = new List<int>();
-        addDerivedDatasetIds(datasetId,dsIds);
+        addDerivedDatasetIds(datasetId, dsIds);
         return dsIds.ToArray();
     }
 
     private void addDerivedDatasetIds(int datasetId, List<int> dsIds) {
         dsIds.Add(datasetId);
         var q = Session.QueryOver<Dataset>().
-            Where(m=>m.Parent.Id == datasetId).Select(m=>m.Id);
+            Where(m => m.Parent.Id == datasetId).Select(m => m.Id);
         var children = q.List<int>();
-        foreach( var dsId in children) {
-            addDerivedDatasetIds(dsId,dsIds);
+        foreach (var dsId in children) {
+            addDerivedDatasetIds(dsId, dsIds);
+        }
+    }
+
+    public void DeleteObjectWithUserEdits(IId obj) {
+        Session.Delete(obj);
+        // remove all user edits associated with object
+        var userEdits = GetUserEdits(obj.GetType().Name, obj.Id.ToString());
+        foreach (var ue in userEdits) {
+            Delete(ue);
+        }
+    }
+
+    public bool DeleteObject(IDatasetIId obj, Dataset contextDataset) {
+        bool isSrcEdit = obj.Dataset.Id == contextDataset.Id;
+        if (isSrcEdit) {
+            // remove item
+            DeleteObjectWithUserEdits(obj);
+            return true;
+        } else {
+            AddDeleteUserEdit(obj, contextDataset);
+            return false;
         }
     }
 
@@ -403,6 +442,9 @@ public interface IDataset
 public interface IId
 {
     public int Id {get;set;}
+}
+
+public interface IDatasetIId : IId, IDataset {
 }
 
 public class DatasetData<T> where T : class {
@@ -426,6 +468,17 @@ public class DatasetData<T> where T : class {
     public T GetItem(int id) {
         if ( typeof(T).IsAssignableTo(typeof(IId))) {
             return Data.Where( m=>((IId)m).Id == id).FirstOrDefault();
+        } else {
+            return null;
+        }
+    }
+    public T GetItemOrDeletedItem(int id) {
+        if (typeof(T).IsAssignableTo(typeof(IId))) {
+            var obj = Data.Where(m => ((IId)m).Id == id).FirstOrDefault();
+            if (obj == null) {
+                obj = DeletedData.Where(m => ((IId)m).Id == id).FirstOrDefault();
+            }
+            return obj;
         } else {
             return null;
         }

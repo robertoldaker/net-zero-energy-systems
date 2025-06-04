@@ -103,4 +103,7 @@ export class LoadflowNodeDialogComponent extends DialogBase implements OnInit {
         this.dialogService.showLoadflowZoneDialog()
     }
 
+    addGenerator() {
+        this.dialogService.showLoadflowGeneratorDialog()
+    }
 }

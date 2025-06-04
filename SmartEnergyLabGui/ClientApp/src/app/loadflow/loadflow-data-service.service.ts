@@ -5,7 +5,7 @@ import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { DialogService } from '../dialogs/dialog.service';
 import { MessageDialog } from '../dialogs/message-dialog/message-dialog.component';
-import { DatasetsService } from '../datasets/datasets.service';
+import { AfterDeleteData, AfterEditData, AfterUnDeleteData, DatasetsService } from '../datasets/datasets.service';
 import { DataFilter, ICellEditorDataDict } from '../datasets/cell-editor/cell-editor.component';
 import { IFormControlDict } from '../dialogs/dialog-base';
 
@@ -64,7 +64,15 @@ export class LoadflowDataService {
         })
         //
         this.selectedMapItem = null
-        datasetsService.setEditFcns(this,this.afterEdit,this.afterDelete,this.afterUnDelete)
+        datasetsService.AfterEdit.subscribe((data)=>{
+            this.afterEdit(data)
+        })
+        datasetsService.AfterDelete.subscribe((data)=>{
+            this.afterDelete(data)
+        })
+        datasetsService.AfterUnDelete.subscribe((data)=>{
+            this.afterUnDelete(data)
+        })
     }
 
     dataset: Dataset = {id: 0, type: DatasetType.BoundCalc, name: '', parent: null, isReadOnly: true}
@@ -513,10 +521,12 @@ export class LoadflowDataService {
         }
     }
 
-    afterEdit(resp: DatasetData<any>[] ) {
-        console.log('afterEdit',resp)
+    afterEdit(data: AfterEditData ) {
+        if ( data.type!=DatasetType.BoundCalc) {
+            return;
+        }
         // do a reload if edited the current transport model
-        let tms = resp.find(m=>m.tableName === "TransportModel");
+        let tms = data.datasets.find(m=>m.tableName === "TransportModel");
         if ( tms && this.transportModel) {
             let tm = tms.data.find(m=>m.id === this.transportModel?.id)
             if ( tm ) {
@@ -527,7 +537,7 @@ export class LoadflowDataService {
         this.needsCalc = true
         this.loadFlowResults = undefined
         //
-        for( let r of resp) {
+        for( let r of data.datasets) {
             let dd = this.getDatasetData(r.tableName)
             DatasetsService.updateDatasetData(dd,r)
         }
@@ -541,12 +551,19 @@ export class LoadflowDataService {
         this.updateLocationData(false);
     }
 
-    afterDelete(id: number, className: string, dataset: Dataset) {
+    afterDelete(data: AfterDeleteData) {
 
-        console.log('afterDelete')
+        // ignore other dataset types
+        if ( data.type!=DatasetType.BoundCalc) {
+            return;
+        }
+        //??let id = data.deleteItem.id
+        //??let className = data.deleteItem.className
+        //??let dataset = data.deleteItem.dataset
+        let deletedItems = data.deletedItems
         // Check we haven't deleted the currently selected transport model
-        if ( className==='TransportModel') {
-            if ( this.transportModel && this.transportModel.id === id) {
+        if ( deletedItems.length>0 && deletedItems[0].className==='TransportModel') {
+            if ( this.transportModel && this.transportModel.id === deletedItems[0].id) {
                 this.transportModel = null
                 // do a reload since any data will be stale
                 this.reload()
@@ -554,15 +571,24 @@ export class LoadflowDataService {
         }
 
         this.needsCalc = true
-        let dd = this.getDatasetData(className)
-        if ( className === "Branch") {
+        //??let dd = this.getDatasetData(className)
+        /*if ( className === "Branch") {
             let branch = dd.data.find(m=>m.id == id)
             if ( branch && branch.ctrlId!==0) {
                 DatasetsService.deleteDatasetData(this.networkData.ctrls,branch.ctrlId, dataset)
             }
+        }*/
+        for( let di of deletedItems) {
+            let dd = this.getDatasetData(di.className)
+            // Remove the deleted item from the dataset
+            DatasetsService.deleteSourceData(dd, di.id)
         }
-        //
-        DatasetsService.deleteDatasetData(dd,id, dataset)
+
+        // Also update any extra datasets returned
+        for( let r of data.datasets) {
+            let dd = this.getDatasetData(r.tableName)
+            DatasetsService.updateDatasetData(dd,r)
+        }
         //
         // this set boundaryBranchIds and checks any selected boundary still exists
         this.setBoundary(this.boundaryName)
@@ -574,11 +600,11 @@ export class LoadflowDataService {
         this.updateLocationData(false)
     }
 
-    afterUnDelete(resp: DatasetData<any>[] ) {
+    afterUnDelete(data: AfterUnDeleteData ) {
         //
         this.needsCalc = true
         //
-        for( let r of resp) {
+        for( let r of data.datasets) {
             let dd = this.getDatasetData(r.tableName)
             DatasetsService.updateDatasetData(dd,r)
         }
@@ -919,7 +945,7 @@ export class LoadflowDataService {
         data['_transportModelId'] = this.transportModel?.id
         if ( this.datasetsService.currentDataset) {
             this.dataClientService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: className, data: data }, (resp)=>{
-                this.afterEdit(resp)
+                this.afterEdit({type: DatasetType.BoundCalc, datasets: resp})
                 onOK();
             }, (errors)=>{
                 onError(errors);

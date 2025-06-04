@@ -6,7 +6,7 @@ namespace SmartEnergyLabDataApi.Data
 
     [ApplicationGroup(ApplicationGroup.Elsi)]
     [Class(0, Table = "elsi_misc_params")]
-    public class MiscParams : IDataset, IId
+    public class MiscParams : IDatasetIId
     {
         public MiscParams()
         {

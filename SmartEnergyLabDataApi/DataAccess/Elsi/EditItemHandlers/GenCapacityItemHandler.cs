@@ -13,7 +13,7 @@ public class GenCapacityItemHandler : BaseEditItemHandler
         return new List<DatasetData<object>>();
     }
 
-    public override IId GetItem(EditItemModel m)
+    public override IDatasetIId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
         var obj = id>0 ? m.Da.Elsi.GetGenCapacity(id) : new GenCapacity(m.Dataset);
