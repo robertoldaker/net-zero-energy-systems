@@ -14,7 +14,11 @@ import { MatTabGroup } from '@angular/material/tabs';
 })
 
 export class LoadflowLocInfoWindowComponent extends ComponentBase {
-    constructor(private dataService: LoadflowDataService, private dialogService: DialogService, public datasetsService: DatasetsService) {
+    constructor(
+        private dataService: LoadflowDataService,
+        private dialogService: DialogService,
+        public datasetsService: DatasetsService
+    ) {
         super()
         this.addSub(this.dataService.ObjectSelected.subscribe( (selectedMapItem)=>{
             this.loc = selectedMapItem.location
@@ -131,7 +135,15 @@ export class LoadflowLocInfoWindowComponent extends ComponentBase {
     deleteLocation(e: any) {
         if ( this.loc ) {
             let id:number = this.loc.id
-            this.datasetsService.deleteItemWithCheck(id,"GridSubstationLocation")                
+            this.datasetsService.deleteItemWithCheck(id,"GridSubstationLocation")
+        }
+    }
+
+    editLocation(e: any) {
+        if ( this.loc ) {
+            let id:number = this.loc.id
+            let itemData = this.dataService.getLocationEditorData(id)
+            this.dialogService.showLoadflowLocationDialog(itemData);
         }
     }
 

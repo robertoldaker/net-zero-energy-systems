@@ -53,6 +53,7 @@
                 <div>Total Generation</div>
                 <div class="total">{{totalGeneration.toFixed(0)}} MW</div>
             </div>
+            <div class="error">{{errorMsg}}</div>
         </div>
         <div class="calcGroup">
             <div><button mat-raised-button color="primary" (click)="calc()" [disabled]="!needsCalc">Calc</button></div>

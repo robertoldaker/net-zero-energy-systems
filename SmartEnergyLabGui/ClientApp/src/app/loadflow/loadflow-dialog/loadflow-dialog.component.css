@@ -47,3 +47,7 @@
     align-self: center;
     margin-bottom: 1rem;
 }
+
+.error {
+    color: red;
+}

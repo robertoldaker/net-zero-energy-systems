@@ -143,7 +143,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 count = q.RowCount();
             } else {
                 var nodeIds = Session.QueryOver<Node>().Where(m => m.Location != null && m.Location.Id == locationId).Select(m => m.Id).List<int>();
-                // exclude user deleted branches
+                // exclude user deleted nodes
                 var nodeIdKeys = nodeIds.Select(m => m.ToString()).ToArray<string>();
                 var deleteCount = Session.QueryOver<UserEdit>().Where(m => m.TableName == "Node" && m.IsRowDelete && m.Key.IsIn(nodeIdKeys)).RowCount();
                 count = nodeIds.Count - deleteCount;
@@ -151,7 +151,18 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             return count;
         }
 
+        public IList<Node> GetNodesWithLocationRef(int datasetId, string refStr)
+        {
+            var likeStr = $"{refStr}%";
+            var q = Session.QueryOver<Node>().Where(m => m.Dataset.Id == datasetId && m.Code.IsLike(likeStr));
+            return q.List();
+        }
 
+        public IList<Node> GetNodesWithLocationId(int datasetId, int locId)
+        {
+            var q = Session.QueryOver<Node>().Where(m => m.Dataset.Id == datasetId && m.Location.Id == locId);
+            return q.List();
+        }
 
         #endregion
 
@@ -368,7 +379,10 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             System.Linq.Expressions.Expression<Func<Branch, bool>> expression,
             bool updateRefs)
         {
-            var q = Session.QueryOver<Branch>().Where(expression);
+            var q = Session.QueryOver<Branch>();
+            if (expression != null) {
+                q = q.Where(expression);
+            }
             var branchDi = new DatasetData<Branch>(DataAccess, datasetId, m => m.Id.ToString(), q);
             //
             DatasetData<Ctrl> ctrlDi = null;

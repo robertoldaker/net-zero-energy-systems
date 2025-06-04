@@ -54,14 +54,16 @@ public class TransportModelItemHandler : BaseEditItemHandler
         using( var da = new DataAccess() ) {
             var list = new List<DatasetData<object>>();
             var tm = (TransportModel) m.Item;
-            // the trnasport model we have just created
+            // the transport model we have just created/edited
             var di = da.BoundCalc.GetTransportModelDatasetData(m.Dataset.Id, m=>m.Id == tm.Id, true);
             // the entries for this transport model
             var diTME = da.BoundCalc.GetTransportModelEntryDatasetData(m.Dataset.Id, m=>m.TransportModel.Id == tm.Id);
 
-            // update the scaling for the transport model
-            tm = di.Data[0]; // important to update the reference to transport model
-            tm.UpdateScaling(da, m.Dataset.Id);
+            // update the scaling for the transport model edited
+            if (di.Data.Count > 0) {
+                tm = di.Data[0]; // important to update the reference to transport model
+                tm.UpdateScaling(da, m.Dataset.Id);
+            }
 
             // return list of objects that have changed
             list.Add(di.getBaseDatasetData());

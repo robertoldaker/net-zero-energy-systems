@@ -64,28 +64,35 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         private ProgressManager _progressManager = new ProgressManager();
 
-        public ProgressManager ProgressManager {
+        public ProgressManager ProgressManager
+        {
             get {
                 return _progressManager;
             }
         }
 
-        public TransportModel TransportModel {
+        public TransportModel TransportModel
+        {
             get {
                 return _transportModel;
             }
         }
 
-        public SetPointMode SetPointMode {
+        public SetPointMode SetPointMode
+        {
             get {
                 return _setPointMode;
             }
         }
 
-        public BoundCalc(int datasetId, int transportModelId=0, SetPointMode setPointMode=SetPointMode.Auto, bool buildOptimiser=false) {
+        public BoundCalc(int datasetId, int transportModelId = 0, SetPointMode setPointMode = SetPointMode.Auto, bool buildOptimiser = false)
+        {
+            // Ensure we have at least one transport model
+            BoundCalc.AddDefaultTransportModels(datasetId);
+            //
             _da = new DataAccess();
             _dataset = _da.Datasets.GetDataset(datasetId);
-            if ( _dataset == null) {
+            if (_dataset == null) {
                 throw new Exception($"Cannot find dataset with id=[{datasetId}]");
             }
             _setPointMode = setPointMode;
@@ -112,7 +119,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
             // create nodes wrapper
             var locDi = _da.NationalGrid.GetLocationDatasetData(_dataset.Id);
-            _nodes = new Nodes(_da,_dataset.Id,locDi,_nodeGenerators);
+            _nodes = new Nodes(_da, _dataset.Id, locDi, _nodeGenerators);
             // work out scaling for the transport model and set the ScaledGenerationPerNode for each generator
             // This get used by a node to work out its total generation
             if (_transportModel != null) {
@@ -120,21 +127,21 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 _transportModel.UpdateGenerators(_generators.Data);
             }
             // create branches wrapper
-            _branches = new Branches(_da,_dataset.Id,_nodes, buildOptimiser);
+            _branches = new Branches(_da, _dataset.Id, _nodes, buildOptimiser);
             // create ctrl wrapper
-            _ctrls = new Ctrls(_da,_dataset.Id,this);
+            _ctrls = new Ctrls(_da, _dataset.Id, this);
             // zones
-            _zones = loadZones(_da,datasetId,_nodes);
+            _zones = loadZones(_da, datasetId, _nodes);
             // boundaries
             Trip.BoundCalc = this;
-            _boundaries = new Boundaries(_da,_dataset.Id,this);
+            _boundaries = new Boundaries(_da, _dataset.Id, this);
 
             //
-            _acctOut = new TopTrips(this,20);
-            _scctOut = new TopTrips(this,30);
-            _dcctOut = new TopTrips(this,30);
+            _acctOut = new TopTrips(this, 20);
+            _scctOut = new TopTrips(this, 30);
+            _dcctOut = new TopTrips(this, 30);
             //
-            if ( buildOptimiser ) {
+            if (buildOptimiser) {
                 if (NetCheck()) {
                     opt = Optimiser.BuildOptimiser(this);
                 } else {
@@ -149,43 +156,50 @@ namespace SmartEnergyLabDataApi.BoundCalc
             _da.Dispose();
         }
 
-        public Dataset Dataset {
+        public Dataset Dataset
+        {
             get {
                 return _dataset;
             }
         }
 
-        public BoundCalcStageResults StageResults {
+        public BoundCalcStageResults StageResults
+        {
             get {
                 return _stageResults;
             }
         }
 
-        public Nodes Nodes {
+        public Nodes Nodes
+        {
             get {
                 return _nodes;
             }
         }
 
-        public Branches Branches {
+        public Branches Branches
+        {
             get {
                 return _branches;
             }
         }
 
-        public Ctrls Ctrls {
+        public Ctrls Ctrls
+        {
             get {
                 return _ctrls;
             }
         }
 
-        public Boundaries Boundaries {
+        public Boundaries Boundaries
+        {
             get {
                 return _boundaries;
             }
         }
 
-        public DatasetData<Zone> Zones {
+        public DatasetData<Zone> Zones
+        {
             get {
                 return _zones;
             }
@@ -226,100 +240,106 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        public double[] Btfr {
+        public double[] Btfr
+        {
             get {
                 return _btfr;
             }
         }
 
-        public List<BoundCalcAllTripsResult> IntactTrips {
+        public List<BoundCalcAllTripsResult> IntactTrips
+        {
             get {
                 return _acctOut.Results;
             }
         }
 
-        public List<BoundCalcAllTripsResult> SingleTrips {
+        public List<BoundCalcAllTripsResult> SingleTrips
+        {
             get {
                 return _scctOut.Results;
             }
         }
 
-        public List<BoundCalcAllTripsResult> DoubleTrips {
+        public List<BoundCalcAllTripsResult> DoubleTrips
+        {
             get {
                 return _dcctOut.Results;
             }
         }
-        public (int,Node?) Subnets() {
+        public (int, Node?) Subnets()
+        {
             int i, j1, j2;
             bool chng;
 
             var snet = new int[_nodes.Count];
-            for(i=0;i<snet.Length;i++) {
+            for (i = 0; i < snet.Length; i++) {
                 snet[i] = i;
             }
 
             do {
                 chng = false;
-                foreach( var b in _branches.Objs) {
+                foreach (var b in _branches.Objs) {
                     j1 = _nodes.getIndex(b.Obj.Node1.Code);
                     j2 = _nodes.getIndex(b.Obj.Node2.Code);
-                    if ( snet[j1] < snet[j2] ) {
+                    if (snet[j1] < snet[j2]) {
                         snet[j2] = snet[j1];
                         chng = true;
-                    } else if ( snet[j2] < snet[j1] ) {
+                    } else if (snet[j2] < snet[j1]) {
                         snet[j1] = snet[j2];
                         chng = true;
                     }
                 }
-            } while( chng);
+            } while (chng);
 
-            var dodgySnets = snet.Where(m=>m>0).ToList();
-            for( i=0; i<snet.Length; i++) {
-                if ( snet[i] != 0) {
-                    return (i,_nodes.DatasetData.Data[snet[i]]);
+            var dodgySnets = snet.Where(m => m > 0).ToList();
+            for (i = 0; i < snet.Length; i++) {
+                if (snet[i] != 0) {
+                    return (i, _nodes.DatasetData.Data[snet[i]]);
                 }
             }
 
-            return (0,null);
+            return (0, null);
         }
 
         // Create intact network admittance matrix
         // Sets up node ordering object
-        private SparseMatrix AdmittanceMat( bool lf=true) {
+        private SparseMatrix AdmittanceMat(bool lf = true)
+        {
             int i, nupb, nr, nc;
             int n1, n2;
             double y;
 
-            _nord = new NodeOrder(_nodes,_branches);
+            _nord = new NodeOrder(_nodes, _branches);
 
-            if ( lf ) {
-                nupb = _nord.nn-1; // exclude reference node
+            if (lf) {
+                nupb = _nord.nn - 1; // exclude reference node
             } else {
                 nupb = _nord.nn;
             }
 
-            foreach( var nd in _nodes.Objs) {
+            foreach (var nd in _nodes.Objs) {
                 nd.Pn = _nord.NodePos(nd.Index); // cache node positions in admittance matrix
             }
 
             var adm = new SparseMatrix(nupb, nupb, Nord.fz / (nupb + 1));
 
-            foreach( var br in _branches.Objs) {
+            foreach (var br in _branches.Objs) {
                 br.pn1 = br.Node1.Pn;            // cache node 1 and node2 positons in admittance matrix
                 br.pn2 = br.Node2.Pn;
-                if ( br.Obj.X !=0 ) {
+                if (br.Obj.X != 0) {
                     y = PUCONV / br.Obj.X;
-                    if ( br.pn1 > br.pn2 ) {     // ensure upper diagonal
+                    if (br.pn1 > br.pn2) {     // ensure upper diagonal
                         nr = br.pn2;
                         nc = br.pn1;
                     } else {
                         nr = br.pn1;
                         nc = br.pn2;
                     }
-                    adm.Addin(nr,nr, y);
-                    if ( nc <= nupb ) {          // ensure not reference
-                        adm.Addin(nc,nc,y);
-                        adm.Addin(nr,nc,-y);
+                    adm.Addin(nr, nr, y);
+                    if (nc <= nupb) {          // ensure not reference
+                        adm.Addin(nc, nc, y);
+                        adm.Addin(nr, nc, -y);
                     }
                 }
             }
@@ -328,11 +348,12 @@ namespace SmartEnergyLabDataApi.BoundCalc
         }
 
         // Setup transfer vector
-        private void BaseTransfers(out double[] tvec) {
+        private void BaseTransfers(out double[] tvec)
+        {
             int i;
             tvec = new double[_nodes.Count];
 
-            foreach( var node in _nodes.Objs) {
+            foreach (var node in _nodes.Objs) {
                 tvec[node.Pn] = node.Obj.Generation - node.Obj.Demand;
             }
 
@@ -340,12 +361,13 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         // Calcuate base transfer plus interconnection
         // isf scales interconnection allowance used in itfr
-        public void CalcTransfers(double isf, out double[] tfr) {
+        public void CalcTransfers(double isf, out double[] tfr)
+        {
             int i;
             tfr = Utilities.CopyArray(btfer);
 
-            if ( isf!=0 ) {
-                for( i=0; i<tfr.Length;i++) {
+            if (isf != 0) {
+                for (i = 0; i < tfr.Length; i++) {
                     tfr[i] = tfr[i] + isf * itfer[i];
                 }
             }
@@ -359,25 +381,26 @@ namespace SmartEnergyLabDataApi.BoundCalc
             double f;
             lflow = new double[_branches.Count];
 
-            foreach( var br in _branches.Objs ) {
+            foreach (var br in _branches.Objs) {
                 f = br.flow(vang, setptmd, outages);
-                lflow[br.Index-1] = f;
-                mism[br.pn1]-= f;
-                mism[br.pn2]+= f;
+                lflow[br.Index - 1] = f;
+                mism[br.pn1] -= f;
+                mism[br.pn2] += f;
             }
         }
 
-        private int CalcIntactVang() {
-            double[] tvec, vang=null;
+        private int CalcIntactVang()
+        {
+            double[] tvec, vang = null;
 
-            civang = new double[_ctrls.Count+2][]; // index 0 is base vang, 1 .. n are controls and n+1 is boundary transfer
+            civang = new double[_ctrls.Count + 2][]; // index 0 is base vang, 1 .. n are controls and n+1 is boundary transfer
 
-            foreach( var ct in _ctrls.Objs) {
+            foreach (var ct in _ctrls.Objs) {
                 tvec = new double[_nodes.Count];
                 var br = ct.Branch;
-                if ( br.pn1 <= _nord.nn  || br.pn2 <= _nord.nn) {
+                if (br.pn1 <= _nord.nn || br.pn2 <= _nord.nn) {
                     tvec[br.pn1] = -ct.InjMax;
-                    tvec[br.pn2] =  ct.InjMax;
+                    tvec[br.pn2] = ct.InjMax;
                     _ufac.Solve(tvec, ref vang);
                     civang[ct.Index] = vang;
                 } else {
@@ -389,46 +412,47 @@ namespace SmartEnergyLabDataApi.BoundCalc
             mism = Utilities.CopyArray(btfer);
             _ufac.Solve(btfer, ref vang);
             civang[0] = vang;
-            CalcFlows( vang, SetPointMode.Zero, false, out flow, mism);
+            CalcFlows(vang, SetPointMode.Zero, false, out flow, mism);
             return _nord.NodeId(_nord.nn); // Index of refnode
         }
 
-        public bool NetCheck() {
+        public bool NetCheck()
+        {
 
-            double tgen=0, tdem=0, timp=0;
+            double tgen = 0, tdem = 0, timp = 0;
 
-            BoundCalcStageResult sr=null;
+            BoundCalcStageResult sr = null;
             try {
                 sr = _stageResults.NewStage("#nodes");
-                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Pass, $"{_nodes.Count}");
+                _stageResults.StageResult(sr, BoundCalcStageResultEnum.Pass, $"{_nodes.Count}");
 
                 sr = _stageResults.NewStage("#zones");
-                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Pass, $"{_zones.Data.Count}");
+                _stageResults.StageResult(sr, BoundCalcStageResultEnum.Pass, $"{_zones.Data.Count}");
 
                 sr = _stageResults.NewStage("#branches");
-                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Pass, $"{_branches.Count}");
+                _stageResults.StageResult(sr, BoundCalcStageResultEnum.Pass, $"{_branches.Count}");
 
                 sr = _stageResults.NewStage("#controls");
-                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Pass, $"{_ctrls.Count}");
+                _stageResults.StageResult(sr, BoundCalcStageResultEnum.Pass, $"{_ctrls.Count}");
 
                 sr = _stageResults.NewStage("#boundaries");
-                _stageResults.StageResult( sr, BoundCalcStageResultEnum.Pass, $"{_boundaries.Count}");
+                _stageResults.StageResult(sr, BoundCalcStageResultEnum.Pass, $"{_boundaries.Count}");
                 // No nodes or branches then return
-                if ( _nodes.Count==0 || _branches.Count==0 )                 {
+                if (_nodes.Count == 0 || _branches.Count == 0) {
                     return false;
                 }
 
-            } catch ( Exception e) {
-                if ( sr!=null ) {
-                    _stageResults.StageResult(sr,BoundCalcStageResultEnum.Fail,e.Message);
+            } catch (Exception e) {
+                if (sr != null) {
+                    _stageResults.StageResult(sr, BoundCalcStageResultEnum.Fail, e.Message);
                 }
                 throw;
             }
 
-            foreach ( var zn in _zones.Data) {
-                tgen+=zn.TGeneration;
-                tdem+=zn.Tdemand;
-                timp+=zn.UnscaleGen - zn.UnscaleDem;
+            foreach (var zn in _zones.Data) {
+                tgen += zn.TGeneration;
+                tdem += zn.Tdemand;
+                timp += zn.UnscaleGen - zn.UnscaleDem;
             }
 
             MiscReport("Generation", tgen.ToString("f1"));
@@ -438,14 +462,14 @@ namespace SmartEnergyLabDataApi.BoundCalc
             // Check network is fully connected - i.e. every node is connected to every other node
             var networkChecker = new NetworkChecker(_branches.DatasetData.Data);
             var networks = networkChecker.Check();
-            if ( networks.Count == 1) {
-                if ( networks[0].Count<_nodes.Count) {
-                    foreach( var n in _nodes.DatasetData.Data) {
-                        if ( !networks[0].Contains(n) ) {
+            if (networks.Count == 1) {
+                if (networks[0].Count < _nodes.Count) {
+                    foreach (var n in _nodes.DatasetData.Data) {
+                        if (!networks[0].Contains(n)) {
                             Logger.Instance.LogInfoEvent($"Node does not belong to a network [{n.Code}]");
                         }
                     }
-                    throw new Exception($"[{_nodes.Count-networks[0].Count}] disconnected nodes detected");
+                    throw new Exception($"[{_nodes.Count - networks[0].Count}] disconnected nodes detected");
                 }
             } else {
                 throw new Exception($"Network is disconnected, [{networks.Count}] separate networks found");
@@ -460,16 +484,16 @@ namespace SmartEnergyLabDataApi.BoundCalc
             //
             var admat = AdmittanceMat(true);
 
-            MiscReport("HVDC nodes", $"{_nodes.Count - _nord.nn -1}" );
-            MiscReport("NZ per row", $"{(double) _nord.nz / _nord.nn:F4}");
-            MiscReport("FZ per row", $"{(double) _nord.fz / _nord.nn:F4}");
+            MiscReport("HVDC nodes", $"{_nodes.Count - _nord.nn - 1}");
+            MiscReport("NZ per row", $"{(double)_nord.nz / _nord.nn:F4}");
+            MiscReport("FZ per row", $"{(double)_nord.fz / _nord.nn:F4}");
 
             _ufac = new SolveLinSym(admat, false);
             var refIndex = CalcIntactVang();
 
             var nd = _nodes.get(refIndex);
 
-            MiscReport("RefNode",nd.Obj.Code);
+            MiscReport("RefNode", nd.Obj.Code);
             MiscReport("No Ctrl Mismatch", $"{mism[nd.Pn]:F0}");
 
             ActiveBound = null;
@@ -480,7 +504,8 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         // Calculate total vang using control setpoints and interconnection scaling factor iasf
         // iasf scales the interconnection allowance used to compute ctrlva(upb)
-        public void CalcVang(double isaf, double[]?[] ctrlva, out double[] vang) {
+        public void CalcVang(double isaf, double[]?[] ctrlva, out double[] vang)
+        {
             int i, j, n;
             double sf2, sp;
             double[] tv;
@@ -488,19 +513,19 @@ namespace SmartEnergyLabDataApi.BoundCalc
             n = _ctrls.Count + 1;
             vang = Utilities.CopyArray(ctrlva[0]);    // base vangs
 
-            if ( isaf!=0 && ctrlva[n]!=null) {
+            if (isaf != 0 && ctrlva[n] != null) {
                 tv = ctrlva[n];
-                for( i=0; i<vang.Length; i++) {
+                for (i = 0; i < vang.Length; i++) {
                     vang[i] = vang[i] + tv[i] * isaf;
                 }
             }
 
-            foreach( var ct in _ctrls.Objs) {
+            foreach (var ct in _ctrls.Objs) {
                 sp = ct.GetSetPoint(_setPointMode);
-                if ( sp!=0 && ctrlva[ct.Index]!=null ) {
+                if (sp != 0 && ctrlva[ct.Index] != null) {
                     tv = ctrlva[ct.Index];
                     sf2 = sp / ct.Obj.MaxCtrl;
-                    for ( j=0; j < vang.Length;j++) {
+                    for (j = 0; j < vang.Length; j++) {
                         vang[j] = vang[j] + tv[j] * sf2;
                     }
                 }
@@ -509,15 +534,16 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         // Return node position of largest mismatch
 
-        public int MaxMismatch(double[] mism) {
-            int i, maxi=0;
-            double maxm=0, amism;
+        public int MaxMismatch(double[] mism)
+        {
+            int i, maxi = 0;
+            double maxm = 0, amism;
 
-            for( i=0;i<mism.Length;i++) {
+            for (i = 0; i < mism.Length; i++) {
                 amism = Math.Abs(mism[i]);
-                if ( amism > maxm) {
+                if (amism > maxm) {
                     maxm = amism;
-                    maxi=i;
+                    maxi = i;
                 }
             }
             return maxi;
@@ -525,16 +551,17 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         // Calculate cct free capacity in direction of flow
 
-        public void CalcMinFree(double[] flow) {
+        public void CalcMinFree(double[] flow)
+        {
             int i, n;
 
             n = _branches.Count - 1;
-            free = new double[n+1];
-            ord = new int[n+1];
+            free = new double[n + 1];
+            ord = new int[n + 1];
 
-            foreach( var br in _branches.Objs) {
+            foreach (var br in _branches.Objs) {
                 i = br.Index - 1;
-                if ( br.Obj.Cap > SCAP) {
+                if (br.Obj.Cap > SCAP) {
                     free[i] = br.Obj.Cap - Math.Abs(flow[i]);
                 } else {
                     free[i] = 99999;
@@ -543,7 +570,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 // Store in branch wrapper
                 br.FreePower = free[i];
             }
-            LPhdr.MergeSortFlt(free,ord, n+1);
+            LPhdr.MergeSortFlt(free, ord, n + 1);
 
             //
 
@@ -551,16 +578,17 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         // Calculate cct free capcity in flow direction given by vang
 
-        public void CalcDirFree(double[] flow, double[] vang) {
-            int i,n;
+        public void CalcDirFree(double[] flow, double[] vang)
+        {
+            int i, n;
 
             n = _branches.Count - 1;
-            free = new double[n+1];
-            ord = new int[n+1];
+            free = new double[n + 1];
+            ord = new int[n + 1];
 
-            foreach( var br in _branches.Objs) {
+            foreach (var br in _branches.Objs) {
                 i = br.Index - 1;
-                if ( br.Obj.Cap > SCAP) {
+                if (br.Obj.Cap > SCAP) {
                     free[i] = br.Obj.Cap - flow[i] * br.Dirn(vang);
                 } else {
                     free[i] = 99999;
@@ -569,29 +597,30 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 //
                 br.FreePower = free[i];
             }
-            LPhdr.MergeSortFlt(free,ord, n+1);
+            LPhdr.MergeSortFlt(free, ord, n + 1);
         }
 
         // Calculate the boundary scaling factor at which given flows will reach capapcity
         // Calculate boundcap implied by each circuit assuming flows correspond to specified transfer
 
-        public double CalcSF(double[] mflow, double[] ivang, double tfer, double ia) {
+        public double CalcSF(double[] mflow, double[] ivang, double tfer, double ia)
+        {
             int i, n;
             double mfree, iflow;
 
             n = _branches.Count - 1;
-            mord = new int[n+1];
-            bc = new double[n+1];
+            mord = new int[n + 1];
+            bc = new double[n + 1];
 
-            foreach( var br in _branches.Objs) {
+            foreach (var br in _branches.Objs) {
                 i = br.Index - 1;
                 iflow = br.flow(ivang, SetPointMode.Zero, true); // the flow resulting from interconnection
-                if ( br.Obj.Cap > SCAP) {
+                if (br.Obj.Cap > SCAP) {
                     mfree = br.Obj.Cap - mflow[i] * Math.Sign(iflow);
                 } else {
                     mfree = 99999;
                 }
-                if ( Math.Abs(iflow) < LPhdr.lpEpsilon) {
+                if (Math.Abs(iflow) < LPhdr.lpEpsilon) {
                     bc[i] = 99999;
                 } else {
                     bc[i] = tfer + ia * mfree / Math.Abs(iflow);
@@ -599,18 +628,18 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 mord[i] = i;
             }
 
-            LPhdr.MergeSortFlt(bc,mord, n+1);
+            LPhdr.MergeSortFlt(bc, mord, n + 1);
             i = mord[0];
-            var brr = _branches.get(i+1);
+            var brr = _branches.get(i + 1);
             iflow = brr.flow(ivang, SetPointMode.Zero, true);
 
-            if ( brr.Obj.Cap > SCAP ) {
+            if (brr.Obj.Cap > SCAP) {
                 mfree = brr.Obj.Cap - mflow[i] * Math.Sign(iflow);
             } else {
                 mfree = 99999;
             }
 
-            if ( Math.Abs(iflow) < LPhdr.lpEpsilon ) {
+            if (Math.Abs(iflow) < LPhdr.lpEpsilon) {
                 throw new Exception("Unable to calculate boundary capacity as interconnection flow too small");
             } else {
                 return mfree / Math.Abs(iflow);
@@ -620,36 +649,39 @@ namespace SmartEnergyLabDataApi.BoundCalc
         // Calculate the loadflow with interconnection and control setpoints
         // setpoints depend on setptmode global
         // returns node index with largest mismatch
-        public void CalcLoadFlow(double[]?[] cvang, double isaf, out double[] lflow, bool save = true) {
+        public void CalcLoadFlow(double[]?[] cvang, double isaf, out double[] lflow, bool save = true)
+        {
             double[] tfr, vang;
 
             CalcTransfers(isaf, out tfr);
             mism = Utilities.CopyArray(tfr);
             CalcVang(isaf, cvang, out vang);
-            CalcFlows( vang, _setPointMode, true, out lflow, mism);
+            CalcFlows(vang, _setPointMode, true, out lflow, mism);
             //
             // Power flow in branch wrappers
-            foreach( var br in _branches.Objs) {
-                br.PowerFlow = lflow[br.Index-1];
+            foreach (var br in _branches.Objs) {
+                br.PowerFlow = lflow[br.Index - 1];
             }
             // Store mismatches in node wrappers
-            foreach( var nd in _nodes.Objs) {
+            foreach (var nd in _nodes.Objs) {
                 nd.Mismatch = mism[nd.Pn];
             }
         }
 
-        public void SaveLFResults( double[] lflow) {
+        public void SaveLFResults(double[] lflow)
+        {
 
             CalcMinFree(lflow);
             //
             var mi = MaxMismatch(mism);
             var mm = mism[mi];
             var nd = _nodes.get(_nord.NodeId(mi));
-            var result = Math.Abs(mm)>0.01 ? BoundCalcStageResultEnum.Warn : BoundCalcStageResultEnum.Pass;
-            MiscReport($"Max mismatch [{nd.Obj.Code}]", $"{mm:g5}",result);
+            var result = Math.Abs(mm) > 0.01 ? BoundCalcStageResultEnum.Warn : BoundCalcStageResultEnum.Pass;
+            MiscReport($"Max mismatch [{nd.Obj.Code}]", $"{mm:g5}", result);
         }
 
-        public void CalcBoundLF(double[]?[] cvang, out double[] lflow, bool save = false) {
+        public void CalcBoundLF(double[]?[] cvang, out double[] lflow, bool save = false)
+        {
             double[] mflow;
             double[] ivang;
             double iasf;
@@ -657,12 +689,12 @@ namespace SmartEnergyLabDataApi.BoundCalc
             double pfer;
 
             pt = ActiveBound == null;
-            CalcLoadFlow(cvang,0,out mflow, false);
-            if ( !pt ) {
-                if ( ActiveTrip==null) {
-                    ivang = civang[_ctrls.Count+1]; // get ivang from intact volt angles
+            CalcLoadFlow(cvang, 0, out mflow, false);
+            if (!pt) {
+                if (ActiveTrip == null) {
+                    ivang = civang[_ctrls.Count + 1]; // get ivang from intact volt angles
                 } else {
-                    ivang = tcvang[_ctrls.Count+1]; // get ivang from trip volt angles
+                    ivang = tcvang[_ctrls.Count + 1]; // get ivang from trip volt angles
                 }
                 iasf = CalcSF(mflow, ivang, Math.Abs(ActiveBound.PlannedTransfer), Math.Abs(ActiveBound.InterconAllowance)); // Small scalling factor
 
@@ -676,26 +708,28 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
         }
 
-        public void ClearOutages() {
-            foreach( var br in _branches.Objs) {
+        public void ClearOutages()
+        {
+            foreach (var br in _branches.Objs) {
                 br.BOut = false;
             }
         }
 
         // Balance HV nodes
 
-        public int BalanceHVDC() {
-            int r1, r2=0;
+        public int BalanceHVDC()
+        {
+            int r1, r2 = 0;
             string title = "Balance HVDC";
             opt.ResetLP();
             r1 = opt.ctrllp.SolveLP(ref r2);
-            if ( r1 == LPhdr.lpOptimum) {
-                MiscReport(title,$"Ctrl cost: {opt.ControlCost():0.00}");
+            if (r1 == LPhdr.lpOptimum) {
+                MiscReport(title, $"Ctrl cost: {opt.ControlCost():0.00}");
             } else {
-                if ( r1 == LPhdr.lpInfeasible ) {
-                    MiscReport(title,$"Unresolvable constraint {opt.ctrllp.GetCname(r2)}", BoundCalcStageResultEnum.Fail);
+                if (r1 == LPhdr.lpInfeasible) {
+                    MiscReport(title, $"Unresolvable constraint {opt.ctrllp.GetCname(r2)}", BoundCalcStageResultEnum.Fail);
                 } else {
-                    MiscReport(title,"Unknown optimiser fail",BoundCalcStageResultEnum.Fail);
+                    MiscReport(title, "Unknown optimiser fail", BoundCalcStageResultEnum.Fail);
                 }
             }
             return r1;
@@ -705,19 +739,20 @@ namespace SmartEnergyLabDataApi.BoundCalc
         // if activebound is nothing then optimise how planned transfer condition
         // else add boundary circuits pluc overloads and optimise with sensitivitieses to the boundary transfer variable
 
-        public int OptimiseLoadflow( double[]?[] cva, out double[] lflow, bool save = true) {
-            int i, iter=0, xa, r1,r2=0;
+        public int OptimiseLoadflow(double[]?[] cva, out double[] lflow, bool save = true)
+        {
+            int i, iter = 0, xa, r1, r2 = 0;
             string title;
-            double[] ivang=null;
+            double[] ivang = null;
             bool pt;
-            double iasf=0;
+            double iasf = 0;
 
             _setPointMode = SetPointMode.Auto;
             pt = ActiveBound == null;
             r1 = BalanceHVDC();
-            CalcLoadFlow(cva, 0, out lflow, r1!= LPhdr.lpOptimum); // start at planned transfer
+            CalcLoadFlow(cva, 0, out lflow, r1 != LPhdr.lpOptimum); // start at planned transfer
 
-            if ( r1 != LPhdr.lpOptimum) {
+            if (r1 != LPhdr.lpOptimum) {
                 return r1;
             }
 
@@ -725,27 +760,27 @@ namespace SmartEnergyLabDataApi.BoundCalc
             if (!pt) { // add boundary circuits with free calculated in direction of interconnection
                 ivang = cva[xa];
                 CalcDirFree(lflow, ivang);
-                foreach( var br in ActiveBound.BoundCcts.Items) {
+                foreach (var br in ActiveBound.BoundCcts.Items) {
                     opt.PopulateConstraint(br, free[br.Index - 1], br.Dirn(ivang), iasf, cva, false);
                 }
 
                 title = "Capacity of boundary circuits";
                 r1 = opt.ctrllp.SolveLP(ref r2);
 
-                if ( r1 == LPhdr.lpOptimum) {
-                    iasf = opt.boun.Value(opt.ctrllp) / Math.Abs( ActiveBound.InterconAllowance);
+                if (r1 == LPhdr.lpOptimum) {
+                    iasf = opt.boun.Value(opt.ctrllp) / Math.Abs(ActiveBound.InterconAllowance);
                     MiscReport(title, $"{opt.BoundCap():0.00}");
                 } else {
-                    if ( r1 == LPhdr.lpInfeasible ) {
+                    if (r1 == LPhdr.lpInfeasible) {
                         MiscReport(title, $"Unresolvable constraint ${opt.ctrllp.GetCname(r2)}", BoundCalcStageResultEnum.Fail);
                     } else {
                         MiscReport(title, "Unknown optimiser fail", BoundCalcStageResultEnum.Fail);
                     }
                 }
 
-                CalcLoadFlow(cva, iasf, out lflow, r1!=LPhdr.lpOptimum);
+                CalcLoadFlow(cva, iasf, out lflow, r1 != LPhdr.lpOptimum);
 
-                if ( r1!= LPhdr.lpOptimum ) {
+                if (r1 != LPhdr.lpOptimum) {
                     return r1;
                 }
             }
@@ -753,16 +788,16 @@ namespace SmartEnergyLabDataApi.BoundCalc
             do {
                 iter++;
 
-                if ( pt ) {
-                    CalcMinFree( lflow);
+                if (pt) {
+                    CalcMinFree(lflow);
                 } else {
                     CalcDirFree(lflow, ivang); // free in direction of interconnection transfer
                 }
 
                 i = 0;
-                while ( (free[ord[i]] < OVRLD) && (i<=MAXCPI )) {
+                while ((free[ord[i]] < OVRLD) && (i <= MAXCPI)) {
                     var br = _branches.get(ord[i] + 1);
-                    if ( pt ) {
+                    if (pt) {
                         opt.PopulateConstraint(br, free[ord[i]], lflow[ord[i]], 0, cva, pt);
                     } else {
                         opt.PopulateConstraint(br, free[ord[i]], br.Dirn(ivang), iasf, cva, pt);
@@ -770,39 +805,39 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     i++;
                 }
 
-                if ( i==0 ) {
+                if (i == 0) {
                     break;
                 }
 
-                MiscReport($"Iter {iter}", $"Ovrlds: {i-1}");
+                MiscReport($"Iter {iter}", $"Ovrlds: {i - 1}");
 
                 r1 = opt.ctrllp.SolveLP(ref r2);
 
-                if ( !pt) {
+                if (!pt) {
                     iasf = opt.boun.Value(opt.ctrllp) / Math.Abs(ActiveBound.InterconAllowance);
                 }
 
-                CalcLoadFlow(cva, iasf, out lflow, r1!=LPhdr.lpOptimum);
+                CalcLoadFlow(cva, iasf, out lflow, r1 != LPhdr.lpOptimum);
 
-                if ( r1!= LPhdr.lpOptimum ) {
-                    if ( r1 == LPhdr.lpInfeasible ) {
-                        MiscReport("Optimiser",$"Unresolvable constraint {opt.ctrllp.GetCname(r2)}", BoundCalcStageResultEnum.Fail);
+                if (r1 != LPhdr.lpOptimum) {
+                    if (r1 == LPhdr.lpInfeasible) {
+                        MiscReport("Optimiser", $"Unresolvable constraint {opt.ctrllp.GetCname(r2)}", BoundCalcStageResultEnum.Fail);
                     } else {
                         MiscReport("Optimiser", "Unknown optimiser fail", BoundCalcStageResultEnum.Fail);
                     }
                     return r1;
                 }
 
-            } while(true);
+            } while (true);
 
-            if ( !pt ) {
+            if (!pt) {
                 MiscReport("Boundary capacity (all circuits)", $"{opt.BoundCap():0.00}");
-                CalcSF(lflow,ivang,Math.Abs(opt.BoundCap()),Math.Abs(ActiveBound.InterconAllowance));
+                CalcSF(lflow, ivang, Math.Abs(opt.BoundCap()), Math.Abs(ActiveBound.InterconAllowance));
             }
 
-            if ( save ) {
+            if (save) {
                 SaveLFResults(lflow);
-                MiscReport("Boundary optimisation",$"Ctrl cost: {opt.ControlCost():0.00}");
+                MiscReport("Boundary optimisation", $"Ctrl cost: {opt.ControlCost():0.00}");
             }
             //
 
@@ -812,32 +847,33 @@ namespace SmartEnergyLabDataApi.BoundCalc
         // Calculate nodal loss and mwkm sensitivities
         // Based n base flows and bflow()
 
-        public void CalcNodeMarginals(double[] bflow) {
-            double[] tv, va=null, sflow;
+        public void CalcNodeMarginals(double[] bflow)
+        {
+            double[] tv, va = null, sflow;
             int i, j;
 
             tlf = new double[_nodes.Count];
             km = new double[_nodes.Count];
 
-            for( i=0; i<_nord.nn; i++) { // for each node excluding refnode and hvdc nodes
+            for (i = 0; i < _nord.nn; i++) { // for each node excluding refnode and hvdc nodes
                 tv = new double[_nodes.Count];
                 tv[i] = 1;
                 _ufac.Solve(tv, ref va);
                 CalcFlows(va, SetPointMode.Zero, true, out sflow, tv);
 
-                foreach( var br in _branches.Objs) {
+                foreach (var br in _branches.Objs) {
                     j = br.Index - 1;
                     tlf[i] = tlf[i] + 2 * bflow[j] * sflow[j] * br.Obj.R / PUCONV;
-                    if ( bflow[j] * sflow[j] < 0 && br.km!=null) {
-                        km[i] = km[i] - Math.Abs(sflow[j] * (double) br.km);
-                    } else if ( br.km!=null ) {
-                        km[i] = km[i] + Math.Abs(sflow[j] * (double) br.km);
+                    if (bflow[j] * sflow[j] < 0 && br.km != null) {
+                        km[i] = km[i] - Math.Abs(sflow[j] * (double)br.km);
+                    } else if (br.km != null) {
+                        km[i] = km[i] + Math.Abs(sflow[j] * (double)br.km);
                     }
                 }
             }
 
             // Store calculated values in node data structure
-            foreach( var nw in _nodes.Objs) {
+            foreach (var nw in _nodes.Objs) {
                 nw.Obj.TLF = tlf[nw.Pn];
                 nw.Obj.km = km[nw.Pn];
             }
@@ -845,35 +881,36 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         // Set active boundary always clearing any active trip
 
-        public void SetActiveBoundary(BoundaryWrapper bnd) {
-            double[] iflow, ivang=null;
+        public void SetActiveBoundary(BoundaryWrapper bnd)
+        {
+            double[] iflow, ivang = null;
             int mi;
             double mm;
 
-            if ( !(ActiveBound == bnd)) {
+            if (!(ActiveBound == bnd)) {
                 ActiveBound = bnd;
 
-                if (ActiveTrip!=null) {
+                if (ActiveTrip != null) {
                     ActiveTrip.Deactivate();
                     ActiveTrip = null;
                 }
 
-                if ( bnd!=null ) {
+                if (bnd != null) {
                     // calc interconnection vang for new boundary
-                    bnd.InterconnectionTransfers(out itfer,_nodes);
+                    bnd.InterconnectionTransfers(out itfer, _nodes);
                     mism = Utilities.CopyArray(itfer);
                     _ufac.Solve(itfer, ref ivang);
-                    civang[_ctrls.Count+1] = ivang;
-                    CalcFlows(ivang,SetPointMode.Zero, false, out iflow, mism);
+                    civang[_ctrls.Count + 1] = ivang;
+                    CalcFlows(ivang, SetPointMode.Zero, false, out iflow, mism);
                     mi = MaxMismatch(mism);
                     mm = mism[mi];
                     var nd = _nodes.get(_nord.NodeId(mi));
-                    MiscReport($"{bnd.name} setup mismatch {nd.Obj.Code}",$"{mm:g5}");
+                    MiscReport($"{bnd.name} setup mismatch {nd.Obj.Code}", $"{mm:g5}");
                     MiscReport("Planned Transfer", $"{bnd.PlannedTransfer:0.00}");
-                    MiscReport("Interconnection Allowance",$"{bnd.InterconAllowance:0.00}");
+                    MiscReport("Interconnection Allowance", $"{bnd.InterconAllowance:0.00}");
                 } else {
-                    civang[_ctrls.Count+1] = null;
-                    MiscReport("Boundary unspecified","");
+                    civang[_ctrls.Count + 1] = null;
+                    MiscReport("Boundary unspecified", "");
                 }
             } else {
                 // nothing to do
@@ -883,27 +920,28 @@ namespace SmartEnergyLabDataApi.BoundCalc
         // Set a trip to be active
         // Sets trip voltage angles tcvang if successful
 
-        public bool SetActiveTrip(Trip tr) {
+        public bool SetActiveTrip(Trip tr)
+        {
 
-            if ( ActiveTrip == tr) {        // nothing to do - note trip no reactiviated
+            if (ActiveTrip == tr) {        // nothing to do - note trip no reactiviated
                 return true;
             }
 
-            if ( ActiveTrip!=null ) {       // deactivate current trip
+            if (ActiveTrip != null) {       // deactivate current trip
                 ActiveTrip.Deactivate();
                 ActiveTrip = null;
             }
 
-            if ( tr == null ) {             // nothing to do
+            if (tr == null) {             // nothing to do
                 return true;
             }
 
-            if ( tr.TripVectors(civang, out tcvang)) {
+            if (tr.TripVectors(civang, out tcvang)) {
                 MiscReport($"Setup Trip {tr.name}", tr.TripDescription());
                 ActiveTrip = tr;
                 return true;
             } else {
-                MiscReport($"Trip {tr.name}","splits AC network",BoundCalcStageResultEnum.Fail);
+                MiscReport($"Trip {tr.name}", "splits AC network", BoundCalcStageResultEnum.Fail);
                 return false;
             }
         }
@@ -913,49 +951,50 @@ namespace SmartEnergyLabDataApi.BoundCalc
         // If bound is not already active then setup itfer and civang
         // Optionally save boundary max transfer or planned transfer loadflows
         // Optionally undertake nodemarginals calc for planned transfer only
-        public int RunBoundCalc(BoundaryWrapper bound, Trip tr, bool nodemarginals, bool save = false) {
+        public int RunBoundCalc(BoundaryWrapper bound, Trip tr, bool nodemarginals, bool save = false)
+        {
             double[] vang;
             double[]?[] cvang;
-            int mi,res;
+            int mi, res;
             double mm;
 
             SetActiveBoundary(bound);
-            if ( !SetActiveTrip(tr) ) {
+            if (!SetActiveTrip(tr)) {
                 return LPhdr.lpZeroPivot;
             }
 
-            if ( ActiveTrip == null ) {
+            if (ActiveTrip == null) {
                 cvang = civang;
             } else {
                 cvang = tcvang;
             }
 
-            if ( _setPointMode == SetPointMode.Auto) {
+            if (_setPointMode == SetPointMode.Auto) {
                 res = OptimiseLoadflow(cvang, out flow, save);
-                if ( res!= LPhdr.lpOptimum) {
+                if (res != LPhdr.lpOptimum) {
                     return res;
                 }
-                if ( ActiveBound!=null) {
-                    if ( Math.Abs(opt.BoundCap()) < WTCapacity) {
+                if (ActiveBound != null) {
+                    if (Math.Abs(opt.BoundCap()) < WTCapacity) {
                         WorstTrip = tr;
                         WTCapacity = Math.Abs(opt.BoundCap());
                     }
                 }
 
             } else {
-                CalcBoundLF( cvang, out flow, save);
-                if ( ActiveBound!=null ) {
-                    if ( bc[mord[0]] < WTCapacity ) {
+                CalcBoundLF(cvang, out flow, save);
+                if (ActiveBound != null) {
+                    if (bc[mord[0]] < WTCapacity) {
                         WorstTrip = tr;
                         WTCapacity = bc[mord[0]];
                     }
                 }
-                if ( save ) {
+                if (save) {
                     //??
                 }
             }
 
-            if ( bound == null && nodemarginals ) {
+            if (bound == null && nodemarginals) {
                 // TLF and km
                 CalcNodeMarginals(flow);
             }
@@ -964,40 +1003,40 @@ namespace SmartEnergyLabDataApi.BoundCalc
         }
 
         // Run trip case and fill in relevent TopN tables
-        public void RunTrip(BoundaryWrapper bn, Trip tr, bool save=false)
+        public void RunTrip(BoundaryWrapper bn, Trip tr, bool save = false)
         {
-            List<string> limccts = new List<string>();;
+            List<string> limccts = new List<string>(); ;
             int res;
-            if ( tr == null ) { // intact network case
+            if (tr == null) { // intact network case
                 _acctOut.SetBoundary(bn, bn.PlannedTransfer + bn.InterconAllowance); // use full interconnection for intact case
                 res = RunBoundCalc(bn, null, false, save);
-                if ( res!=LPhdr.lpOptimum) {
+                if (res != LPhdr.lpOptimum) {
                     //??
                 } else {
-                    if ( _setPointMode == SetPointMode.Auto ) {
+                    if (_setPointMode == SetPointMode.Auto) {
                         limccts = opt.Limitccts();
                     }
                     _acctOut.Insert(null, bc, mord, limccts);
                 }
             } else {
-                if ( tr.name.Substring(0,1) == "S" ) { // single circuit trip
+                if (tr.name.Substring(0, 1) == "S") { // single circuit trip
                     _scctOut.SetBoundary(bn, bn.PlannedTransfer + bn.InterconAllowance); // use full interconnection for since cct trips
                     res = RunBoundCalc(bn, tr, false, save);
-                    if ( res!=LPhdr.lpOptimum) {
+                    if (res != LPhdr.lpOptimum) {
                         //??
                     } else {
-                        if ( _setPointMode == SetPointMode.Auto) {
+                        if (_setPointMode == SetPointMode.Auto) {
                             limccts = opt.Limitccts();
                         }
-                        _scctOut.Insert( tr, bc, mord, limccts);
+                        _scctOut.Insert(tr, bc, mord, limccts);
                     }
                 } else {
-                    _dcctOut.SetBoundary(bn, bn.PlannedTransfer + 0.5*bn.InterconAllowance); // use half interconnection for double cct trips
+                    _dcctOut.SetBoundary(bn, bn.PlannedTransfer + 0.5 * bn.InterconAllowance); // use half interconnection for double cct trips
                     res = RunBoundCalc(bn, tr, false, save);
-                    if ( res!=LPhdr.lpOptimum) {
+                    if (res != LPhdr.lpOptimum) {
                         //??
                     } else {
-                        if ( _setPointMode == SetPointMode.Auto ) {
+                        if (_setPointMode == SetPointMode.Auto) {
                             limccts = opt.Limitccts();
                         }
                         _dcctOut.Insert(tr, bc, mord, limccts);
@@ -1008,75 +1047,81 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         // Run trip collection
         // Boundary must be specified
-        public void RunTripSet(BoundaryWrapper bn, Collection<Trip> trips) {
-            foreach( var tr in trips.Items) {
+        public void RunTripSet(BoundaryWrapper bn, Collection<Trip> trips)
+        {
+            foreach (var tr in trips.Items) {
                 RunTrip(bn, tr, false);
                 _progressManager.Update(tr.name);
             }
             //?? output results
         }
 
-        public void RunAllTrips(BoundaryWrapper bn) {
+        public void RunAllTrips(BoundaryWrapper bn)
+        {
             WTCapacity = 99999;
             RunTrip(bn, null, true);
             RunTripSet(bn, bn.STripList);
             RunTripSet(bn, bn.DTripList);
-            MiscReport("Worst Case Trip",$"{WTCapacity:0.00}");
+            MiscReport("Worst Case Trip", $"{WTCapacity:0.00}");
             RunBoundCalc(bn, WorstTrip, false, true);
         }
 
 
 
 
-        public void MiscReport(string msg, object result, BoundCalcStageResultEnum res=BoundCalcStageResultEnum.Pass) {
+        public void MiscReport(string msg, object result, BoundCalcStageResultEnum res = BoundCalcStageResultEnum.Pass)
+        {
             var sr = _stageResults.NewStage(msg);
-            _stageResults.StageResult(sr,res,$"{result}");
+            _stageResults.StageResult(sr, res, $"{result}");
         }
 
-        public NodeBoundaryData GetNodeBoundaryData(Boundary bndry) {
-            NodeBoundaryData nbd=null;
+        public NodeBoundaryData GetNodeBoundaryData(Boundary bndry)
+        {
+            NodeBoundaryData nbd = null;
             nbd = new NodeBoundaryData(bndry.Zones);
             return nbd;
         }
 
-        private DatasetData<Zone> loadZones(DataAccess da, int datasetId, Nodes nodes) {
+        private DatasetData<Zone> loadZones(DataAccess da, int datasetId, Nodes nodes)
+        {
             var q = da.Session.QueryOver<Zone>();
-            var ds = new DatasetData<Zone>(da, datasetId,m=>m.Id.ToString(),q);
+            var ds = new DatasetData<Zone>(da, datasetId, m => m.Id.ToString(), q);
             //
-            foreach( var nd in nodes.DatasetData.Data) {
-                if ( nd.Ext) {
-                    nd.Zone.UnscaleDem+=nd.Demand;
-                    nd.Zone.UnscaleGen+=nd.Generation;
+            foreach (var nd in nodes.DatasetData.Data) {
+                if (nd.Ext) {
+                    nd.Zone.UnscaleDem += nd.Demand;
+                    nd.Zone.UnscaleGen += nd.Generation;
                 } else {
-                    nd.Zone.Tdemand+=nd.Demand;
-                    nd.Zone.TGeneration+=nd.Generation;
+                    nd.Zone.Tdemand += nd.Demand;
+                    nd.Zone.TGeneration += nd.Generation;
                 }
             }
             //
             return ds;
         }
 
-        public static void RunTests() {
+        public static void RunTests()
+        {
             if (!SparseMatrix.Test()) {
                 throw new Exception("SparseMatrix internal test failed");
             }
             var mo = new MO();
-            if ( !mo.Test() ) {
+            if (!mo.Test()) {
                 throw new Exception("MO test failed");
             }
             var solveLin = new SolveLin();
-            if ( !solveLin.Test() ) {
+            if (!solveLin.Test()) {
                 throw new Exception("SolveLin internal test failed");
             }
-            if ( !SolveLinSym.Test() ) {
+            if (!SolveLinSym.Test()) {
                 throw new Exception("SolveLinSym internal test failed");
             }
             var sparseInverse = new SparseInverse();
-            if ( !sparseInverse.Test() ) {
+            if (!sparseInverse.Test()) {
                 throw new Exception("SparseInverse internal test failed");
             }
             var lp = new LP();
-            if ( !lp.Test1() ) {
+            if (!lp.Test1()) {
                 throw new Exception("LP internal test failed");
             }
             //?? After email with Lewis apprarently this test doesn't work
@@ -1086,41 +1131,42 @@ namespace SmartEnergyLabDataApi.BoundCalc
             //}
         }
 
-        public static BoundCalcResults AdjustBranchCapacities(int datasetId, int transportModelId, int userId) {
+        public static BoundCalcResults AdjustBranchCapacities(int datasetId, int transportModelId, int userId)
+        {
             int year, targetYear;
 
             // Get branches in separate DataAccess instance to prevent it being overwritten
             DatasetData<Branch> branchDi;
-            using ( var da = new DataAccess() ) {
+            using (var da = new DataAccess()) {
                 var q = da.Session.QueryOver<Branch>();
-                branchDi = new DatasetData<Branch>(da,datasetId,m=>m.Id.ToString(),q);
+                branchDi = new DatasetData<Branch>(da, datasetId, m => m.Id.ToString(), q);
             }
 
-            using( var da = new DataAccess() ) {
+            using (var da = new DataAccess()) {
                 // Check the dataset is owned by the user
                 var dataset = da.Datasets.GetDataset(datasetId);
-                if ( dataset==null ) {
+                if (dataset == null) {
                     throw new Exception($"Cannot find dataset with id [{datasetId}]");
                 } else {
-                    if ( dataset.User?.Id==null || dataset.User.Id!=userId ) {
+                    if (dataset.User?.Id == null || dataset.User.Id != userId) {
                         throw new Exception($"Dataset [{datasetId}] does not belong to user [{userId}]");
                     }
                 }
                 //
                 var regEx = new Regex(@"^GB network (\d{4})\/\d{2} \((\d{4})\)$");
                 var match = regEx.Match(dataset.Parent.Name);
-                if ( !match.Success ) {
+                if (!match.Success) {
                     throw new Exception($"Dataset name [{dataset.Name}] does not match expected format");
                 }
                 targetYear = int.Parse(match.Groups[1].Value);
                 year = int.Parse(match.Groups[2].Value);
                 var adjustments = da.BoundCalc.GetBoundCalcAdjustments(year, targetYear);
-                var userEdits = da.Datasets.GetUserEdits(typeof(Branch).Name,datasetId);
-                foreach( var adj in adjustments) {
-                    var branch = branchDi.Data.FirstOrDefault(b=>b.Code == adj.BranchCode);
-                    if ( branch!=null) {
-                        var userEdit = userEdits.FirstOrDefault(e=>e.Key == branch.Id.ToString());
-                        if ( userEdit==null ) {
+                var userEdits = da.Datasets.GetUserEdits(typeof(Branch).Name, datasetId);
+                foreach (var adj in adjustments) {
+                    var branch = branchDi.Data.FirstOrDefault(b => b.Code == adj.BranchCode);
+                    if (branch != null) {
+                        var userEdit = userEdits.FirstOrDefault(e => e.Key == branch.Id.ToString());
+                        if (userEdit == null) {
                             userEdit = new UserEdit() {
                                 Dataset = dataset,
                                 Key = branch.Id.ToString(),
@@ -1139,53 +1185,53 @@ namespace SmartEnergyLabDataApi.BoundCalc
             }
 
             // lastly run base case again using the requested transport model
-            using( var bc = new BoundCalc(datasetId,transportModelId,SetPointMode.Auto,true) ) {
+            using (var bc = new BoundCalc(datasetId, transportModelId, SetPointMode.Auto, true)) {
                 // run base case
-                bc.RunBoundCalc(null,null,false,true);
+                bc.RunBoundCalc(null, null, false, true);
                 return new BoundCalcResults(bc);
             }
 
         }
 
-        public static BoundCalcResults Run(int datasetId, SetPointMode setPointMode, int transportModelId, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null, IHubContext<NotificationHub> hubContext=null)
+        public static BoundCalcResults Run(int datasetId, SetPointMode setPointMode, int transportModelId, string? boundaryName = null, bool boundaryTrips = false, string? tripStr = null, string? connectionId = null, IHubContext<NotificationHub> hubContext = null)
         {
-            using( var bc = new BoundCalc(datasetId, transportModelId,setPointMode, true) ) {
-                if ( connectionId!=null ) {
-                    bc.ProgressManager.ProgressUpdate+=(m,p)=>{
-                    hubContext.Clients.Client(connectionId).SendAsync("BoundCalc_AllTripsProgress",new {msg=m,percent=p});
+            using (var bc = new BoundCalc(datasetId, transportModelId, setPointMode, true)) {
+                if (connectionId != null) {
+                    bc.ProgressManager.ProgressUpdate += (m, p) => {
+                        hubContext.Clients.Client(connectionId).SendAsync("BoundCalc_AllTripsProgress", new { msg = m, percent = p });
                     };
                 }
                 BoundaryWrapper? bnd = null;
-                if ( !string.IsNullOrEmpty(boundaryName) ) {
+                if (!string.IsNullOrEmpty(boundaryName)) {
                     bnd = bc.Boundaries.GetBoundary(boundaryName);
-                    if ( bnd == null ) {
+                    if (bnd == null) {
                         throw new Exception($"Cannot find boundary with name [{boundaryName}]");
                     }
                 }
                 // work out ncycles for the progress manager
                 int nCycles = (bnd != null) ? bnd.STripList.Count + bnd.DTripList.Count + 2 : 1;
-                bc.ProgressManager.Start("Calculating",nCycles);
+                bc.ProgressManager.Start("Calculating", nCycles);
 
 
-                if ( bnd == null ) {
+                if (bnd == null) {
                     Trip tr = null;
-                    if ( !string.IsNullOrEmpty(tripStr)) {
-                        tr = new Trip("T1",tripStr,bc.Branches);
+                    if (!string.IsNullOrEmpty(tripStr)) {
+                        tr = new Trip("T1", tripStr, bc.Branches);
                     }
                     bc.RunBoundCalc(null, tr, true, true);
                 } else {
-                    if ( boundaryTrips) {
+                    if (boundaryTrips) {
                         bc.RunAllTrips(bnd);
                     } else {
                         Trip tr = null;
-                        if ( !string.IsNullOrEmpty(tripStr) ) {
-                            if ( tripStr.Contains(',')) {
-                                tr = new Trip("T1",tripStr,bc.Branches);
+                        if (!string.IsNullOrEmpty(tripStr)) {
+                            if (tripStr.Contains(',')) {
+                                tr = new Trip("T1", tripStr, bc.Branches);
                             } else {
-                                tr = new Trip("S1",tripStr,bc.Branches);
+                                tr = new Trip("S1", tripStr, bc.Branches);
                             }
                         }
-                        bc.RunTrip(bnd,tr,true);
+                        bc.RunTrip(bnd, tr, true);
                     }
                 }
                 var resp = new BoundCalcResults(bc);
@@ -1196,36 +1242,38 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         public static BoundCalcResults RunBoundaryTrip(int datasetId, SetPointMode setPointMode, int transportModelId, string boundaryName, string tripName, string tripStr)
         {
-            using( var bc = new BoundCalc(datasetId, transportModelId, setPointMode, true) ) {
+            using (var bc = new BoundCalc(datasetId, transportModelId, setPointMode, true)) {
                 var bnd = bc.Boundaries.GetBoundary(boundaryName);
-                if ( bnd == null ) {
+                if (bnd == null) {
                     throw new Exception($"Cannot find boundary with name [{boundaryName}]");
                 }
-                Trip? tr = !string.IsNullOrEmpty(tripStr) ? new Trip(tripName,tripStr,bc.Branches) : null;
-                bc.RunTrip(bnd,tr,true);
+                Trip? tr = !string.IsNullOrEmpty(tripStr) ? new Trip(tripName, tripStr, bc.Branches) : null;
+                bc.RunTrip(bnd, tr, true);
                 var resp = new BoundCalcResults(bc);
                 return resp;
             }
         }
 
         public class CtrlSetPoint {
-            public int CtrlId {get; set;}
-            public double SetPoint {get ;set;}
+            public int CtrlId { get; set; }
+            public double SetPoint { get; set; }
         }
-        public static void ManualSetPointMode(int datasetId, int userId, List<CtrlSetPoint> initialSetPoints) {
+
+        public static void ManualSetPointMode(int datasetId, int userId, List<CtrlSetPoint> initialSetPoints)
+        {
             //
-            using ( var da = new DataAccess() ) {
+            using (var da = new DataAccess()) {
                 var dataset = da.Datasets.GetDataset(datasetId);
-                if ( dataset == null ) {
+                if (dataset == null) {
                     throw new Exception($"Cannot find dataset with id={datasetId}");
                 }
-                if ( dataset.User?.Id != userId) {
+                if (dataset.User?.Id != userId) {
                     throw new Exception($"Not authorised");
                 }
-                var ues = da.Datasets.GetUserEdits(typeof(Ctrl).Name,datasetId);
-                foreach( var sp in initialSetPoints) {
-                    var ue = ues.FirstOrDefault(m=>m.Key.ToString() == sp.CtrlId.ToString());
-                    if ( ue==null) {
+                var ues = da.Datasets.GetUserEdits(typeof(Ctrl).Name, datasetId);
+                foreach (var sp in initialSetPoints) {
+                    var ue = ues.FirstOrDefault(m => m.Key.ToString() == sp.CtrlId.ToString());
+                    if (ue == null) {
                         ue = new UserEdit() {
                             TableName = typeof(Ctrl).Name,
                             ColumnName = "SetPoint",
@@ -1239,6 +1287,68 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 //
                 da.CommitChanges();
             }
+        }
+
+        public static string AddDefaultTransportModels(int datasetId)
+        {
+            string msg = "";
+            using (var da = new DataAccess()) {
+                var tmDi = da.BoundCalc.GetTransportModelDatasetData(datasetId, null, false);
+                var dataset = da.Datasets.GetDataset(datasetId);
+                // If we haven;t got any transport models then add 2 default ones
+                if (tmDi.Data.Count == 0 && tmDi.DeletedData.Count == 0) {
+                    msg += addTransportModel(da, dataset, "Peak Security", new Dictionary<GeneratorType, double>()
+                    {
+                        { GeneratorType.Interconnector, 0 },
+                        { GeneratorType.Tidal, 0 },
+                        { GeneratorType.Wave, 0 },
+                        { GeneratorType.WindOffshore, 0 },
+                        { GeneratorType.WindOnshore, 0 },
+                    });
+                    msg += addTransportModel(da, dataset, "Year Round", new Dictionary<GeneratorType, double>()
+                    {
+                        { GeneratorType.Interconnector, 1 },
+                        { GeneratorType.Nuclear, 0.85 },
+                        { GeneratorType.OCGT, 0 },
+                        { GeneratorType.PumpStorage, 0.5},
+                        { GeneratorType.Tidal, 0.7 },
+                        { GeneratorType.Wave, 0.7 },
+                        { GeneratorType.WindOffshore, 0.7 },
+                        { GeneratorType.WindOnshore, 0.7 },
+                    });
+                    da.CommitChanges();
+                }
+
+
+            }
+            return msg;
+        }
+
+        private static string addTransportModel(DataAccess da, Dataset dataset, string name, Dictionary<GeneratorType, double> initialScalingDict)
+        {
+            string msg = "";
+            var tm = new TransportModel(dataset);
+            tm.Name = name;
+            da.BoundCalc.Add(tm);
+            //
+            foreach (var gt in Enum.GetValues<GeneratorType>()) {
+                // ignore interconnectors as modelled as a control
+                var autoScaling = true;
+                double scaling = 0;
+                if (initialScalingDict.ContainsKey(gt)) {
+                    autoScaling = false;
+                    scaling = initialScalingDict[gt];
+                }
+                var tme = new TransportModelEntry(tm, dataset) {
+                    GeneratorType = gt,
+                    TransportModel = tm,
+                    AutoScaling = autoScaling,
+                    Scaling = scaling,
+                };
+                da.BoundCalc.Add(tme);
+            }
+            msg += $"Added transport model [{name}]\n";
+            return msg;
         }
     }
 }

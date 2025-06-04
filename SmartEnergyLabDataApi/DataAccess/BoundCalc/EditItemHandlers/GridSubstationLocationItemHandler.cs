@@ -57,29 +57,43 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
 
     public override void Save(EditItemModel m)
     {
-        GridSubstationLocation loc = (GridSubstationLocation) m.Item;
+        GridSubstationLocation loc = (GridSubstationLocation)m.Item;
         //
-        if ( loc.Id == 0 ) {
+        if (loc.Id == 0) {
             loc.Dataset = m.Dataset;
             loc.Source = GridSubstationLocationSource.UserDefined;
             loc.GISData = new GISData();
         }
-        if ( m.GetString("code",out string code) ) {
+        if (m.GetString("code", out string code)) {
             loc.Reference = code;
         }
-        if ( m.GetString("name",out string name) ) {
+        if (m.GetString("name", out string name)) {
             loc.Name = name;
         }
         var lat = m.CheckDouble("latitude");
-        if ( lat!=null) {
-            loc.GISData.Latitude = (double) lat;
+        if (lat != null) {
+            loc.GISData.Latitude = (double)lat;
         }
         var lng = m.CheckDouble("longitude");
-        if ( lng!=null) {
-            loc.GISData.Longitude = (double) lng;
+        if (lng != null) {
+            loc.GISData.Longitude = (double)lng;
         }
-        if ( loc.Id==0) {
+        if (loc.Id == 0) {
             m.Da.NationalGrid.Add(loc);
+        }
+
+        if (!string.IsNullOrEmpty(code) && m.IsSourceEdit()) {
+
+            // Remove all references to this location
+            var nodes = m.Da.BoundCalc.GetNodesWithLocationId(m.Dataset.Id, loc.Id);
+            foreach (var node in nodes) {
+                node.Location = null;
+            }
+            // Update all nodes with identical location referencde (i.e. first 4-letter code)
+            nodes = m.Da.BoundCalc.GetNodesWithLocationRef(m.Dataset.Id, code);
+            foreach (var node in nodes) {
+                node.Location = loc;
+            }
         }
     }
 
@@ -89,25 +103,33 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
         // location
         GridSubstationLocation loc = (GridSubstationLocation) m.Item;
         using ( var da = new DataAccess()) {
-            // get location
-            var locDi = da.NationalGrid.GetLocationDatasetData(m.Dataset.Id, m=>m.Id == loc.Id);
-            var nodeIds = da.Session.QueryOver<Node>().Where( m=>m.Location.Id == loc.Id).Select(m=>m.Id).List<int>().ToArray();
-            var branchIds = da.Session.QueryOver<Branch>().Where( m=>m.Node1.Id.IsIn(nodeIds) || m.Node2.Id.IsIn(nodeIds) ).Select(m=>m.Id).List<int>().ToArray();
-
-            //
-            list.Add(locDi.getBaseDatasetData());
-
             DatasetData<Node>? nodeDi = null;
             DatasetData<Branch>? branchDi = null;
             DatasetData<Ctrl>? ctrlDi = null;
-            if ( nodeIds.Length != 0 ) {
-                // get nodes used by this location
-                nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id, m=>m.Location.Id == loc.Id, true);
-                if (branchIds.Length != 0) {
-                    // get branches used by the nodes
-                    (branchDi,ctrlDi) = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n => n.Node1.Id.IsIn(nodeIds) || n.Node2.Id.IsIn(nodeIds), true);
+            // get location
+            var locDi = da.NationalGrid.GetLocationDatasetData(m.Dataset.Id, m=>m.Id == loc.Id);
+
+            //
+            if (m.IsSourceEdit()) {
+                // since we can edit the code get all nodes/branches since the location can change from the old code to the new one
+                nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id, null, true);
+                (branchDi, ctrlDi) = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, null, true);
+            } else {
+                // no code change so just the nodes that are currently use this location and the branches using the nodes
+                var nodeIds = da.Session.QueryOver<Node>().Where(m => m.Location.Id == loc.Id).Select(m => m.Id).List<int>().ToArray();
+                var branchIds = da.Session.QueryOver<Branch>().Where(m => m.Node1.Id.IsIn(nodeIds) || m.Node2.Id.IsIn(nodeIds)).Select(m => m.Id).List<int>().ToArray();
+                if (nodeIds.Length != 0) {
+                    // get nodes used by this location
+                    nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id, m => m.Location.Id == loc.Id, true);
+                    if (branchIds.Length != 0) {
+                        // get branches used by the nodes
+                        (branchDi, ctrlDi) = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, n => n.Node1.Id.IsIn(nodeIds) || n.Node2.Id.IsIn(nodeIds), true);
+                    }
                 }
             }
+            //
+            list.Add(locDi.getBaseDatasetData());
+            //
             if (nodeDi != null) {
                 // update the generation field for each generator attached to the nodes
                 m.EditItem.UpdateNodeGeneration(da, m.Dataset.Id, nodeDi);

@@ -830,6 +830,23 @@ export class LoadflowDataService {
         }
     }
 
+    public getLocationEditorData(locId: number):ICellEditorDataDict {
+        let df = new DataFilter(1)
+        let loc = this.networkData.locations.data.find(m=>m.id === locId)
+        if ( loc ) {
+            let datasetData = {
+                tableName: this.networkData.locations.tableName,
+                data: [loc],
+                deletedData: [],
+                userEdits: this.networkData.locations.userEdits
+                }
+            let locs = df.GetCellDataObjects(this.dataset,datasetData,(item)=>item.id.toString())
+            return locs[0]
+         } else {
+            throw `Cannot find location with id [${locId}]`
+        }
+    }
+
     public addTrip(branchId : number) {
         if ( !this.trips.get(branchId)) {
             this.needsCalc = true

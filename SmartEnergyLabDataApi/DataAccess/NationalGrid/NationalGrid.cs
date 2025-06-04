@@ -19,20 +19,20 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
-        public void Add(GridOverheadLine ohl) 
+        public void Add(GridOverheadLine ohl)
         {
             Session.Save(ohl);
         }
 
 
 
-        public void Add(GridSubstation gss) 
+        public void Add(GridSubstation gss)
         {
             Session.Save(gss);
         }
 
         public void Delete(GridSubstation gss)
-        {                   
+        {
             Session.Delete(gss);
         }
 
@@ -42,7 +42,7 @@ namespace SmartEnergyLabDataApi.Data
 
         public IList<GridSubstation> GetGridSubstations() {
             return Session.QueryOver<GridSubstation>().Fetch(SelectMode.Fetch, m=>m.GISData).List();
-        }        
+        }
 
         public int GetNumGridSubstations(GridSubstationSource source) {
             return Session.QueryOver<GridSubstation>().
@@ -68,13 +68,13 @@ namespace SmartEnergyLabDataApi.Data
             return Session.QueryOver<GridOverheadLine>().Where( m=>m.Reference == reference).Take(1).SingleOrDefault();
         }
 
-        public void Add(GridSubstationLocation loc) 
+        public void Add(GridSubstationLocation loc)
         {
             Session.Save(loc);
         }
 
         public void Delete(GridSubstationLocation loc)
-        {                   
+        {
             Session.Delete(loc);
         }
 
@@ -83,7 +83,7 @@ namespace SmartEnergyLabDataApi.Data
         }
 
         public GridSubstationLocation GetGridSubstationLocation(string reference, Dataset dataset=null, bool includeDerived=false) {
-            var q = Session.QueryOver<GridSubstationLocation>().Where( m=>m.Reference == reference); 
+            var q = Session.QueryOver<GridSubstationLocation>().Where( m=>m.Reference == reference);
             if ( dataset!=null && includeDerived) {
                 var datasetIds = DataAccess.Datasets.GetInheritedDatasetIds(dataset.Id);
                 q = q.Where( m=>m.Dataset.Id.IsIn(datasetIds));
@@ -92,7 +92,7 @@ namespace SmartEnergyLabDataApi.Data
             }
             return q.Take(1).SingleOrDefault();
         }
-        
+
         public IList<GridSubstationLocation> GetGridSubstationLocations() {
             return Session.QueryOver<GridSubstationLocation>().
                 Where( m=>m.Dataset==null).
@@ -148,13 +148,14 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
-        public DatasetData<GridSubstationLocation> GetLocationDatasetData(int datasetId,System.Linq.Expressions.Expression<Func<GridSubstationLocation, bool>> expression=null) {
+        public DatasetData<GridSubstationLocation> GetLocationDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<GridSubstationLocation, bool>> expression = null)
+        {
             var locQuery = Session.QueryOver<GridSubstationLocation>();
-            if ( expression!=null) {
+            if (expression != null) {
                 locQuery = locQuery.Where(expression);
             }
-            var locDi = new DatasetData<GridSubstationLocation>(DataAccess,datasetId,m=>m.Id.ToString(), locQuery);
-            return locDi;        
+            var locDi = new DatasetData<GridSubstationLocation>(DataAccess, datasetId, m => m.Id.ToString(), locQuery);
+            return locDi;
         }
     }
 }

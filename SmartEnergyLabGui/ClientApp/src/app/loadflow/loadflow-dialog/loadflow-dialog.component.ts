@@ -27,6 +27,12 @@ export class LoadflowDialogComponent extends ComponentBase {
             this.branches = results.branches.data
             this.boundaryName = "Unspecified"
             this.setBoundary()
+            //
+            if ( Math.abs(this.dataService.totalDemand - this.dataService.totalGeneration) > 1e-6) {
+                this.errorMsg = "Demand does not equal generation"
+            } else {
+                this.errorMsg = ""
+            }
         })))
         this.addSub(dataService.ResultsLoaded.subscribe((results)=>{
             if ( results.boundaryTrips ) {
@@ -41,6 +47,8 @@ export class LoadflowDialogComponent extends ComponentBase {
             this.percent = data.percent;
         }))
     }
+
+    errorMsg: string = ""
 
     setBoundaries(networkData: NetworkData) {
         this.boundaries = networkData.boundaries.data

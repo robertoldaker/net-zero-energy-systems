@@ -439,7 +439,7 @@ public class EditItemModel : DbModel {
         return msg;
     }
 
-    private bool IsSourceEdit()
+    public bool IsSourceEdit()
     {
         IDataset dItem = (IDataset)_item;
         return _dataset.Id == dItem.Dataset.Id;
