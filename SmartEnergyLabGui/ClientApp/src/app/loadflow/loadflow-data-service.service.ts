@@ -137,8 +137,6 @@ export class LoadflowDataService {
             if ( onLoad ) {
                 onLoad()
             }
-            //
-            console.log('nodeDI',this.networkData.nodes)
         })
     }
 
