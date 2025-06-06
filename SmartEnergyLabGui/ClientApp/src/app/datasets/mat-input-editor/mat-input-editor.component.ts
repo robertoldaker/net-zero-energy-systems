@@ -22,12 +22,19 @@ export class MatInputEditorComponent implements OnInit {
         this.hasFocus = false;
         if ( this.input ) {
             this.editValue = this.input.nativeElement.value
-            this.input.nativeElement.value = this.value            
+            this.saveValue()
         }
     }
 
-    save(e: Event) {
-        e.stopPropagation()
+    keyDown(e: any) {
+        if ( e.code === "Escape") {
+            if ( this.input) {
+                this.input.nativeElement.value = this.value
+            }
+        }
+    }
+
+    saveValue() {
         if ( this.input && this.data ) {
             let value = this.editValue
             if ( value===this.value) {
@@ -37,20 +44,10 @@ export class MatInputEditorComponent implements OnInit {
             if ( this.scalingFac && !isNaN(valueDouble)) {
                 value = (valueDouble / this.scalingFac).toString()
             }
-            //            
+            //
             this.datasetsService.saveUserEditWithPrompt(value, this.data, (resp)=>{
                 this.onEdited.emit(this.data)
             }, (errors)=>{});
-            if ( this.input ) {
-                this.input.nativeElement.blur()
-            }    
-        }
-    }
-
-    cancel(e: Event) {
-        e.stopPropagation()
-        if ( this.input) {
-            this.input.nativeElement.blur()
         }
     }
 
@@ -65,7 +62,7 @@ export class MatInputEditorComponent implements OnInit {
         if ( this.data ) {
             this.datasetsService.removeUserEditWithPrompt(this.data,(resp)=>{
                 this.onEdited.emit(this.data)
-            });    
+            });
         }
     }
 
@@ -103,7 +100,7 @@ export class MatInputEditorComponent implements OnInit {
             if ( this.decimalPlaces!==undefined ) {
                 value = value.toFixed(this.decimalPlaces)
             }
-        } 
+        }
         return value
     }
 
