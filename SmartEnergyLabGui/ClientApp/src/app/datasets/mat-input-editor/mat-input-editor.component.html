@@ -2,6 +2,9 @@
     <mat-label>{{label}}</mat-label>
     <input matInput class="editable" [ngClass]="{'existing': data?.userEdit}" type="text" [value]="value"
     (change)="onChange($event)" [readonly]="readOnly" (focus)="onFocus()" (blur)="onBlur()" (keydown)="keyDown($event)" #input/>
+    <div *ngIf="data?.userEdit?.prevValue" class="prevValue" style="margin-top: 3px">
+        ({{prevValue}})
+    </div>
     <div *ngIf="!readOnly && data?.userEdit" class="delete button" (click)="delete($event)" >
         <mat-icon title="Delete edit" [inline]="true">cancel</mat-icon>
     </div>

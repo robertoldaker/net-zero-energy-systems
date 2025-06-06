@@ -21,7 +21,6 @@ export class MatInputEditorComponent implements OnInit {
     onBlur() {
         this.hasFocus = false;
         if ( this.input ) {
-            this.editValue = this.input.nativeElement.value
             this.saveValue()
         }
     }
@@ -32,20 +31,26 @@ export class MatInputEditorComponent implements OnInit {
                 this.input.nativeElement.value = this.value
             }
         }
+        if (e.code === "Enter") {
+            if (this.input) {
+                this.saveValue()
+                this.input.nativeElement.blur()
+            }
+        }
     }
 
     saveValue() {
         if ( this.input && this.data ) {
-            let value = this.editValue
-            if ( value===this.value) {
+            let newValue = this.input.nativeElement.value
+            if ( newValue===this.value) {
                 return;
             }
-            let valueDouble = parseFloat(value)
+            let valueDouble = parseFloat(newValue)
             if ( this.scalingFac && !isNaN(valueDouble)) {
-                value = (valueDouble / this.scalingFac).toString()
+                newValue = (valueDouble / this.scalingFac).toString()
             }
             //
-            this.datasetsService.saveUserEditWithPrompt(value, this.data, (resp)=>{
+            this.datasetsService.saveUserEditWithPrompt(newValue, this.data, (resp)=>{
                 this.onEdited.emit(this.data)
             }, (errors)=>{});
         }
@@ -66,10 +71,23 @@ export class MatInputEditorComponent implements OnInit {
         }
     }
 
+    get prevValue():string {
+        let pv = this.data?.userEdit?.prevValue
+        if ( pv) {
+            let pvFloat = parseFloat(pv)
+            if ( !isNaN(pvFloat)) {
+                return pvFloat.toFixed(this.decimalPlaces)
+            }  else {
+                return pv;
+            }
+        } else {
+            return ""
+        }
+    }
+
     ngOnInit(): void {
     }
 
-    private editValue: string = ''
     hasFocus: boolean = false
 
     @Input()

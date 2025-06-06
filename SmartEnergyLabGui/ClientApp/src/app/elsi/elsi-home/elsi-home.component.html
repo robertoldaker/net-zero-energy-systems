@@ -2,10 +2,10 @@
     <app-elsi-header title="GB Electricity Market Simulator"></app-elsi-header>
 
     <as-split *ngIf="this.user" direction="horizontal" (dragStart)="splitStart()" (dragEnd)="splitEnd($event)" [unit]="'pixel'">
-        <as-split-area [size]="450" #leftDiv>
+        <as-split-area [size]="380" style="overflow: hidden" #leftDiv>
             <app-elsi-dialog></app-elsi-dialog>
             <hr style="margin:0; border: 2px solid #aaa;"/>
-            <app-elsi-log></app-elsi-log>    
+            <app-elsi-log></app-elsi-log>
         </as-split-area>
         <as-split-area #rightDiv style="overflow: hidden">
             <app-elsi-results></app-elsi-results>

@@ -11,7 +11,7 @@ export class DivAutoScrollerComponent implements AfterViewInit {
 
     @Input()
     name: string = "?"
-    
+
     @Input()
     adjustHeight: boolean = true;
 
@@ -34,7 +34,7 @@ export class DivAutoScrollerComponent implements AfterViewInit {
                 if ( this.adjustHeight) {
                     let windowHeight = window.innerHeight;
                     let divHeight = windowHeight - box.top
-                    element.style.height = `${divHeight}px`    
+                    element.style.height = `${divHeight}px`
                 }
                 if ( this.adjustWidth) {
                     let windowWidth = window.innerWidth;
@@ -45,13 +45,19 @@ export class DivAutoScrollerComponent implements AfterViewInit {
         }
     }
 
-    scrollBottom() {
-        window.setTimeout(()=>{
-            if ( this.div ) {
-                let element = this.div.nativeElement
-                element.scrollTop = element.scrollHeight
-            }
-        }, 0)
+    scrollBottom(timeout: number = 0) {
+        if ( this.timeoutId === 0) {
+            this.timeoutId = window.setTimeout(()=>{
+                if ( this.div ) {
+                    console.log('scrollTop')
+                    let element = this.div.nativeElement
+                    element.scrollTop = element.scrollHeight
+                }
+                this.timeoutId = 0
+            }, timeout)
+        }
     }
+
+    timeoutId = 0
 
 }

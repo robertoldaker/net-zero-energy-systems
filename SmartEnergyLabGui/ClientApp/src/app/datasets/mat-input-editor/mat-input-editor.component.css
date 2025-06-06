@@ -3,7 +3,7 @@
 }
 
 .existing {
-    color: green
+    color: navy
 }
 
 .button {
@@ -11,27 +11,12 @@
     height: 17px;
     font-size: 16px;
     cursor: pointer;
-    float: right;
+    position: absolute;
+    right: 0;
+    top: 0;
 }
 
 .delete {
     color: darkred;
-}
-
-.cancel {
-    color: darkred;
-}
-
-.save {
-    color: green;
-}
-
-.editButtons {
-    float: right;
-}
-
-.hide {
-    color: transparent !important;
-    cursor:default;
 }
 
