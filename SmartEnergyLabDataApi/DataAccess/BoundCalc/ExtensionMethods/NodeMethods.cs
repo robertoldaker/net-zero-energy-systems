@@ -54,11 +54,18 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             return locCode;
         }
 
-        public static void UpdateGenerators(this Node node, DatasetData<NodeGenerator> nodeGenDi)
+        public static void UpdateGenerators(this Node node, DatasetData<Node> nodeDi, DatasetData<NodeGenerator> nodeGenDi)
         {
             node.Generators = nodeGenDi.Data.Where(m => m.Node.Id == node.Id).Select(m => m.Generator).OrderBy(m => m.Name).ToList();
             node.DeletedGenerators = nodeGenDi.DeletedData.Where(m => m.Node.Id == node.Id).Select(m => m.Generator).OrderBy(m => m.Name).ToList();
             node.NewGenerators = nodeGenDi.Data.Where(m => m.Node.Id == node.Id && m.DatasetId != node.DatasetId).Select(m => m.Generator).OrderBy(m => m.Name).ToList();
+            if (node.NewGenerators.Count > 0) {
+                nodeDi.UserEdits.Add(new UserEdit() {
+                    ColumnName = "Generators",
+                    TableName = "Node",
+                    Key = node.Id.ToString()
+                });
+            }
         }
     }
 }

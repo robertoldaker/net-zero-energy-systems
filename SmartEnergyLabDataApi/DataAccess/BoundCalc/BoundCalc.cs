@@ -107,16 +107,17 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             var nodeDi = new DatasetData<Node>(DataAccess, datasetId, m => m.Id.ToString(), nodeQuery);
 
             if (updateRefs) {
-                this.updateRefs(datasetId, nodeDi.Data);
+                this.updateRefs(datasetId, nodeDi);
                 //??this.updateRefs(datasetId, nodeDi.DeletedData);
             }
 
              return nodeDi;
         }
 
-        private void updateRefs(int datasetId, IList<Node> nodes)
+        private void updateRefs(int datasetId, DatasetData<Node> nodeDi)
         {
             // update node.Location
+            var nodes = nodeDi.Data;
             var locIds = nodes.Where(m => m.Location != null).Select(m => m.Location.Id).ToArray();
             var locDi = DataAccess.NationalGrid.GetLocationDatasetData(datasetId, m => m.Id.IsIn(locIds));
             foreach (var node in nodes) {
@@ -131,7 +132,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             var genDi = GetGeneratorDatasetData(datasetId, m => m.Id.IsIn(genIds));
             // update
             foreach (var node in nodes) {
-                node.UpdateGenerators(nodeGenDi);
+                node.UpdateGenerators(nodeDi, nodeGenDi);
             }
         }
 

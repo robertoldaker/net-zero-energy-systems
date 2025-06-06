@@ -78,6 +78,7 @@ export class LoadflowDataService {
     dataset: Dataset = {id: 0, type: DatasetType.BoundCalc, name: '', parent: null, isReadOnly: true}
     totalDemand: number = 0
     totalGeneration: number = 0
+    totalMaxTEC: number = 0
     gridSubstations: GridSubstation[]
     networkData: NetworkData
     locationData: LocationData
@@ -136,6 +137,8 @@ export class LoadflowDataService {
             if ( onLoad ) {
                 onLoad()
             }
+            //
+            console.log('nodeDI',this.networkData.nodes)
         })
     }
 
@@ -145,6 +148,12 @@ export class LoadflowDataService {
             this.networkData.nodes.data.forEach( m=>this.totalDemand+=m.demand)
             this.totalGeneration = 0
             this.networkData.nodes.data.forEach( m=>this.totalGeneration+=m.generation)
+            this.totalMaxTEC = 0
+            if ( this.networkData.transportModels.data.length>0 ) {
+                let tm = this.networkData.transportModels.data[0]
+                let entries =  this.networkData.transportModelEntries.data.filter(m=>m.transportModelId == tm.id)
+                entries.forEach(m=>this.totalMaxTEC+=m.totalCapacity)
+            }
         }
     }
 
@@ -1017,7 +1026,7 @@ export class LoadflowLocation {
     }
 
     setLocation(gsl: GridSubstationLocation) {
-        // this forces and update if they have changed
+        // this forces an update if they have changed
         this._isNew = this.areGslDifferent(gsl,this._gsl)
         this._gsl = gsl
     }
@@ -1066,8 +1075,10 @@ export class LoadflowLocation {
         return result
     }
 
-    private areGslDifferent(gslA: GridSubstationLocation, gslB: GridSubstationLocation) {
-        return gslA.latitude!=gslB.latitude || gslA.longitude != gslB.longitude
+    private areGslDifferent(gslA: GridSubstationLocation, gslB: GridSubstationLocation): boolean {
+        return gslA.latitude!==gslB.latitude ||
+            gslA.longitude !== gslB.longitude ||
+            gslA.name !== gslB.name
     }
 
 }

@@ -141,11 +141,6 @@ export class CellEditorComponent {
 
     delete() {
         if ( this.data && this.canDelete) {
-            console.log('delete',this.data)
-            // need to set enumeration to numerical values
-            //??if ( this.enumeration && this.data.userEdit) {
-            //??    this.data.userEdit.prevValue = this.enumeration[this.data.userEdit.prevValue]
-            //??}
             this.datasetsService.removeUserEditWithPrompt(this.data, (resp)=>{
                 this.onEdited.emit(this.data)
             })

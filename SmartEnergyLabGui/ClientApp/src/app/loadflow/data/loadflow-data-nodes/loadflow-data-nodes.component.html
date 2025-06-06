@@ -53,8 +53,10 @@
                     <tbody>
                         <tr *ngFor="let g of element.generators.value">
                             <td>
-                                <app-mini-icon-button title="Delete" (click)="deleteGenerator(element.id.value,g)" iconName="delete_forever" style="font-size: 1rem; vertical-align: middle;"></app-mini-icon-button>
-                                <span>{{g.name}}</span>
+                                <div class="generatorButton" [class]="{isLocalEdit: isLocalGenerator(element.id.value, g)}">
+                                    <app-mini-icon-button title="Delete" (click)="deleteGenerator(element.id.value,g)" iconName="delete_forever" style="font-size: 1rem; vertical-align: middle;"></app-mini-icon-button>
+                                    <span>{{g.name}}</span>
+                                </div>
                             </td>
                             <td>{{g.scaledGenerationPerNode.toFixed(0)}}</td>
                         </tr>

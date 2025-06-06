@@ -77,7 +77,7 @@ export class LoadflowBranchDialogComponent extends DialogBase {
                 }
             }
             this.updateType()
-            fX.setValue(0)
+            fX.setValue(0.1)
             fX.markAsDirty()
             fCap.setValue(100)
             fCap.markAsDirty()

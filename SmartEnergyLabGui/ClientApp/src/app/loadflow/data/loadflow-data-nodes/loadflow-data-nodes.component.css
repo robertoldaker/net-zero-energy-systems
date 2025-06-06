@@ -76,3 +76,15 @@ table.genTable > tfoot {
     border-top: 1px dotted lightgrey;
 }
 
+div.generatorButton {
+    text-align: left;
+    border-left: 3px solid transparent;
+    margin-left: 3px;
+    white-space: nowrap;
+}
+
+div.isLocalEdit {
+    border-left-color: green;
+}
+
+

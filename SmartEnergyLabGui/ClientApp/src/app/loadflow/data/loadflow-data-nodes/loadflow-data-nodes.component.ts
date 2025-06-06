@@ -110,6 +110,16 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         }
     }
 
+    isLocalGenerator(nodeId: number, gen: Generator) {
+        let node = this.dataService.networkData.nodes.data.find(m=>m.id == nodeId)
+        if ( node ) {
+            let genId = gen.id
+            return node.newGenerators.find(m=>m.id == genId) ? true : false
+        } else {
+            throw `Cannot find node with id ${nodeId}`
+        }
+    }
+
     unDeleteGenerator(nodeId: number, gen: Generator) {
         let node = this.dataService.networkData.nodes.data.find(m=>m.id == nodeId)
         if ( node ) {

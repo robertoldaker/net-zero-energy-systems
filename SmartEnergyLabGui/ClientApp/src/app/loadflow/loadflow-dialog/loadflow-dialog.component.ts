@@ -123,6 +123,10 @@ export class LoadflowDialogComponent extends ComponentBase {
         return this.dataService.totalGeneration
     }
 
+    get totalMaxTEC():number {
+        return this.dataService.totalMaxTEC
+    }
+
     get totalDemand(): number {
         return this.dataService.totalDemand
     }

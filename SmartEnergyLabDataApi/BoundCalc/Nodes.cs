@@ -20,7 +20,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             // and generators
             foreach (var node in di.Data) {
                 // extract generators for each node
-                node.UpdateGenerators(ngDatasetData);
+                node.UpdateGenerators(di,ngDatasetData);
             }
 
             int index=1;
@@ -34,6 +34,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 base.add(key,objWrapper);
                 index++;
             }
+            //
             DatasetData = di;
         }
 
