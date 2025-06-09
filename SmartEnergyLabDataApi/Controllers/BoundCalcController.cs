@@ -159,13 +159,14 @@ namespace SmartEnergyLabDataApi.Controllers
         /// Gets BoundCalc network data
         /// </summary>
         /// <param name="datasetId">Id of dataset</param>
+        /// <param name="transportModelId">Id of transport model</param>
         /// /// <returns></returns>
         [HttpGet]
         [Route("NetworkData")]
         public BoundCalcNetworkData NetworkData(int datasetId, int transportModelId=0) {
-            using( var bc = new BoundCalc.BoundCalc(datasetId,transportModelId) ) {
-                return new BoundCalcNetworkData(bc);
-            }
+            //??using( var bc = new BoundCalc.BoundCalc(datasetId,transportModelId) ) {
+                return new BoundCalcNetworkData(datasetId,transportModelId);
+            //??}
         }
 
         /// <summary>
