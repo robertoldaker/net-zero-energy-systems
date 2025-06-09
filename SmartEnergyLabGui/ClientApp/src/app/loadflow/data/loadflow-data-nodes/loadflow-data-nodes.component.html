@@ -62,7 +62,7 @@
                         </tr>
                         <tr *ngFor="let g of element.deletedGenerators.value" class="deleted">
                             <td>
-                                <div class="generatorButton">
+                                <div class="generatorButton"  [class]="{isLocalEdit: isLocalGenerator(element.id.value, g)}">
                                     <app-mini-icon-button title="Un-delete" (click)="unDeleteGenerator(element.id.value,g)" iconName="restore_from_trash" style="font-size: 1rem; vertical-align: middle;"></app-mini-icon-button>
                                     <span>{{g.name}}</span>
                                 </div>

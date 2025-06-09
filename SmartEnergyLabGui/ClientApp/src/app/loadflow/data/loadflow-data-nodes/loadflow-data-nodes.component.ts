@@ -115,7 +115,9 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         let node = this.dataService.networkData.nodes.data.find(m=>m.id == nodeId)
         if ( node ) {
             let genId = gen.id
-            return node.newGenerators.find(m=>m.id == genId) ? true : false
+            let newGen = node.newGenerators.find(m=>m.id == genId) ? true : false
+            let delGen = node.deletedGenerators.find(m => m.id == genId) ? true : false
+            return newGen || delGen;
         } else {
             throw `Cannot find node with id ${nodeId}`
         }
