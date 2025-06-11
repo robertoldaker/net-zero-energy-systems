@@ -137,6 +137,14 @@ public class BoundCalcNetworkData {
     public Network Model { get; private set; }
     public Reporter Reporter { get; private set; }
 
+    private ProgressManager _progressManager = new ProgressManager();
+    public ProgressManager ProgressManager
+    {
+        get {
+            return _progressManager;
+        }
+    }
+
     private int[] getBranchIds(Boundary b, DatasetData<Branch> branchDi)
     {
         var branchIds = new List<int>();
@@ -292,14 +300,30 @@ public class BoundCalcNetworkData {
         return msg;
     }
 
-    public void Report(string msg, object obj, ReportState state=ReportState.Pass)
+    public void Report(string msg, object obj, ReportState state = ReportState.Pass)
     {
         _reporter.Report(msg, obj, state);
     }
 
-    public static BoundCalcResults Run(int datasetId, SetPointMode setPointMode, int transportModelId, string? boundaryName = null, bool boundaryTrips = false, string? tripStr = null, string? connectionId = null, IHubContext<NotificationHub> hubContext = null)
+    public static BoundCalcResults Run(
+        int datasetId,
+        SetPointMode setPointMode,
+        int transportModelId,
+        string? boundaryName = null,
+        bool boundaryTrips = false,
+        string? tripStr = null,
+        string? connectionId = null,
+        IHubContext<NotificationHub> hubContext = null)
     {
         var nd = new BoundCalcNetworkData(datasetId, transportModelId);
+        if (connectionId != null) {
+            nd.ProgressManager.ProgressUpdate += (m, p) => {
+                hubContext.Clients.Client(connectionId).SendAsync("BoundCalc_AllTripsProgress", new { msg = m, percent = p });
+            };
+        }
+
+        nd.ProgressManager.Start("Calculating", 1);
+
         var fullnet = nd.Model;
         //
         Network.Node lmn = fullnet.BaseLF.LargestMismatch();
@@ -308,7 +332,7 @@ public class BoundCalcNetworkData {
         NetOptimiser netopt = new(fullnet);
 
         LPResult rc1 = netopt.BalanceHVDCNodes(out int rc2);
-        nd.Report($"\nBalancing HVDC nodes result",$"{rc1}:{rc2}");
+        nd.Report($"\nBalancing HVDC nodes result", $"{rc1}:{rc2}");
 
         if (boundaryName == null) {
             // No boundary specified
@@ -330,19 +354,26 @@ public class BoundCalcNetworkData {
 
         }
 
+        nd.ProgressManager.Finish();
+
         //
         return new BoundCalcResults(nd);
     }
 
-    public void FillResults(Network.LoadFlow lf)
+    public void FillResults(Network.LoadFlow lf, bool nodeMarginals = false)
     {
         // always do node marginals
-        lf.CalcNodeMarginals(out double[] margkm, out double[] tlf);
+        double[]? margkm = null, tlf = null;
+        if (nodeMarginals) {
+            lf.CalcNodeMarginals(out margkm, out tlf);
+        }
         foreach (var n in Nodes.Data) {
             var netNode = _nodeDict[n];
             n.Mismatch = lf.Mismatch(netNode);
-            n.TLF = tlf[netNode.Index];
-            n.km = margkm[netNode.Index];
+            if (nodeMarginals && tlf != null && margkm != null) {
+                n.TLF = tlf[netNode.Index];
+                n.km = margkm[netNode.Index];
+            }
         }
         foreach (var b in Branches.Data) {
             if (Model.BranchDict.TryGetValue(b.LineName, out Network.Branch netBranch)) {
