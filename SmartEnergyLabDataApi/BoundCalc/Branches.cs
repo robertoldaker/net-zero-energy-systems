@@ -68,60 +68,60 @@ namespace SmartEnergyLabDataApi.BoundCalc
     }
 
     public class BranchWrapper : ObjectWrapper<Branch> {
-        private static Dictionary<string,Dictionary<int,double>> _kmScalingOHL = new Dictionary<string, Dictionary<int, double>>() 
+        private static Dictionary<string,Dictionary<int,double>> _kmScalingOHL = new Dictionary<string, Dictionary<int, double>>()
         {
             {
-                "NGC",new Dictionary<int, double>() 
-                { 
+                "NGC",new Dictionary<int, double>()
+                {
                     {400, 1 },
                     {275, 1.2},
                     {132, 2.87}
                 }
             },
             {
-                "SP",new Dictionary<int, double>() 
-                { 
+                "SP",new Dictionary<int, double>()
+                {
                     {400, 1 },
                     {275, 1.2},
                     {132, 2.87}
                 }
-            },            
+            },
             {
-                "SSE",new Dictionary<int, double>() 
-                { 
+                "SSE",new Dictionary<int, double>()
+                {
                     {400, 1 },
                     {275, 1.2},
                     {132, 2.59}
                 }
-            },            
+            },
         };
 
-        private Dictionary<string,Dictionary<int,double>> _kmScalingCable = new Dictionary<string, Dictionary<int, double>>() 
+        private Dictionary<string,Dictionary<int,double>> _kmScalingCable = new Dictionary<string, Dictionary<int, double>>()
         {
             {
-                "NGC",new Dictionary<int, double>() 
-                { 
+                "NGC",new Dictionary<int, double>()
+                {
                     {400, 10.2 },
                     {275, 11.45},
                     {132, 22.58}
                 }
             },
             {
-                "SP",new Dictionary<int, double>() 
-                { 
+                "SP",new Dictionary<int, double>()
+                {
                     {400, 10.2 },
                     {275, 11.45},
                     {132, 22.58}
                 }
-            },            
+            },
             {
-                "SSE",new Dictionary<int, double>() 
-                { 
+                "SSE",new Dictionary<int, double>()
+                {
                     {400, 10.2 },
                     {275, 11.45},
                     {132, 22.77}
                 }
-            },            
+            },
         };
 
         public BranchWrapper(Branch obj, int index, Nodes nodes, bool buildOptimiser) : base(obj,index) {
@@ -158,7 +158,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     Console.WriteLine("!!");
                 }
                 km = Obj.OHL * scalingOHL + Obj.CableLength * scalingCable;
-            } 
+            }
         }
 
         // Line code name (lcstr)
@@ -230,7 +230,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         public int pn2 {get; set;}
 
-        public double? km { 
+        public double? km {
             get {
                 return Obj.km;
             }

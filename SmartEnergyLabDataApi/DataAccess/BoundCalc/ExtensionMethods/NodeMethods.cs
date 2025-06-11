@@ -59,13 +59,27 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             node.Generators = nodeGenDi.Data.Where(m => m.Node.Id == node.Id).Select(m => m.Generator).OrderBy(m => m.Name).ToList();
             node.DeletedGenerators = nodeGenDi.DeletedData.Where(m => m.Node.Id == node.Id).Select(m => m.Generator).OrderBy(m => m.Name).ToList();
             node.NewGenerators = nodeGenDi.Data.Where(m => m.Node.Id == node.Id && m.DatasetId != node.DatasetId).Select(m => m.Generator).OrderBy(m => m.Name).ToList();
-            if (node.NewGenerators.Count > 0 || node.DeletedGenerators.Count>0) {
+            if (node.NewGenerators.Count > 0 || node.DeletedGenerators.Count > 0) {
                 nodeDi.UserEdits.Add(new UserEdit() {
                     ColumnName = "Generators",
                     TableName = "Node",
                     Key = node.Id.ToString()
                 });
             }
+        }
+
+        public static double FaultLimit(this Node node)
+        {
+            var fl = Math.Sqrt(3) * node.Voltage * 50;
+            // Should not be needed but doing this to match Lewis example in FullNetworkTest i.e. round to nearest 1000
+            fl = Math.Round(fl / 1000, 0) * 1000;
+            //
+            return fl;
+        }
+
+        public static double ScInFeed(this Node node)
+        {
+            return node.Generation * 2.5;
         }
     }
 }

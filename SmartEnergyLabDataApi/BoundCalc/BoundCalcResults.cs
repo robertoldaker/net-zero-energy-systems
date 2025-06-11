@@ -47,17 +47,49 @@ namespace SmartEnergyLabDataApi.BoundCalc
             SetPointError = bc.Ctrls.DatasetData.Data.Any(cw => cw.SetPoint!=null && cw.SetPoint>cw.MaxCtrl || cw.SetPoint<cw.MinCtrl);
         }
 
-        public BoundCalcResults(string errorMsg) {
+        public BoundCalcResults(BoundCalcNetworkData nd)
+        {
+            Dataset = nd.Dataset;
+            // stage results
+            StageResults = nd.StageResults;
+            // Nodes
+            Nodes = nd.Nodes;
+            // Branches
+            Branches = nd.Branches;
+            // Controls
+            Ctrls = nd.Ctrls;
+            if (nd.SetPointMode == SetPointMode.Auto) {
+                foreach (var ct in nd.Ctrls.Data) {
+                    //??ct.SetPoint = ct.GetSetPoint(nd.SetPointMode);
+                }
+            }
+
+            // Populate BoundaryTripResults if we have performed a boundary trip
+            //??if (nd.WorstTrip != null) {
+            //??    BoundaryTripResults = new BoundCalcBoundaryTripResults(bc);
+            //??}
+
+            var misMatches = nd.Nodes.Data.Where(n => n.Mismatch != null && Math.Abs((double)n.Mismatch) > 0.01).Select(n => n.Mismatch).OrderBy(m => m).ToList();
+            NodeMismatchError = misMatches.Count > 0;
+            if (NodeMismatchError) {
+                NodeMismatchErrorAsc = Math.Abs((double)misMatches[0]) > Math.Abs((double)misMatches[misMatches.Count - 1]);
+            }
+            BranchCapacityError = nd.Branches.Data.Any(nw => nw.FreePower != null && nw.FreePower < -1e-2);
+            SetPointError = nd.Ctrls.Data.Any(cw => cw.SetPoint != null && cw.SetPoint > cw.MaxCtrl || cw.SetPoint < cw.MinCtrl);
+        }
+
+        public BoundCalcResults(string errorMsg)
+        {
             StageResults = new BoundCalcStageResults();
             var sr = new BoundCalcStageResult("Error");
-            sr.Finish(BoundCalcStageResultEnum.Fail,errorMsg);
+            sr.Finish(BoundCalcStageResultEnum.Fail, errorMsg);
             StageResults.Results.Add(sr);
         }
 
         public Dataset Dataset {get; set;}
         public BoundCalcStageResults StageResults {get; private set;}
         public DatasetData<Node> Nodes {get; private set;}
-        public DatasetData<Branch> Branches {get; private set;}        
+        public DatasetData<Branch> Branches {get; private set;}
         public DatasetData<Ctrl> Ctrls {get; private set;}
 
         public BoundCalcBoundaryTripResults BoundaryTripResults {get; private set;}
@@ -73,7 +105,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             using( var da = new DataAccess() ) {
                 string json = JsonSerializer.Serialize(this,new JsonSerializerOptions() {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });                
+                });
                 var lfr = da.BoundCalc.GetBoundCalcResult(Dataset.Id);
                 if ( lfr==null ) {
                     lfr = new BoundCalcResult(Dataset);
@@ -92,7 +124,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             Mismatch = nw.Mismatch;
             Code = nw.Obj.Code;
         }
-        public int Id {get; set;} 
+        public int Id {get; set;}
         public string Code {get; set;}
         public double? Mismatch {get; set;}
 
@@ -134,7 +166,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             DemOutside = dout;
             IA = ia;
         }
-        public double GenInside {get; private set;} 
+        public double GenInside {get; private set;}
         public double DemInside {get; private set;}
         public double GenOutside {get; private set;}
         public double DemOutside {get; private set;}

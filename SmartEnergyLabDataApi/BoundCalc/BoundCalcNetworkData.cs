@@ -6,10 +6,22 @@ using Org.BouncyCastle.Asn1.Icao;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.BoundCalc;
+using Lad.NetworkLibrary;
+using NLog.LayoutRenderers;
+using Microsoft.Extensions.ObjectPool;
+using Microsoft.AspNetCore.SignalR;
+using Lad.NetworkOptimiser;
+using Lad.LinearProgram;
+using NHibernate.Mapping;
 
 namespace SmartEnergyLabDataApi.BoundCalc;
 
 public class BoundCalcNetworkData {
+
+    private Dictionary<Node, Network.Node> _nodeDict = new Dictionary<Node, Network.Node>();
+    private Dictionary<Branch, Network.BranchSpec> _branchDict = new Dictionary<Branch, Network.BranchSpec>();
+    private Dictionary<Ctrl, Network.ControlSpec> _ctrlDict = new Dictionary<Ctrl, Network.ControlSpec>();
+
     public BoundCalcNetworkData(BoundCalc bc)
     {
         // Nodes
@@ -45,12 +57,20 @@ public class BoundCalcNetworkData {
         TransportModel = bc.TransportModel;
     }
 
-    public BoundCalcNetworkData(int datasetId, int transportModelId = 0)
+    public BoundCalcNetworkData(int datasetId, int transportModelId = 0, SetPointMode setPointMode = SetPointMode.Auto)
     {
         // Ensure we have at least one transport model
         BoundCalcNetworkData.AddDefaultTransportModels(datasetId);
 
         using (var da = new DataAccess()) {
+            Dataset = da.Datasets.GetDataset(datasetId);
+            if (Dataset == null) {
+                throw new Exception($"Cannot find dataset with id=[{datasetId}]");
+            }
+            SetPointMode = setPointMode;
+            //
+            StageResults = new BoundCalcStageResults();
+
             // Transport model entries
             TransportModelEntries = da.BoundCalc.GetTransportModelEntryDatasetData(datasetId);
             // Transport models
@@ -58,7 +78,7 @@ public class BoundCalcNetworkData {
             // work out the transport model
             if (transportModelId > 0) {
                 TransportModel = TransportModels.Data.Where(m => m.Id == transportModelId).FirstOrDefault();
-                if (TransportModel==null) {
+                if (TransportModel == null) {
                     throw new Exception($"Cannot find transport model with id=[{transportModelId}]");
                 }
             } else {
@@ -71,7 +91,7 @@ public class BoundCalcNetworkData {
             // Nodes
             Nodes = da.BoundCalc.GetNodeDatasetData(datasetId, null, true, Locations, ngDi);
             // Branches and controls
-            (Branches,Ctrls) = da.BoundCalc.GetBranchDatasetData(datasetId, null, true, Nodes);
+            (Branches, Ctrls) = da.BoundCalc.GetBranchDatasetData(datasetId, null, true, Nodes);
             // Boundaries
             Boundaries = da.BoundCalc.GetBoundaryDatasetData(datasetId);
             // Zones
@@ -93,7 +113,26 @@ public class BoundCalcNetworkData {
                 BoundaryDict.Add(b.Code, branchIds);
             }
         }
+
+        //
+        Model = createNetworkModel();
     }
+
+    public Dataset Dataset { get; private set; }
+    public BoundCalcStageResults StageResults { get; private set; }
+    public SetPointMode SetPointMode { get; private set; }
+    public DatasetData<Node> Nodes { get; private set; }
+    public DatasetData<Branch> Branches { get; private set; }
+    public DatasetData<Ctrl> Ctrls { get; private set; }
+    public DatasetData<Boundary> Boundaries { get; private set; }
+    public DatasetData<Zone> Zones { get; private set; }
+    public DatasetData<GridSubstationLocation> Locations { get; private set; }
+    public DatasetData<Generator> Generators { get; private set; }
+    public DatasetData<TransportModel> TransportModels { get; private set; }
+    public TransportModel? TransportModel { get; private set; }
+    public DatasetData<TransportModelEntry> TransportModelEntries { get; private set; }
+    public Dictionary<string, int[]> BoundaryDict { get; private set; }
+    public Network Model { get; private set; }
 
     private int[] getBranchIds(Boundary b, DatasetData<Branch> branchDi)
     {
@@ -109,18 +148,6 @@ public class BoundCalcNetworkData {
         }
         return branchIds.ToArray();
     }
-
-    public DatasetData<Node> Nodes { get; private set; }
-    public DatasetData<Branch> Branches { get; private set; }
-    public DatasetData<Ctrl> Ctrls { get; private set; }
-    public DatasetData<Boundary> Boundaries { get; private set; }
-    public DatasetData<Zone> Zones { get; private set; }
-    public DatasetData<GridSubstationLocation> Locations { get; private set; }
-    public DatasetData<Generator> Generators { get; private set; }
-    public DatasetData<TransportModel> TransportModels { get; private set; }
-    public TransportModel? TransportModel { get; private set; }
-    public DatasetData<TransportModelEntry> TransportModelEntries { get; private set; }
-    public Dictionary<string, int[]> BoundaryDict { get; private set; }
 
     private DatasetData<GridSubstationLocation> loadLocations(DataAccess da, int datasetId)
     {
@@ -147,29 +174,46 @@ public class BoundCalcNetworkData {
         var nodeGenDi = da.BoundCalc.GetNodeGeneratorDatasetData(datasetId, null);
     }
 
-    private void assignNodeLocations()
+    private Network createNetworkModel()
     {
-        // create dictionary using ref. as key
-        var locs = Locations.Data;
-        var nodes = Nodes.Data;
-        var locDict = new Dictionary<string, GridSubstationLocation>();
-        foreach (var loc in locs) {
-            if (!locDict.ContainsKey(loc.Reference)) {
-                locDict.Add(loc.Reference, loc);
-            }
+        // Network.Nodes
+        List<Network.Node> networkNodes = [];
+        foreach (var n in Nodes.Data) {
+            Network.Node netNode = new(n.Code, n.ZoneName, 1, n.Demand, n.Generation, n.ScInFeed(), n.FaultLimit(), n.Ext);
+            _nodeDict.Add(n, netNode);
+            networkNodes.Add(netNode);
         }
-        // look up node location based on first 4 chars of code
-        foreach (var n in nodes) {
-            var locCode = n.Code.Substring(0, 4);
-            if (n.Ext) {
-                locCode += "X";
-            }
-            if (locDict.ContainsKey(locCode)) {
-                n.Location = locDict[locCode];
-            }
+        // Network.Branches
+        List<Network.Branch> networkBranches = [];
+        foreach (var b in Branches.Data) {
+            //??var lineName = $"{b.Node1.Code}-{b.Node2.Code}-{b.Code}";
+            Network.BranchSpec bsSpec = new(b.LineName, b.X, b.Cap, b.R, 0, b.CableLength + b.OHL);
+            var node1 = _nodeDict[b.Node1];
+            var node2 = _nodeDict[b.Node2];
+            Network.Branch bs = new(node1, node2, bsSpec);
+            _branchDict.Add(b, bs);
+            networkBranches.Add(bs);
+        }
+        // Boundaries
+        List<Network.BoundSpec> networkBoundaries = [];
+        foreach (var bo in Boundaries.Data) {
+            var zoneNames = bo.Zones.Select(m => m.Code).ToArray();
+            networkBoundaries.Add(new(bo.Code, zoneNames));
+        }
+        // Controls
+        List<Network.ControlSpec> networkControls = [];
+        foreach (var co in Ctrls.Data) {
+            //??var lineName = $"{co.Node1.Code}-{co.Node2.Code}-{co.Code}";
+            Network.ControlSpec cs = new(co.LineName, co.Type.ToString(), co.Cost, co.MinCtrl, co.MaxCtrl);
+            _ctrlDict.Add(co, cs);
+            networkControls.Add(cs);
         }
 
+        Network fullnet = new(networkNodes, networkBranches, networkControls, networkBoundaries);
+
+        return fullnet;
     }
+
 
     public static string AddDefaultTransportModels(int datasetId)
     {
@@ -229,6 +273,69 @@ public class BoundCalcNetworkData {
         }
         msg += $"Added transport model [{name}]\n";
         return msg;
+    }
+
+    public static BoundCalcResults Run(int datasetId, SetPointMode setPointMode, int transportModelId, string? boundaryName = null, bool boundaryTrips = false, string? tripStr = null, string? connectionId = null, IHubContext<NotificationHub> hubContext = null)
+    {
+        var nd = new BoundCalcNetworkData(datasetId, transportModelId);
+        var fullnet = nd.Model;
+
+        NetOptimiser netopt = new(fullnet);
+
+        LPResult rc1 = netopt.BalanceHVDCNodes(out int rc2);
+        fullnet.BaseLF.WriteSetPoints();
+
+        if (boundaryName == null) {
+            // No boundary specified
+            if (tripStr != null) {
+                string[] trips = tripStr.Split(',');
+                Network.LoadFlow lf = fullnet.SimSolver.UseTrip(new("", trips));
+                nd.FillResults(lf);
+            } else {
+                nd.FillResults(fullnet.BaseLF);
+            }
+        } else {
+            // boundary specified
+            Network.Boundary bnd = fullnet.BoundaryDict[boundaryName];
+            netopt.SetActiveBoundary(bnd);
+            string tripnm = "Intact";
+            Console.WriteLine($"Boundary {bnd.Name} Planned Transfer {bnd.PlannedTransfer:F1} Interconnection Allowance {bnd.InterconMargin:F1} has {bnd.BoundaryBranches.Count} boundary branches ");
+            var tripSpec = new Network.NetSim.TripSpec(tripnm);
+            rc1 = netopt.OptimiseNet(tripSpec, out rc2, out var lf, out double bndcap0);
+
+        }
+
+        //
+        return new BoundCalcResults(nd);
+    }
+
+    public void FillResults(Network.LoadFlow lf)
+    {
+        // always do node marginals
+        lf.CalcNodeMarginals(out double[] margkm, out double[] tlf);
+        foreach (var n in Nodes.Data) {
+            var netNode = _nodeDict[n];
+            n.Mismatch = lf.Mismatch(netNode);
+            n.TLF = tlf[netNode.Index];
+            n.km = margkm[netNode.Index];
+        }
+        foreach (var b in Branches.Data) {
+            if (Model.BranchDict.TryGetValue(b.LineName, out Network.Branch netBranch)) {
+                b.PowerFlow = lf.Flow(netBranch);
+                b.FreePower = lf.CalcBrFree(netBranch);
+            } else {
+                throw new Exception($"Cannot find Network.Branch with code {b.LineName}");
+            }
+        }
+        foreach (var c in Ctrls.Data) {
+            var lineName = c.LineName;
+            var netControl = Model.Controls.Where(m => m.Name == lineName).FirstOrDefault();
+            if (netControl!=null) {
+                c.SetPoint = netControl.SetPoint;
+            } else {
+                throw new Exception($"Cannot find Network.Control with code {lineName}");
+            }
+        }
     }
 
 

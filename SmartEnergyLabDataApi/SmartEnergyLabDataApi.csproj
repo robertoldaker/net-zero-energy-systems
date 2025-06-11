@@ -31,6 +31,8 @@
         <ProjectReference Include="..\DataAccessBase\DataAccessBase.csproj" />
         <ProjectReference Include="..\EventLogger\EventLogger.csproj" />
         <ProjectReference Include="..\CommonInterfaces\CommonInterfaces.csproj" />
+        <ProjectReference Include="..\..\Power-System-Analysis\NetworkLibrary\NetworkLibrary.csproj" />
+        <ProjectReference Include="..\..\Power-System-Analysis\NetworkOptimiser\NetworkOptimiser.csproj" />
     </ItemGroup>
     <ItemGroup>
         <Content Include="LowVoltage\EVDemand\**" CopyToPublishDirectory="PreserveNewest" />
