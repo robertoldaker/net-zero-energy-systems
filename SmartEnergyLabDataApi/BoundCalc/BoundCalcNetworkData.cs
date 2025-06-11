@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.SignalR;
 using Lad.NetworkOptimiser;
 using Lad.LinearProgram;
 using NHibernate.Mapping;
+using NHibernate.Hql.Ast.ANTLR;
 
 namespace SmartEnergyLabDataApi.BoundCalc;
 
@@ -21,6 +22,7 @@ public class BoundCalcNetworkData {
     private Dictionary<Node, Network.Node> _nodeDict = new Dictionary<Node, Network.Node>();
     private Dictionary<Branch, Network.BranchSpec> _branchDict = new Dictionary<Branch, Network.BranchSpec>();
     private Dictionary<Ctrl, Network.ControlSpec> _ctrlDict = new Dictionary<Ctrl, Network.ControlSpec>();
+    private Reporter _reporter = new Reporter();
 
     public BoundCalcNetworkData(BoundCalc bc)
     {
@@ -69,7 +71,7 @@ public class BoundCalcNetworkData {
             }
             SetPointMode = setPointMode;
             //
-            StageResults = new BoundCalcStageResults();
+            StageResults = _reporter.StageResults;
 
             // Transport model entries
             TransportModelEntries = da.BoundCalc.GetTransportModelEntryDatasetData(datasetId);
@@ -133,6 +135,7 @@ public class BoundCalcNetworkData {
     public DatasetData<TransportModelEntry> TransportModelEntries { get; private set; }
     public Dictionary<string, int[]> BoundaryDict { get; private set; }
     public Network Model { get; private set; }
+    public Reporter Reporter { get; private set; }
 
     private int[] getBranchIds(Boundary b, DatasetData<Branch> branchDi)
     {
@@ -176,6 +179,8 @@ public class BoundCalcNetworkData {
 
     private Network createNetworkModel()
     {
+        // set as static field in Network to allow diagnostic messages to be generated "internally" and get recorded as a StageResult
+        // and hence shown in the gui
         // Network.Nodes
         List<Network.Node> networkNodes = [];
         foreach (var n in Nodes.Data) {
@@ -186,7 +191,6 @@ public class BoundCalcNetworkData {
         // Network.Branches
         List<Network.Branch> networkBranches = [];
         foreach (var b in Branches.Data) {
-            //??var lineName = $"{b.Node1.Code}-{b.Node2.Code}-{b.Code}";
             Network.BranchSpec bsSpec = new(b.LineName, b.X, b.Cap, b.R, 0, b.CableLength + b.OHL);
             var node1 = _nodeDict[b.Node1];
             var node2 = _nodeDict[b.Node2];
@@ -203,13 +207,26 @@ public class BoundCalcNetworkData {
         // Controls
         List<Network.ControlSpec> networkControls = [];
         foreach (var co in Ctrls.Data) {
-            //??var lineName = $"{co.Node1.Code}-{co.Node2.Code}-{co.Code}";
             Network.ControlSpec cs = new(co.LineName, co.Type.ToString(), co.Cost, co.MinCtrl, co.MaxCtrl);
             _ctrlDict.Add(co, cs);
             networkControls.Add(cs);
         }
 
         Network fullnet = new(networkNodes, networkBranches, networkControls, networkBoundaries);
+
+        fullnet.Reporter = _reporter;
+        //
+        Report("Nodes", fullnet.Nodes.Count);
+        Report("Branches", fullnet.Branches.Count);
+        Report("Controls", fullnet.Controls.Count);
+        Report("Boundaries", fullnet.BoundaryDict.Count);
+        Report("HVDC nodes", fullnet.Nord.NodeCount - fullnet.Nord.ACNodeCount);
+        Report("INZC", fullnet.Nord.INZC);
+        Report("FNZC", fullnet.Nord.FNZC);
+        Report("Total Demand (MW)", fullnet.SystemDemand.ToString("F0"));
+        Report("Total Generation (MW)", fullnet.SystemGeneration.ToString("F0"));
+        Report("Ref. node", fullnet.Nord.LFReference().Name);
+
 
         return fullnet;
     }
@@ -275,15 +292,23 @@ public class BoundCalcNetworkData {
         return msg;
     }
 
+    public void Report(string msg, object obj, ReportState state=ReportState.Pass)
+    {
+        _reporter.Report(msg, obj, state);
+    }
+
     public static BoundCalcResults Run(int datasetId, SetPointMode setPointMode, int transportModelId, string? boundaryName = null, bool boundaryTrips = false, string? tripStr = null, string? connectionId = null, IHubContext<NotificationHub> hubContext = null)
     {
         var nd = new BoundCalcNetworkData(datasetId, transportModelId);
         var fullnet = nd.Model;
+        //
+        Network.Node lmn = fullnet.BaseLF.LargestMismatch();
+        nd.Report($"No control max. mismatch at {lmn.Name}", fullnet.BaseLF.Mismatch(lmn).ToString("F1"));
 
         NetOptimiser netopt = new(fullnet);
 
         LPResult rc1 = netopt.BalanceHVDCNodes(out int rc2);
-        fullnet.BaseLF.WriteSetPoints();
+        nd.Report($"\nBalancing HVDC nodes result",$"{rc1}:{rc2}");
 
         if (boundaryName == null) {
             // No boundary specified
@@ -330,13 +355,37 @@ public class BoundCalcNetworkData {
         foreach (var c in Ctrls.Data) {
             var lineName = c.LineName;
             var netControl = Model.Controls.Where(m => m.Name == lineName).FirstOrDefault();
-            if (netControl!=null) {
+            if (netControl != null) {
                 c.SetPoint = netControl.SetPoint;
             } else {
                 throw new Exception($"Cannot find Network.Control with code {lineName}");
             }
         }
     }
+}
 
+public class Reporter : IReporter {
+    private BoundCalcStageResults _stageResults = new BoundCalcStageResults();
+    public void Report(string msg, object obj, ReportState state = ReportState.Pass)
+    {
+        BoundCalcStageResultEnum result;
+        if (state == ReportState.Pass) {
+            result = BoundCalcStageResultEnum.Pass;
+        } else if (state == ReportState.Fail) {
+            result = BoundCalcStageResultEnum.Fail;
+        } else if (state == ReportState.Warning) {
+            result = BoundCalcStageResultEnum.Warn;
+        } else {
+            throw new Exception($"Unexpected value of ReportState [{state}]");
+        }
+        var sr = _stageResults.NewStage(msg);
+        _stageResults.StageResult(sr, result, obj != null ? obj.ToString() : "");
+    }
 
+    public BoundCalcStageResults StageResults
+    {
+        get {
+            return _stageResults;
+        }
+    }
 }
