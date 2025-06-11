@@ -19,8 +19,9 @@ public class BoundCalcTnuosLoader {
     private DataAccess _da;
     private Dataset _dataset;
 
-    private Regex _nameRegEx = new Regex(@"^External (\d\d\d\d)(\d\d)");
+    private Regex _name1RegEx = new Regex(@"^External (\d\d\d\d)(\d\d)");
 
+    private Regex _name2RegEx = new Regex(@"^(\d\d\d\d)(\d\d)");
     private enum GridGroup {Ireland,Continent,Iceland}
 
     private class InterConnector {
@@ -342,11 +343,14 @@ public class BoundCalcTnuosLoader {
 
     private (string,int) getDatasetName(int year, string fileName) {
 
-        var match = _nameRegEx.Match(fileName);
-        if ( match.Success && match.Groups.Count>1) {
-            string yearStr= match.Groups[1].Value;
-            if ( int.TryParse(yearStr, out int targetYear) ) {
-                return ($"GB network {targetYear}/{targetYear-1999} ({year})",targetYear);
+        var match = _name1RegEx.Match(fileName);
+        if (!match.Success) {
+            match = _name2RegEx.Match(fileName);
+        }
+        if (match.Success && match.Groups.Count > 1) {
+            string yearStr = match.Groups[1].Value;
+            if (int.TryParse(yearStr, out int targetYear)) {
+                return ($"GB network {targetYear}/{targetYear - 1999} ({year})", targetYear);
             } else {
                 throw new Exception($"Problem parsing year from year string [{yearStr}]");
             }
