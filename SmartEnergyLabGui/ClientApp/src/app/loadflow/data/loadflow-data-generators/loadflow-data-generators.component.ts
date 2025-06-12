@@ -21,7 +21,20 @@ export class LoadflowDataGeneratorsComponent extends DataTableBaseComponent<Gene
      ) {
         super();
         this.dataFilter.sort = { active: 'name', direction: 'asc'};
-
+        // code filter
+        const typeNames: string[] = Object.keys(GeneratorType).filter(
+            (key) => isNaN(Number(key))
+          );
+        typeNames.unshift('All')
+        this.typeDataFilter = new ColumnDataFilter(this, "type", typeNames)
+        this.typeDataFilter.filterFcn = (item, colFilter) => {
+            if (colFilter.value == 'All') {
+                return true
+            }  else {
+                return GeneratorType[colFilter.value] == item.type
+            }
+        }
+        this.dataFilter.columnFilterMap.set(this.typeDataFilter.columnName, this.typeDataFilter)
         //
         this.createDataSource(this.dataService.dataset,dataService.networkData.generators);
         this.displayedColumns = ['buttons','name','type','capacity','scaledGeneration','nodeCount']
@@ -76,5 +89,7 @@ export class LoadflowDataGeneratorsComponent extends DataTableBaseComponent<Gene
 
 
     nodeMismatchError: boolean = false;
+    typeDataFilter: ColumnDataFilter
+
 
 }

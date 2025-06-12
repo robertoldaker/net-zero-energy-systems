@@ -21,7 +21,9 @@
 
         <!-- Generator Type Column -->
         <ng-container matColumnDef="type">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <app-column-filter [filter]="typeDataFilter" title="Type"></app-column-filter>
+            </th>
             <td mat-cell *matCellDef="let element">
                 <app-cell-editor [data]="element.type" [enumeration]="generatorTypeEnum"></app-cell-editor>
             </td>
@@ -42,14 +44,6 @@
                 <div>{{element.scaledGeneration.value!=null ? element.scaledGeneration.value.toFixed(0) : ''}}</div>
             </td>
         </ng-container>
-
-        <!-- Node count -->
-        <!--<ng-container matColumnDef="nodeCount">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Nodes</th>
-            <td mat-cell *matCellDef="let element">
-                <div>{{element.nodeCount.value!=null ? element.nodeCount.value.toFixed(0) : ''}}</div>
-            </td>
-        </ng-container>-->
 
         <!-- Nodes -->
         <ng-container matColumnDef="nodeCount">
