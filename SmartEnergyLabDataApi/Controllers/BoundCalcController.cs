@@ -63,10 +63,25 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("Run")]
-        public IActionResult Run(int datasetId, SetPointMode setPointMode, int transportModelId, string? boundaryName=null, bool boundaryTrips=false, string? tripStr=null, string? connectionId=null )
+        public IActionResult Run(int datasetId,
+                                    SetPointMode setPointMode,
+                                    int transportModelId,
+                                    bool nodeMarginals = false,
+                                    string? boundaryName=null,
+                                    bool boundaryTrips=false,
+                                    string? tripStr=null,
+                                    string? connectionId=null )
         {
             try {
-                var resp = BoundCalc.BoundCalc.Run(datasetId,setPointMode,transportModelId,boundaryName,boundaryTrips,tripStr,connectionId,_hubContext);
+                var resp = BoundCalc.BoundCalc.Run(datasetId,
+                                                        setPointMode,
+                                                        transportModelId,
+                                                        nodeMarginals,
+                                                        boundaryName,
+                                                        boundaryTrips,
+                                                        tripStr,
+                                                        connectionId,
+                                                        _hubContext);
                 return this.Ok(resp);
             } catch( Exception e) {
                 return this.Ok(new BoundCalcResults(e.Message));

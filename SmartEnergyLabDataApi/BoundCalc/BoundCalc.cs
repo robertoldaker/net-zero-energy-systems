@@ -1193,7 +1193,15 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         }
 
-        public static BoundCalcResults Run(int datasetId, SetPointMode setPointMode, int transportModelId, string? boundaryName = null, bool boundaryTrips = false, string? tripStr = null, string? connectionId = null, IHubContext<NotificationHub> hubContext = null)
+        public static BoundCalcResults Run(int datasetId,
+                                                SetPointMode setPointMode,
+                                                int transportModelId,
+                                                bool nodeMarginals=false,
+                                                string? boundaryName = null,
+                                                bool boundaryTrips = false,
+                                                string? tripStr = null,
+                                                string? connectionId = null,
+                                                IHubContext<NotificationHub> hubContext = null)
         {
             using (var bc = new BoundCalc(datasetId, transportModelId, setPointMode, true)) {
                 if (connectionId != null) {
@@ -1218,7 +1226,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     if (!string.IsNullOrEmpty(tripStr)) {
                         tr = new Trip("T1", tripStr, bc.Branches);
                     }
-                    bc.RunBoundCalc(null, tr, true, true);
+                    bc.RunBoundCalc(null, tr, nodeMarginals, true);
                 } else {
                     if (boundaryTrips) {
                         bc.RunAllTrips(bnd);

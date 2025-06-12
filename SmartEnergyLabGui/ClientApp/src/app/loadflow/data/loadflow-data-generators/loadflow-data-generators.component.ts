@@ -1,5 +1,5 @@
 import { Component} from '@angular/core';
-import { Generator, GeneratorType} from 'src/app/data/app.data';
+import { Node, Generator, GeneratorType} from 'src/app/data/app.data';
 import { LoadflowDataService } from 'src/app/loadflow/loadflow-data-service.service';
 import { ColumnDataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
@@ -67,6 +67,11 @@ export class LoadflowDataGeneratorsComponent extends DataTableBaseComponent<Gene
         } else {
             return "";
         }
+    }
+
+    getNodes(genId: number):Node[] {
+        console.log('genId',genId)
+        return this.dataService.networkData.nodes.data.filter(m=>m.generators.find(n=>n.id===genId));
     }
 
 

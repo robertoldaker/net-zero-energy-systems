@@ -20,7 +20,7 @@ public class ProgressManager {
         _totalCycles = totalCycles;
         _cycleCount = 0;
         _lastUpdate = 0;
-        _sw.Start();        
+        _sw.Start();
         ProgressUpdate?.Invoke(msg,0);
     }
 
@@ -37,7 +37,7 @@ public class ProgressManager {
     public void Finish(string msg=null) {
         _sw.Stop();
         if ( msg==null ) {
-            msg = $"Finished in {_sw.Elapsed.TotalSeconds:0.00}s";
+            msg = $"Finished in {_sw.Elapsed.TotalSeconds:0.000}s";
         }
         ProgressUpdate?.Invoke(msg,100);
     }

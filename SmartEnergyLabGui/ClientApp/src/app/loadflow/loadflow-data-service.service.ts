@@ -95,6 +95,7 @@ export class LoadflowDataService {
     boundaryTripResult: AllTripResult | undefined
     boundaryTripResults: AllTripResult[] = []
     needsCalc: boolean = true
+    nodeMarginals: boolean = false
     private _locationDragging: boolean = false
 
 
@@ -104,6 +105,11 @@ export class LoadflowDataService {
         this.dataset = dataset;
         //
         this.loadNetworkData(true,true);
+    }
+
+    setNodeMarginals(value: boolean) {
+        this.nodeMarginals = value
+        this.needsCalc = true
     }
 
     private reloadDataset(onLoad: (()=>void) | undefined = undefined) {
@@ -247,7 +253,7 @@ export class LoadflowDataService {
             this.clearBoundaryTrips()
         }
         if ( this.transportModel) {
-            this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, this.transportModel.id, boundaryName, boundaryTrips, tripStr, (results)=>{
+            this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, this.transportModel.id, this.nodeMarginals, boundaryName, boundaryTrips, tripStr, (results)=>{
                 if ( boundaryTrips && results.boundaryTripResults) {
                     this.setBoundaryTrips(results.boundaryTripResults)
                 }

@@ -163,6 +163,14 @@ export class LoadflowDialogComponent extends ComponentBase {
         this.dataService.reload()
     }
 
+    get nodeMarginals():boolean {
+        return this.dataService.nodeMarginals
+    }
+
+    set nodeMarginals(value: boolean) {
+        this.dataService.setNodeMarginals(value);
+    }
+
     currentTrip: string
     percent: number
     selectedTrip: string
