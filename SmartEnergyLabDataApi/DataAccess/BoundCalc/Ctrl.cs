@@ -4,8 +4,13 @@ using NHibernate.Mapping.Attributes;
 namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
 
-    public enum BoundCalcCtrlType {  QB, // Quad Booster
-                                    HVDC // High-voltage DC
+    public enum BoundCalcCtrlType { QB,         // Quad Booster
+                                    HVDC,        // High-voltage DC
+                                    SeriesCap,
+                                    DecInc,
+                                    InterTrip,
+                                    Transfer,
+                                    Boundary
                                                             }
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_ctrls")]
