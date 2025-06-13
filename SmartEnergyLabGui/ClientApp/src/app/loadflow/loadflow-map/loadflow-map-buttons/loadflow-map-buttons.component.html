@@ -1,33 +1,29 @@
-<div class="buttonContainer">
-    <button mat-icon-button aria-label="Back to table view" (click)="tableView()" title="Back to table view">
-        <mat-icon>keyboard_arrow_left</mat-icon>
-    </button>
+<div class="button" aria-label="Back to table view" (click)="tableView()" title="Back to table view">
+    <mat-icon>keyboard_arrow_left</mat-icon>
 </div>
-<div *ngIf="isEditable" class="buttonContainer">
-    <button mat-icon-button aria-label="Add location" (click)="addLocation()" title="Add location">
-        <mat-icon>add</mat-icon>
-    </button>
+<div *ngIf="isEditable" class="button" aria-label="Add location" (click)="addLocation()" title="Add location">
+    <mat-icon>add</mat-icon>
 </div>
-<div class="buttonContainer">
-    <button mat-icon-button aria-label="Reset zoom" (click)="resetZoom()" title="Reset zoom">
-        <mat-icon>settings_overscan</mat-icon>
-    </button>
+<div class="button" aria-label="Reset zoom" (click)="resetZoom()" title="Reset zoom">
+    <mat-icon>settings_overscan</mat-icon>
 </div>
-<div *ngIf="isEditable" class="buttonContainer img">
-    <button mat-icon-button aria-label="Allow dragging" (click)="toggleLocationDragging()" title="Allow substation dragging">
-        <img src="assets/icons/drag-and-drop.png" class="button" [class]="{enabled: locationDragging}"/>
-    </button>
+<div *ngIf="isEditable" class="button" [class]="{enabled: locationDragging}" aria-label="Allow dragging" (click)="toggleLocationDragging()" title="Allow substation dragging">
+    <img src="assets/icons/drag-and-drop.png" class="button" />
 </div>
-<div *ngIf="hasResults" class="buttonContainer">
-    <button mat-icon-button aria-label="Filter lables" title="Filter labels" [class]="{isSet: isFlowFilterSet}">
-        <mat-icon [matMenuTriggerFor]="menu" >filter_list</mat-icon>
-    </button>
+<div *ngIf="hasResults" class="button" [class]="{isSet: isFlowFilterSet}" aria-label="Filter lables" title="Filter labels">
+    <mat-icon [matMenuTriggerFor]="filterMenu">filter_list</mat-icon>
+    <span *ngIf="filtersApplied>0">({{filtersApplied}})</span>
 </div>
-<mat-menu #menu="matMenu">
+<mat-menu #filterMenu>
+    <button mat-menu-item [mat-menu-trigger-for]="labelFilters">
+        <span>Labels</span>
+    </button>
+</mat-menu>
+<mat-menu #labelFilters>
     <button *ngFor="let f of flowFilters" mat-menu-item (click)="selectFlowFilterOption($event,f)" [disabled]="isFlowFilterDisabled(f.id)">
         <mat-icon *ngIf="f.id===flowFilter">done</mat-icon>
         <mat-icon *ngIf="f.id!==flowFilter"></mat-icon>
         <span>{{f.text}}</span>
     </button>
-</mat-menu>                
+</mat-menu>
 

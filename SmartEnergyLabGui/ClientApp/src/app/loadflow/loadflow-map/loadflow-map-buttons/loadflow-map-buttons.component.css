@@ -1,7 +1,7 @@
-div.buttonContainer {
+div.button {
     background: #fefefe;
     border: 2px solid #fefefe;
-    border-radius: 3px;  
+    border-radius: 3px;
     box-shadow: 0 2px 6px rgba(0,0,0,.3);
     margin-left: 8px;
     margin-top: 8px;
@@ -9,24 +9,29 @@ div.buttonContainer {
     font-size: 15px;
     font-weight: bold;
     color: grey;
-    padding: 0;
+    padding: 8px;
     display: inline-block;
-}
-
-div.buttonContainer.img {
-    /* padding: 10px !important; */
     cursor: pointer;
 }
 
-img.button {
-    width: 20px;
-    opacity: 0.5;   
+div.button > mat-icon {
+    vertical-align: bottom;
 }
 
-img.enabled {
+div.button > span {
+    vertical-align: middle;
+}
+
+div.button > img {
+    vertical-align: bottom;
+    width: 23px;
+    opacity: 0.5;
+}
+
+div.button.enabled > img {
     opacity: 1;
 }
 
-button.isSet {
+div.button.isSet {
     color: black
 }

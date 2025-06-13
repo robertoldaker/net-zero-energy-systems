@@ -13,8 +13,8 @@ export class LoadflowMapButtonsComponent  extends ComponentBase implements OnIni
 
     constructor(
         private mapComponent: LoadflowMapComponent,
-        private dataComponent: LoadflowDataComponent, 
-        private dataService: LoadflowDataService) { 
+        private dataComponent: LoadflowDataComponent,
+        private dataService: LoadflowDataService) {
         super()
     }
 
@@ -75,6 +75,10 @@ export class LoadflowMapButtonsComponent  extends ComponentBase implements OnIni
 
     get isFlowFilterSet(): boolean {
         return this.mapComponent.flowFilter!==MapFlowFilter.All
+    }
+
+    get filtersApplied(): number {
+        return this.mapComponent.filtersApplied
     }
 
     selectFlowFilterOption(e: any, f: { id:MapFlowFilter,text: string}) {

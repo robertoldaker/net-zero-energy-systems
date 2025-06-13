@@ -371,6 +371,10 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.linkLabelData.updateForZoom()
     }
 
+    get filtersApplied():number {
+        return this.flowFilter!=MapFlowFilter.All ? 1 : 0
+    }
+
 }
 
 export class AddBranchHandler {
