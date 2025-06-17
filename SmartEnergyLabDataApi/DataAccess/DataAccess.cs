@@ -10,8 +10,8 @@ namespace SmartEnergyLabDataApi.Data
 
         public DataAccess() : base()
         {
-            SimplusGridTool = new SimplusGridTool(this);           
-            Substations = new Substations(this);            
+            SimplusGridTool = new SimplusGridTool(this);
+            Substations = new Substations(this);
             Organisations = new Organisations(this);
             SupplyPoints = new SupplyPoints(this);
             SubstationLoadProfiles = new SubstationLoadProfiles(this);
@@ -25,6 +25,7 @@ namespace SmartEnergyLabDataApi.Data
             NationalGrid = new NationalGrid(this);
             SolarInstallations = new SolarInstallations(this);
             Datasets = new Datasets(this);
+            Elexon = new Elexon(this);
         }
 
         public SimplusGridTool SimplusGridTool { get; private set; }
@@ -42,30 +43,31 @@ namespace SmartEnergyLabDataApi.Data
         public NationalGrid NationalGrid { get; private set;}
         public SolarInstallations SolarInstallations { get; private set;}
         public Datasets Datasets { get; private set;}
+        public Elexon Elexon { get; private set; }
         public static void SchemaUpdated(int oldVersion, int newVersion)
         {
-            if ( oldVersion<29 ) {
+            if (oldVersion < 29) {
                 updateSubstationIds();
             }
-            if ( oldVersion<30) {
+            if (oldVersion < 30) {
                 updateSubstationClassifications();
             }
-            if ( oldVersion<44) {
+            if (oldVersion < 44) {
                 updateDistributionSubstationLinks();
             }
-            if ( oldVersion<57) {
+            if (oldVersion < 57) {
                 updateLoadflowCtrls();
             }
-            if ( oldVersion<58) {
+            if (oldVersion < 58) {
                 updateGridSubstationLocations();
             }
-            if ( oldVersion<59) {
+            if (oldVersion < 59) {
                 updateLoadflowBranches();
             }
-            if ( oldVersion<60) {
+            if (oldVersion < 60) {
                 updateElsiScenarioData();
             }
-            if ( oldVersion<61) {
+            if (oldVersion < 61) {
                 removeGISColumns();
             }
         }
@@ -74,7 +76,7 @@ namespace SmartEnergyLabDataApi.Data
             DataAccessBase.DeleteColumn("gis_data","GeographicalAreaId");
             DataAccessBase.DeleteColumn("gis_data","DistributionSubstationId");
             DataAccessBase.DeleteColumn("gis_data","PrimarySubstationId");
-            DataAccessBase.DeleteColumn("gis_data","VehicleChargingStationId");                
+            DataAccessBase.DeleteColumn("gis_data","VehicleChargingStationId");
         }
 
         private static void updateElsiScenarioData() {
@@ -83,7 +85,7 @@ namespace SmartEnergyLabDataApi.Data
                 var crs = genCapacities.Where( m=>m.Scenario == ElsiScenario.CommunityRenewables).ToList();
                 foreach( var cr in crs ) {
                     cr.CommunityRenewables = cr.Capacity;
-                    // look for others 
+                    // look for others
                     var crgc = genCapacities.Where(m=>m.GenType == cr.GenType && m.Zone == cr.Zone ).ToList();
                     // fill in columns for each scenario
                     var twoDegrees = crgc.Where(m=>m.Scenario == ElsiScenario.TwoDegrees).FirstOrDefault();
@@ -185,7 +187,7 @@ namespace SmartEnergyLabDataApi.Data
         private static void updateLoadflowCtrls() {
             using ( var da = new DataAccess() ) {
                 var ctrls = da.Session.QueryOver<Ctrl>().List();
-                foreach ( var c in ctrls) {                    
+                foreach ( var c in ctrls) {
                     if ( c.Branch==null && !string.IsNullOrEmpty(c.old_Code) ) {
                         var b = da.Session.QueryOver<Branch>().Where( m=>m.Code == c.old_Code && c.Dataset.Id == m.Dataset.Id).Take(1).SingleOrDefault();
                         if ( b!=null) {

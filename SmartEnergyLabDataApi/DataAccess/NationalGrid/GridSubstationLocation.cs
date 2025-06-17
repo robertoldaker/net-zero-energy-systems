@@ -88,7 +88,7 @@ namespace SmartEnergyLabDataApi.Data
 
         public virtual int DatasetId {
             get {
-                return this.Dataset.Id;
+                return this.Dataset!=null ? this.Dataset.Id : 0;
             }
         }
 

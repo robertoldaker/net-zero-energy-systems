@@ -415,6 +415,70 @@ namespace HaloSoft.DataAccess
         }
     }
 
+    public class BoolArrayType : IUserType {
+        public SqlType[] SqlTypes
+        {
+            get { return new SqlType[] { new NpgsqlExtendedSqlType(DbType.Boolean, NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Boolean) }; }
+        }
+
+        public Type ReturnedType => typeof(bool[]);
+
+        public bool IsMutable => false;
+
+        public object Assemble(object cached, object owner)
+        {
+            return null;
+        }
+
+        public object DeepCopy(object value)
+        {
+            return value;
+        }
+
+        public object Disassemble(object value)
+        {
+            return null;
+        }
+
+        public new bool Equals(object x, object y)
+        {
+            return false;
+        }
+
+        public int GetHashCode(object x)
+        {
+            return 0;
+        }
+
+        public object NullSafeGet(DbDataReader resultSet, string[] names, ISessionImplementor session, object owner)
+        {
+            int index = resultSet.GetOrdinal(names[0]);
+            if (resultSet.IsDBNull(index)) {
+                return null;
+            }
+            bool[] res = resultSet.GetValue(index) as bool[];
+            if (res != null) {
+                return res;
+            }
+            throw new NotImplementedException();
+        }
+
+        public void NullSafeSet(DbCommand cmd, object value, int index, ISessionImplementor session)
+        {
+            IDbDataParameter parameter = ((IDbDataParameter)cmd.Parameters[index]);
+            if (value == null) {
+                parameter.Value = DBNull.Value;
+            } else {
+                parameter.Value = (bool[])value;
+            }
+        }
+
+        public object Replace(object original, object target, object owner)
+        {
+            return null;
+        }
+    }
+
     [Serializable]
     public class JsonType<TSerializable> : IUserType where TSerializable : class
     {

@@ -5,17 +5,16 @@ using NHibernate.Criterion;
 
 namespace SmartEnergyLabDataApi.Data
 {
-    public class NationalGrid : DataSet
-    {
-        public NationalGrid(DataAccessBase da) : base(da) {
+    public class NationalGrid : DataSet {
+        public NationalGrid(DataAccessBase da) : base(da)
+        {
 
         }
 
         public DataAccess DataAccess
         {
-            get
-            {
-                return (DataAccess) _dataAccess;
+            get {
+                return (DataAccess)_dataAccess;
             }
         }
 
@@ -36,25 +35,29 @@ namespace SmartEnergyLabDataApi.Data
             Session.Delete(gss);
         }
 
-        public GridSubstation GetGridSubstation(string reference) {
-            return Session.QueryOver<GridSubstation>().Where( m=>m.Reference == reference).Take(1).SingleOrDefault();
+        public GridSubstation GetGridSubstation(string reference)
+        {
+            return Session.QueryOver<GridSubstation>().Where(m => m.Reference == reference).Take(1).SingleOrDefault();
         }
 
-        public IList<GridSubstation> GetGridSubstations() {
-            return Session.QueryOver<GridSubstation>().Fetch(SelectMode.Fetch, m=>m.GISData).List();
+        public IList<GridSubstation> GetGridSubstations()
+        {
+            return Session.QueryOver<GridSubstation>().Fetch(SelectMode.Fetch, m => m.GISData).List();
         }
 
-        public int GetNumGridSubstations(GridSubstationSource source) {
+        public int GetNumGridSubstations(GridSubstationSource source)
+        {
             return Session.QueryOver<GridSubstation>().
-                And( m=>m.Source == source).
+                And(m => m.Source == source).
                 RowCount();
         }
 
-        public void DeleteSubstations(GridSubstationSource source) {
+        public void DeleteSubstations(GridSubstationSource source)
+        {
             var subs = Session.QueryOver<GridSubstation>().
-                Where( m=>m.Source == source).
+                Where(m => m.Source == source).
                 List();
-            foreach ( var sub in subs) {
+            foreach (var sub in subs) {
                 Session.Delete(sub);
             }
         }
@@ -64,8 +67,9 @@ namespace SmartEnergyLabDataApi.Data
             Session.Delete(ohl);
         }
 
-        public GridOverheadLine GetGridOverheadline(string reference) {
-            return Session.QueryOver<GridOverheadLine>().Where( m=>m.Reference == reference).Take(1).SingleOrDefault();
+        public GridOverheadLine GetGridOverheadline(string reference)
+        {
+            return Session.QueryOver<GridOverheadLine>().Where(m => m.Reference == reference).Take(1).SingleOrDefault();
         }
 
         public void Add(GridSubstationLocation loc)
@@ -78,72 +82,80 @@ namespace SmartEnergyLabDataApi.Data
             Session.Delete(loc);
         }
 
-        public GridSubstationLocation GetGridSubstationLocation(int id) {
+        public GridSubstationLocation GetGridSubstationLocation(int id)
+        {
             return Session.Get<GridSubstationLocation>(id);
         }
 
-        public GridSubstationLocation GetGridSubstationLocation(string reference, Dataset dataset=null, bool includeDerived=false) {
-            var q = Session.QueryOver<GridSubstationLocation>().Where( m=>m.Reference == reference);
-            if ( dataset!=null && includeDerived) {
+        public GridSubstationLocation GetGridSubstationLocation(string reference, Dataset dataset = null, bool includeDerived = false)
+        {
+            var q = Session.QueryOver<GridSubstationLocation>().Where(m => m.Reference == reference);
+            if (dataset != null && includeDerived) {
                 var datasetIds = DataAccess.Datasets.GetInheritedDatasetIds(dataset.Id);
-                q = q.Where( m=>m.Dataset.Id.IsIn(datasetIds));
+                q = q.Where(m => m.Dataset.Id.IsIn(datasetIds));
             } else {
-                q = q.Where( m=>m.Dataset == dataset);
+                q = q.Where(m => m.Dataset == dataset);
             }
             return q.Take(1).SingleOrDefault();
         }
 
-        public IList<GridSubstationLocation> GetGridSubstationLocations() {
+        public IList<GridSubstationLocation> GetGridSubstationLocations()
+        {
             return Session.QueryOver<GridSubstationLocation>().
-                Where( m=>m.Dataset==null).
-                Fetch(SelectMode.Fetch, m=>m.GISData).
+                Where(m => m.Dataset == null).
+                Fetch(SelectMode.Fetch, m => m.GISData).
                 List();
         }
 
-        public IList<GridSubstationLocation> GetGridSubstationLocations(Dataset dataset) {
+        public IList<GridSubstationLocation> GetGridSubstationLocations(Dataset dataset)
+        {
             return Session.QueryOver<GridSubstationLocation>().
-                Where( m=>m.Dataset.Id == dataset.Id).
-                Fetch(SelectMode.Fetch, m=>m.GISData).
+                Where(m => m.Dataset.Id == dataset.Id).
+                Fetch(SelectMode.Fetch, m => m.GISData).
                 List();
         }
 
-        public int GetNumGridSubstationLocations(GridSubstationLocationSource source) {
+        public int GetNumGridSubstationLocations(GridSubstationLocationSource source)
+        {
             return Session.QueryOver<GridSubstationLocation>().
-                Where( m=>m.Dataset == null).
-                And( m=>m.Source == source).
+                Where(m => m.Dataset == null).
+                And(m => m.Source == source).
                 RowCount();
         }
 
-        public IList<GridSubstationLocation> GetGridSubstationLocationsBySource(GridSubstationLocationSource source) {
+        public IList<GridSubstationLocation> GetGridSubstationLocationsBySource(GridSubstationLocationSource source)
+        {
             //
-            var q = Session.QueryOver<GridSubstationLocation>().Where( m=>m.Source == source);
+            var q = Session.QueryOver<GridSubstationLocation>().Where(m => m.Source == source);
             return q.List();
         }
 
-        public bool GridSubstationLocationExists(int datasetId, string reference, out Dataset? dataset) {
+        public bool GridSubstationLocationExists(int datasetId, string reference, out Dataset? dataset)
+        {
             // need to look at all datasets belonging to the user
             var derivedIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
             var inheritedIds = DataAccess.Datasets.GetInheritedDatasetIds(datasetId);
             var loc = Session.QueryOver<GridSubstationLocation>().
-                Where( m=>m.Reference.IsInsensitiveLike(reference)).
-                Where( m=>m.Dataset.Id.IsIn(derivedIds) || m.Dataset.Id.IsIn(inheritedIds)).
-                Fetch(SelectMode.Fetch,m=>m.Dataset).
+                Where(m => m.Reference.IsInsensitiveLike(reference)).
+                Where(m => m.Dataset.Id.IsIn(derivedIds) || m.Dataset.Id.IsIn(inheritedIds)).
+                Fetch(SelectMode.Fetch, m => m.Dataset).
                 Take(1).
                 SingleOrDefault();
-            if ( loc!=null) {
+            if (loc != null) {
                 dataset = loc.Dataset;
             } else {
                 dataset = null;
             }
-            return loc!=null;
+            return loc != null;
         }
 
-        public void DeleteLocations(GridSubstationLocationSource source) {
+        public void DeleteLocations(GridSubstationLocationSource source)
+        {
             var locs = Session.QueryOver<GridSubstationLocation>().
-                Where(m=>m.Dataset == null).
-                Where( m=>m.Source == source).
+                Where(m => m.Dataset == null).
+                Where(m => m.Source == source).
                 List();
-            foreach ( var loc in locs) {
+            foreach (var loc in locs) {
                 Session.Delete(loc);
             }
         }
@@ -156,6 +168,16 @@ namespace SmartEnergyLabDataApi.Data
             }
             var locDi = new DatasetData<GridSubstationLocation>(DataAccess, datasetId, m => m.Id.ToString(), locQuery);
             return locDi;
+        }
+
+        public Dictionary<string, GridSubstationLocation> GetGridSubstationLocationDict()
+        {
+            var locs = Session.QueryOver<GridSubstationLocation>().Where(m => m.Dataset == null).List();
+            var dict = new Dictionary<string, GridSubstationLocation>();
+            foreach (var loc in locs) {
+                dict.TryAdd(loc.Reference, loc);
+            }
+            return dict;
         }
     }
 }
