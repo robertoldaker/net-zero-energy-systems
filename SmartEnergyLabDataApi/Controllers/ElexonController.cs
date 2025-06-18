@@ -37,18 +37,46 @@ public class ElexonController : ControllerBase {
     }
 
     /// <summary>
-    /// Gets total GSP demand profiles for a given start date, end date
+    /// Gets total GSP demand profile for a given date and optional gspGroupId.
+    /// If gspGroupId is null then demand profile for the whole of the uk is returned (total over all gsps)
     /// </summary>
     /// <param name="date">Date for the demand profile</param>
     /// <param name="gspGroupId">Leave blank for whole of UK or enter gspGroupId for gsp group only</param>
     /// <returns></returns>
     [HttpGet]
-    [Route("GetTotalGspDemandProfiles")]
-    public double[] GetTotalGspDemandProfiles(DateTime date, string? gspGroupId=null)
+    [Route("GetTotalGspDemandProfile")]
+    public double[] GetTotalGspDemandProfile(DateTime date, string? gspGroupId = null)
     {
         using (var da = new DataAccess()) {
-            var profiles = da.Elexon.GetTotalGspDemandProfiles(date,gspGroupId);
+            var profiles = da.Elexon.GetTotalGspDemandProfile(date, gspGroupId);
             return profiles;
+        }
+    }
+
+    /// <summary>
+    /// Gets a list of all locations that have Gsp demand profile data
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("GetGspDemandLocations")]
+    public IList<GridSubstationLocation> GetGspDemandLocations()
+    {
+        using (var da = new DataAccess()) {
+            var locs = da.Elexon.GetGspDemandLocations();
+            return locs;
+        }
+    }
+    /// <summary>
+    /// Gets a list of all dates with Gsp demand location data
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("GetGspDemandDates")]
+    public IList<DateTime> GetGspDemandDates()
+    {
+        using (var da = new DataAccess()) {
+            var dates = da.Elexon.GetGspDemandDates();
+            return dates;
         }
     }
 }

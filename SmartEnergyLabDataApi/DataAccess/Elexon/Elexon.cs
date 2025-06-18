@@ -2,6 +2,7 @@ using HaloSoft.DataAccess;
 using NHibernate;
 using NHibernate.Criterion;
 using SmartEnergyLabDataApi.BoundCalc;
+using SmartEnergyLabDataApi.Models;
 
 namespace SmartEnergyLabDataApi.Data;
 
@@ -43,22 +44,21 @@ public class Elexon : DataSet {
         return Session.QueryOver<GspDemandProfileData>().
             Where(m => m.GspCode == code).
             Where(m => m.Date >= startDate && m.Date <= endDate).
-            Fetch(SelectMode.Fetch,m=>m.Location).
+            Fetch(SelectMode.Fetch, m => m.Location).
             List();
     }
 
-    public double[] GetTotalGspDemandProfiles(DateTime startDate, string? gspGroupId = null)
+    public double[] GetTotalGspDemandProfile(DateTime startDate, string? gspGroupId = null)
     {
         var sql = getTotalGspDemandSQLQuery(startDate, gspGroupId);
         var objs = Session.CreateSQLQuery(sql).List<object>();
         if (objs.Count > 0) {
-            /*object[] demandObjs = (object[])objs[0];
-            double[] demand = new double[demandObjs.Length];
+            var objArray = (object[])objs[0];
+            double[] demand = new double[48];
             int i = 0;
-            foreach (var d in demandObjs) {
-                demand[i++] = (double)d;
-            }*/
-            double[] demand = ((object[])objs[0]).Cast<double>().ToArray();
+            foreach (var obj in objArray) {
+                demand[i++] = obj != null ? (double)obj : 0;
+            }
             return demand;
         } else {
             return [];
@@ -89,6 +89,28 @@ public class Elexon : DataSet {
         return $"{dt.Year}-{dt.Month:00}-{dt.Day:00}";
     }
 
+    public IList<GridSubstationLocation> GetGspDemandLocations()
+    {
+        var locIds = Session.QueryOver<GspDemandProfileData>().
+            Where( m=>m.Location!=null).
+            Select(Projections.Distinct(Projections.Property<GspDemandProfileData>(m => m.Location.Id))).
+            List<int>().ToArray();
+        var locs = Session.QueryOver<GridSubstationLocation>().
+            Fetch(SelectMode.Fetch, m => m.GISData).
+            Where(m => m.Id.IsIn(locIds)).
+            List();
+        return locs;
+    }
+
+    public IList<DateTime> GetGspDemandDates()
+    {
+        var dates = Session.QueryOver<GspDemandProfileData>().
+            OrderBy(m => m.Date).Asc.
+            Select(Projections.Distinct(Projections.Property<GspDemandProfileData>(m => m.Date))).
+            List<DateTime>();
+
+        return dates;
+    }
 
     #endregion
 

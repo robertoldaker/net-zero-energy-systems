@@ -10,27 +10,27 @@ import { RouterModule } from '@angular/router';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select'
-import { MatIconModule } from '@angular/material/icon'; 
+import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatButtonModule } from '@angular/material/button';  
-import { MatButtonToggleModule } from '@angular/material/button-toggle'; 
-import { MatRadioModule } from '@angular/material/radio'; 
-import { MatDividerModule } from '@angular/material/divider'; 
-import { MatDialogModule } from '@angular/material/dialog'; 
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatProgressBarModule } from '@angular/material/progress-bar'; 
-import { MatAutocompleteModule } from '@angular/material/autocomplete'; 
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatTabsModule } from '@angular/material/tabs'; 
-import { MatExpansionModule} from '@angular/material/expansion'; 
-import { MatGridListModule } from '@angular/material/grid-list'; 
-import { MatListModule } from '@angular/material/list'; 
-import { MatTableModule } from '@angular/material/table'; 
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatExpansionModule} from '@angular/material/expansion';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatListModule } from '@angular/material/list';
+import { MatTableModule } from '@angular/material/table';
 import { MatSortModule } from '@angular/material/sort';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; 
-import { MatDatepickerModule } from '@angular/material/datepicker'; 
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DATE_LOCALE, MatNativeDateModule } from '@angular/material/core';
-import {MatPaginatorModule} from '@angular/material/paginator'; 
+import {MatPaginatorModule} from '@angular/material/paginator';
 
 // google maps
 import { GoogleMapsModule } from '@angular/google-maps'
@@ -174,6 +174,10 @@ import { LoadflowDataGeneratorsComponent } from './loadflow/data/loadflow-data-g
 import { LoadflowDataTransportModelsComponent } from './loadflow/data/loadflow-data-transport-models/loadflow-data-transport-models.component';
 import { LoadflowTransportModelDialogComponent } from './loadflow/dialogs/loadflow-transport-model-dialog/loadflow-transport-model-dialog.component';
 import { LoadflowGeneratorDialogComponent } from './loadflow/dialogs/loadflow-generator-dialog/loadflow-generator-dialog.component';
+import { GspHomeComponent } from './gsp-demand-profiles/gsp-home/gsp-home.component';
+import { GspHeaderComponent } from './gsp-demand-profiles/gsp-header/gsp-header.component';
+import { GspMapComponent } from './gsp-demand-profiles/gsp-map/gsp-map.component';
+import { GspDemandProfilesComponent } from './gsp-demand-profiles/gsp-demand-profiles/gsp-demand-profiles.component';
 
 
 @NgModule({
@@ -302,7 +306,11 @@ import { LoadflowGeneratorDialogComponent } from './loadflow/dialogs/loadflow-ge
         LoadflowDataGeneratorsComponent,
         LoadflowDataTransportModelsComponent,
         LoadflowTransportModelDialogComponent,
-        LoadflowGeneratorDialogComponent
+        LoadflowGeneratorDialogComponent,
+        GspHomeComponent,
+        GspHeaderComponent,
+        GspMapComponent,
+        GspDemandProfilesComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -319,7 +327,8 @@ import { LoadflowGeneratorDialogComponent } from './loadflow/dialogs/loadflow-ge
             { path: 'loadflow', component: LoadflowHomeComponent},
             { path: 'elsi', component: ElsiHomeComponent},
             { path: 'classificationTool', component: ClassificationToolComponent},
-            { path: 'admin', component: AdminHomeComponent}
+            { path: 'admin', component: AdminHomeComponent},
+            { path: 'gspDemandProfiles', component: GspHomeComponent }
         ]),
         NgxEchartsModule.forRoot({
             /**

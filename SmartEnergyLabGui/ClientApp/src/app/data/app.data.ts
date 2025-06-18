@@ -947,5 +947,16 @@ export interface SolarInstallation {
     gisData: GISData
 }
 
+/* GSP Demand profiles */
+export interface GspDemandProfileData {
+    id: number,
+    gspId: number,
+    gspCode: string,
+    gspGroupId: string,
+    date: Date,
+    demand: number[]
+    isEstimate: boolean[]
+}
+
 
 

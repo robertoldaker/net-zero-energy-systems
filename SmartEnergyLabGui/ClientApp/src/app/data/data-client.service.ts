@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LoadNetworkDataSource, SubstationSearchResult, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType, DatasetData, EditItem, DistributionData, TransmissionData, NationalGridNetworkSource, GridSubstationLocationSource, SetPointMode, CtrlSetPoint } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LoadNetworkDataSource, SubstationSearchResult, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType, DatasetData, EditItem, DistributionData, TransmissionData, NationalGridNetworkSource, GridSubstationLocationSource, SetPointMode, CtrlSetPoint, GspDemandProfileData, GridSubstationLocation } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 
@@ -553,6 +553,43 @@ export class DataClientService implements ILogs {
     GetSolarInstallationsByDistributionSubstation(dssId: number,year: number,onLoad: (boundaries: SolarInstallation[])=> void) {
         this.http.get<SolarInstallation[]>(this.baseUrl + `/SolarInstallations/SolarInstallationsByDistributionSubstation?dssId=${dssId}&year=${year}`).subscribe( result => {
             if ( onLoad ) {
+                onLoad(result)
+            }
+        }, error => this.logErrorMessage(error));
+    }
+
+    /* Elexon */
+    GetGspDemandProfiles(startDate: Date, endDate:Date, gspCode: string,onLoad: (profiles: GspDemandProfileData[])=>void) {
+        let sdStr = startDate.toDateString()
+        let edStr = endDate.toDateString()
+        this.http.get<GspDemandProfileData[]>(this.baseUrl + `/Elexon/GetGspDemandProfiles?startDate=${sdStr}&endDate=${edStr}&gspCode=${gspCode}`).subscribe(result => {
+            if (onLoad) {
+                onLoad(result)
+            }
+        }, error => this.logErrorMessage(error));
+    }
+
+    GetTotalGspDemandProfile(date: Date, gspGroupId: string, onLoad: (profile: number[])=>void) {
+
+        let dateStr = date.toDateString()
+        this.http.get<number[]>(this.baseUrl + `/Elexon/GetTotalGspDemandProfile?date=${dateStr}&gspGroupId=${gspGroupId}`).subscribe(result => {
+            if (onLoad) {
+                onLoad(result)
+            }
+        }, error => this.logErrorMessage(error));
+    }
+
+    GetGspDemandLocations(onLoad: (locations: GridSubstationLocation[])=>void) {
+        this.http.get<GridSubstationLocation[]>(this.baseUrl + `/Elexon/GetGspDemandLocations`).subscribe(result => {
+            if (onLoad) {
+                onLoad(result)
+            }
+        }, error => this.logErrorMessage(error));
+    }
+
+    GetGspDemandDates(onLoad: (dates: Date[]) => void) {
+        this.http.get<Date[]>(this.baseUrl + `/Elexon/GetGspDemandDates`).subscribe(result => {
+            if (onLoad) {
                 onLoad(result)
             }
         }, error => this.logErrorMessage(error));

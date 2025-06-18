@@ -1,0 +1,14 @@
+<div style="display: grid; grid-auto-flow: row; height: 100vh; max-height: 100vh; grid-template-rows: auto 1fr;">
+    <app-gsp-header title="GSP Demand Profiles"></app-gsp-header>
+    <div>
+        <as-split direction="horizontal" (dragStart)="splitStart()" (dragEnd)="splitEnd()">
+            <as-split-area [size]="70">
+                <app-gsp-map></app-gsp-map>
+            </as-split-area>
+            <as-split-area [size]="30">
+                <app-gsp-demand-profiles></app-gsp-demand-profiles>
+            </as-split-area>
+        </as-split>
+    </div>
+</div>
+<app-maintenance-overlay></app-maintenance-overlay>
