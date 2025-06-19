@@ -28,7 +28,7 @@ public class ElexonController : ControllerBase {
     /// <returns></returns>
     [HttpGet]
     [Route("GetGspDemandProfiles")]
-    public IList<GspDemandProfileData> GetGspDemandProfiles(DateTime startDate, DateTime endDate, string gspCode)
+    public IList<GspDemandProfileData> GetGspDemandProfiles(DateTime startDate, DateTime endDate, string? gspCode=null)
     {
         using (var da = new DataAccess()) {
             var profiles = da.Elexon.GetGspDemandProfiles(startDate, endDate, gspCode);

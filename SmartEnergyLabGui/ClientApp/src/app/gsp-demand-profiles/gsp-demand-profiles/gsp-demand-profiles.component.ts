@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { GspDemandProfilesService } from '../gsp-demand-profiles-service';
 import { EChartsOption } from 'echarts';
 import { ComponentBase } from 'src/app/utils/component-base';
@@ -10,7 +10,7 @@ export enum ChartType {GBTotal,GroupTotal,Gsp}
     templateUrl: './gsp-demand-profiles.component.html',
     styleUrls: ['./gsp-demand-profiles.component.css']
 })
-export class GspDemandProfilesComponent extends ComponentBase {
+export class GspDemandProfilesComponent extends ComponentBase implements AfterViewInit {
 
     constructor(private dataService: GspDemandProfilesService) {
         super()
@@ -31,34 +31,85 @@ export class GspDemandProfilesComponent extends ComponentBase {
         }))
     }
 
+    ngAfterViewInit(): void {
+        this.setChartHeight();
+    }
+
+    chartHeight = '100px'
+
+    private setChartHeight() {
+        if (this.chartDivs) {
+            window.setTimeout(() => {
+                if ( this.chartDivs ) {
+                    let div = this.chartDivs.first.nativeElement
+                    let chartHeight = `${(div.clientHeight - 30)}px`
+                    this.chartHeight = chartHeight
+                }
+            }, 0)
+        }
+    }
+
+    @HostListener('window:resize', [])
+    onResize() {
+        this.setChartHeight()
+    }
+
+
     ChartType = ChartType
-    get date():Date | undefined {
-        return this.dataService.selectedDate
+
+
+    get gbTotalTitle():string {
+        return `GB Total Demand (MW) for ${this.dataService.selectedDate?.toDateString()}`
     }
 
-    set date(value: Date | undefined) {
-        this.dataService.selectDate(value)
+    get groupTotalTitle(): string {
+        return `Total Demand (MW) for group ${this.dataService.selectedProfile?.gspGroupId}`
     }
 
-    get minDate():Date | undefined {
-        return this.dataService.dates.length>0 ? this.dataService.dates[0] : undefined
+    get gspTitle(): string {
+        return `Demand (MW) for GSP ${this.dataService.selectedProfile?.gspId}`
     }
 
-    get maxDate(): Date | undefined {
-        return this.dataService.dates.length > 0 ? this.dataService.dates[this.dataService.dates.length-1] : undefined
+    get selectedDate():string | undefined {
+        return this.dataService.selectedDate?.toDateString()
     }
 
+    get selectedGroupStr():string | undefined {
+        return this.dataService.selectedProfile?.gspGroupId
+    }
+
+    get selectedGspStr():string | undefined {
+        let gspId = this.dataService.selectedProfile?.gspId
+        let name = this.dataService.selectedLocation?.name
+        if ( gspId && name ) {
+            return `${gspId} (${name})`
+        } else {
+            return ''
+        }
+    }
 
     public chartOptionsMap: Map<ChartType,any> = new Map()
     private dataMap: Map<ChartType,[string,number][]> = new Map()
 
+    @ViewChildren('chart')
+    chartDivs: QueryList<ElementRef> | undefined
+
+    gridTemplateRows: string = 'auto 0.3333fr 0.3333fr 0.3333fr'
+    get chartContainerHeight(): string {
+        let offset = '72px'
+        return `calc(100vh - ${offset})`
+    }
+
     private getDefaultChartOptions(chartType: ChartType):EChartsOption {
+        let lineColor = ''
+        if ( chartType == ChartType.GBTotal) {
+            lineColor = "rgb(115,119,236)"
+        } else if ( chartType == ChartType.GroupTotal) {
+            lineColor = "rgb(105,142,78)"
+        } else if ( chartType == ChartType.Gsp) {
+            lineColor = "rgb(230,82,1)"
+        }
         let chartOptions: EChartsOption = {
-            legend: {
-                type: 'plain',
-                align: 'left',
-                top: 0
-            },
             tooltip: {
                 trigger: 'axis',
                 valueFormatter: (value) => {
@@ -75,12 +126,12 @@ export class GspDemandProfilesComponent extends ComponentBase {
                 dimensions: ['timestamp', 'Demand'],
             },
             xAxis: { type: 'category', name: 'Time of day', nameLocation: 'middle', nameGap: 25, nameTextStyle: { fontWeight: 'bold' } },
-            yAxis: this.getYAxis(chartType),
-            grid: { left: 70, right: 20, bottom: 40, top: 40 },
+            yAxis: { type: 'value' },
+            grid: { left: 50, right: 20, bottom: 40, top: 10 },
             series: [
                 { name: 'Demand', type: 'line', symbol: 'none', encode: { x: 'timestamp', y: 'Demand' } }
             ],
-            color: ["rgb(115,119,236)", "rgb(53,24,73)", "rgb(105,142,78)", "rgb(113,12,158)", "rgb(35,152,13)", "rgb(116,23,31)", "rgb(46,129,144)", "rgb(12,42,44)", "rgb(230,82,1)", "rgb(226,28,122)", "rgb(118,88,70)", "rgb(199,102,116)"]
+            color: [lineColor]
         };
         return chartOptions
     }
@@ -125,18 +176,6 @@ export class GspDemandProfilesComponent extends ComponentBase {
         }
     }
 
-    private getYAxis(chartType: ChartType): any {
-        let name = ''
-        if ( chartType == ChartType.GBTotal) {
-            name = "Total GB Demand (MW)"
-        } else if ( chartType == ChartType.GroupTotal) {
-            name = "GSP group total (MW)"
-        } else if ( chartType == ChartType.Gsp) {
-            name = "GSP demand (MW)"
-        }
-        return { type: 'value', name: name, nameLocation: 'middle', nameGap: 55, nameTextStyle: { fontWeight: 'bold' } }
-    }
-
     private minsToHHmm(mins: number): string {
         let hours = Math.floor(mins / 60)
         let ms = (mins - hours * 60)
@@ -153,7 +192,6 @@ export class GspDemandProfilesComponent extends ComponentBase {
         this.fillChartData(type)
         let chartInstance = this.chartInstanceMap.get(type)
         if (chartInstance) {
-            console.log('redraw chart instance')
             chartInstance.setOption(chartOptions)
             chartInstance.resize()
         }

@@ -32,7 +32,7 @@ export class EChartsWrapperComponent implements OnInit {
         let instance = this;
         this.timeoutId = setTimeout(() => {
             instance.resize();
-        }, 250);
+        }, 0);
     }
 
     resize() {

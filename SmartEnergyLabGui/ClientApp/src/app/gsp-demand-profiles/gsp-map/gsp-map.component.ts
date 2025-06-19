@@ -1,4 +1,4 @@
-import { Component, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { GspDemandProfilesService } from '../gsp-demand-profiles-service';
 import { IMapData, MapOptions } from 'src/app/utils/map-options';
 import { GridSubstationLocation } from 'src/app/data/app.data';
@@ -11,21 +11,28 @@ import { ComponentBase } from 'src/app/utils/component-base';
     templateUrl: './gsp-map.component.html',
     styleUrls: ['./gsp-map.component.css']
 })
-export class GspMapComponent extends ComponentBase {
+export class GspMapComponent extends ComponentBase implements AfterViewInit {
 
     constructor(private dataService: GspDemandProfilesService) {
         super()
         this.addSub(dataService.DatesLoaded.subscribe((dates)=>{
-            console.log('datesLoaded',dates[0],dates[dates.length-1])
         }))
         this.addSub(dataService.LocationsLoaded.subscribe((locs) => {
-            console.log('locationsLoaded',locs.length)
             this.locMarkerData.update(locs);
         }))
+        this.addSub(dataService.LocationSelected.subscribe(() => {
+            this.locMarkerData.update(this.dataService.locations)
+        }))
+    }
+    ngAfterViewInit(): void {
+        if (this.controls) {
+            this.map?.controls[google.maps.ControlPosition.TOP_LEFT].push(this.controls.nativeElement);
+        }
     }
 
     @ViewChild(GoogleMap, { static: false }) map: GoogleMap | undefined
     @ViewChildren('locMarkers', { read: MapAdvancedMarker }) locMapMarkers: QueryList<MapAdvancedMarker> | undefined
+    @ViewChild('controls') controls: ElementRef | undefined
 
     ngOnInit(): void {
     }
@@ -65,13 +72,41 @@ export class GspMapComponent extends ComponentBase {
         this.dataService.selectLocation(loc)
     }
 
+    get date(): Date | undefined {
+        return this.dataService.selectedDate
+    }
+
+    set date(value: Date | undefined) {
+        this.dataService.selectDate(value)
+    }
+
+    get minDate(): Date | undefined {
+        return this.dataService.dates.length > 0 ? this.dataService.dates[0] : undefined
+    }
+
+    get maxDate(): Date | undefined {
+        return this.dataService.dates.length > 0 ? this.dataService.dates[this.dataService.dates.length - 1] : undefined
+    }
+
+    isLocSelected(loc: GridSubstationLocation) {
+        if ( this.dataService.selectedLocation && this.dataService.selectedLocation.id === loc.id) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    isLocGroupSelected(loc: GridSubstationLocation): boolean {
+        return this.dataService.isLocationGroupSelected(loc)
+    }
 }
 
 export class LocMarkerData {
     constructor(private mapComponent: GspMapComponent) {
 
     }
-    private readonly QB_COLOUR = '#7E4444'
+    private readonly SELECTED_GSP_LOC_COLOUR = 'rgb(230, 82, 1)'
+    private readonly SELECTED_GROUP_LOC_COLOUR = 'rgb(105,142,78)'
     private readonly LOC_COLOUR = '#aaa'
 
     private locMarkerData: MapOptions<google.maps.marker.AdvancedMarkerElementOptions,GridSubstationLocation> = new MapOptions()
@@ -88,21 +123,17 @@ export class LocMarkerData {
 
 
     update(locs: GridSubstationLocation[]) {
-        this.locMarkerData.clear()
+        //??this.locMarkerData.clear()
 
         // replace or add markers as needed
         locs.forEach(loc => {
             let index = this.locMarkerData.getIndex(loc.id)
             let mm = this.mapComponent.locMapMarkers?.get(index)
-            let options = this.getLocMarkerOptions(loc)
             if (mm) {
                 // Can't get setting options to work with advanced map markers so access and set map marker options directly
-                mm.advancedMarker.position = options.position
-                mm.advancedMarker.content = options.content
-                if ( options.title ) {
-                    mm.advancedMarker.title = options.title
-                }
+                this.updateContent(mm.advancedMarker.content,loc)
             } else {
+                let options = this.getLocMarkerOptions(loc)
                 this.locMarkerData.add(loc.id, options,loc)
             }
         })
@@ -114,13 +145,9 @@ export class LocMarkerData {
     }
 
     getLocMarkerOptions(loc: GridSubstationLocation): google.maps.marker.AdvancedMarkerElementOptions {
-        let fillColor = this.LOC_COLOUR
-        let fillOpacity = 1
+        let fillColor
         let locSvg = this.getLocSvg();
-
-        locSvg.style.setProperty('opacity', fillOpacity.toFixed(1))
-        locSvg.style.setProperty('fill', fillColor)
-
+        this.updateContent(locSvg,loc);
         return {
             position: {
                 lat: loc.latitude,
@@ -131,6 +158,21 @@ export class LocMarkerData {
             zIndex: 15,
             gmpDraggable: false
         }
+    }
+
+    updateContent(node: any, loc: GridSubstationLocation) {
+        let fillColor
+        if (this.mapComponent.isLocSelected(loc)) {
+            fillColor = this.SELECTED_GSP_LOC_COLOUR
+        } else if (this.mapComponent.isLocGroupSelected(loc)) {
+            fillColor = this.SELECTED_GROUP_LOC_COLOUR
+        } else {
+            fillColor = this.LOC_COLOUR
+        }
+        let fillOpacity = 1
+
+        node.style.setProperty('opacity', fillOpacity.toFixed(1))
+        node.style.setProperty('fill', fillColor)
     }
 
     getLocSvg(): any {

@@ -1,0 +1,10 @@
+div.controls {
+    background-color: white;
+    margin: 0.5rem;
+}
+
+.dateContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

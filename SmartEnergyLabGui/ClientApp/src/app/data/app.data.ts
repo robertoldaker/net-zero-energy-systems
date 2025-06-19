@@ -950,12 +950,13 @@ export interface SolarInstallation {
 /* GSP Demand profiles */
 export interface GspDemandProfileData {
     id: number,
-    gspId: number,
+    gspId: string,
     gspCode: string,
     gspGroupId: string,
     date: Date,
     demand: number[]
     isEstimate: boolean[]
+    location: GridSubstationLocation | null
 }
 
 

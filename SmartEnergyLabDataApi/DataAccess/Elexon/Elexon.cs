@@ -39,13 +39,13 @@ public class Elexon : DataSet {
         return Session.QueryOver<GspDemandProfileData>().Where(m => m.Location == null).List();
     }
 
-    public IList<GspDemandProfileData> GetGspDemandProfiles(DateTime startDate, DateTime endDate, string code)
+    public IList<GspDemandProfileData> GetGspDemandProfiles(DateTime startDate, DateTime endDate, string? code=null)
     {
-        return Session.QueryOver<GspDemandProfileData>().
-            Where(m => m.GspCode == code).
-            Where(m => m.Date >= startDate && m.Date <= endDate).
-            Fetch(SelectMode.Fetch, m => m.Location).
-            List();
+        var q = Session.QueryOver<GspDemandProfileData>().Where(m => m.Date >= startDate && m.Date <= endDate);
+        if (!string.IsNullOrEmpty(code)) {
+            q = q.Where(m => m.GspCode == code);
+        }
+        return q.Fetch(SelectMode.Fetch, m => m.Location).List();
     }
 
     public double[] GetTotalGspDemandProfile(DateTime startDate, string? gspGroupId = null)

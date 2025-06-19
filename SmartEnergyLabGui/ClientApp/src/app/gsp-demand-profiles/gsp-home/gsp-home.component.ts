@@ -14,9 +14,11 @@ export class GspHomeComponent implements OnInit {
 
     splitStart() {
         // this gets read by e-charts wrapper which will react to this and redraw
+        console.log('split start')
         window.dispatchEvent(new Event('resize'));
     }
     splitEnd() {
+        console.log('split end')
         // this gets read by e-charts wrapper which will react to this and redraw
         window.dispatchEvent(new Event('resize'));
     }

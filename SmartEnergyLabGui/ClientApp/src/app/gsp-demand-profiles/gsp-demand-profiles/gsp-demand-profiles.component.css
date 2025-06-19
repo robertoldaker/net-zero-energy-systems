@@ -1,6 +1,16 @@
-.dateContainer {
-    /*float: left;*/
-    display: flex;
-    align-items: center;
-    justify-content: center;
+div.chartContainer {
+    display: grid;
+    grid-auto-flow: row;
 }
+
+div.chart.borderBottom {
+    border-bottom: 1px solid lightgray;
+}
+
+div.chartTitle {
+    padding-top: 4px;
+    padding-bottom: 2px;
+    padding-left: 50px;
+}
+
+
