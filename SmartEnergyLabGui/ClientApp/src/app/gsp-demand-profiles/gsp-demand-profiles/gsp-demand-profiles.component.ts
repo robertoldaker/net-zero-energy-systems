@@ -35,7 +35,7 @@ export class GspDemandProfilesComponent extends ComponentBase implements AfterVi
         this.setChartHeight();
     }
 
-    chartHeight = '100px'
+    chartHeight = '200px'
 
     private setChartHeight() {
         if (this.chartDivs) {
@@ -44,6 +44,11 @@ export class GspDemandProfilesComponent extends ComponentBase implements AfterVi
                     let div = this.chartDivs.first.nativeElement
                     let chartHeight = `${(div.clientHeight - 30)}px`
                     this.chartHeight = chartHeight
+                    window.setTimeout(() => {
+                        this.redraw(ChartType.GBTotal);
+                        this.redraw(ChartType.GroupTotal);
+                        this.redraw(ChartType.Gsp);
+                    }, 0)
                 }
             }, 0)
         }

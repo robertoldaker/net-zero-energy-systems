@@ -15,6 +15,9 @@ export class GspMapComponent extends ComponentBase implements AfterViewInit {
 
     constructor(private dataService: GspDemandProfilesService) {
         super()
+        if (dataService.locations.length>0) {
+            this.locMarkerData.update(dataService.locations);
+        }
         this.addSub(dataService.DatesLoaded.subscribe((dates)=>{
         }))
         this.addSub(dataService.LocationsLoaded.subscribe((locs) => {
