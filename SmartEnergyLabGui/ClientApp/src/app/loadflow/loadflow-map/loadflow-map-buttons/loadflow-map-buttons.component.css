@@ -35,3 +35,13 @@ div.button.enabled > img {
 div.button.isSet {
     color: black
 }
+
+label.menuRadioButton {
+    cursor: pointer;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+label.menuRadioButton input {
+    width: 55px;
+}

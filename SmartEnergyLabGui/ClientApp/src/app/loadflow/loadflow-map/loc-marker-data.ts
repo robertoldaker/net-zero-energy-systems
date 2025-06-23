@@ -12,7 +12,7 @@ export class LocMarkerData {
     private locMarkerData: MapOptions<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLocation> = new MapOptions()
     private locSvg: HTMLElement | undefined
 
-    get markerOptions():IMapData<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLocation>[] {        
+    get markerOptions():IMapData<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLocation>[] {
 
         return this.locMarkerData.getArray()
     }
@@ -39,45 +39,59 @@ export class LocMarkerData {
         updateLocs.forEach(loc => {
             let index = this.locMarkerData.getIndex(loc.id)
             let mm = this.mapComponent.locMapMarkers?.get(index)
-            let options = this.getLocMarkerOptions(loc)
             if (mm) {
                 // Can't get setting options to work with advanced map markers so access and set map marker options directly
-                mm.advancedMarker.position = options.position
-                mm.advancedMarker.content = options.content
-                if ( options.title ) {
-                    mm.advancedMarker.title = options.title
-                }
+                this.updateAdvancedMarker(mm.advancedMarker,loc)
             } else {
+                let options = this.getLocMarkerOptions(loc)
                 this.locMarkerData.add(loc.id, options,loc)
             }
         })
 
     }
 
+    private updateAdvancedMarker( am: google.maps.marker.AdvancedMarkerElement, loc: LoadflowLocation) {
+        var md = this.getLocMarkerData(loc)
+        am.position = { lat: loc.gisData.latitude, lng: loc.gisData.longitude}
+        if ( am.content ) {
+            let svg:any = am.content
+            svg.style.setProperty('opacity',md.fillOpacity.toFixed(0))
+            svg.style.setProperty('fill', md.fillColor)
+        }
+        am.title = md.title
+        am.gmpDraggable = this.mapComponent.dataService.locationDragging
+    }
+
     updateForZoom() {
         // not zoom dependent so do nothing (for time being anyway)
-    } 
+    }
 
     getLocMarkerOptions(loc: LoadflowLocation): google.maps.marker.AdvancedMarkerElementOptions {
-        let fillColor = loc.isQB ? this.QB_COLOUR : this.LOC_COLOUR
-        let fillOpacity = loc.hasNodes ? 1 : 0.5
+        let md = this.getLocMarkerData(loc)
         let locSvg = this.getLocSvg();
 
-        locSvg.style.setProperty('opacity', fillOpacity.toFixed(1))
-        locSvg.style.setProperty('fill', fillColor)
+        locSvg.style.setProperty('opacity', md.fillOpacity.toFixed(1))
+        locSvg.style.setProperty('fill', md.fillColor)
 
         return {
             position: {
                 lat: loc.gisData.latitude,
                 lng: loc.gisData.longitude,
             },
-            title: `${loc.reference}: ${loc.name}`,
+            title: md.title,
             content: locSvg,
             zIndex: 15,
             gmpDraggable: this.mapComponent.dataService.locationDragging
         }
     }
-    
+
+    private getLocMarkerData(loc: LoadflowLocation) {
+        let fillColor = loc.isQB ? this.QB_COLOUR : this.LOC_COLOUR
+        let fillOpacity = loc.hasNodes ? 1 : 0.5
+        let title =  `${loc.reference}: ${loc.name}`
+        return { fillColor: fillColor, fillOpacity: fillOpacity, title: title}
+    }
+
     getLocSvg(): any {
         if (!this.locSvg) {
             const parser = new DOMParser();
@@ -90,5 +104,5 @@ export class LocMarkerData {
         let locSvg = this.locSvg.cloneNode(true)
         return locSvg;
     }
-    
+
 }

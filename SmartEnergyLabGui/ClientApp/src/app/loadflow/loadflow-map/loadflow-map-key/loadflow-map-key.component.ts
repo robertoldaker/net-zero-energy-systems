@@ -60,6 +60,11 @@ export class LoadflowMapKeyComponent  extends ComponentBase {
         return {stroke: LinkLineData.BOUNDARY_COLOUR}
     }
 
+    get flowUnits(): string {
+        let units = this.loadflowDataService.showFlowsAsPercent ? "%" : "MW"
+        return units
+    }
+
     selectBranch(branchCode: string) {
         this.dataComponent.showBranchOnMapByCode(branchCode)
     }

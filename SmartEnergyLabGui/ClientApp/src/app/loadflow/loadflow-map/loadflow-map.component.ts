@@ -64,7 +64,9 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
         this.addSub(dataService.LocationDraggingChanged.subscribe((value) => {
             this.updateDraggable()
         }))
-
+        this.addSub(dataService.ShowFlowsAsPercentChanged.subscribe((value) => {
+            this.linkLabelData.updateForShowLabelsAsPercent()
+        }))
     }
 
     flowFilter: MapFlowFilter = MapFlowFilter.All

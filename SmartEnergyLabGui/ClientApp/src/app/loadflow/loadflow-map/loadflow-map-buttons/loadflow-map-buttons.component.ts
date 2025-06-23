@@ -73,16 +73,24 @@ export class LoadflowMapButtonsComponent  extends ComponentBase implements OnIni
         }
     }
 
-    get isFlowFilterSet(): boolean {
-        return this.mapComponent.flowFilter!==MapFlowFilter.All
+    get isFilterSet(): boolean {
+        return this.filtersApplied!=0
     }
 
     get filtersApplied(): number {
-        return this.mapComponent.filtersApplied
+        return this.mapComponent.filtersApplied + (this.dataService.showFlowsAsPercent ? 1: 0)
     }
 
     selectFlowFilterOption(e: any, f: { id:MapFlowFilter,text: string}) {
         this.mapComponent.setFlowFilter(f.id)
+    }
+
+    get showFlowsAsPercent():boolean {
+        return this.dataService.showFlowsAsPercent
+    }
+
+    showFlowsChecked(e: any, showFlowsAsPercent: boolean) {
+        this.dataService.showFlowsAsPercent = showFlowsAsPercent
     }
 
 }

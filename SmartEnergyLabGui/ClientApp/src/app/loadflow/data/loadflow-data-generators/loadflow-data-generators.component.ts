@@ -83,7 +83,6 @@ export class LoadflowDataGeneratorsComponent extends DataTableBaseComponent<Gene
     }
 
     getNodes(genId: number):Node[] {
-        console.log('genId',genId)
         return this.dataService.networkData.nodes.data.filter(m=>m.generators.find(n=>n.id===genId));
     }
 

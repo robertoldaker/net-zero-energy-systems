@@ -97,9 +97,18 @@ export class LoadflowDataService {
     needsCalc: boolean = true
     nodeMarginals: boolean = false
     private _locationDragging: boolean = false
-
+    private _showFlowsAsPercent = false
 
     selectedMapItem: SelectedMapItem | null
+
+    set showFlowsAsPercent(value: boolean) {
+        this._showFlowsAsPercent = value
+        this.ShowFlowsAsPercentChanged.emit(value)
+    }
+
+    get showFlowsAsPercent():boolean {
+        return this._showFlowsAsPercent
+    }
 
     setDataset(dataset: Dataset) {
         this.dataset = dataset;
@@ -993,6 +1002,7 @@ export class LoadflowDataService {
     TripsChanged:EventEmitter<number[]> = new EventEmitter<number[]>()
     SetPointModeChanged:EventEmitter<SetPointMode> = new EventEmitter<SetPointMode>()
     LocationDraggingChanged:EventEmitter<boolean> = new EventEmitter<boolean>()
+    ShowFlowsAsPercentChanged:EventEmitter<boolean> = new EventEmitter<boolean>()
 }
 
 export interface IBranchEditorData {

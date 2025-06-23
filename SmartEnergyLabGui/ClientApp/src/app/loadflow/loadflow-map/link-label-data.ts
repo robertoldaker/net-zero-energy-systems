@@ -8,12 +8,12 @@ export class LinkLabelData {
 
     }
     private linkLabelData: MapOptions<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLink> = new MapOptions()
-    get markerOptions():IMapData<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLink>[] {        
+    get markerOptions():IMapData<google.maps.marker.AdvancedMarkerElementOptions,LoadflowLink>[] {
         return this.linkLabelData.getArray()
     }
 
     update(updateLocationData: UpdateLocationData) {
-    
+
         if (updateLocationData.clearBeforeUpdate) {
             this.linkLabelData.clear()
         }
@@ -31,25 +31,50 @@ export class LinkLabelData {
         updateLinks.forEach(link => {
             //
             let linkLabelOption = this.linkLabelData.get(link.id)
-            let options = this.getLinkLabelOptions(link, tol)
             if ( linkLabelOption ) {
                 //
                 let index = this.linkLabelData.getIndex(link.id)
                 let amm = this.mapComponent.linkMarkers?.get(index)
                 if ( amm ) {
-                    // Can't get setting options to work with advanced map markers so access and set map marker options directly
-                    amm.advancedMarker.position = options.position
-                    amm.advancedMarker.content = options.content
-                    amm.advancedMarker.zIndex = options.zIndex
-                    if ( options.title ) {
-                        amm.advancedMarker.title = options.title
-                    }
+                    //
+                    this.updateExistingMarker(amm.advancedMarker,link,tol)
                 }
             } else {
+                let options = this.getLinkLabelOptions(link, tol)
                 this.linkLabelData.add(link.id, options , link)
             }
         })
 
+    }
+
+    private updateExistingMarker(am: google.maps.marker.AdvancedMarkerElement, link: LoadflowLink, tol: number) {
+        let linkInfo = this.getLinkInfo(link, tol)
+        let pos = this.getPos(link);
+        am.position = pos;
+        if ( am.content) {
+            let div:any = am.content
+            div.className = linkInfo.cn
+            div.textContent = linkInfo.label
+        }
+        am.zIndex = linkInfo.zIndex
+    }
+
+    private getPos(link: LoadflowLink): google.maps.LatLngLiteral  {
+        let lat = (link.gisData1.latitude + link.gisData2.latitude) / 2;
+        let lng = (link.gisData1.longitude + link.gisData2.longitude) / 2;
+        return { lat: lat, lng: lng};
+    }
+
+    updateForShowLabelsAsPercent() {
+        for (let linkData of this.linkLabelData.getArray()) {
+            let link = linkData.data
+            let index = this.linkLabelData.getIndex(linkData.id)
+            let amm = this.mapComponent.linkMarkers?.get(index)
+            if (amm) {
+                let element: any = amm.advancedMarker.content
+                element.textContent = this.getLabel(link)
+            }
+        }
     }
 
     updateForZoom() {
@@ -63,25 +88,21 @@ export class LinkLabelData {
             if ( amm ) {
                 let element:any = amm.advancedMarker.content
                 let linkInfo = this.getLinkInfo(link,tol)
-                element.className = linkInfo.cn                
+                element.className = linkInfo.cn
             }
         }
-    } 
-    
+    }
+
     private getLinkLabelOptions(link: LoadflowLink, tol: number): google.maps.marker.AdvancedMarkerElementOptions {
         const linkLabelDiv = document.createElement('div');
 
         let linkInfo = this.getLinkInfo(link,tol)
         linkLabelDiv.className = linkInfo.cn
         linkLabelDiv.textContent = linkInfo.label
-        let lat = (link.gisData1.latitude + link.gisData2.latitude)/2;
-        let lng = (link.gisData1.longitude + link.gisData2.longitude)/2;
+        let pos = this.getPos(link);
         return {
-            position: {
-                lat: lat,
-                lng: lng,
-            },
-            content: linkLabelDiv,            
+            position: pos,
+            content: linkLabelDiv,
             zIndex: linkInfo.zIndex,
             gmpDraggable: false
         }
@@ -103,7 +124,13 @@ export class LinkLabelData {
     }
 
     private getLabel(link: LoadflowLink):string {
-        let label = link.totalFlow!=null ? Math.abs(link.totalFlow).toFixed(0) : ''
+        let ds = this.mapComponent.dataService
+        let label:string
+        if ( ds.showFlowsAsPercent){
+            label = link.totalFlow != null ? link.percentCapacity.toFixed(0) : ''
+        } else {
+            label = link.totalFlow != null ? Math.abs(link.totalFlow).toFixed(0) : ''
+        }
         return label
     }
 
@@ -126,7 +153,7 @@ export class LinkLabelData {
                     if ( distSqr <= tol ) {
                         className = "hide"
                     }
-                } 
+                }
                 zIndex = 15
             } else if ( percentThreshold == PercentCapacityThreshold.Warning ) {
                 className = "flowLabel notOK warning"
@@ -175,10 +202,10 @@ export class LinkLabelData {
                     const dy = pixel1.y - pixel2.y;
                     distanceSqr = dx * dx + dy * dy;
 
-                }              
+                }
             }
-        } 
+        }
         return distanceSqr
     }
-    
+
 }

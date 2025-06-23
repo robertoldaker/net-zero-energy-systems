@@ -23,7 +23,7 @@
             <td>
                 <svg width="19" height="15" [style]="boundaryStyle">
                     <path d="M2 8 h 15" stroke-width="2"/>
-                </svg>    
+                </svg>
             </td>
             <td>
                 <div>{{boundaryName}} Boundary</div>
@@ -35,7 +35,7 @@
             <td>
                 <svg width="19" height="15">
                     <path d="M2 8 h 15" stroke="blue" stroke-width="2"/>
-                </svg>    
+                </svg>
             </td>
             <td>400KV network</td>
         </tr>
@@ -43,7 +43,7 @@
             <td>
                 <svg width="19" height="15">
                     <path d="M2 8 h 15" stroke="red"  stroke-width="2"/>
-                </svg>    
+                </svg>
             </td>
             <td>275KV network</td>
         </tr>
@@ -51,7 +51,7 @@
             <td>
                 <svg width="19" height="15">
                     <path d="M2 8 h 15" stroke="black"  stroke-width="2"/>
-                </svg>    
+                </svg>
             </td>
             <td>132KV network</td>
         </tr>
@@ -59,7 +59,7 @@
             <td>
                 <svg width="19" height="15">
                     <path d="M2 8 h 15" stroke="black" stroke-width="2" stroke-dasharray="2,2" />
-                </svg>    
+                </svg>
             </td>
             <td>HVDC</td>
         </tr>
@@ -71,27 +71,27 @@
                 <td>
                     <div class="flowLabel">123</div>
                 </td>
-                <td>Flow (MW)</td>
+                <td>Flow ({{flowUnits}})</td>
             </tr>
             <tr>
                 <td>
                     <div class="flowLabel notOK warning">123</div>
                 </td>
-                <td>Flow (MW, > {{this.warningFlowThreshold}}% capacity)</td>
+                <td>Flow ({{flowUnits}}, > {{this.warningFlowThreshold}}% capacity)</td>
             </tr>
             <tr>
                 <td>
                     <div class="flowLabel notOK critical">123</div>
                 </td>
-                <td>Flow (MW, > {{criticalFlowThreshold}}% capacity)</td>
-            </tr>    
+                <td>Flow ({{flowUnits}}, > {{criticalFlowThreshold}}% capacity)</td>
+            </tr>
             <tr *ngIf="boundaryName">
                 <td>
                     <div class="flowLabel notOK critical">*1*</div>
                 </td>
-                <td>Limiting capacity flow (MW)</td>
-            </tr>    
+                <td>Limiting capacity flow ({{flowUnits}})</td>
+            </tr>
         </tbody>
-    </table>    
+    </table>
 </div>
 
