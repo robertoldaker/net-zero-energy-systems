@@ -67,7 +67,7 @@ namespace SmartEnergyLabDataApi.Data
         public virtual bool NumberOfSolarInstallations {get; set;}
 
         [Property(0)]
-        [Formula(1, Content = "( select count(*) from primary_substations ds where (ds.gridsupplypointid = id) )")] 
+        [Formula(1, Content = "( select count(*) from primary_substations ds where (ds.gridsupplypointid = id) )")]
         public virtual int NumberOfPrimarySubstations {get; set;}
 
         /// <summary>
@@ -75,6 +75,13 @@ namespace SmartEnergyLabDataApi.Data
         /// </summary>
         [ManyToOne(Column = "GISDataId", Cascade = "all-delete-orphan")]
         public virtual GISData GISData { get; set; }
+
+        public virtual DNOAreas DNOArea
+        {
+            get {
+                return GeographicalArea.DNOArea;
+            }
+        }
 
         /// <summary>
         /// Geographical area

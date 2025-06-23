@@ -94,7 +94,9 @@ namespace SmartEnergyLabDataApi.Data
         }
 
         public IList<GridSupplyPoint> GetGridSupplyPoints() {
-            var q = Session.QueryOver<GridSupplyPoint>().Fetch(SelectMode.Fetch,m=>m.GISData);
+            var q = Session.QueryOver<GridSupplyPoint>().
+                Fetch(SelectMode.Fetch, m => m.GISData).
+                Fetch(SelectMode.Fetch, m=> m.GeographicalArea);
             return q.List();
         }
 
@@ -107,7 +109,7 @@ namespace SmartEnergyLabDataApi.Data
             var pssIds = Session.QueryOver<PrimarySubstation>().Where(m=>m.GridSupplyPoint.Id==id).Select(m=>m.Id).List<int>().ToArray();
             // Get ids of distribution substations attached to this primary
             var dssIds = Session.QueryOver<DistributionSubstation>().Where(m=>m.PrimarySubstation.Id.IsIn(pssIds)).Select(m=>m.Id).List<int>().ToArray();
-            // Find sum of number of customers 
+            // Find sum of number of customers
             var sum = Session.QueryOver<DistributionSubstationData>().Where(m=>m.DistributionSubstation.Id.IsIn(dssIds)).SelectList(l=>l.SelectSum(m=>m.NumCustomers)).List<int?>();
             if ( sum.Count>0 && sum[0]!=null) {
                 return (int) sum[0];

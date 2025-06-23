@@ -10,7 +10,7 @@ import { EvDemandService } from '../ev-demand.service';
 })
 export class GspInfoWindowComponent implements OnInit {
 
-    constructor(public mapPowerService: MapPowerService, 
+    constructor(public mapPowerService: MapPowerService,
                 private dataClientService: DataClientService,
                 public evDemandService: EvDemandService,
                 @Inject('DATA_URL') private baseUrl: string
@@ -30,6 +30,15 @@ export class GspInfoWindowComponent implements OnInit {
         if ( this.mapPowerService.SelectedGridSupplyPoint ) {
             let id = this.mapPowerService.SelectedGridSupplyPoint.id;
             window.location.href = `${this.baseUrl}/EvDemand/Download/GridSupplyPoint?id=${id}`
+        }
+    }
+
+    get dnoArea():string {
+        if (this.mapPowerService.SelectedGridSupplyPoint) {
+            let text = MapPowerService.getDNOAreaText(this.mapPowerService.SelectedGridSupplyPoint.dnoArea)
+            return text
+        } else {
+            return ''
         }
     }
 }

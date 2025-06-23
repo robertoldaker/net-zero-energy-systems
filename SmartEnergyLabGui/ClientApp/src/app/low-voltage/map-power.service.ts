@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { EventEmitter } from '@angular/core';
-import { DistributionSubstation, GISData, GeographicalArea, GridSupplyPoint, LoadProfileSource, PrimarySubstation, SolarInstallation, SubstationClassification, SubstationLoadProfile, SubstationSearchResult, VehicleChargingStation } from '../data/app.data';
+import { DNOAreas, DistributionSubstation, GISData, GeographicalArea, GridSupplyPoint, LoadProfileSource, PrimarySubstation, SolarInstallation, SubstationClassification, SubstationLoadProfile, SubstationSearchResult, VehicleChargingStation } from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { MapDataService } from './map-data.service';
 
@@ -64,7 +64,7 @@ export class MapPowerService {
         this.clearSelectedObjects()
         this.SelectedDistributionSubstation = distSubstation
         this.NumberOfCustomers = undefined
-        if ( distSubstation!=undefined ) { 
+        if ( distSubstation!=undefined ) {
             if (distSubstation.substationData) {
                 this.NumberOfCustomers = distSubstation.substationData.numCustomers
             }
@@ -72,12 +72,12 @@ export class MapPowerService {
             this.loadProfileSources.forEach(source=>{
                 this.DataClientService.GetDistributionSubstationLoadProfiles(distSubstation.id, source, this.year, (loadProfiles) => {
                     this.loadProfilesLoaded(loadProfiles, source)
-                })    
+                })
             });
             this.DataClientService.GetDistributionSubstationClassifications(distSubstation.id, (classifications) => {
                 this.classificationLoaded(classifications)
             })
-        } 
+        }
         //
         this.loadSolarInstallations()
         //
@@ -127,15 +127,15 @@ export class MapPowerService {
                     if ( lp.carbon ) {
                         for(let i:number=0;i<lp.carbon.length;i++) {
                             lp.carbon[i]/=this.NumberOfCustomers
-                        }       
+                        }
                     }
                     if ( lp.cost ) {
                         for(let i:number=0;i<lp.cost.length;i++) {
                             lp.cost[i]/=this.NumberOfCustomers
-                        }        
+                        }
                     }
                 }
-            });    
+            });
         }
     }
 
@@ -158,7 +158,7 @@ export class MapPowerService {
                 this.loadProfileSources.forEach(source=>{
                     this.DataClientService.GetGridSupplyPointLoadProfiles(gsp.id,  source, this.year, (loadProfiles) => {
                         this.loadProfilesLoaded(loadProfiles,source)
-                    })    
+                    })
                 })
             })
             this.HasSolarInstallations = gsp.numberOfSolarInstallations > 0
@@ -179,29 +179,29 @@ export class MapPowerService {
             this.DataClientService.GetSolarInstallationsByGridSupplyPoint(this.SelectedGridSupplyPoint.id,this.SolarInstallationsYear,(solarInstallations)=>{
                 this.SolarInstallations = solarInstallations
                 this.SolarInstallationsLoaded.emit(solarInstallations)
-            })    
+            })
             this.DataClientService.GetSolarInstallationsByGridSupplyPoint(this.SelectedGridSupplyPoint.id,this.LatestSolarInstallationsYear,(solarInstallations)=>{
                 this.AllSolarInstallations = solarInstallations
                 this.AllSolarInstallationsLoaded.emit(solarInstallations)
-            })    
+            })
         } else if ( this.SelectedPrimarySubstation ) {
             this.DataClientService.GetSolarInstallationsByPrimarySubstation(this.SelectedPrimarySubstation.id,this.SolarInstallationsYear,(solarInstallations)=>{
                 this.SolarInstallations = solarInstallations
                 this.SolarInstallationsLoaded.emit(solarInstallations)
-            })    
+            })
             this.DataClientService.GetSolarInstallationsByPrimarySubstation(this.SelectedPrimarySubstation.id,this.LatestSolarInstallationsYear,(solarInstallations)=>{
                 this.AllSolarInstallations = solarInstallations
                 this.AllSolarInstallationsLoaded.emit(solarInstallations)
-            })    
+            })
         } else if ( this.SelectedDistributionSubstation ) {
             this.DataClientService.GetSolarInstallationsByDistributionSubstation(this.SelectedDistributionSubstation.id,this.SolarInstallationsYear,(solarInstallations)=>{
                 this.SolarInstallations = solarInstallations
                 this.SolarInstallationsLoaded.emit(this.SolarInstallations)
-            })    
+            })
             this.DataClientService.GetSolarInstallationsByDistributionSubstation(this.SelectedDistributionSubstation.id,this.LatestSolarInstallationsYear,(solarInstallations)=>{
                 this.AllSolarInstallations = solarInstallations
                 this.AllSolarInstallationsLoaded.emit(solarInstallations)
-            })    
+            })
         } else {
             this.SolarInstallationsLoaded.emit(this.SolarInstallations)
         }
@@ -230,7 +230,7 @@ export class MapPowerService {
                 this.loadProfileSources.forEach(source=>{
                     this.DataClientService.GetPrimarySubstationLoadProfiles(pss.id, source, this.year, (loadProfiles) => {
                         this.loadProfilesLoaded(loadProfiles, source)
-                    })    
+                    })
                 })
             })
             this.DataClientService.GetPrimarySubstationClassifications(pss.id, true, (classifications) => {
@@ -251,7 +251,7 @@ export class MapPowerService {
         let gsp = this.GridSupplyPoints.find(m=>m.id==id)
         if ( gsp) {
             this.setSelectedGridSupplyPoint(gsp);
-        }            
+        }
     }
 
     public setSelectedPrimarySubstationById(id: number, parentId: number) {
@@ -266,14 +266,14 @@ export class MapPowerService {
                             this.setSelectedPrimarySubstation(pss);
                         },250)
                     }
-                });    
+                });
             } else {
                 let pss = this.PrimarySubstations.find(m=>m.id==id)
                 if ( pss ) {
                     this.setSelectedPrimarySubstation(pss);
                 }
             }
-        }            
+        }
     }
 
     private _setSelectedDistributionSubstationById(id: number, parentId: number):boolean {
@@ -305,8 +305,8 @@ export class MapPowerService {
                     if ( gsp) {
                         this.setSelectedGridSupplyPoint(gsp, ()=>{
                             this._setSelectedDistributionSubstationById(id,parentId)
-                        });    
-                    } 
+                        });
+                    }
                 })
             }
         }
@@ -326,7 +326,7 @@ export class MapPowerService {
     private getNumberOfCustomers(classifications: SubstationClassification[]):number {
         let numOfCustomers:number = 0;
         classifications.forEach(element => {
-            numOfCustomers+=element.numberOfEACs    
+            numOfCustomers+=element.numberOfEACs
         });
         return numOfCustomers
     }
@@ -349,26 +349,26 @@ export class MapPowerService {
 
     setSelectedGeographicalArea() {
         this.clearSelectedObjects()
-        if ( this.geographicalArea!=undefined) {            
+        if ( this.geographicalArea!=undefined) {
             if ( this.GridSupplyPoints.length==0) {
                 this.DataClientService.GetGridSupplyPoints(this.geographicalArea.id, (gsps) => {
                     this.GridSupplyPoints = gsps
                     this.NumberOfPrimarySubstationsForGa = this.getNumberOfPrimarySubstations(gsps)
                     this.GridSupplyPointsLoaded.emit(gsps)
-                });    
+                });
             }
             this.clearLpsMap();
             this.loadProfileSources.forEach(source=>{
                 if ( this.geographicalArea!=undefined) {
                     this.DataClientService.GetGeographicalAreaLoadProfiles(this.geographicalArea.id,  source, this.year, (loadProfiles) => {
                         this.loadProfilesLoaded(loadProfiles,source)
-                    })    
+                    })
                 }
             })
             this.DataClientService.GetGeographicalAreaClassifications(this.geographicalArea.id, true, (classifications) => {
                 this.classificationLoaded(classifications)
             })
-        } 
+        }
         this.fireObjectSelectedEvent()
     }
 
@@ -377,7 +377,7 @@ export class MapPowerService {
             this.GridSupplyPoints = gsps
             this.NumberOfPrimarySubstationsForGa = this.getNumberOfPrimarySubstations(gsps)
             this.GridSupplyPointsLoaded.emit(gsps)
-        });    
+        });
     }
 
     reloadLoadProfiles() {
@@ -395,7 +395,7 @@ export class MapPowerService {
             this.DataClientService.GetDistributionSubstation(this.SelectedDistributionSubstation.id, (dss)=>{
                 this.SelectedDistributionSubstation = dss;
             });
-        } 
+        }
     }
 
     private clearSelectedObjects() {
@@ -407,9 +407,9 @@ export class MapPowerService {
     }
 
     private fireObjectSelectedEvent() {
-        if ( this.SelectedPrimarySubstation===undefined && 
-            this.SelectedGridSupplyPoint===undefined && 
-            this.SelectedDistributionSubstation===undefined && 
+        if ( this.SelectedPrimarySubstation===undefined &&
+            this.SelectedGridSupplyPoint===undefined &&
+            this.SelectedDistributionSubstation===undefined &&
             this.SelectedVehicleChargingStation===undefined
                 ) {
             this.SelectedGeographicalArea = this.geographicalArea
@@ -466,7 +466,7 @@ export class MapPowerService {
             }
             if ( lps && hps) {
                 addLoadProfile(lps,hps)
-            }        
+            }
         }
         function addLoadProfile(s: SubstationLoadProfile[], t: SubstationLoadProfile[]) {
             if ( s.length != t.length) {
@@ -494,7 +494,7 @@ export class MapPowerService {
                             if ( j<lpt.carbon.length ) {
                                 lps.carbon[j] += lpt.carbon[j]
                             }
-                        }    
+                        }
                     }
                     // cost
                     if ( lps.cost && lpt.cost ) {
@@ -502,7 +502,7 @@ export class MapPowerService {
                             if ( j<lpt.cost.length ) {
                                 lps.cost[j] += lpt.cost[j]
                             }
-                        }        
+                        }
                     }
                 }
             }
@@ -531,7 +531,42 @@ export class MapPowerService {
         this.SolarInstallationsModeChanged.emit(mode)
     }
 
-    loadProfileSource: LoadProfileSource 
+    static getDNOAreaText(dnoArea: DNOAreas):string {
+        if ( dnoArea === DNOAreas.EastEngland ) {
+            return "East England"
+        } else if ( dnoArea === DNOAreas.EastMidlands) {
+            return "East Midlands"
+        } else if ( dnoArea === DNOAreas.London) {
+            return "London"
+        } else if ( dnoArea === DNOAreas.NorthEastEngland) {
+            return "North East Engalnd"
+        } else if ( dnoArea === DNOAreas.NorthScotland) {
+            return "North Scotland"
+        } else if (dnoArea === DNOAreas.NorthWales) {
+            return "North Wales"
+        } else if (dnoArea === DNOAreas.NorthWestEngland) {
+            return "North West England"
+        } else if (dnoArea === DNOAreas.SouthEastEngland) {
+            return "South East England"
+        } else if (dnoArea === DNOAreas.SouthScotland) {
+            return "South Scotland"
+        } else if (dnoArea === DNOAreas.SouthWales) {
+            return "South Wales"
+        } else if (dnoArea === DNOAreas.SouthWestEngland) {
+            return "South West England"
+        } else if (dnoArea === DNOAreas.SouthernEngland) {
+            return "Southern England"
+        } else if (dnoArea === DNOAreas.WestMidlands) {
+            return "West Midlands"
+        } else if (dnoArea === DNOAreas.Yorkshire) {
+            return "Yorkshire"
+        } else {
+            throw `Unexpected value of DNOAreas [${dnoArea}]`
+        }
+
+    }
+
+    loadProfileSource: LoadProfileSource
 
     ObjectSelected = new EventEmitter()
     GridSupplyPointsLoaded = new EventEmitter<GridSupplyPoint[] | undefined>()

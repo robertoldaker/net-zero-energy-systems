@@ -9,6 +9,10 @@
             <td>{{mapPowerService.SelectedGridSupplyPoint?.name}} ({{mapPowerService.SelectedGridSupplyPoint?.id}})</td>
         </tr>
         <tr>
+            <td>Distribution area:</td>
+            <td>{{dnoArea}}</td>
+        </tr>
+        <tr>
             <td>Primary substations</td>
             <td>{{mapPowerService.NumberOfPrimarySubstations}}</td>
         </tr>
@@ -18,7 +22,7 @@
         </tr>
         <tr>
             <td>Customers</td>
-            <td>{{mapPowerService.NumberOfCustomers}}</td>
+            <td>{{mapPowerService.NumberOfCustomers===0 ? '' : mapPowerService.NumberOfCustomers}}</td>
         </tr>
     </table>
     <div id="buttonRow">

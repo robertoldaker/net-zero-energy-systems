@@ -18,6 +18,23 @@ export interface VersionData {
 /**
  * Data definitions for "Low voltage network"
  */
+export enum DNOAreas {
+    EastEngland,
+    EastMidlands,
+    London,
+    NorthEastEngland,
+    NorthScotland,
+    NorthWales,
+    NorthWestEngland,
+    SouthEastEngland,
+    SouthernEngland,
+    SouthScotland,
+    SouthWales,
+    SouthWestEngland,
+    WestMidlands,
+    Yorkshire
+}
+
 export interface GridSupplyPoint {
     id: number,
     nrId: string,
@@ -28,6 +45,7 @@ export interface GridSupplyPoint {
     numberOfPrimarySubstations: number,
     isDummy: boolean,
     needsNudge: boolean
+    dnoArea: DNOAreas
 }
 
 export interface PrimarySubstation {
