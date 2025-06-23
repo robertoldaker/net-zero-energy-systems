@@ -2,7 +2,7 @@
     <div class="inlineFlexRow">
         <img src="/assets/images/distribution-substation.png" style="width: 30px">
         <span>DISTRIBUTION SUBSTATION</span>
-    </div>    
+    </div>
     <table id="table">
         <tr>
             <td>Name:</td>
@@ -18,7 +18,7 @@
         </tr>
         <tr>
             <td>Customers:</td>
-            <td>{{mapPowerService.NumberOfCustomers}}</td>
+            <td>{{mapPowerService.SelectedDistributionSubstation?.substationData?.numCustomers}}</td>
         </tr>
     </table>
     <div id="buttonRow">
