@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'app-gsp-home',
@@ -7,7 +8,9 @@ import { Component, OnInit } from '@angular/core';
 })
 export class GspHomeComponent implements OnInit {
 
-    constructor() { }
+    constructor(titleService: Title) {
+        titleService.setTitle('GSP Demand Profiles')
+    }
 
     ngOnInit(): void {
     }

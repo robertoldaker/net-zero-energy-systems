@@ -2,6 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { UserService } from 'src/app/users/user.service';
 import { LoadflowSplitService } from '../../loadflow/loadflow-split.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'app-elsi-home',
@@ -10,8 +11,12 @@ import { LoadflowSplitService } from '../../loadflow/loadflow-split.service';
 })
 export class ElsiHomeComponent implements OnInit {
 
-    constructor(private splitService: LoadflowSplitService, private userService: UserService, private dialogService: DialogService) {
-        
+    constructor(
+        private splitService: LoadflowSplitService,
+        private userService: UserService,
+        private dialogService: DialogService,
+        titleService: Title) {
+        titleService.setTitle('ELSI')
     }
 
     @ViewChild('leftDiv') leftView: ElementRef | undefined;

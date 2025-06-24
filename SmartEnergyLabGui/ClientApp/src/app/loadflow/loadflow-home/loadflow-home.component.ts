@@ -3,6 +3,7 @@ import { LoadflowSplitService } from '../loadflow-split.service';
 import { UserService } from 'src/app/users/user.service';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { LoadflowDataComponent } from '../data/loadflow-data/loadflow-data.component';
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'app-loadflow-home',
@@ -11,16 +12,20 @@ import { LoadflowDataComponent } from '../data/loadflow-data/loadflow-data.compo
 })
 export class LoadflowHomeComponent implements OnInit, AfterViewInit{
 
-    constructor(private splitService: LoadflowSplitService, private userService: UserService, private dialogService:DialogService) {
-
+    constructor(
+        private splitService: LoadflowSplitService,
+        private userService: UserService,
+        private dialogService:DialogService,
+        titleService: Title) {
+            titleService.setTitle('Bound Calc')
     }
     ngAfterViewInit(): void {
-        this.updateSplitData()        
+        this.updateSplitData()
     }
 
-    @ViewChild('leftDiv') 
+    @ViewChild('leftDiv')
     leftView: ElementRef | undefined;
-    @ViewChild('rightDiv') 
+    @ViewChild('rightDiv')
     rightView: ElementRef | undefined;
 
     ngOnInit(): void {
