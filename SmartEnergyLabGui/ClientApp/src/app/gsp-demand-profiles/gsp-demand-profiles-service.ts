@@ -23,19 +23,18 @@ export class GspDemandProfilesService {
                 this.LocationsLoaded.emit(this.locations)
             });
         });
-        /*dataClientService.GetGspDemandLocations((locs) => {
-            this.locations = locs
-            this.LocationsLoaded.emit(this.locations)
-        });*/
     }
 
     dates: Date[] = []
     locations: GridSubstationLocation[] = []
     selectedLocation: GridSubstationLocation | undefined
-    selectedProfile: GspDemandProfileData | undefined
     selectedDate: Date | undefined
     gbTotalProfile: number[] = []
     groupTotalProfile: number[] = []
+    gspTotalProfile: number[] = []
+    selectedGroupId: string = ''
+    selectedGspId: string = ''
+    selectedGspCode: string = ''
     gspProfileMap: Map<number,GspDemandProfileData[]> = new Map()
 
     createGspProfileMap(gspProfiles: GspDemandProfileData[]): { map: Map<number,GspDemandProfileData[]>, locs: GridSubstationLocation[] }{
@@ -58,16 +57,39 @@ export class GspDemandProfilesService {
         if ( this.selectedDate ) {
             this.dataClientService.GetGspDemandProfiles(this.selectedDate,this.selectedDate,loc.reference,(profiles)=>{
                 if ( profiles.length>0 && this.selectedDate) {
-                    this.selectedProfile = profiles[0]
-                    this.GspProfileLoaded.emit(profiles[0])
+                    this.setSelectedGspData(profiles)
+                    this.GspProfilesLoaded.emit(profiles)
                     this.LocationSelected.emit(this.selectedLocation)
-                    this.dataClientService.GetTotalGspDemandProfile(this.selectedDate, this.selectedProfile.gspGroupId, (profile) => {
+                    this.dataClientService.GetTotalGspDemandProfile(this.selectedDate, this.selectedGroupId, (profile) => {
                         this.groupTotalProfile = profile
                         this.GspGroupTotalProfileLoaded.emit(profile)
                     })
                 }
             })
         }
+    }
+
+    setSelectedGspData(profiles: GspDemandProfileData[]) {
+        this.gspTotalProfile = []
+        this.selectedGspId = ''
+        for( let p of profiles) {
+            //
+            if ( this.selectedGspId === '') {
+                this.selectedGspId=p.gspId
+            } else {
+                this.selectedGspId+=` + ${p.gspId}`
+            }
+            //
+            if (this.gspTotalProfile.length === 0) {
+                this.gspTotalProfile = p.demand
+            } else {
+                for( let i=0;i<p.demand.length;i++) {
+                    this.gspTotalProfile[i] += p.demand[i]
+                }
+            }
+        }
+        this.selectedGroupId = profiles[0].gspGroupId
+        this.selectedGspCode = profiles[0].gspCode
     }
 
     selectDate(date: Date | undefined) {
@@ -78,16 +100,16 @@ export class GspDemandProfilesService {
                 this.GBTotalProfileLoaded.emit(profile)
             })
             // re-load selectedProfile for new date
-            if ( this.selectedProfile ) {
+            if ( this.selectedGspCode ) {
                 // gsp
-                this.dataClientService.GetGspDemandProfiles(this.selectedDate, this.selectedDate, this.selectedProfile.gspCode, (profiles) => {
+                this.dataClientService.GetGspDemandProfiles(this.selectedDate, this.selectedDate, this.selectedGspCode, (profiles) => {
                     if (profiles.length > 0 && this.selectedDate) {
-                        this.selectedProfile = profiles[0]
-                        this.GspProfileLoaded.emit(profiles[0])
+                        this.setSelectedGspData(profiles)
+                        this.GspProfilesLoaded.emit(profiles)
                     }
                 })
                 // gsp group total
-                this.dataClientService.GetTotalGspDemandProfile(this.selectedDate, this.selectedProfile.gspGroupId, (profile) => {
+                this.dataClientService.GetTotalGspDemandProfile(this.selectedDate, this.selectedGroupId, (profile) => {
                     this.groupTotalProfile = profile
                     this.GspGroupTotalProfileLoaded.emit(profile)
                 })
@@ -97,8 +119,8 @@ export class GspDemandProfilesService {
 
     isLocationGroupSelected(loc: GridSubstationLocation):boolean {
         let profiles = this.gspProfileMap.get(loc.id)
-        if ( profiles && this.selectedProfile ) {
-            let p = profiles.find(m=>m.gspGroupId === this.selectedProfile?.gspGroupId);
+        if ( profiles && this.selectedGroupId ) {
+            let p = profiles.find(m=>m.gspGroupId === this.selectedGroupId);
             return p ? true : false
         } else {
             return false
@@ -107,7 +129,7 @@ export class GspDemandProfilesService {
 
     LocationsLoaded:EventEmitter<GridSubstationLocation[]> = new EventEmitter<GridSubstationLocation[]>()
     DatesLoaded: EventEmitter<Date[]> = new EventEmitter<Date[]>()
-    GspProfileLoaded: EventEmitter<GspDemandProfileData> = new EventEmitter<GspDemandProfileData>()
+    GspProfilesLoaded: EventEmitter<GspDemandProfileData[]> = new EventEmitter<GspDemandProfileData[]>()
     GBTotalProfileLoaded: EventEmitter<number[]>=new EventEmitter<number[]>()
     GspGroupTotalProfileLoaded: EventEmitter<number[]>=new EventEmitter<number[]>()
     LocationSelected:EventEmitter<GridSubstationLocation | undefined> = new EventEmitter<GridSubstationLocation | undefined>()

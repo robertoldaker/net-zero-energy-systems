@@ -26,7 +26,7 @@ export class GspDemandProfilesComponent extends ComponentBase implements AfterVi
         this.addSub(dataService.GspGroupTotalProfileLoaded.subscribe((profile) => {
             this.redraw(ChartType.GroupTotal);
         }))
-        this.addSub(dataService.GspProfileLoaded.subscribe((profile) => {
+        this.addSub(dataService.GspProfilesLoaded.subscribe((profile) => {
             this.redraw(ChartType.Gsp);
         }))
     }
@@ -68,11 +68,11 @@ export class GspDemandProfilesComponent extends ComponentBase implements AfterVi
     }
 
     get groupTotalTitle(): string {
-        return `Total Demand (MW) for group ${this.dataService.selectedProfile?.gspGroupId}`
+        return `Total Demand (MW) for group ${this.dataService.selectedGroupId}`
     }
 
     get gspTitle(): string {
-        return `Demand (MW) for GSP ${this.dataService.selectedProfile?.gspId}`
+        return `Demand (MW) for GSP ${this.dataService.selectedGspId}`
     }
 
     get selectedDate():string | undefined {
@@ -80,11 +80,11 @@ export class GspDemandProfilesComponent extends ComponentBase implements AfterVi
     }
 
     get selectedGroupStr():string | undefined {
-        return this.dataService.selectedProfile?.gspGroupId
+        return this.dataService.selectedGroupId
     }
 
     get selectedGspStr():string | undefined {
-        let gspId = this.dataService.selectedProfile?.gspId
+        let gspId = this.dataService.selectedGspId
         let name = this.dataService.selectedLocation?.name
         if ( gspId && name ) {
             return `${gspId} (${name})`
@@ -174,8 +174,8 @@ export class GspDemandProfilesComponent extends ComponentBase implements AfterVi
             return this.dataService.gbTotalProfile
         } else if ( type == ChartType.GroupTotal) {
             return this.dataService.groupTotalProfile
-        } else if ( type == ChartType.Gsp && this.dataService.selectedProfile) {
-            return this.dataService.selectedProfile.demand
+        } else if ( type == ChartType.Gsp) {
+            return this.dataService.gspTotalProfile
         } else {
             return []
         }
