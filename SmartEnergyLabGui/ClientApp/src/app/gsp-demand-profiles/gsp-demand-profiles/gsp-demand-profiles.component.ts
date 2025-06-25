@@ -68,7 +68,7 @@ export class GspDemandProfilesComponent extends ComponentBase implements AfterVi
     }
 
     get groupTotalTitle(): string {
-        return `Total Demand (MW) for group ${this.dataService.selectedGroupId}`
+        return `Total Demand (MW) for group ${this.dataService.selectedArea} (${this.dataService.selectedGroupId})`
     }
 
     get gspTitle(): string {
@@ -80,7 +80,7 @@ export class GspDemandProfilesComponent extends ComponentBase implements AfterVi
     }
 
     get selectedGroupStr():string | undefined {
-        return this.dataService.selectedGroupId
+        return `${this.dataService.selectedGroupId} (${this.dataService.selectedArea})`
     }
 
     get selectedGspStr():string | undefined {

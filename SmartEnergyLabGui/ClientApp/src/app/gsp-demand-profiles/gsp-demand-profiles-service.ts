@@ -33,6 +33,7 @@ export class GspDemandProfilesService {
     groupTotalProfile: number[] = []
     gspTotalProfile: number[] = []
     selectedGroupId: string = ''
+    selectedArea: string = ''
     selectedGspId: string = ''
     selectedGspCode: string = ''
     gspProfileMap: Map<number,GspDemandProfileData[]> = new Map()
@@ -89,6 +90,7 @@ export class GspDemandProfilesService {
             }
         }
         this.selectedGroupId = profiles[0].gspGroupId
+        this.selectedArea = profiles[0].gspArea
         this.selectedGspCode = profiles[0].gspCode
     }
 

@@ -970,6 +970,7 @@ export interface GspDemandProfileData {
     id: number,
     gspId: string,
     gspCode: string,
+    gspArea: string,
     gspGroupId: string,
     date: Date,
     demand: number[]
