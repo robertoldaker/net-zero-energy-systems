@@ -86,7 +86,7 @@ export class GspDemandProfilesComponent extends ComponentBase implements AfterVi
     get selectedGspStr():string | undefined {
         let gspId = this.dataService.selectedGspId
         let name = this.dataService.selectedLocation?.name
-        if ( gspId && name ) {
+        if ( gspId ) {
             return `${gspId} (${name})`
         } else {
             return ''
