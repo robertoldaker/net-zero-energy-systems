@@ -112,6 +112,15 @@ public class Elexon : DataSet {
         return dates;
     }
 
+    public IList<string> GetGspDemandCodes()
+    {
+        var codes = Session.QueryOver<GspDemandProfileData>().
+            Select(Projections.Distinct(Projections.Property<GspDemandProfileData>(m => m.GspCode))).
+            List<string>();
+
+        return codes;
+    }
+
     #endregion
 
 }

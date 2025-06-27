@@ -8,8 +8,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_nodes")]
-    public class Node : IDatasetIId
-    {
+    public class Node : IDatasetIId {
         public Node()
         {
             Generators = new List<Generator>();
@@ -30,16 +29,16 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         public virtual int Id { get; set; }
 
         [Property()]
-        public virtual string Code {get; set;}
+        public virtual string Code { get; set; }
 
         [Property()]
-        public virtual double Demand {get; set;}
+        public virtual double Demand { get; set; }
 
         [Property()]
-        public virtual double Generation_A {get; set;}
+        public virtual double Generation_A { get; set; }
 
         [Property()]
-        public virtual double Generation_B {get; set;}
+        public virtual double Generation_B { get; set; }
 
         public virtual IList<Generator> Generators { get; set; }
         public virtual double Generation
@@ -47,10 +46,10 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             get {
                 double generation = 0;
                 foreach (var gen in Generators) {
-                   //?? if (gen.ScaledGenerationPerNode == null) {
-                   //??     throw new Exception($"Attempt to get ScaledGenerationPerNode when null. Please call TransportModel.UpdateGenerators to set ScaledGeneration");
-                   //?? }
-                    generation += gen.ScaledGenerationPerNode!=null ? (double) gen.ScaledGenerationPerNode : 0;
+                    //?? if (gen.ScaledGenerationPerNode == null) {
+                    //??     throw new Exception($"Attempt to get ScaledGenerationPerNode when null. Please call TransportModel.UpdateGenerators to set ScaledGeneration");
+                    //?? }
+                    generation += gen.ScaledGenerationPerNode != null ? (double)gen.ScaledGenerationPerNode : 0;
                 }
                 return generation;
             }
@@ -60,20 +59,20 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         public virtual IList<Generator> NewGenerators { get; set; }
 
         [Property()]
-        public virtual int? Gen_Zone {get; set;}
+        public virtual int? Gen_Zone { get; set; }
 
         [Property()]
-        public virtual int? Dem_zone {get; set;}
+        public virtual int? Dem_zone { get; set; }
 
         [Property()]
-        public virtual bool Ext {get; set;}
+        public virtual bool Ext { get; set; }
 
         [Property()]
-        public virtual int Voltage {get; set;}
+        public virtual int Voltage { get; set; }
 
 
         [ManyToOne(Column = "ZoneId", Cascade = "none", Fetch = FetchMode.Join)]
-        public virtual Zone Zone {get; set;}
+        public virtual Zone Zone { get; set; }
 
 
         /// <summary>
@@ -82,9 +81,10 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         [ManyToOne(Column = "locationId", Cascade = "none", Fetch = FetchMode.Join)]
         public virtual GridSubstationLocation Location { get; set; }
 
-        public virtual string Name {
+        public virtual string Name
+        {
             get {
-                if ( this.Location!=null ) {
+                if (this.Location != null) {
                     return Location.Name;
                 } else {
                     return null;
@@ -95,7 +95,8 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         [ManyToOne(Column = "DatasetId", Cascade = "none")]
         public virtual Dataset Dataset { get; set; }
 
-        public virtual int DatasetId {
+        public virtual int DatasetId
+        {
             get {
                 return this.Dataset.Id;
             }
@@ -103,17 +104,18 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         public virtual string ZoneName
         {
-            get
-            {
+            get {
                 return Zone?.Code;
             }
         }
 
-        public virtual double? Mismatch {get; set;}
+        public virtual double? Mismatch { get; set; }
 
-        public virtual double? TLF {get; set;}
+        public virtual double? TLF { get; set; }
 
-        public virtual double? km {get; set;}
+        public virtual double? km { get; set; }
+
+        public virtual bool IsGSP { get; set; }
 
     }
 }
