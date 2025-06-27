@@ -78,11 +78,27 @@ export class LocMarkerData {
                 lat: loc.gisData.latitude,
                 lng: loc.gisData.longitude,
             },
-            title: md.title,
+            title: md.title + this.getLocGenDemandStr(loc),
             content: locSvg,
             zIndex: 15,
             gmpDraggable: this.mapComponent.dataService.locationDragging
         }
+    }
+
+    private getLocGenDemandStr(loc: LoadflowLocation): string {
+        let str = ''
+        if ( loc.totalDemand!=null) {
+            str = `\nD: ${loc.totalDemand.toFixed(0)} MW`
+        }
+        if ( loc.totalGen!=null) {
+            if ( str == '') {
+                str = "\n";
+            } else {
+                str += " "
+            }
+            str += `G: ${loc.totalGen.toFixed(0)} MW`
+        }
+        return str
     }
 
     private getLocMarkerData(loc: LoadflowLocation) {

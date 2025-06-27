@@ -178,6 +178,7 @@ import { GspHomeComponent } from './gsp-demand-profiles/gsp-home/gsp-home.compon
 import { GspHeaderComponent } from './gsp-demand-profiles/gsp-header/gsp-header.component';
 import { GspMapComponent } from './gsp-demand-profiles/gsp-map/gsp-map.component';
 import { GspDemandProfilesComponent } from './gsp-demand-profiles/gsp-demand-profiles/gsp-demand-profiles.component';
+import { LoadflowInfoWindowComponent } from './loadflow/loadflow-map/loadflow-info-window/loadflow-info-window.component';
 
 
 @NgModule({
@@ -310,7 +311,8 @@ import { GspDemandProfilesComponent } from './gsp-demand-profiles/gsp-demand-pro
         GspHomeComponent,
         GspHeaderComponent,
         GspMapComponent,
-        GspDemandProfilesComponent
+        GspDemandProfilesComponent,
+        LoadflowInfoWindowComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

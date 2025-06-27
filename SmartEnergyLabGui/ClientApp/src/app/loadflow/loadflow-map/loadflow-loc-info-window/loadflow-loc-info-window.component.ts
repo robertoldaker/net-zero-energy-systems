@@ -162,5 +162,7 @@ export class LoadflowLocInfoWindowComponent extends ComponentBase {
             this._deletedBranchesExt = deletedBs.filter( m=>m.node1LocationId !== m.node2LocationId)
         }
     }
+
+
 }
 

@@ -11,6 +11,7 @@ import { MapAdvancedMarker } from './map-advanced-marker/map-advanced-marker';
 import { LinkLabelData } from './link-label-data';
 import { LocMarkerData } from './loc-marker-data';
 import { LinkLineData } from './link-line-data';
+import { LoadflowInfoWindowComponent } from './loadflow-info-window/loadflow-info-window.component';
 
 export enum MapFlowFilter { All, Warning, Critical, Boundary }
 
@@ -27,8 +28,8 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     @ViewChildren('linkMarkers', { read: MapAdvancedMarker }) linkMarkers: QueryList<MapAdvancedMarker> | undefined
     @ViewChild('key') key: ElementRef | undefined
     @ViewChild('buttons') buttons: ElementRef | undefined
-    @ViewChild('locInfoWindow', { read: MapInfoWindow }) locInfoWindow: MapInfoWindow | undefined
-    @ViewChild('linkInfoWindow', { read: MapInfoWindow }) linkInfoWindow: MapInfoWindow | undefined
+    @ViewChild('locInfoWindow', { read: LoadflowInfoWindowComponent }) locInfoWindow: LoadflowInfoWindowComponent | undefined
+    @ViewChild('linkInfoWindow', { read: LoadflowInfoWindowComponent }) linkInfoWindow: LoadflowInfoWindowComponent | undefined
     @ViewChild('divContainer') divContainer: ElementRef | undefined
 
     constructor(
@@ -78,6 +79,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     }
 
     ngAfterViewInit(): void {
+        console.log('afterViewInit',this.locInfoWindow,this.linkInfoWindow)
         if (this.key) {
             this.map?.controls[google.maps.ControlPosition.TOP_RIGHT].push(this.key.nativeElement);
         }
@@ -219,8 +221,8 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
             if (select) {
                 let center = { lat: loc.gisData.latitude, lng: loc.gisData.longitude }
                 this.panTo(center, 7, () => {
-                    if ( this.locInfoWindow && mm.advancedMarker.position) {
-                        this.locInfoWindow.position = mm.advancedMarker.position
+                    if ( this.locInfoWindow && this.locInfoWindow.mapInfoWindow && mm.advancedMarker.position) {
+                        this.locInfoWindow.mapInfoWindow.position = mm.advancedMarker.position
                         this.locInfoWindow.open()
                     }
                 })
@@ -243,8 +245,8 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
                 lng: (link.gisData1.longitude + link.gisData2.longitude) / 2
             }
             this.panTo(center, 7, () => {
-                if (this.linkInfoWindow) {
-                    this.linkInfoWindow.position = center
+                if ( this.linkInfoWindow?.infoWindow) {
+                    this.linkInfoWindow.infoWindow.position = center
                     this.linkInfoWindow.open()
                 }
             })
@@ -380,7 +382,7 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
 }
 
 export class AddBranchHandler {
-    constructor(private locInfoWindow: MapInfoWindow,
+    constructor(private locInfoWindow: LoadflowInfoWindowComponent,
         private messageService: ShowMessageService,
         private dialogService: DialogService,
         private loadflowDataService: LoadflowDataService) {

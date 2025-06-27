@@ -1031,6 +1031,8 @@ export class LoadflowLocation {
     private _isQB: boolean
     private _hasNodes: boolean
     private _isNew: boolean
+    private _totalDemand: number | null = null
+    private _totalGen: number | null = null
 
     constructor(loc:GridSubstationLocation) {
         this._gsl = loc
@@ -1086,7 +1088,36 @@ export class LoadflowLocation {
         this._hasNodes = hasNodes
         this._isQB = isQB
         this._isNew = false
+        this.calcTotals(nodes)
         return result
+    }
+
+    private calcTotals(nodes: Node[]) {
+        this._totalDemand = null;
+        this._totalGen = null;
+        for( let n of nodes) {
+            if ( n.demand!=0 ) {
+                if ( this._totalDemand==null ) {
+                    this._totalDemand = 0;
+                }
+                this._totalDemand+=n.demand
+            }
+            if ( n.generation!=0) {
+                if ( this._totalGen==null) {
+                    this._totalGen = 0;
+                }
+                this._totalGen += n.generation
+            }
+        }
+    }
+
+    get totalDemand():number | null
+    {
+        return this._totalDemand
+    }
+
+    get totalGen(): number | null {
+        return this._totalGen
     }
 
     private areGslDifferent(gslA: GridSubstationLocation, gslB: GridSubstationLocation): boolean {

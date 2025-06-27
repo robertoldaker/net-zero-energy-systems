@@ -12,13 +12,13 @@
         <map-polyline #linkLines *ngFor="let linkOption of linkPolylineData.polyLineOptions; trackBy: polylineTrackByFcn" [options]="linkOption.options" (polylineClick)="linkLineClicked(linkOption.id)"></map-polyline>
         <map-advanced-marker #linkMarkers *ngFor="let markerOption of linkLabelData.markerOptions;" [options]="markerOption.options"></map-advanced-marker>
 
-        <map-info-window #locInfoWindow  (closeclick)="clearSelection()">
+        <app-loadflow-info-window #locInfoWindow (closeClick)="clearSelection()">
             <app-loadflow-loc-info-window (onNewBranch)="newBranch($event)"></app-loadflow-loc-info-window>
-        </map-info-window>
-        <map-info-window #linkInfoWindow (closeclick)="clearSelection()">
+        </app-loadflow-info-window>
+        <app-loadflow-info-window #linkInfoWindow (closeClick)="clearSelection()">
             <app-loadflow-branch-info-window></app-loadflow-branch-info-window>
-        </map-info-window>
-        
+        </app-loadflow-info-window>
+
     </google-map>
-    
+
 </div>
