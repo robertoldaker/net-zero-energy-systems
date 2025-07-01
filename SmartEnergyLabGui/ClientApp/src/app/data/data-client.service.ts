@@ -559,6 +559,15 @@ export class DataClientService implements ILogs {
     }
 
     /* Elexon */
+    SearchGspDemandProfiles(startDate: Date, endDate: Date, searchStr:string, maxResults: number, onLoad: (profiles: GspDemandProfileData[]) => void) {
+        let sdStr = startDate.toDateString()
+        let edStr = endDate.toDateString()
+        this.http.get<GspDemandProfileData[]>(this.baseUrl + `/Elexon/SearchGspDemandProfiles?startDate=${sdStr}&endDate=${edStr}&searchStr=${searchStr}&maxResults=${maxResults}`).subscribe(result => {
+            if (onLoad) {
+                onLoad(result)
+            }
+        }, error => this.logErrorMessage(error));
+    }
     GetGspDemandProfiles(startDate: Date, endDate:Date, gspCode: string,onLoad: (profiles: GspDemandProfileData[])=>void) {
         let sdStr = startDate.toDateString()
         let edStr = endDate.toDateString()

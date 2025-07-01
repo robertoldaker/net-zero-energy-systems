@@ -18,24 +18,26 @@ export class GspMapComponent extends ComponentBase implements AfterViewInit {
         if (dataService.locations.length>0) {
             this.locMarkerData.update(dataService.locations);
         }
-        this.addSub(dataService.DatesLoaded.subscribe((dates)=>{
-        }))
         this.addSub(dataService.LocationsLoaded.subscribe((locs) => {
             this.locMarkerData.update(locs);
         }))
         this.addSub(dataService.LocationSelected.subscribe(() => {
-            this.locMarkerData.update(this.dataService.locations)
+            if ( this.dataService.selectedLocation) {
+                this.locMarkerData.update(this.dataService.locations)
+            }
         }))
     }
     ngAfterViewInit(): void {
         if (this.controls) {
-            this.map?.controls[google.maps.ControlPosition.TOP_LEFT].push(this.controls.nativeElement);
+            for( let c of this.controls) {
+                this.map?.controls[google.maps.ControlPosition.TOP_LEFT].push(c.nativeElement);
+            }
         }
     }
 
     @ViewChild(GoogleMap, { static: false }) map: GoogleMap | undefined
     @ViewChildren('locMarkers', { read: MapAdvancedMarker }) locMapMarkers: QueryList<MapAdvancedMarker> | undefined
-    @ViewChild('controls') controls: ElementRef | undefined
+    @ViewChildren('controls') controls: QueryList<ElementRef> | undefined
 
     ngOnInit(): void {
     }
@@ -80,7 +82,9 @@ export class GspMapComponent extends ComponentBase implements AfterViewInit {
     }
 
     set date(value: Date | undefined) {
-        this.dataService.selectDate(value)
+        if ( value ) {
+            this.dataService.selectDate(value)
+        }
     }
 
     get minDate(): Date | undefined {
@@ -127,7 +131,6 @@ export class LocMarkerData {
 
     update(locs: GridSubstationLocation[]) {
         //??this.locMarkerData.clear()
-
         // replace or add markers as needed
         locs.forEach(loc => {
             let index = this.locMarkerData.getIndex(loc.id)
@@ -165,6 +168,7 @@ export class LocMarkerData {
 
     updateContent(node: any, loc: GridSubstationLocation) {
         let fillColor
+        let fillOpacity = 1
         if (this.mapComponent.isLocSelected(loc)) {
             fillColor = this.SELECTED_GSP_LOC_COLOUR
         } else if (this.mapComponent.isLocGroupSelected(loc)) {
@@ -172,7 +176,6 @@ export class LocMarkerData {
         } else {
             fillColor = this.LOC_COLOUR
         }
-        let fillOpacity = 1
 
         node.style.setProperty('opacity', fillOpacity.toFixed(1))
         node.style.setProperty('fill', fillColor)

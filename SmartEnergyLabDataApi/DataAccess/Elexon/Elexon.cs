@@ -1,4 +1,6 @@
+using System.Text.RegularExpressions;
 using HaloSoft.DataAccess;
+using Microsoft.AspNetCore.Components.Routing;
 using NHibernate;
 using NHibernate.Criterion;
 using SmartEnergyLabDataApi.BoundCalc;
@@ -46,6 +48,16 @@ public class Elexon : DataSet {
             q = q.Where(m => m.GspCode == code);
         }
         return q.Fetch(SelectMode.Fetch, m => m.Location).List();
+    }
+
+    public IList<GspDemandProfileData> GetGspDemandProfiles(DateTime startDate, DateTime endDate, string searchStr, int maxResults)
+    {
+        GridSubstationLocation loc = null;
+        var q = Session.QueryOver<GspDemandProfileData>().
+        JoinAlias(m=>m.Location,()=> loc, NHibernate.SqlCommand.JoinType.LeftOuterJoin).
+        Where(m => m.Date >= startDate && m.Date <= endDate).
+        Where(m => m.GspId.IsInsensitiveLike(searchStr,MatchMode.Start) || loc.Name.IsInsensitiveLike(searchStr,MatchMode.Anywhere)  );
+        return q.Fetch(SelectMode.Fetch, m => m.Location).Take(maxResults).List();
     }
 
     public double[] GetTotalGspDemandProfile(DateTime startDate, string? gspGroupId = null)

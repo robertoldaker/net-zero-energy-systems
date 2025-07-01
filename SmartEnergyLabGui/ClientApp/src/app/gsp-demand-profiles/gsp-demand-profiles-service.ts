@@ -16,12 +16,6 @@ export class GspDemandProfilesService {
             let endDate = this.dates[this.dates.length - 1]
             this.selectDate(endDate)
             this.DatesLoaded.emit(this.dates)
-            dataClientService.GetGspDemandProfiles(endDate, endDate, '', (gspProfiles) => {
-                let d = this.createGspProfileMap(gspProfiles)
-                this.gspProfileMap = d.map
-                this.locations = d.locs
-                this.LocationsLoaded.emit(this.locations)
-            });
         });
     }
 
@@ -36,9 +30,10 @@ export class GspDemandProfilesService {
     selectedArea: string = ''
     selectedGspId: string = ''
     selectedGspCode: string = ''
+    gspProfiles: GspDemandProfileData[] = []
     gspProfileMap: Map<number,GspDemandProfileData[]> = new Map()
 
-    createGspProfileMap(gspProfiles: GspDemandProfileData[]): { map: Map<number,GspDemandProfileData[]>, locs: GridSubstationLocation[] }{
+    createGspProfileMap(gspProfiles: GspDemandProfileData[]): { map: Map<number,GspDemandProfileData[]>, locs: GridSubstationLocation[], profiles: GspDemandProfileData[] }{
         let map = new Map <number,GspDemandProfileData[]>()
         let locs:GridSubstationLocation[] = []
         for( let gp of gspProfiles) {
@@ -50,23 +45,33 @@ export class GspDemandProfilesService {
                 map.get(gp.location.id)?.push(gp)
             }
         }
-        return { map: map, locs: locs }
+        return { map: map, locs: locs, profiles: gspProfiles }
     }
 
-    selectLocation(loc: GridSubstationLocation) {
+    selectLocation(loc: GridSubstationLocation | undefined) {
         this.selectedLocation = loc
-        if ( this.selectedDate ) {
-            this.dataClientService.GetGspDemandProfiles(this.selectedDate,this.selectedDate,loc.reference,(profiles)=>{
-                if ( profiles.length>0 && this.selectedDate) {
-                    this.setSelectedGspData(profiles)
-                    this.GspProfilesLoaded.emit(profiles)
-                    this.LocationSelected.emit(this.selectedLocation)
-                    this.dataClientService.GetTotalGspDemandProfile(this.selectedDate, this.selectedGroupId, (profile) => {
-                        this.groupTotalProfile = profile
-                        this.GspGroupTotalProfileLoaded.emit(profile)
-                    })
-                }
+        if (this.selectedDate) {
+            let profiles = this.getDemandProfiles(loc)
+            this.setSelectedGspData(profiles)
+            this.GspProfilesLoaded.emit(profiles)
+            this.LocationSelected.emit(this.selectedLocation)
+            this.dataClientService.GetTotalGspDemandProfile(this.selectedDate, this.selectedGroupId, (profile) => {
+                this.groupTotalProfile = profile
+                this.GspGroupTotalProfileLoaded.emit(profile)
             })
+        }
+    }
+
+    getDemandProfiles(loc: GridSubstationLocation | undefined):GspDemandProfileData[] {
+        if ( loc ) {
+            let profiles = this.gspProfileMap.get(loc.id)
+            if (profiles) {
+                return profiles
+            } else {
+                return []
+            }
+        } else {
+            return []
         }
     }
 
@@ -89,34 +94,35 @@ export class GspDemandProfilesService {
                 }
             }
         }
-        this.selectedGroupId = profiles[0].gspGroupId
-        this.selectedArea = profiles[0].gspArea
-        this.selectedGspCode = profiles[0].gspCode
+        if ( profiles.length>0 ) {
+            this.selectedGroupId = profiles[0].gspGroupId
+            this.selectedArea = profiles[0].gspArea
+            this.selectedGspCode = profiles[0].gspCode
+        } else {
+            this.selectedGroupId = ''
+            this.selectedArea = ''
+            this.selectedGspCode = ''
+        }
     }
 
-    selectDate(date: Date | undefined) {
+    selectDate(date: Date) {
         this.selectedDate = date
-        if ( this.selectedDate ) {
-            this.dataClientService.GetTotalGspDemandProfile(this.selectedDate, '', (profile) => {
-                this.gbTotalProfile = profile
-                this.GBTotalProfileLoaded.emit(profile)
-            })
-            // re-load selectedProfile for new date
-            if ( this.selectedGspCode ) {
-                // gsp
-                this.dataClientService.GetGspDemandProfiles(this.selectedDate, this.selectedDate, this.selectedGspCode, (profiles) => {
-                    if (profiles.length > 0 && this.selectedDate) {
-                        this.setSelectedGspData(profiles)
-                        this.GspProfilesLoaded.emit(profiles)
-                    }
-                })
-                // gsp group total
-                this.dataClientService.GetTotalGspDemandProfile(this.selectedDate, this.selectedGroupId, (profile) => {
-                    this.groupTotalProfile = profile
-                    this.GspGroupTotalProfileLoaded.emit(profile)
-                })
+        this.dataClientService.GetTotalGspDemandProfile(date, '', (profile) => {
+            this.gbTotalProfile = profile
+            this.GBTotalProfileLoaded.emit(profile)
+        })
+        this.dataClientService.GetGspDemandProfiles(date, date, '', (gspProfiles) => {
+            let d = this.createGspProfileMap(gspProfiles)
+            this.gspProfileMap = d.map
+            this.locations = d.locs
+            this.gspProfiles = d.profiles
+            this.LocationsLoaded.emit(this.locations)
+            //
+            // re-select location which will re-calculate gsp and group total profiles
+            if ( this.selectedLocation) {
+                this.selectLocation(this.selectedLocation)
             }
-        }
+        });
     }
 
     isLocationGroupSelected(loc: GridSubstationLocation):boolean {
@@ -127,6 +133,13 @@ export class GspDemandProfilesService {
         } else {
             return false
         }
+    }
+
+    searchProfiles(searchStr: string, maxResults: number):GspDemandProfileData[] {
+        let lcSearchStr = searchStr.toLowerCase()
+        let profiles = this.gspProfiles.
+            filter(m => m.gspId.toLowerCase().startsWith(lcSearchStr) || (m.location && m.location.name?.toLocaleLowerCase().includes(lcSearchStr))).slice(0, maxResults)
+        return profiles
     }
 
     LocationsLoaded:EventEmitter<GridSubstationLocation[]> = new EventEmitter<GridSubstationLocation[]>()

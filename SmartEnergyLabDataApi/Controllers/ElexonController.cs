@@ -28,7 +28,7 @@ public class ElexonController : ControllerBase {
     /// <returns></returns>
     [HttpGet]
     [Route("GetGspDemandProfiles")]
-    public IList<GspDemandProfileData> GetGspDemandProfiles(DateTime startDate, DateTime endDate, string? gspCode=null)
+    public IList<GspDemandProfileData> GetGspDemandProfiles(DateTime startDate, DateTime endDate, string? gspCode = null)
     {
         using (var da = new DataAccess()) {
             var profiles = da.Elexon.GetGspDemandProfiles(startDate, endDate, gspCode);
@@ -77,6 +77,24 @@ public class ElexonController : ControllerBase {
         using (var da = new DataAccess()) {
             var dates = da.Elexon.GetGspDemandDates();
             return dates;
+        }
+    }
+
+    /// <summary>
+    /// Searches for GSP demand profiles
+    /// </summary>
+    /// <param name="startDate">Start date</param>
+    /// <param name="endDate">End date</param>
+    /// <param name="searchStr">Search string</param>
+    /// <param name="maxResults">Maximum number of results to return</param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("SearchGspDemandProfiles")]
+    public IList<GspDemandProfileData> SearchGspDemandProfiles(DateTime startDate, DateTime endDate, string searchStr, int maxResults)
+    {
+        using (var da = new DataAccess()) {
+            var profiles = da.Elexon.GetGspDemandProfiles(startDate, endDate, searchStr, maxResults);
+            return profiles;
         }
     }
 }
