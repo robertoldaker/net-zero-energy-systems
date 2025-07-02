@@ -180,6 +180,7 @@ import { GspMapComponent } from './gsp-demand-profiles/gsp-map/gsp-map.component
 import { GspDemandProfilesComponent } from './gsp-demand-profiles/gsp-demand-profiles/gsp-demand-profiles.component';
 import { LoadflowInfoWindowComponent } from './loadflow/loadflow-map/loadflow-info-window/loadflow-info-window.component';
 import { GspSearchComponent } from './gsp-demand-profiles/gsp-search/gsp-search.component';
+import { LoadflowGenSvgsComponent } from './loadflow/loadflow-gen-svgs/loadflow-gen-svgs.component';
 
 
 @NgModule({
@@ -314,7 +315,8 @@ import { GspSearchComponent } from './gsp-demand-profiles/gsp-search/gsp-search.
         GspMapComponent,
         GspDemandProfilesComponent,
         LoadflowInfoWindowComponent,
-        GspSearchComponent
+        GspSearchComponent,
+        LoadflowGenSvgsComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

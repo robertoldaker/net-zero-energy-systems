@@ -1,0 +1,14 @@
+
+svg.svg {
+    display: inline-block;
+    padding: 5px;
+}
+
+
+svg.svg.biomass {
+    /*padding: 5%;*/
+}
+
+svg.svg.border {
+    border: 10px solid black;
+}
