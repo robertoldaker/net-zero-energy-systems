@@ -11,14 +11,20 @@
                 <app-cell-buttons [element]="element" typeName="Generator" (onEdit)="edit($event)"></app-cell-buttons>
             </td>
         </ng-container>
+
+        <!-- icon -->
+        <ng-container matColumnDef="icon">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
+            <td mat-cell *matCellDef="let element">
+                <app-loadflow-gen-svgs [genType]="element.type.value"></app-loadflow-gen-svgs>
+            </td>
+        </ng-container>
+
         <!-- Name Column -->
         <ng-container matColumnDef="name">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
             <td mat-cell *matCellDef="let element">
-                <app-loadflow-gen-svgs [genType]="element.type.value"></app-loadflow-gen-svgs>
-                <div style="display: inline-block">
-                    <app-cell-editor [data]="element.name"></app-cell-editor>
-                </div>
+                <app-cell-editor [data]="element.name"></app-cell-editor>
             </td>
         </ng-container>
 

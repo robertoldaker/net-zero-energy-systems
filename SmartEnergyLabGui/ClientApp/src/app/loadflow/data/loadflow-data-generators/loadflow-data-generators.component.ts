@@ -37,7 +37,7 @@ export class LoadflowDataGeneratorsComponent extends DataTableBaseComponent<Gene
         this.dataFilter.columnFilterMap.set(this.typeDataFilter.columnName, this.typeDataFilter)
         //
         this.createDataSource(this.dataService.dataset,dataService.networkData.generators);
-        this.displayedColumns = ['buttons','name','type','capacity','scaledGeneration','nodeCount']
+        this.displayedColumns = ['buttons','icon','name','type','capacity','scaledGeneration','nodeCount']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.nodeMismatchError = false
             this.createDataSource(this.dataService.dataset,results.generators);

@@ -55,7 +55,7 @@
                             <td>
                                 <div class="generatorButton" [class]="{isLocalEdit: isLocalGenerator(element.id.value, g)}">
                                     <app-mini-icon-button title="Delete" (click)="deleteGenerator(element.id.value,g)" iconName="delete_forever" style="font-size: 1rem; vertical-align: middle;"></app-mini-icon-button>
-                                    <app-loadflow-gen-svgs [genType]="g.type"></app-loadflow-gen-svgs>
+                                    <app-loadflow-gen-svgs [genType]="g.type" [width]="'25px'"></app-loadflow-gen-svgs>
                                     <span>{{g.name}}</span>
                                 </div>
                             </td>
@@ -71,7 +71,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td><span style="margin-left: 17px">Total</span></td>
+                            <td><span style="margin-left: 48px">Total</span></td>
                             <td>{{element.generation.value.toFixed(0)}}</td>
                         </tr>
                     </tfoot>
