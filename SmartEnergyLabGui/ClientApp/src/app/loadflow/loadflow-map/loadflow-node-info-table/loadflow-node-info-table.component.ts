@@ -19,8 +19,7 @@ export class LoadflowNodeInfoTableComponent implements OnInit {
     nodes:Node[] = []
 
     getGeneration(node: Node):number {
-        //return this.dataService.transportModel===TransportModelOld.PeakSecurity ? node.generation_A : node.generation_B
-        return 0
+        return node.generation
     }
 
     get totalDemandStr():string {

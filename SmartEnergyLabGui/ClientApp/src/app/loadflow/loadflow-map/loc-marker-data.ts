@@ -78,7 +78,7 @@ export class LocMarkerData {
                 lat: loc.gisData.latitude,
                 lng: loc.gisData.longitude,
             },
-            title: md.title + this.getLocGenDemandStr(loc),
+            title: md.title,
             content: locSvg,
             zIndex: 15,
             gmpDraggable: this.mapComponent.dataService.locationDragging
@@ -104,7 +104,7 @@ export class LocMarkerData {
     private getLocMarkerData(loc: LoadflowLocation) {
         let fillColor = loc.isQB ? this.QB_COLOUR : this.LOC_COLOUR
         let fillOpacity = loc.hasNodes ? 1 : 0.5
-        let title =  `${loc.reference}: ${loc.name}`
+        let title =  `${loc.reference}: ${loc.name}` + this.getLocGenDemandStr(loc)
         return { fillColor: fillColor, fillOpacity: fillOpacity, title: title}
     }
 

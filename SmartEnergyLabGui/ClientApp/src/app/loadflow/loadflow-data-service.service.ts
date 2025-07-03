@@ -122,7 +122,7 @@ export class LoadflowDataService {
     }
 
     private reloadDataset(onLoad: (()=>void) | undefined = undefined) {
-        this.loadNetworkData(true,false, onLoad);
+        this.loadNetworkData(true, false, onLoad);
     }
 
     private loadNetworkData(withMessage: boolean, newDataset:boolean, onLoad?: (()=>void)) {
@@ -552,6 +552,7 @@ export class LoadflowDataService {
         if ( tms && this.transportModel) {
             let tm = tms.data.find(m=>m.id === this.transportModel?.id)
             if ( tm ) {
+                console.log('reload!!')
                 this.reload()
                 return;
             }
@@ -1081,14 +1082,18 @@ export class LoadflowLocation {
 
     update(nodes: Node[], ctrls: Ctrl[]):boolean {
         let hasNodes = nodes.length>0
+        let totalDemand = this._totalDemand
+        let totalGen = this._totalGen
+        this.calcTotals(nodes)
         let isQB = ctrls.find(m=>m.node1.location?.id === this._gsl.id && m.type == LoadflowCtrlType.QB)!==undefined
         let result = hasNodes!=this._hasNodes ||
                         isQB!=this._isQB ||
+                        totalDemand!=this._totalDemand ||
+                        totalGen != this._totalGen ||
                         this._isNew
         this._hasNodes = hasNodes
         this._isQB = isQB
         this._isNew = false
-        this.calcTotals(nodes)
         return result
     }
 
