@@ -100,10 +100,20 @@ export class LoadflowNodeDialogComponent extends DialogBase implements OnInit {
     }
 
     addZone() {
-        this.dialogService.showLoadflowZoneDialog()
+        this.dialogService.showLoadflowZoneDialog(undefined,(obj)=>{
+            if (obj) {
+                this.setValue('zoneId',obj.id)
+            }
+        })
     }
 
     addGenerator() {
-        this.dialogService.showLoadflowGeneratorDialog()
+        this.dialogService.showLoadflowGeneratorDialog(undefined,(obj)=>{
+            if (obj) {
+                let genIds:number[]=this.getValue('generatorIds')
+                genIds.push(obj.id)
+                this.setValue('generatorIds',genIds)
+            }
+        })
     }
 }

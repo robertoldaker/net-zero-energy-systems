@@ -10,7 +10,7 @@ import { RegisterUserComponent } from '../users/register-user/register-user.comp
 import { DataClientService } from '../data/data-client.service';
 import { MapDataService } from '../low-voltage/map-data.service';
 import { ChangePasswordComponent } from '../users/change-password/change-password.component';
-import { Dataset, Node, TransportModel } from '../data/app.data';
+import { Dataset, Node, TransportModel, Zone, Generator } from '../data/app.data';
 import { MessageDialog, MessageDialogComponent } from './message-dialog/message-dialog.component';
 import { AboutElsiDialogComponent } from '../elsi/about-elsi-dialog/about-elsi-dialog.component';
 import { ElsiHelpDialogComponent } from '../elsi/elsi-help-dialog/elsi-help-dialog.component';
@@ -127,10 +127,15 @@ export class DialogService {
         this.dialog.open(LoadflowNodeDialogComponent, options)
     }
 
-    showLoadflowZoneDialog(cellObj?: ICellEditorDataDict) {
+    showLoadflowZoneDialog(cellObj?: ICellEditorDataDict, onClose?: (obj?: Zone) => void) {
         let options = Object.assign({},this.defaultOptions)
         options.data = cellObj
-        this.dialog.open(LoadflowZoneDialogComponent, options)
+        let dialogRef = this.dialog.open(LoadflowZoneDialogComponent, options)
+        dialogRef.afterClosed().subscribe((obj)=>{
+            if ( onClose) {
+                onClose(obj)
+            }
+        })
     }
 
     showLoadflowBoundaryDialog(cellObj?: ICellEditorDataDict) {
@@ -178,13 +183,13 @@ export class DialogService {
         });
     }
 
-    showLoadflowGeneratorDialog(cellObj?: ICellEditorDataDict, onClose?: (e: any)=>void) {
+    showLoadflowGeneratorDialog(cellObj?: ICellEditorDataDict, onClose?: (obj?: Generator)=>void) {
         let options = Object.assign({},this.defaultOptions)
         options.data = cellObj
         let dialogRef = this.dialog.open(LoadflowGeneratorDialogComponent, options)
-        dialogRef.afterClosed().subscribe((input)=>{
+        dialogRef.afterClosed().subscribe((obj)=>{
             if ( onClose ) {
-                onClose(input)
+                onClose(obj)
             }
         });
     }

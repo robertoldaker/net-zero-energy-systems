@@ -60,8 +60,8 @@ export class LoadflowGeneratorDialogComponent extends DialogBase implements OnIn
         if ( this.datasetsService.currentDataset) {
             let changedControls = this.getUpdatedControls()
             let id = this.dialogData?._data ? this.dialogData._data.id : 0
-            this.loadflowService.saveDialog(id, "Generator",changedControls, () => {
-                this.dialogRef.close()
+            this.loadflowService.saveDialog(id, "Generator",changedControls, (obj) => {
+                this.dialogRef.close(obj)
             }, (errors) => {
                 this.fillErrors(errors)
             })

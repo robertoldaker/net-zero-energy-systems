@@ -48,6 +48,10 @@ export class DialogBase extends ComponentBase {
         this.form.get(key)?.setValue(v)
     }
 
+    getValue(key: string): any {
+        return this.form.get(key)?.value
+    }
+
     revertToPrevValue(key: string) {
         let ue = this.getUserEdit(key)
         if (ue) {
@@ -76,4 +80,4 @@ export class DialogBase extends ComponentBase {
 
 export interface IFormControlDict {
     [index: string]: any
-}    
+}

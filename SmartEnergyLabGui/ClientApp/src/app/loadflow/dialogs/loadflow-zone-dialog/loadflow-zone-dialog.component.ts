@@ -46,8 +46,8 @@ export class LoadflowZoneDialogComponent extends DialogBase implements OnInit {
         if ( this.datasetsService.currentDataset) {
             let changedControls = this.getUpdatedControls()
             let id = this.dialogData?._data ? this.dialogData._data.id : 0
-            this.loadflowService.saveDialog(id, "Zone",changedControls, () => {
-                this.dialogRef.close()
+            this.loadflowService.saveDialog(id, "Zone",changedControls, (obj) => {
+                this.dialogRef.close(obj)
             }, (errors) => {
                 this.fillErrors(errors)
             })

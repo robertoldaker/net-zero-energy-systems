@@ -981,15 +981,34 @@ export class LoadflowDataService {
         }
     }
 
-    saveDialog(id: number, className:string, data: IFormControlDict, onOK: ()=>void, onError: (errors: any)=>void) {
+    saveDialog(id: number, className:string, data: IFormControlDict, onOK: (resp: any)=>void, onError: (errors: any)=>void) {
         data['_transportModelId'] = this.transportModel?.id
         if ( this.datasetsService.currentDataset) {
             this.dataClientService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: className, data: data }, (resp)=>{
                 this.afterEdit({type: DatasetType.BoundCalc, datasets: resp})
-                onOK();
+                let obj = this.getDialogObj(resp, className, id)
+                onOK(obj);
             }, (errors)=>{
                 onError(errors);
             })
+        }
+    }
+
+    private getDialogObj(datasets: DatasetData<any>[], className: string, id: number):any {
+        let dd = datasets.find(m=>m.tableName == className);
+        if ( dd ) {
+            if (id == 0) {
+                let items = dd.data
+                const obj = items.reduce((maxItem, currentItem) => {
+                    return (currentItem.id > maxItem.id) ? currentItem : maxItem;
+                }, items[0]); // Initialize maxItem with the first item in the array
+                return obj
+            } else {
+                let obj = dd.data.find(m => m.id == id)
+                return obj
+            }
+        } else {
+            return undefined
         }
     }
 
