@@ -51,6 +51,13 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         [Property()]
         public virtual double CableLength {get; set;}
 
+        public virtual double TotalLength
+        {
+            get {
+                return OHL + CableLength;
+            }
+        }
+
         [Property()]
         public virtual double Cap {get; set;}
 

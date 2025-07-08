@@ -2,7 +2,7 @@
 
 <app-div-auto-scroller>
     <table class="branch" style="width: 100%;" mat-table [dataSource]="data" [trackBy]="getDataId" matSort  [matSortActive]="sortColumn" [matSortDirection]="sortDirection"  matSortDisableClear (matSortChange)="sortTable($event)">
-    
+
         <!-- buttons Column -->
         <ng-container matColumnDef="buttons">
             <th mat-header-cell *matHeaderCellDef></th>
@@ -18,7 +18,7 @@
             <app-loadflow-branch-code-cell [branchCode]="element.code.value" [node1LocationId]="element.node1LocationId.value" [node2LocationId]="element.node2LocationId.value" [ctrlId]="element.ctrlId.value"></app-loadflow-branch-code-cell>
           </td>
         </ng-container>
-    
+
         <!-- node1 -->
         <ng-container matColumnDef="node1Code">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Node 1</th>
@@ -26,7 +26,7 @@
             <app-loadflow-node-cell [nodeCode]="element.node1Code.value" [nodeName]="element.node1Name.value" [isBranch]="true"></app-loadflow-node-cell>
           </td>
         </ng-container>
-    
+
         <!-- node2 -->
         <ng-container matColumnDef="node2Code">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Node 2</th>
@@ -34,7 +34,7 @@
             <app-loadflow-node-cell [nodeCode]="element.node2Code.value" [nodeName]="element.node2Name.value" [isBranch]="true"></app-loadflow-node-cell>
           </td>
         </ng-container>
-        
+
         <!-- type -->
         <ng-container matColumnDef="typeStr">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>
@@ -46,7 +46,27 @@
                 <div *ngIf="element.type.value==0">({{element.linkType.value}})</div>
             </td>
         </ng-container>
-            
+
+        <!-- ohl -->
+        <ng-container matColumnDef="ohl">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header  arrowPosition="before">
+                <div>OHL<br>Length (km)</div>
+            </th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.ohl" [decimalPlaces]="0"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <!-- cable length -->
+        <ng-container matColumnDef="cableLength">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">
+                <div>Cable<br>Length (km)</div>
+            </th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.cableLength" [decimalPlaces]="0"></app-cell-editor>
+            </td>
+        </ng-container>
+
         <!-- x -->
         <ng-container matColumnDef="x">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">X</th>
@@ -54,15 +74,15 @@
                 <app-cell-editor [data]="element.x" [decimalPlaces]="3"></app-cell-editor>
             </td>
         </ng-container>
-            
+
         <!-- cap -->
         <ng-container matColumnDef="cap">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Cap</th>
             <td mat-cell *matCellDef="let element">
-                <app-cell-editor [data]="element.cap" [decimalPlaces]="3"></app-cell-editor>
+                <app-cell-editor [data]="element.cap" [decimalPlaces]="0"></app-cell-editor>
             </td>
         </ng-container>
-            
+
         <!-- trip -->
         <ng-container matColumnDef="trip">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">
@@ -75,7 +95,7 @@
                 <input type="checkbox" [disabled]="canTrip" [checked]="isTripped(element.id.value)" (change)="toggleTrip($event,element.id.value)"/>
             </td>
         </ng-container>
-            
+
         <!-- free power -->
         <ng-container matColumnDef="freePower">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before"><div [style]="getOverallFreePowerStyle()">Free</div></th>
@@ -114,7 +134,7 @@
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{isDeleted: row._isDeleted}"></tr>
-    </table>            
+    </table>
 </app-div-auto-scroller>
 
-    
+

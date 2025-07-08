@@ -33,6 +33,8 @@ export class LoadflowBranchDialogComponent extends DialogBase {
         fNodeId2.addValidators( [Validators.required])
         let fX = this.addFormControl('x')
         let fCap = this.addFormControl('cap')
+        let fOHL = this.addFormControl('ohl')
+        let fCableLength = this.addFormControl('cableLength')
         // ctrl params
         let fMinCtrl = this.addFormControl('minCtrl')
         let fMaxCtrl = this.addFormControl('maxCtrl')
@@ -47,6 +49,8 @@ export class LoadflowBranchDialogComponent extends DialogBase {
             fNodeId2.setValue(data.node2Id)
             fX.setValue(data.x.toFixed(3))
             fCap.setValue(data.cap.toFixed(3))
+            fOHL.setValue(data.ohl.toFixed(0))
+            fCableLength.setValue(data.cableLength.toFixed(0))
             if ( editorData?.ctrl?._data ) {
                 let ctrl:Ctrl = editorData.ctrl._data
                 fMinCtrl.setValue(ctrl.minCtrl)
@@ -131,6 +135,16 @@ export class LoadflowBranchDialogComponent extends DialogBase {
         if ( this.isCtrl) {
             this.updateMinMaxCtrl()
         }
+        let fOHL = this.form.get('ohl')
+        let fCableLength = this.form.get('cableLength')
+        if ( e.id === BranchType.OHL || e.id ===BranchType.Composite || e.id === BranchType.Cable) {
+            fOHL?.enable()
+            fCableLength?.enable()
+        } else {
+            fOHL?.disable()
+            fCableLength?.disable()
+        }
+        console.log('typeChanged',e)
     }
 
     updateMinMaxCtrl() {

@@ -4,20 +4,20 @@
 
 .mat-column-code {
     width: 10%;
-    padding-right: var(--col-padding-right);   
+    padding-right: var(--col-padding-right);
 }
 
 .mat-column-node1Code {
     min-width: 100px;
-    width: 15%;    
-    padding-right: var(--col-padding-right);   
+    width: 15%;
+    padding-right: var(--col-padding-right);
 }
 
 
 .mat-column-node2Code {
     min-width: 100px;
-    width: 15%; 
-    padding-right: var(--col-padding-right);   
+    width: 15%;
+    padding-right: var(--col-padding-right);
 }
 
 .mat-column-type {
@@ -26,7 +26,7 @@
 
 .mat-column-x {
     text-align: right;
-    padding-right: 1.5rem;  
+    padding-right: 1.5rem;
 }
 
 .mat-column-cap {
@@ -81,3 +81,12 @@
     padding-right: var(--col-padding-right);
 }
 
+.mat-column-ohl {
+    text-align: right;
+    padding-right: 1.5rem;
+}
+
+.mat-column-cableLength {
+    text-align: right;
+    padding-right: 1.5rem;
+}

@@ -427,6 +427,8 @@ export interface Branch {
     r: number
     x: number
     ohl: number
+    cableLength: number
+    totalLength: number
     cap: number
     linkType: string
     node1Code: string

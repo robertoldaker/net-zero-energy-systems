@@ -14,7 +14,7 @@ import { Sort } from '@angular/material/sort';
 })
 export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch> {
 
-    constructor(private dataService: LoadflowDataService, 
+    constructor(private dataService: LoadflowDataService,
                 private dialogService: DialogService,
                 private dataComponent: LoadflowDataComponent) {
         super()
@@ -32,7 +32,7 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
         })
 
         this.createDataSource(dataService.dataset,dataService.networkData.branches)
-        this.displayedColumns = ['buttons','code','node1Code','node2Code','typeStr','x','cap','trip','freePower','powerFlow','percentCapacity','km','mwkm','loss']
+        this.displayedColumns = ['buttons','code','node1Code','node2Code','typeStr','ohl','cableLength','x','cap','trip','freePower','powerFlow','percentCapacity','km','mwkm','loss']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.branchCapacityError = false
             this.createDataSource(dataService.dataset,results.branches)
@@ -123,7 +123,7 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
             if ( color ) {
                 style= {color: color};
             }
-        } 
+        }
         return style
     }
 
