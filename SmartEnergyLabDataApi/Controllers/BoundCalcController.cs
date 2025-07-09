@@ -4,13 +4,13 @@ using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.BoundCalc;
 using SmartEnergyLabDataApi.Data.BoundCalc;
 using static SmartEnergyLabDataApi.BoundCalc.BoundCalc;
+using SmartEnergyLabDataApi.Models;
 
 namespace SmartEnergyLabDataApi.Controllers
 {
     [Route("BoundCalc")]
     [ApiController]
-    public class BoundCalcController : ControllerBase
-    {
+    public class BoundCalcController : ControllerBase {
         IHubContext<NotificationHub> _hubContext;
         public BoundCalcController(IHubContext<NotificationHub> hubContext)
         {
@@ -25,7 +25,7 @@ namespace SmartEnergyLabDataApi.Controllers
         [Route("LoadFromXlsm")]
         public string LoadFromXlsm(IFormFile file)
         {
-            using( var da = new DataAccess()) {
+            using (var da = new DataAccess()) {
                 return da.BoundCalc.LoadFromXlsm(file);
             }
         }
@@ -35,9 +35,10 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("Load/TNUOS")]
-        public IActionResult LoadTNUOS(IFormFile file, int year=2024) {
-            var m=new BoundCalcTnuosLoader();
-            var msg = m.Load(file,year);
+        public IActionResult LoadTNUOS(IFormFile file, int year = 2024)
+        {
+            var m = new BoundCalcTnuosLoader();
+            var msg = m.Load(file, year);
             //
             return this.Ok(msg);
         }
@@ -49,11 +50,12 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("BranchNames")]
-        public List<string> BranchNames(int datasetId) {
-            using ( var da = new DataAccess() ) {
+        public List<string> BranchNames(int datasetId)
+        {
+            using (var da = new DataAccess()) {
                 var q = da.Session.QueryOver<Branch>();
-                var ds = new DatasetData<Branch>(da, datasetId,m=>m.Id.ToString(),q);
-                var bns = ds.Data.Select(m=>m.LineName).ToList<string>();
+                var ds = new DatasetData<Branch>(da, datasetId, m => m.Id.ToString(), q);
+                var bns = ds.Data.Select(m => m.LineName).ToList<string>();
                 return bns;
             }
         }
@@ -67,10 +69,10 @@ namespace SmartEnergyLabDataApi.Controllers
                                     SetPointMode setPointMode,
                                     int transportModelId,
                                     bool nodeMarginals = false,
-                                    string? boundaryName=null,
-                                    bool boundaryTrips=false,
-                                    string? tripStr=null,
-                                    string? connectionId=null )
+                                    string? boundaryName = null,
+                                    bool boundaryTrips = false,
+                                    string? tripStr = null,
+                                    string? connectionId = null)
         {
             try {
                 var resp = BoundCalc.BoundCalc.Run(datasetId,
@@ -83,7 +85,7 @@ namespace SmartEnergyLabDataApi.Controllers
                                                         connectionId,
                                                         _hubContext);
                 return this.Ok(resp);
-            } catch( Exception e) {
+            } catch (Exception e) {
                 return this.Ok(new BoundCalcResults(e.Message));
             }
         }
@@ -93,12 +95,12 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("RunBoundaryTrip")]
-        public IActionResult RunBoundaryTrip(int datasetId, SetPointMode setPointMode, int transportModelId, string boundaryName, string tripName, string? tripStr )
+        public IActionResult RunBoundaryTrip(int datasetId, SetPointMode setPointMode, int transportModelId, string boundaryName, string tripName, string? tripStr)
         {
             try {
-                var resp = BoundCalc.BoundCalc.RunBoundaryTrip(datasetId,setPointMode,transportModelId, boundaryName, tripName, tripStr);
+                var resp = BoundCalc.BoundCalc.RunBoundaryTrip(datasetId, setPointMode, transportModelId, boundaryName, tripName, tripStr);
                 return this.Ok(resp);
-            } catch( Exception e) {
+            } catch (Exception e) {
                 return this.Ok(new BoundCalcResults(e.Message));
             }
         }
@@ -111,8 +113,9 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("ManualSetPointMode")]
-        public IActionResult ManualSetPointMode(int datasetId, [FromBody] List<CtrlSetPoint> initialSetPoints) {
-            BoundCalc.BoundCalc.ManualSetPointMode(datasetId,this.GetUserId(),initialSetPoints);
+        public IActionResult ManualSetPointMode(int datasetId, [FromBody] List<CtrlSetPoint> initialSetPoints)
+        {
+            BoundCalc.BoundCalc.ManualSetPointMode(datasetId, this.GetUserId(), initialSetPoints);
             return Ok();
         }
 
@@ -121,7 +124,8 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("AdjustBranchCapacities")]
-        public BoundCalcResults AdjustBranchCapacities(int datasetId, int transportModelId){
+        public BoundCalcResults AdjustBranchCapacities(int datasetId, int transportModelId)
+        {
             return BoundCalc.BoundCalc.AdjustBranchCapacities(datasetId, transportModelId, this.GetUserId());
         }
 
@@ -133,7 +137,7 @@ namespace SmartEnergyLabDataApi.Controllers
         public IActionResult SaveBranchesAsCsv(string region)
         {
             FileStreamResult fsr;
-            using( var da = new DataAccess()) {
+            using (var da = new DataAccess()) {
                 fsr = da.BoundCalc.SaveBranchesAsCsv(region);
             }
 
@@ -148,7 +152,7 @@ namespace SmartEnergyLabDataApi.Controllers
         public IActionResult SaveNodesAsCsv(string region)
         {
             FileStreamResult fsr;
-            using( var da = new DataAccess()) {
+            using (var da = new DataAccess()) {
                 fsr = da.BoundCalc.SaveNodesAsCsv(region);
             }
 
@@ -163,7 +167,7 @@ namespace SmartEnergyLabDataApi.Controllers
         public IActionResult SaveBoundaryZonesAsCsv()
         {
             FileStreamResult fsr;
-            using( var da = new DataAccess()) {
+            using (var da = new DataAccess()) {
                 fsr = da.BoundCalc.SaveBoundaryZonesAsCsv();
             }
 
@@ -177,8 +181,9 @@ namespace SmartEnergyLabDataApi.Controllers
         /// /// <returns></returns>
         [HttpGet]
         [Route("NetworkData")]
-        public BoundCalcNetworkData NetworkData(int datasetId, int transportModelId=0) {
-            using( var bc = new BoundCalc.BoundCalc(datasetId,transportModelId) ) {
+        public BoundCalcNetworkData NetworkData(int datasetId, int transportModelId = 0)
+        {
+            using (var bc = new BoundCalc.BoundCalc(datasetId, transportModelId)) {
                 return new BoundCalcNetworkData(bc);
             }
         }
@@ -189,7 +194,8 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <param name="file"></param>
         [HttpPost]
         [Route("Reference/UploadBase")]
-        public void UploadBaseReference(IFormFile file) {
+        public void UploadBaseReference(IFormFile file)
+        {
             //?? Needs updating for BoundCalc
             /*
             var m=new LoadflowReference();
@@ -203,7 +209,8 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <param name="file"></param>
         [HttpPost]
         [Route("Reference/UploadB8")]
-        public void UploadB8Reference(IFormFile file) {
+        public void UploadB8Reference(IFormFile file)
+        {
             //?? Needs updating for BoundCalc
             /*
             var m=new LoadflowReference();
@@ -216,7 +223,8 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpGet]
         [Route("Reference/RunBase")]
-        public IActionResult RunBaseReference(bool showAllErrors=false) {
+        public IActionResult RunBaseReference(bool showAllErrors = false)
+        {
             //?? Needs updating for BoundCalc
             /*
             var m=new LoadflowReference();
@@ -230,7 +238,8 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpGet]
         [Route("Reference/RunB8")]
-        public IActionResult RunB8Reference(bool showAllErrors=false) {
+        public IActionResult RunB8Reference(bool showAllErrors = false)
+        {
             //?? Needs updating for BoundCalc
             /*
             var m=new LoadflowReference();
@@ -245,8 +254,9 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <param name="loadOptions"> (0-All circuits, 1-only high voltage)</param>
         [HttpPost]
         [Route("Load/ETYS")]
-        public void LoadETYS(BoundCalcETYSLoader.BoundCalcLoadOptions loadOptions = BoundCalcETYSLoader.BoundCalcLoadOptions.OnlyHighVoltageCircuits) {
-            var m=new BoundCalcETYSLoader(loadOptions);
+        public void LoadETYS(BoundCalcETYSLoader.BoundCalcLoadOptions loadOptions = BoundCalcETYSLoader.BoundCalcLoadOptions.OnlyHighVoltageCircuits)
+        {
+            var m = new BoundCalcETYSLoader(loadOptions);
             m.Load();
 
         }
@@ -256,8 +266,9 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("FixMissingZones")]
-        public void FixMissingZones(BoundCalcETYSLoader.BoundCalcLoadOptions loadOptions = BoundCalcETYSLoader.BoundCalcLoadOptions.OnlyHighVoltageCircuits) {
-            var m=new BoundCalcETYSLoader(loadOptions);
+        public void FixMissingZones(BoundCalcETYSLoader.BoundCalcLoadOptions loadOptions = BoundCalcETYSLoader.BoundCalcLoadOptions.OnlyHighVoltageCircuits)
+        {
+            var m = new BoundCalcETYSLoader(loadOptions);
             m.FixMissingZones();
         }
 
@@ -267,10 +278,11 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <param name="datasetName">Name of dataset</param>
         [HttpPost]
         [Route("Nodes/SetLocationsAndVoltages")]
-        public void SetNodeVoltages(string datasetName) {
-            using( var da = new DataAccess()) {
+        public void SetNodeVoltages(string datasetName)
+        {
+            using (var da = new DataAccess()) {
                 var dataset = da.Datasets.GetDataset(DatasetType.BoundCalc, datasetName);
-                if ( dataset==null ) {
+                if (dataset == null) {
                     throw new Exception($"Cannot find loadflow dataset with name [{datasetName}]");
                 }
                 da.BoundCalc.SetNodeVoltagesAndLocations(dataset.Id);
@@ -284,15 +296,40 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <param name="datasetName">Name of dataset</param>
         [HttpPost]
         [Route("Nodes/UpdateLocations")]
-        public IActionResult UpdateLocations(string datasetName) {
-            using( var da = new DataAccess()) {
+        public IActionResult UpdateLocations(string datasetName)
+        {
+            using (var da = new DataAccess()) {
                 var dataset = da.Datasets.GetDataset(DatasetType.BoundCalc, datasetName);
-                if ( dataset==null ) {
+                if (dataset == null) {
                     throw new Exception($"Cannot find loadflow dataset with name [{datasetName}]");
                 }
                 var locUpdater = new BoundCalcLocationUpdater();
                 var msg = locUpdater.Update(dataset.Id);
                 return this.Ok(msg);
+            }
+        }
+
+        /// <summary>
+        /// Find distance in km between nodes
+        /// </summary>
+        /// <param name="nodeId1"></param>
+        /// <param name="nodeId2"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("Nodes/DistBetween")]
+        public double DistBetweenNodes(int nodeId1, int nodeId2)
+        {
+            using (var da = new DataAccess()) {
+                var node1 = da.BoundCalc.GetNode(nodeId1);
+                var node2 = da.BoundCalc.GetNode(nodeId2);
+                if (node1 != null && node1.Location != null && node2 != null && node2.Location != null) {
+                    var gis1 = node1.Location.GISData;
+                    var gis2 = node2.Location.GISData;
+                    var dist = GISUtilities.distance(gis1.Latitude, gis1.Longitude, gis2.Latitude, gis2.Longitude);
+                    return dist;
+                } else {
+                    return 0;
+                }
             }
         }
 

@@ -605,6 +605,18 @@ export interface EditItem {
     data?: any
 }
 
+export interface DeleteItemData {
+    id: number,
+    className: string,
+    dataset: Dataset
+}
+
+export interface EditItemResults {
+    msg: string,
+    datasets: DatasetData<any>[],
+    deletedItems: DeleteItemData[]
+}
+
  /**
   * Elsi
   */

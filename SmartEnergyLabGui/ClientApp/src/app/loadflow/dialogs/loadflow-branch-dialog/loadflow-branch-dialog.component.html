@@ -11,7 +11,7 @@
         </div>
         <div class="row">
             <div>
-                <app-dialog-selector [dialog]="dialog" name="type" placeholder="Enter branch type" label="Type" [data]="branchTypes" (onSelectionChange)="typeChanged($event)"></app-dialog-selector>
+                <app-dialog-selector [dialog]="dialog" name="type" placeholder="Enter branch type" label="Type" [data]="branchTypes" (onSelectionChange)="typeChanged()"></app-dialog-selector>
             </div>
             <div>
                 <app-dialog-text-input [dialog]="dialog" name="code" placeholder="Enter code" label="Code"></app-dialog-text-input>
@@ -25,7 +25,7 @@
                 <app-dialog-text-input [dialog]="dialog" name="cap" placeholder="Enter capacity in MW" label="Capacity (MW)" [fieldClasses]="{numeric: true}" (onChange)="onCapChange($event)"></app-dialog-text-input>
             </div>
         </div>
-        <div class="row">
+        <div *ngIf="needsLength" class="row">
             <div>
                 <app-dialog-text-input [dialog]="dialog" name="ohl" placeholder="Enter OHL length" label="OHL length (km)"
                     [fieldClasses]="{numeric: true}"></app-dialog-text-input>

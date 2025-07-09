@@ -559,10 +559,16 @@ export class LoadflowDataService {
         }
         this.needsCalc = true
         this.loadFlowResults = undefined
-        //
+        // update datasetData
         for( let r of data.datasets) {
             let dd = this.getDatasetData(r.tableName)
             DatasetsService.updateDatasetData(dd,r)
+        }
+        // delete items from datasetData that have been permamently deleted
+        for (let di of data.deletedItems) {
+            let dd = this.getDatasetData(di.className)
+            // Remove the deleted item from the dataset
+            DatasetsService.deleteSourceData(dd, di.id)
         }
         // this set boundaryBranchIds and checks any selected boundary still exists
         this.setBoundary(this.boundaryName)
@@ -580,9 +586,6 @@ export class LoadflowDataService {
         if ( data.type!=DatasetType.BoundCalc) {
             return;
         }
-        //??let id = data.deleteItem.id
-        //??let className = data.deleteItem.className
-        //??let dataset = data.deleteItem.dataset
         let deletedItems = data.deletedItems
         // Check we haven't deleted the currently selected transport model
         if ( deletedItems.length>0 && deletedItems[0].className==='TransportModel') {
@@ -594,13 +597,7 @@ export class LoadflowDataService {
         }
 
         this.needsCalc = true
-        //??let dd = this.getDatasetData(className)
-        /*if ( className === "Branch") {
-            let branch = dd.data.find(m=>m.id == id)
-            if ( branch && branch.ctrlId!==0) {
-                DatasetsService.deleteDatasetData(this.networkData.ctrls,branch.ctrlId, dataset)
-            }
-        }*/
+        //
         for( let di of deletedItems) {
             let dd = this.getDatasetData(di.className)
             // Remove the deleted item from the dataset
@@ -985,8 +982,8 @@ export class LoadflowDataService {
         data['_transportModelId'] = this.transportModel?.id
         if ( this.datasetsService.currentDataset) {
             this.dataClientService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: className, data: data }, (resp)=>{
-                this.afterEdit({type: DatasetType.BoundCalc, datasets: resp})
-                let obj = this.getDialogObj(resp, className, id)
+                this.afterEdit({type: DatasetType.BoundCalc, datasets: resp.datasets, deletedItems: resp.deletedItems})
+                let obj = this.getDialogObj(resp.datasets, className, id)
                 onOK(obj);
             }, (errors)=>{
                 onError(errors);

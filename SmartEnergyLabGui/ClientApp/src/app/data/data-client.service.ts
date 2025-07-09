@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LoadNetworkDataSource, SubstationSearchResult, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType, DatasetData, EditItem, DistributionData, TransmissionData, NationalGridNetworkSource, GridSubstationLocationSource, SetPointMode, CtrlSetPoint, GspDemandProfileData, GridSubstationLocation } from './app.data';
+import { PrimarySubstation, DistributionSubstation, GeographicalArea, SubstationLoadProfile, SubstationClassification, ClassificationToolInput, ClassificationToolOutput, LoadProfileSource, SubstationParams, VehicleChargingStation, SubstationChargingParams, SubstationHeatingParams, LoadflowResults, NetworkData, ElsiScenario, ElsiDayResult, NewUser, Logon, User, ChangePassword, ElsiGenParameter, ElsiGenCapacity, UserEdit, ElsiDatasetInfo, ElsiResult, GridSupplyPoint, DataModel, GISBoundary, GridSubstation, LoadNetworkDataSource, SubstationSearchResult, SystemInfo, ILogs, ResetPassword, SolarInstallation, Dataset, NewDataset, DatasetType, DatasetData, EditItem, DistributionData, TransmissionData, NationalGridNetworkSource, GridSubstationLocationSource, SetPointMode, CtrlSetPoint, GspDemandProfileData, GridSubstationLocation, EditItemResults } from './app.data';
 import { ShowMessageService } from '../main/show-message/show-message.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 
@@ -312,6 +312,12 @@ export class DataClientService implements ILogs {
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );
     }
 
+    DistBetweenNodes(nodeId1: number, nodeId2: number, onOk: ( dist: number)=>void) {
+        this.http.get<number>(this.baseUrl + `/BoundCalc/Nodes/DistBetween?nodeId1=${nodeId1}&nodeId2=${nodeId2}`).subscribe( result=>{
+            onOk(result)
+        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error) })
+    }
+
     /**
      * Datasets
      */
@@ -333,11 +339,11 @@ export class DataClientService implements ILogs {
         this.postRequest<number>('/Datasets/Delete', id, onLoad);
     }
 
-    EditItem(editItem: EditItem, onOk: (resp: DatasetData<any>[])=> void, onError: (error: any)=>void) {
+    EditItem(editItem: EditItem, onOk: (resp: EditItemResults)=> void, onError: (error: any)=>void) {
         this.postDialogRequest<EditItem>('/Datasets/EditItem', editItem, onOk, onError);
     }
 
-    DeleteItem(editItem: EditItem, onOk: (resp: any)=> void) {
+    DeleteItem(editItem: EditItem, onOk: (resp: EditItemResults)=> void) {
         this.postRequest<EditItem>('/Datasets/DeleteItem', editItem, onOk);
     }
 
@@ -638,7 +644,7 @@ export class DataClientService implements ILogs {
         })
     }
 
-    private postRequest<T>(url: string, data: T,onOk: (resp: string)=>void | undefined) {
+    private postRequest<T>(url: string, data: T,onOk: (resp: any)=>void | undefined) {
         this.http.post<string>(this.baseUrl + url, data).subscribe(resp => {
             if ( onOk) {
                 onOk(resp);

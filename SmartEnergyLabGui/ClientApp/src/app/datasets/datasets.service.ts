@@ -5,7 +5,7 @@ import { ElsiDataService } from "../elsi/elsi-data.service";
 import { CellEditorData, ICellEditorDataDict } from "./cell-editor/cell-editor.component";
 import { MessageDialog, MessageDialogIcon } from "../dialogs/message-dialog/message-dialog.component";
 import { DialogFooterButtonsEnum } from "../dialogs/dialog-footer/dialog-footer.component";
-import { Dataset, DatasetData, DatasetType } from "../data/app.data";
+import { Dataset, DatasetData, DatasetType, DeleteItemData, EditItemResults } from "../data/app.data";
 import { UserService } from "../users/user.service";
 import { IFormControlDict } from "../dialogs/dialog-base";
 
@@ -29,22 +29,6 @@ export class DatasetsService {
     }
     customData: {name: string, value: any} | undefined
     //
-    /*setEditFcns(thisObj: any,
-        afterEditFcn: (datasets: DatasetData<any>[])=>void,
-        afterDeleteFcn: (id: number, className: string, dataset: Dataset)=>void ,
-        afterUnDeleteFcn: (datasets: DatasetData<any>[])=>void ) {
-        this.editFcns={thisObj: thisObj,
-            afterEditFcn: afterEditFcn,
-            afterDeleteFcn: afterDeleteFcn,
-            afterUnDeleteFcn: afterUnDeleteFcn }
-    }
-    editFcns: {thisObj: any,
-        afterEditFcn: (datasets: DatasetData<any>[]) => void,
-        afterDeleteFcn: (id: number, className: string, dataset: Dataset) =>void,
-        afterUnDeleteFcn: (datasets: DatasetData<any>[]) => void
-        } | undefined
-    */
-
     get isEditable():boolean {
         if ( this.currentDataset) {
             if ( !this.currentDataset.isReadOnly || this.userService.isAdmin ) {
@@ -57,7 +41,7 @@ export class DatasetsService {
         }
     }
 
-    saveUserEditWithPrompt(value: string, cellData: CellEditorData, onEdited: (resp: DatasetData<any>)=>void, onError: (resp: any)=>void) {
+    saveUserEditWithPrompt(value: string, cellData: CellEditorData, onEdited: (resp: EditItemResults)=>void, onError: (resp: any)=>void) {
         this.dataService.GetDatasetResultCount(cellData.dataset.id,(count)=>{
             if ( count>0 ) {
                 this.dialogService.showMessageDialog({
@@ -74,7 +58,7 @@ export class DatasetsService {
         })
     }
 
-    saveUserEdit(value: string, cellData: CellEditorData, onEdited: (resp: DatasetData<any>)=>void, onError: (resp: any) =>void) {
+    saveUserEdit(value: string, cellData: CellEditorData, onEdited: (resp: EditItemResults)=>void, onError: (resp: any) =>void) {
         if ( this.currentDataset ) {
             let id = parseInt(cellData.key)
             let data:IFormControlDict = {}
@@ -91,7 +75,7 @@ export class DatasetsService {
         }
     }
 
-    removeUserEditWithPrompt( cellData: CellEditorData, onEdited: (resp:DatasetData<any>)=>void) {
+    removeUserEditWithPrompt( cellData: CellEditorData, onEdited: (resp:EditItemResults)=>void) {
         this.dataService.GetDatasetResultCount(cellData.dataset.id,(count)=>{
             if ( count>0 ) {
                 this.dialogService.showMessageDialog({
@@ -113,14 +97,14 @@ export class DatasetsService {
         })
     }
 
-    afterEdit(cellData: CellEditorData, resp: any, onEdited: (resp:DatasetData<any>)=>void ) {
+    afterEdit(cellData: CellEditorData, resp: EditItemResults, onEdited: (resp:EditItemResults)=>void ) {
         if ( this.currentDataset ) {
             let type = this.currentDataset.type
             if ( type === DatasetType.Elsi ) {
                 this.elsiDataService.loadDataset()
             } else {
                 //??this.editFcns.afterEditFcn.call(this.editFcns.thisObj,resp)
-                this.AfterEdit.emit({ type: type, datasets: resp})
+                this.AfterEdit.emit({ type: type, datasets: resp.datasets, deletedItems: resp.deletedItems})
             }
             if ( onEdited) {
                 onEdited(resp)
@@ -310,6 +294,7 @@ export class DatasetsService {
 }
 export interface AfterEditData {
     type: DatasetType
+    deletedItems: DeleteItemData[]
     datasets: DatasetData<any>[]
 }
 
@@ -323,12 +308,6 @@ export interface AfterUnDeleteData {
     type: DatasetType
     deleteItem: DeleteItemData
     datasets: DatasetData<any>[]
-}
-
-export interface DeleteItemData {
-    id: number,
-    className: string,
-    dataset: Dataset
 }
 
 export interface IDatasetId {

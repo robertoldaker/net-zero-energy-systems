@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { Validators } from '@angular/forms';
+import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DataClientService } from 'src/app/data/data-client.service';
 import { ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
@@ -25,74 +25,73 @@ export class LoadflowBranchDialogComponent extends DialogBase {
         private datasetsService: DatasetsService
     ) {
         super()
-        let fType = this.addFormControl('type')
-        let fCode = this.addFormControl('code')
-        let fNodeId1 = this.addFormControl('nodeId1')
-        fNodeId1.addValidators( [Validators.required])
-        let fNodeId2 = this.addFormControl('nodeId2')
-        fNodeId2.addValidators( [Validators.required])
-        let fX = this.addFormControl('x')
-        let fCap = this.addFormControl('cap')
-        let fOHL = this.addFormControl('ohl')
-        let fCableLength = this.addFormControl('cableLength')
+        this.fType = this.addFormControl('type')
+        this.fCode = this.addFormControl('code')
+        this.fNodeId1 = this.addFormControl('nodeId1')
+        this.fNodeId1.addValidators( [Validators.required])
+        this.fNodeId2 = this.addFormControl('nodeId2')
+        this.fNodeId2.addValidators( [Validators.required])
+        this.fX = this.addFormControl('x')
+        this.fCap = this.addFormControl('cap')
+        this.fOHL = this.addFormControl('ohl')
+        this.fCableLength = this.addFormControl('cableLength')
         // ctrl params
-        let fMinCtrl = this.addFormControl('minCtrl')
-        let fMaxCtrl = this.addFormControl('maxCtrl')
-        let fCost = this.addFormControl('cost')
+        this.fMinCtrl = this.addFormControl('minCtrl')
+        this.fMaxCtrl = this.addFormControl('maxCtrl')
+        this.fCost = this.addFormControl('cost')
         this.nodes1 = this.loadflowService.networkData.nodes.data
         this.nodes2 = this.nodes1
         if ( editorData?.branch?._data?.id ) {
             let data:Branch = editorData.branch._data
             this.title = `Edit branch [${data.displayName}]`
-            fCode.setValue(data.code)
-            fNodeId1.setValue(data.node1Id)
-            fNodeId2.setValue(data.node2Id)
-            fX.setValue(data.x.toFixed(3))
-            fCap.setValue(data.cap.toFixed(3))
-            fOHL.setValue(data.ohl.toFixed(0))
-            fCableLength.setValue(data.cableLength.toFixed(0))
+            this.fCode.setValue(data.code)
+            this.fNodeId1.setValue(data.node1Id)
+            this.fNodeId2.setValue(data.node2Id)
+            this.fX.setValue(data.x.toFixed(3))
+            this.fCap.setValue(data.cap.toFixed(3))
+            this.fOHL.setValue(data.ohl.toFixed(0))
+            this.fCableLength.setValue(data.cableLength.toFixed(0))
             if ( editorData?.ctrl?._data ) {
                 let ctrl:Ctrl = editorData.ctrl._data
-                fMinCtrl.setValue(ctrl.minCtrl)
-                fMaxCtrl.setValue(ctrl.maxCtrl)
-                fCost.setValue(ctrl.cost)
+                this.fMinCtrl.setValue(ctrl.minCtrl)
+                this.fMaxCtrl.setValue(ctrl.maxCtrl)
+                this.fCost.setValue(ctrl.cost)
                 this.isCtrl = true
             }
+            this.needsLength = this.isLengthType(data.type)
             this.updateType()
-            fType.setValue(data.type)
-            // don't allow editing as no mechanism for deleting a ctrl that might be left over
-            fType.disable()
+            this.fType.setValue(data.type)
         } else {
             this.title = `Add branch`
             let node1 = editorData?.branch?._data?.node1 ? editorData.branch._data.node1 : ''
             if ( node1 ) {
                 this.nodes1 = this.filterNodes(node1,this.nodes1)
                 if ( this.nodes1.length == 1) {
-                    fNodeId1.setValue(this.nodes1[0].id)
-                    fNodeId1.markAsDirty()
+                    this.fNodeId1.setValue(this.nodes1[0].id)
+                    this.fNodeId1.markAsDirty()
                 }
             }
             let node2 = editorData?.branch?._data?.node2 ? editorData.branch._data.node2 : ''
             if ( node2 ) {
                 this.nodes2 = this.filterNodes(node2,this.nodes2)
                 if ( this.nodes2.length == 1) {
-                    fNodeId2.setValue(this.nodes2[0].id)
-                    fNodeId2.markAsDirty()
+                    this.fNodeId2.setValue(this.nodes2[0].id)
+                    this.fNodeId2.markAsDirty()
                 }
             }
             this.updateType()
-            fX.setValue(0.1)
-            fX.markAsDirty()
-            fCap.setValue(100)
-            fCap.markAsDirty()
-            fCost.setValue(10)
-            fCost.markAsDirty()
+            this.fX.setValue(0.1)
+            this.fX.markAsDirty()
+            this.fCap.setValue(100)
+            this.fCap.markAsDirty()
+            this.fCost.setValue(10)
+            this.fCost.markAsDirty()
         }
         // disable controls not user-editable
         if ( editorData?.branch && !editorData.branch._isLocalDataset ) {
-            fCode.disable()
-            fNodeId1.disable()
-            fNodeId2.disable()
+            this.fCode.disable()
+            this.fNodeId1.disable()
+            this.fNodeId2.disable()
         }
         this.editorData = editorData
         // need to merge branch and ctrl data so the base class can pickup user edits
@@ -113,7 +112,20 @@ export class LoadflowBranchDialogComponent extends DialogBase {
         }
     }
 
+    fType: FormControl
+    fCode: FormControl
+    fNodeId1: FormControl
+    fNodeId2: FormControl
+    fX: FormControl
+    fCap: FormControl
+    fOHL: FormControl
+    fCableLength: FormControl
+    fMinCtrl: FormControl
+    fMaxCtrl: FormControl
+    fCost: FormControl
+
     isCtrl: boolean = false
+    needsLength: boolean = false
     branchTypes:{id: number, name: string}[] = []
     editorData: IBranchEditorData | undefined
 
@@ -130,68 +142,90 @@ export class LoadflowBranchDialogComponent extends DialogBase {
     nodes1:Node[] = []
     nodes2:Node[] = []
 
-    typeChanged(e: any) {
-        this.isCtrl = e.id == BranchType.QB || e.id == BranchType.HVDC
+    typeChanged() {
+        let type = this.fType.value
+        this.isCtrl = this.isCtrlType(type)
         if ( this.isCtrl) {
             this.updateMinMaxCtrl()
         }
-        let fOHL = this.form.get('ohl')
-        let fCableLength = this.form.get('cableLength')
-        if ( e.id === BranchType.OHL || e.id ===BranchType.Composite || e.id === BranchType.Cable) {
-            fOHL?.enable()
-            fCableLength?.enable()
-        } else {
-            fOHL?.disable()
-            fCableLength?.disable()
-        }
-        console.log('typeChanged',e)
+        this.needsLength = this.isLengthType(type)
+        console.log('typeChanged',type)
+    }
+
+    private isCtrlType(type: BranchType) {
+        return type === BranchType.QB || type === BranchType.HVDC
+    }
+
+    private isLengthType(type: BranchType) {
+        return type === BranchType.OHL || type === BranchType.Composite || type == BranchType.Cable
     }
 
     updateMinMaxCtrl() {
-        let type = this.form.get('type')?.value
+        let type = this.fType.value
         if ( type == BranchType.HVDC) {
-            let cap = this.form.get('cap')?.value
+            let cap = this.fCap.value
             let capacity = parseFloat(cap)
             if ( capacity ) {
-                let fMinCtrl = this.form.get('minCtrl')
-                let fMaxCtrl = this.form.get('maxCtrl')
-                if ( fMinCtrl && fMaxCtrl) {
-                    fMinCtrl.setValue(-capacity)
-                    fMinCtrl.markAsDirty()
-                    fMaxCtrl.setValue(capacity)
-                    fMaxCtrl.markAsDirty()
-                }
+                this.fMinCtrl.setValue(-capacity)
+                this.fMinCtrl.markAsDirty()
+                this.fMaxCtrl.setValue(capacity)
+                this.fMaxCtrl.markAsDirty()
             }
+            this.fCost.setValue(20.0)
+            this.fCost.markAsDirty()
         } else if ( type == BranchType.QB) {
-            let fMinCtrl = this.form.get('minCtrl')
-            let fMaxCtrl = this.form.get('maxCtrl')
-            if ( fMinCtrl && fMaxCtrl) {
-                let nodeId1 = this.form.get('nodeId1')?.value
-                let node1 = this.nodes1.find(m=>m.id == nodeId1);
-                if ( node1  ) {
-                    let ctrl = node1.voltage < 400 ? 0.15 : 0.2
-                    fMinCtrl.setValue(-ctrl);
-                    fMinCtrl.markAsDirty()
-                    fMaxCtrl.setValue(ctrl);
-                    fMaxCtrl.markAsDirty()
-                }
+            let nodeId1 = this.fNodeId1.value
+            let node1 = this.nodes1.find(m=>m.id == nodeId1);
+            if ( node1  ) {
+                let ctrl = node1.voltage < 400 ? 0.15 : 0.2
+                this.fMinCtrl.setValue(-ctrl);
+                this.fMinCtrl.markAsDirty()
+                this.fMaxCtrl.setValue(ctrl);
+                this.fMaxCtrl.markAsDirty()
             }
+            this.fCost.setValue(10.0)
+            this.fCost.markAsDirty()
         }
     }
 
     node1Changed(e: any) {
         this.updateType()
+        this.updateDist()
     }
 
     node2Changed(e: any) {
         this.updateType()
+        this.updateDist()
+    }
+
+    private updateDist() {
+        let nodeId1 = this.fNodeId1.value
+        let nodeId2 = this.fNodeId2.value
+        if ( nodeId1 && nodeId2 ) {
+            this.dataService.DistBetweenNodes(nodeId1, nodeId2, (dist) => {
+                let type = this.fType.value;
+                if (dist > 0) {
+                    if (type === BranchType.OHL) {
+                        this.fOHL.setValue(dist.toFixed(0))
+                    } else if (type === BranchType.Cable) {
+                        this.fCableLength.setValue(dist.toFixed(0))
+                    } else if (type === BranchType.Composite) {
+                        this.fOHL.setValue((dist / 2).toFixed(0))
+                        this.fCableLength.setValue((dist / 2).toFixed(0))
+                    }
+                } else {
+                    this.fOHL.setValue("0")
+                    this.fCableLength.setValue("0")
+                }
+            })
+        }
     }
 
     private updateType() {
-        let nodeId1 = this.form.get('nodeId1')?.value
+        let nodeId1 = this.fNodeId1.value
         let node1 = this.nodes1.find(m=>m.id == nodeId1);
 
-        let nodeId2 = this.form.get('nodeId2')?.value
+        let nodeId2 = this.fNodeId2.value
         let node2 = this.nodes2.find(m=>m.id == nodeId2);
 
         if ( node1 && node2 ) {
@@ -208,6 +242,18 @@ export class LoadflowBranchDialogComponent extends DialogBase {
                     this.branchTypes = this.getBranchTypes([BranchType.OHL,BranchType.Cable,BranchType.Composite,BranchType.HVDC,BranchType.Other])
                 } else {
                     this.branchTypes = []
+                }
+            }
+            // check current type is in the list
+            let branchType = this.fType.value
+            if ( branchType ) {
+                if ( this.branchTypes.length>0) {
+                    let nt = this.branchTypes.find(m => m.id === branchType)
+                    if (!nt) {
+                        this.fType.setValue(this.branchTypes[0].id)
+                        this.fType.markAsDirty()
+                        this.typeChanged()
+                    }
                 }
             }
         }

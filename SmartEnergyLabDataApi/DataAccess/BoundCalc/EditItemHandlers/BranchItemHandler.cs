@@ -35,12 +35,16 @@ public class BranchItemHandler : BaseEditItemHandler
 
     public override string BeforeDelete(EditItemModel m, bool isSourceEdit) {
         // Also mark as deleted any ctrls pointing at this branch
-        if ( isSourceEdit ) {
-            // Ctrl should get deleted automatically
+        if (isSourceEdit) {
+            //
+            Branch b = (Branch)m.Item;
+            if (b.Ctrl != null) {
+                m.DeletedItems.Add(new DeletedItem(b.Ctrl) { isSourceDelete = true });
+            }
         } else {
-            Branch b = (Branch) m.Item;
-            if ( b.Ctrl!=null ) {
-                m.Da.Datasets.AddDeleteUserEdit(b.Ctrl,m.Dataset);
+            Branch b = (Branch)m.Item;
+            if (b.Ctrl != null) {
+                m.Da.Datasets.AddDeleteUserEdit(b.Ctrl, m.Dataset);
             }
         }
         //
@@ -49,6 +53,7 @@ public class BranchItemHandler : BaseEditItemHandler
 
     public override void Check(EditItemModel m)
     {
+        Branch b = (Branch)m.Item;
 
         m.GetString("code",out string code);
         if ( code!=null ) {
@@ -66,19 +71,18 @@ public class BranchItemHandler : BaseEditItemHandler
                 }
             }
         }
-
         // demand
         m.CheckDouble("x",0);
         // generation
         m.CheckDouble("cap",0);
         // node 1 id
-        var nodeId1 = m.CheckInt("nodeId1");
-        if ( nodeId1==null && m.ItemId == 0) {
+        var nodeId1 = getNode1(m);
+        if ( nodeId1==null) {
             m.AddError("nodeId1","Node 1 must be set");
         }
         // node 2 id
-        var nodeId2 = m.CheckInt("nodeId2");
-        if ( nodeId2==null && m.ItemId == 0) {
+        var nodeId2 = getNode2(m);
+        if ( nodeId2==null) {
             m.AddError("nodeId2","Node 2 must be set");
         }
         if ( nodeId1!=null && nodeId1==nodeId2 ) {
@@ -113,11 +117,29 @@ public class BranchItemHandler : BaseEditItemHandler
         }
     }
 
+    private int? getNode1(EditItemModel m)
+    {
+        var nodeId = m.CheckInt("nodeId1");
+        if (nodeId == null && m.ItemId != 0) {
+            nodeId = ((Branch)m.Item).Node1.Id;
+        }
+        return nodeId;
+    }
+
+    private int? getNode2(EditItemModel m)
+    {
+        var nodeId = m.CheckInt("nodeId2");
+        if (nodeId == null && m.ItemId != 0) {
+            nodeId = ((Branch)m.Item).Node2.Id;
+        }
+        return nodeId;
+    }
+
     public override IDatasetIId GetItem(EditItemModel model)
     {
         var id = model.ItemId;
-        var branch = id>0 ? model.Da.BoundCalc.GetBranch(id) : new Branch(model.Dataset);
-        if ( branch==null ) {
+        var branch = id > 0 ? model.Da.BoundCalc.GetBranch(id) : new Branch(model.Dataset);
+        if (branch == null) {
             throw new Exception($"Cannot find branch with id=[{id}]");
         }
         return branch;
@@ -155,22 +177,36 @@ public class BranchItemHandler : BaseEditItemHandler
         }
         //
         var type = m.CheckInt("type");
-        if ( type!=null && b.Id ==0 ) {
+        if ( type!=null ) {
             var branchType = (BoundCalcBranchType) type;
             b.Type = branchType;
-            if ( branchType == BoundCalcBranchType.QB || branchType == BoundCalcBranchType.HVDC ) {
+            if (branchType == BoundCalcBranchType.QB || branchType == BoundCalcBranchType.HVDC) {
+                // branch types with controls
                 BoundCalcCtrlType ctrlType;
-                if ( branchType == BoundCalcBranchType.QB) {
+                if (branchType == BoundCalcBranchType.QB) {
                     ctrlType = BoundCalcCtrlType.QB;
-                } else if ( branchType == BoundCalcBranchType.HVDC) {
+                } else if (branchType == BoundCalcBranchType.HVDC) {
                     ctrlType = BoundCalcCtrlType.HVDC;
                 } else {
                     throw new Exception($"Unexpected branch type found [{branchType}]");
                 }
-                var ctrl = new Ctrl(m.Dataset,b);
-                ctrl.Type = ctrlType; // note needs to be done before SetCtrl
-                b.SetCtrl(ctrl);
-                b.Ctrl.Type = ctrlType; // also need to reset this as SetCtrl changes branch type
+                Ctrl ctrl = b.Ctrl;
+                if (ctrl == null) {
+                    ctrl = new Ctrl(m.Dataset, b);
+                    b.Ctrl = ctrl;
+                }
+                ctrl.Type = ctrlType;
+            } else {
+                // branch types no controls
+                if (b.Ctrl != null) {
+                    // this will ensure it gets deleted from the dataset in the gui
+                    m.DeletedItems.Add(new DeletedItem(b.Ctrl) { isSourceDelete = true });
+                }
+                // This will mean its deleted from the db (cascade = "all-delete-orphan")
+                if (b.Ctrl != null) {
+                    m.Da.BoundCalc.Delete(b.Ctrl);
+                    b.Ctrl = null;
+                }
             }
         }
         //
