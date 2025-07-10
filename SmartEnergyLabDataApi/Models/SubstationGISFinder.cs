@@ -52,7 +52,7 @@ namespace SmartEnergyLabDataApi.Models
         private bool isWithinTolerance(GoogleMapsGISFinder.Location location)
         {
             var _areaCenter = _areaGeometry.location;
-            return GISUtilities.distance(_areaCenter.lat,_areaCenter.lng, location.lat, location.lng) < _tolInKm;
+            return GISUtilities.Distance(_areaCenter.lat,_areaCenter.lng, location.lat, location.lng) < _tolInKm;
         }
 
     }

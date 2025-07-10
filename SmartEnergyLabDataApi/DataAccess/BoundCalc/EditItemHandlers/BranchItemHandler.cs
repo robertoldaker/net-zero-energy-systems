@@ -210,18 +210,28 @@ public class BranchItemHandler : BaseEditItemHandler
             }
         }
         //
-        if ( b.Ctrl!=null ) {
+        var ohl = m.CheckDouble("ohl");
+        if (ohl != null) {
+            b.OHL = (double) ohl;
+        }
+        //
+        var cableLength = m.CheckDouble("cableLength");
+        if (cableLength != null) {
+            b.CableLength = (double)cableLength;
+        }
+        //
+        if (b.Ctrl != null) {
             var minCtrl = m.CheckDouble("minCtrl");
-            if ( minCtrl!=null ) {
-                b.Ctrl.MinCtrl = (double) minCtrl;
+            if (minCtrl != null) {
+                b.Ctrl.MinCtrl = (double)minCtrl;
             }
             var maxCtrl = m.CheckDouble("maxCtrl");
-            if ( maxCtrl!=null ) {
-                b.Ctrl.MaxCtrl = (double) maxCtrl;
+            if (maxCtrl != null) {
+                b.Ctrl.MaxCtrl = (double)maxCtrl;
             }
             var cost = m.CheckDouble("cost");
-            if ( cost!=null ) {
-                b.Ctrl.Cost = (double) cost;
+            if (cost != null) {
+                b.Ctrl.Cost = (double)cost;
             }
         }
         //

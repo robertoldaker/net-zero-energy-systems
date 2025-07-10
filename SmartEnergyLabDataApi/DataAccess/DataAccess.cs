@@ -192,8 +192,8 @@ namespace SmartEnergyLabDataApi.Data
                         var b = da.Session.QueryOver<Branch>().Where( m=>m.Code == c.old_Code && c.Dataset.Id == m.Dataset.Id).Take(1).SingleOrDefault();
                         if ( b!=null) {
                             c.Branch = b;
-                            c.old_Node1 = null;
-                            c.old_Node2 = null;
+                            //??c.old_Node1 = null;
+                            //??c.old_Node2 = null;
                         } else {
                             Logger.Instance.LogInfoEvent($"Could not find branch for ctrl [{c.LineName}]");
                         }

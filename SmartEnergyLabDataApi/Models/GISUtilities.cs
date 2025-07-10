@@ -17,7 +17,7 @@ namespace SmartEnergyLabDataApi.Models
             return (angleIn10thofaDegree *
                            Math.PI) / 180;
         }
-        public static double distance(double lat1, double lon1, double lat2, double lon2 )
+        public static double Distance(double lat1, double lon1, double lat2, double lon2 )
         {
 
             // The math module contains

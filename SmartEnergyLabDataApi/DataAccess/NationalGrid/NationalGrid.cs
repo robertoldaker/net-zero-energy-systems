@@ -1,7 +1,9 @@
 using HaloSoft.DataAccess;
 using HaloSoft.EventLogger;
+using Microsoft.AspNetCore.Components.Routing;
 using NHibernate;
 using NHibernate.Criterion;
+using SmartEnergyLabDataApi.Data.BoundCalc;
 
 namespace SmartEnergyLabDataApi.Data
 {
@@ -70,6 +72,20 @@ namespace SmartEnergyLabDataApi.Data
         public GridOverheadLine GetGridOverheadline(string reference)
         {
             return Session.QueryOver<GridOverheadLine>().Where(m => m.Reference == reference).Take(1).SingleOrDefault();
+        }
+
+        public IList<Branch> GetBranchesWithLocation(int locId)
+        {
+            GridSubstationLocation loc1 = null, loc2 = null;
+            //
+            var branches = Session.QueryOver<Branch>().
+                Left.JoinAlias(m => m.Node1.Location, () => loc1).
+                Left.JoinAlias(m => m.Node2.Location, () => loc2).
+                Where(m => loc1.Id == locId || loc2.Id == locId).
+                And(m=>m.Type == BoundCalcBranchType.Cable || m.Type == BoundCalcBranchType.OHL || m.Type == BoundCalcBranchType.Composite).List();
+
+            return branches;
+
         }
 
         public void Add(GridSubstationLocation loc)

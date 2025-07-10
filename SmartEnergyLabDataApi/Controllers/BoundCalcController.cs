@@ -325,7 +325,7 @@ namespace SmartEnergyLabDataApi.Controllers
                 if (node1 != null && node1.Location != null && node2 != null && node2.Location != null) {
                     var gis1 = node1.Location.GISData;
                     var gis2 = node2.Location.GISData;
-                    var dist = GISUtilities.distance(gis1.Latitude, gis1.Longitude, gis2.Latitude, gis2.Longitude);
+                    var dist = GISUtilities.Distance(gis1.Latitude, gis1.Longitude, gis2.Latitude, gis2.Longitude);
                     return dist;
                 } else {
                     return 0;

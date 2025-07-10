@@ -149,7 +149,9 @@ export class LoadflowBranchDialogComponent extends DialogBase {
             this.updateMinMaxCtrl()
         }
         this.needsLength = this.isLengthType(type)
-        console.log('typeChanged',type)
+        if ( this.needsLength) {
+            this.updateDist()
+        }
     }
 
     private isCtrlType(type: BranchType) {
@@ -207,16 +209,20 @@ export class LoadflowBranchDialogComponent extends DialogBase {
                 if (dist > 0) {
                     if (type === BranchType.OHL) {
                         this.fOHL.setValue(dist.toFixed(0))
+                        this.fCableLength.setValue(0)
                     } else if (type === BranchType.Cable) {
                         this.fCableLength.setValue(dist.toFixed(0))
+                        this.fOHL.setValue(0)
                     } else if (type === BranchType.Composite) {
                         this.fOHL.setValue((dist / 2).toFixed(0))
                         this.fCableLength.setValue((dist / 2).toFixed(0))
                     }
                 } else {
-                    this.fOHL.setValue("0")
-                    this.fCableLength.setValue("0")
+                    this.fOHL.setValue(0)
+                    this.fCableLength.setValue(0)
                 }
+                this.fOHL.markAsDirty()
+                this.fCableLength.markAsDirty()
             })
         }
     }

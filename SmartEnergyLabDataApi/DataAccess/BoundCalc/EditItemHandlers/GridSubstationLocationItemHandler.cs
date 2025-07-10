@@ -44,7 +44,7 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
                 m.AddError("name","Please enter a name");
             }
         }
-        // Ctrls
+        // lat/lng
         m.CheckDouble("latitude");
         m.CheckDouble("longitude");
     }
@@ -93,6 +93,13 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
             nodes = m.Da.BoundCalc.GetNodesWithLocationRef(m.Dataset.Id, code);
             foreach (var node in nodes) {
                 node.Location = loc;
+            }
+        }
+        //
+        if (loc.Id != 0) {
+            var branches = m.Da.NationalGrid.GetBranchesWithLocation(loc.Id);
+            foreach (var b in branches) {
+                b.UpdateLengths();
             }
         }
     }
