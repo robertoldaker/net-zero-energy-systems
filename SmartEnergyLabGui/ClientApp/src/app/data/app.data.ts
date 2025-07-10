@@ -455,9 +455,15 @@ export interface Branch {
     percentCapacity: number | null
 }
 
-export enum LoadflowCtrlType {  QB=0,  // Quad booster
-                                HVDC=1 // High-voltage DC
-                             }
+export enum LoadflowCtrlType {
+    QB,         // Quad Booster
+    HVDC,       // High-voltage DC
+    SeriesCap,  // Series capacitor
+    DecInc,     // node <=> node transfer
+    InterTrip,  // node <=> zone transfer
+    Transfer,   // zone <=> zone transfer
+    }
+
 export interface Ctrl {
     id: number
     displayName: string
@@ -478,6 +484,12 @@ export interface Ctrl {
     node1: Node
     node2: Node
     setPoint: number | null
+    n1: Node | null,
+    n2: Node | null,
+    z1: Zone | null,
+    z2: Zone | null
+    gpC1: number,
+    gpC2: number
 }
 
 export interface Zone {

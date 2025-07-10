@@ -21,7 +21,7 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
         this.typeDataFilter = new ColumnDataFilter(this,"type",undefined,LoadflowCtrlType)
         this.dataFilter.columnFilterMap.set(this.typeDataFilter.columnName, this.typeDataFilter)
 
-        this.createDataSource(this.dataService.dataset,dataService.networkData.ctrls);        
+        this.createDataSource(this.dataService.dataset,dataService.networkData.ctrls);
         this.displayedColumns = ['buttons','code','node1Code','node2Code','type','minCtrl','maxCtrl','cost','setPoint']
         this.addSub(dataService.NetworkDataLoaded.subscribe( (results) => {
             this.setPointError = false
@@ -44,8 +44,12 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
 
     edit( e: ICellEditorDataDict) {
         let branchId = e._data.branchId
-        let editorData = this.dataService.getBranchEditorData(branchId)
-        this.dialogService.showLoadflowBranchDialog(editorData);
+        if ( branchId!=0) {
+            let editorData = this.dataService.getBranchEditorData(branchId)
+            this.dialogService.showLoadflowBranchDialog(editorData);
+        } else {
+            this.dialogService.showLoadflowCtrlDialog(e);
+        }
     }
 
     setPointError: boolean = false
@@ -71,6 +75,10 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
         this.dataFilter.reset(true)
         this.dataFilter.searchStr = code
         this.createDataSource()
+    }
+
+    addCtrl() {
+        this.dialogService.showLoadflowCtrlDialog()
     }
 
     get setPointMode():SetPointMode {

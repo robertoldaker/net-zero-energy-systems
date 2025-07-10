@@ -16,7 +16,7 @@ using SmartEnergyLabDataApi.Models;
 public static class Program
 {
     // Start the data access - this will check schema and run any startup scripts as needed
-    private const int SCHEMA_VERSION = 67;
+    private const int SCHEMA_VERSION = 68;
     private const int SCRIPT_VERSION = 9;
 
     public const string DB_NAME = "smart_energy_lab";

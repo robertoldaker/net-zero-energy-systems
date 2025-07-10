@@ -1101,7 +1101,7 @@ export class LoadflowLocation {
         let totalDemand = this._totalDemand
         let totalGen = this._totalGen
         this.calcTotals(nodes)
-        let isQB = ctrls.find(m=>m.node1.location?.id === this._gsl.id && m.type == LoadflowCtrlType.QB)!==undefined
+        let isQB = ctrls.find(m=>m.node1?.location?.id === this._gsl.id && m.type == LoadflowCtrlType.QB)!==undefined
         let result = hasNodes!=this._hasNodes ||
                         isQB!=this._isQB ||
                         totalDemand!=this._totalDemand ||

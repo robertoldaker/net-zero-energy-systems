@@ -3,10 +3,32 @@
     <form [formGroup]="form">
         <div class="row">
             <div>
-                <app-dialog-selector [dialog]="dialog" name="branchId" placeholder="Enter associated branch" label="Branch" [data]="branches" [displayFcn]="getBranchStr" (onSelectionChange)="branchSelected($event)"></app-dialog-selector>
+                <app-dialog-selector [dialog]="dialog" name="type" placeholder="Enter control type" label="Type"
+                    [data]="controlTypes" (onSelectionChange)="typeChanged()"></app-dialog-selector>
             </div>
             <div>
-                <app-dialog-selector [dialog]="dialog" name="type" placeholder="Enter ctrl type" label="Type" [enum]="loadflowCtrlType" (onSelectionChange)="typeSelected($event)"></app-dialog-selector>
+            </div>
+        </div>
+        <div class="row">
+            <div *ngIf="type === CtrlType.DecInc || type == CtrlType.InterTrip">
+                <app-dialog-selector [dialog]="dialog" placeholder="Select node 1" name="nodeId1" label="Node 1" [data]="nodes1"
+                    [displayFcn]="displayNode" (onSelectionChange)="node1Changed($event)"></app-dialog-selector>
+            </div>
+            <div *ngIf="type === CtrlType.Transfer">
+                <app-dialog-selector [dialog]="dialog" placeholder="Select zone 1" name="zoneId1" label="Zone 1" [data]="zones"
+                    [displayFcn]="displayZone" (onSelectionChange)="zone1Changed($event)"></app-dialog-selector>
+                <app-dialog-text-input [dialog]="dialog" name="gpc1" label="Generation (%)"
+                    [fieldClasses]="{numeric: true}"></app-dialog-text-input>
+            </div>
+            <div *ngIf="type === CtrlType.DecInc">
+                <app-dialog-selector [dialog]="dialog" placeholder="Select node 2" name="nodeId2" label="Node 2" [data]="nodes2"
+                    [displayFcn]="displayNode" (onSelectionChange)="node2Changed($event)"></app-dialog-selector>
+            </div>
+            <div *ngIf="type === CtrlType.InterTrip || type === CtrlType.Transfer">
+                <app-dialog-selector [dialog]="dialog" placeholder="Select zone 2" name="zoneId2" label="Zone 2" [data]="zones"
+                    [displayFcn]="displayZone" (onSelectionChange)="zone2Changed($event)"></app-dialog-selector>
+                <app-dialog-text-input [dialog]="dialog" name="gpc2" label="Generation (%)"
+                    [fieldClasses]="{numeric: true}"></app-dialog-text-input>
             </div>
         </div>
         <div class="row">

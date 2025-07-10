@@ -155,7 +155,7 @@ export class LoadflowBranchDialogComponent extends DialogBase {
     }
 
     private isCtrlType(type: BranchType) {
-        return type === BranchType.QB || type === BranchType.HVDC
+        return type === BranchType.QB || type === BranchType.HVDC || type == BranchType.SeriesCapacitor
     }
 
     private isLengthType(type: BranchType) {
@@ -175,7 +175,7 @@ export class LoadflowBranchDialogComponent extends DialogBase {
             }
             this.fCost.setValue(20.0)
             this.fCost.markAsDirty()
-        } else if ( type == BranchType.QB) {
+        } else if ( type == BranchType.QB || type == BranchType.SeriesCapacitor) {
             let nodeId1 = this.fNodeId1.value
             let node1 = this.nodes1.find(m=>m.id == nodeId1);
             if ( node1  ) {
@@ -239,7 +239,7 @@ export class LoadflowBranchDialogComponent extends DialogBase {
             let node2Loc = this.getLocCode(node2);
             if ( node1Loc == node2Loc) {
                 if ( node1.voltage == node2.voltage) {
-                    this.branchTypes = this.getBranchTypes([BranchType.QB,BranchType.SSSC,BranchType.SeriesCapacitor,BranchType.SeriesReactor,BranchType.Other])
+                    this.branchTypes = this.getBranchTypes([BranchType.QB,BranchType.SeriesCapacitor])
                 } else {
                     this.branchTypes = this.getBranchTypes([BranchType.Transformer,BranchType.Other])
                 }

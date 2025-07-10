@@ -4,8 +4,13 @@ using NHibernate.Mapping.Attributes;
 namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
 
-    public enum BoundCalcCtrlType {  QB, // Quad Booster
-                                    HVDC // High-voltage DC
+    public enum BoundCalcCtrlType {
+        QB,         // Quad Booster
+        HVDC,       // High-voltage DC
+        SeriesCap,  // Series capacitor
+        DecInc,     // node <=> node transfer
+        InterTrip,  // node <=> zone transfer
+        Transfer,   // zone <=> zone transfer
                                                             }
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_ctrls")]
@@ -34,7 +39,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         public virtual string Code {
             get {
-                return Branch.Code;
+                return (Branch!=null) ? Branch.Code : "";
             }
         }
 
@@ -57,31 +62,42 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         [ManyToOne(Column = "BranchId", Cascade = "none")]
         public virtual Branch Branch {get; set;}
 
-        public virtual int BranchId {
+        [ManyToOne(Column = "N1Id", Cascade = "none")]
+        public virtual Node N1 { get; set; }
+
+        [ManyToOne(Column = "N2Id", Cascade = "none")]
+        public virtual Node N2 { get; set; }
+
+        [ManyToOne(Column = "Z1Id", Cascade = "none")]
+        public virtual Zone Z1 { get; set; }
+
+        [ManyToOne(Column = "Z2Id", Cascade = "none")]
+        public virtual Zone Z2 { get; set; }
+
+        [Property()]
+        public virtual double GPC1 { get; set; }
+
+        [Property()]
+        public virtual double GPC2 { get; set; }
+
+        public virtual int BranchId
+        {
             get {
-                return Branch.Id;
+                return Branch != null ? Branch.Id : 0;
             }
         }
 
         public virtual Node Node1 {
             get {
-                return Branch.Node1;
+                return Branch!=null ? Branch.Node1 : null;
             }
         }
-
-        [JsonIgnore]
-        [ManyToOne(Column = "Node1Id", Cascade = "none")]
-        public virtual Node old_Node1 {get; set;}
 
         public virtual Node Node2 {
             get {
-                return Branch.Node2;
+                return Branch!=null ? Branch.Node2 : null;
             }
         }
-
-        [JsonIgnore]
-        [ManyToOne(Column = "Node2Id", Cascade = "none")]
-        public virtual Node old_Node2 {get; set;}
 
         [JsonIgnore()]
         [ManyToOne(Column = "DatasetId", Cascade = "none")]
@@ -93,52 +109,51 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
         }
 
-
         public virtual string Node1Code {
             get {
-                return Node1.Code;
+                return Node1!=null ? Node1.Code : "";
             }
         }
 
         public virtual string Node2Code {
             get {
-                return Node2.Code;
+                return Node2!=null ? Node2.Code : "";
             }
         }
 
         public virtual string Node1Name {
             get {
-                return Node1.Name;
+                return Node1!=null ? Node1.Name : "";
             }
         }
 
         public virtual string Node2Name {
             get {
-                return Node2.Name;
+                return Node2!=null ? Node2.Name : "";
             }
         }
 
         public virtual int Node1LocationId {
             get {
-                return Branch.Node1LocationId;
+                return Branch!=null ? Branch.Node1LocationId : 0;
             }
         }
 
         public virtual int Node2LocationId {
             get {
-                return Branch.Node2LocationId;
+                return Branch!=null ? Branch.Node2LocationId : 0;
             }
         }
 
         public virtual string LineName {
             get {
-                return Branch.LineName;
+                return Branch!=null ? Branch.LineName : "";
             }
         }
 
         public virtual string DisplayName {
             get {
-                return Branch.DisplayName;
+                return Branch!=null ? Branch.DisplayName : "";
             }
         }
 

@@ -462,6 +462,29 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 OrderBy(m => m.Id).
                 Asc.List();
         }
+
+        public DatasetData<Ctrl> GetCtrlDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Ctrl, bool>> expression=null)
+        {
+            var query = Session.QueryOver<Ctrl>();
+            query = query.
+                Fetch(SelectMode.Fetch, m => m.N1).
+                Fetch(SelectMode.Fetch, m => m.N1.Location).
+                Fetch(SelectMode.Fetch, m => m.N1.Location.GISData).
+                Fetch(SelectMode.Fetch, m => m.N1.Zone).
+                Fetch(SelectMode.Fetch, m => m.N2).
+                Fetch(SelectMode.Fetch, m => m.N2.Location).
+                Fetch(SelectMode.Fetch, m => m.N2.Location.GISData).
+                Fetch(SelectMode.Fetch, m => m.N2.Zone).
+                Fetch(SelectMode.Fetch, m => m.Z1).
+                Fetch(SelectMode.Fetch, m => m.Z2);
+            if (expression != null) {
+                query = query.Where(expression);
+            }
+
+            var ctrlDi = new DatasetData<Ctrl>(DataAccess, datasetId, m => m.Id.ToString(), query);
+            return ctrlDi;
+        }
+
         #endregion
 
         public string LoadFromXlsm(IFormFile formFile)
@@ -568,14 +591,6 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 Where(m => location1.Id != location2.Id).
                 List();
             return branches;
-        }
-
-        public DatasetData<Ctrl> GetCtrlDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Ctrl, bool>> expression)
-        {
-            var ctrlQuery = Session.QueryOver<Ctrl>().Where(expression);
-
-            var ctrlDi = new DatasetData<Ctrl>(DataAccess, datasetId, m => m.Id.ToString(), ctrlQuery);
-            return ctrlDi;
         }
 
         #region LoadflowResults

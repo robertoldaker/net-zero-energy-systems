@@ -180,11 +180,13 @@ public class BranchItemHandler : BaseEditItemHandler
         if ( type!=null ) {
             var branchType = (BoundCalcBranchType) type;
             b.Type = branchType;
-            if (branchType == BoundCalcBranchType.QB || branchType == BoundCalcBranchType.HVDC) {
+            if (branchType == BoundCalcBranchType.QB || branchType == BoundCalcBranchType.SeriesCapacitor || branchType == BoundCalcBranchType.HVDC) {
                 // branch types with controls
                 BoundCalcCtrlType ctrlType;
                 if (branchType == BoundCalcBranchType.QB) {
                     ctrlType = BoundCalcCtrlType.QB;
+                } else if (branchType == BoundCalcBranchType.SeriesCapacitor) {
+                    ctrlType = BoundCalcCtrlType.SeriesCap;
                 } else if (branchType == BoundCalcBranchType.HVDC) {
                     ctrlType = BoundCalcCtrlType.HVDC;
                 } else {
