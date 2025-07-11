@@ -17,7 +17,7 @@ export class DataTableBaseComponent<T extends IId> extends DialogBase  {
 
     constructor() {
         super()
-        this.dataFilter = new DataFilter(20)        
+        this.dataFilter = new DataFilter(20)
     }
 
     protected createDataSource(dataset?:Dataset, datasetData?: DatasetData<T>) {
@@ -30,21 +30,21 @@ export class DataTableBaseComponent<T extends IId> extends DialogBase  {
                 this.dataFilter.reset()
                 this.tablePaginator?.firstPage()
                 this.lastDatasetId = this.dataset.id
-                // this generates distinct values for column data filters
-                for( let k of this.dataFilter.columnFilterMap.keys()) {
-                    let colFilter=this.dataFilter.columnFilterMap.get(k)
-                    if ( colFilter) {
-                        colFilter.genValues(this.datasetData.data)
-                    }
-                }
             }
         }
         if ( this.datasetData && this.dataset) {
             let cellData = this.dataFilter.GetCellDataObjects(this.dataset,this.datasetData,(item)=>item.id.toString())
-            this.data = new MatTableDataSource(cellData)        
-        } 
+            this.data = new MatTableDataSource(cellData)
+            // this generates distinct values for column data filters
+            for (let k of this.dataFilter.columnFilterMap.keys()) {
+                let colFilter = this.dataFilter.columnFilterMap.get(k)
+                if (colFilter) {
+                    colFilter.genValues(this.datasetData.data)
+                }
+            }
+        }
     }
-    
+
     datasetData?: DatasetData<T>
     dataset?: Dataset
     dataFilter: DataFilter

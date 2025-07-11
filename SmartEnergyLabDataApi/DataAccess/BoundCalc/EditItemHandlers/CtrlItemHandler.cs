@@ -178,13 +178,15 @@ public class CtrlItemHandler : BaseEditItemHandler
                 var node = m.Da.BoundCalc.GetNode((int)nodeId1);
                 c.N1 = node;
             }
-
             // node id 2
             var nodeId2 = m.CheckInt("nodeId2");
             if (nodeId2 != null) {
                 var node = m.Da.BoundCalc.GetNode((int)nodeId2);
                 c.N2 = node;
             }
+            // clear these
+            c.Z1 = null;
+            c.Z2 = null;
         } else if (c.Type == BoundCalcCtrlType.InterTrip) {
             // node id 1
             var nodeId1 = m.CheckInt("nodeId1");
@@ -203,6 +205,9 @@ public class CtrlItemHandler : BaseEditItemHandler
             if (gpc2 != null) {
                 c.GPC2 = (double)gpc2;
             }
+            // clear these
+            c.Z1 = null;
+            c.N2 = null;
         } else if (c.Type == BoundCalcCtrlType.Transfer) {
             // zone id 1
             var zoneId1 = m.CheckInt("zoneId1");
@@ -226,6 +231,9 @@ public class CtrlItemHandler : BaseEditItemHandler
             if (gpc2 != null) {
                 c.GPC2 = (double)gpc2;
             }
+            // clear these
+            c.N1 = null;
+            c.N2 = null;
         }
         // Min Ctrl
         var minCtrl = m.CheckDouble("minCtrl");

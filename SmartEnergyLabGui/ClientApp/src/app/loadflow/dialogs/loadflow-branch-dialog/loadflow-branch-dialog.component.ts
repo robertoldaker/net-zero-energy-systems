@@ -250,6 +250,7 @@ export class LoadflowBranchDialogComponent extends DialogBase {
                     this.branchTypes = []
                 }
             }
+            console.log('branchTypes',this.branchTypes)
             // check current type is in the list
             let branchType = this.fType.value
             if ( branchType ) {

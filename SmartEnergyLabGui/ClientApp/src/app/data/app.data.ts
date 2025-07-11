@@ -477,19 +477,19 @@ export interface Ctrl {
     type: LoadflowCtrlType
     node1Code: string
     node2Code: string
+    node1Id: number,
+    node2Id: number,
     node1Name: string
     node2Name: string
     node1LocationId: number
     node2LocationId: number
-    node1: Node
-    node2: Node
-    setPoint: number | null
-    n1: Node | null,
-    n2: Node | null,
-    z1: Zone | null,
-    z2: Zone | null
+    zone1Code: string
+    zone2Code: string
+    zone1Id: number
+    zone2Id: number
     gpC1: number,
     gpC2: number
+    setPoint: number | null
 }
 
 export interface Zone {

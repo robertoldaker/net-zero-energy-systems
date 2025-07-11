@@ -79,7 +79,6 @@ export class LoadflowMapComponent extends ComponentBase implements OnInit, After
     }
 
     ngAfterViewInit(): void {
-        console.log('afterViewInit',this.locInfoWindow,this.linkInfoWindow)
         if (this.key) {
             this.map?.controls[google.maps.ControlPosition.TOP_RIGHT].push(this.key.nativeElement);
         }

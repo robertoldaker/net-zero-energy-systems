@@ -48,18 +48,17 @@ export class LoadflowCtrlDialogComponent extends DialogBase {
             let data:Ctrl = dialogData._data
             this.title = `Edit control [${data.displayName}]`
             this.fType.setValue(data.type)
-            console.log('ctrl',data)
-            if ( data.n1!=null) {
-                this.fNodeId1.setValue(data.n1.id)
+            if ( data.node1Id!=0) {
+                this.fNodeId1.setValue(data.node1Id)
             }
-            if (data.n2 != null) {
-                this.fNodeId2.setValue(data.n2.id)
+            if (data.node2Id != null) {
+                this.fNodeId2.setValue(data.node2Id)
             }
-            if (data.z1 != null) {
-                this.fZoneId1.setValue(data.z1.id)
+            if (data.zone1Id != null) {
+                this.fZoneId1.setValue(data.zone1Id)
             }
-            if (data.z2 != null) {
-                this.fZoneId2.setValue(data.z2.id)
+            if (data.zone2Id != null) {
+                this.fZoneId2.setValue(data.zone2Id)
             }
             this.fGpc1.setValue(data.gpC1.toFixed(1))
             this.fGpc2.setValue(data.gpC2.toFixed(1))

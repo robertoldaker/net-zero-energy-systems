@@ -50,9 +50,12 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public CtrlWrapper(Ctrl obj, int index, BranchWrapper branchWrapper, BoundCalc boundCalc) : base(obj, index) {
             Branch = branchWrapper;
             BoundCalc = boundCalc;
-            if ( obj.Type == BoundCalcCtrlType.QB) {
+            if (obj.Type == BoundCalcCtrlType.QB) {
                 InjMax = BoundCalc.PUCONV * Obj.MaxCtrl / branchWrapper.Obj.X;
-            } else if ( obj.Type == BoundCalcCtrlType.HVDC) {
+            } else if (obj.Type == BoundCalcCtrlType.SeriesCap) {
+                //?? Needs checking!!!!
+                InjMax = BoundCalc.PUCONV * Obj.MaxCtrl / branchWrapper.Obj.X;
+            } else if (obj.Type == BoundCalcCtrlType.HVDC) {
                 InjMax = Obj.MaxCtrl;
             } else {
                 throw new Exception($"Unknown ctrl type found [{obj.Type}]");

@@ -62,15 +62,19 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         [ManyToOne(Column = "BranchId", Cascade = "none")]
         public virtual Branch Branch {get; set;}
 
+        [JsonIgnore()]
         [ManyToOne(Column = "N1Id", Cascade = "none")]
         public virtual Node N1 { get; set; }
 
+        [JsonIgnore()]
         [ManyToOne(Column = "N2Id", Cascade = "none")]
         public virtual Node N2 { get; set; }
 
+        [JsonIgnore()]
         [ManyToOne(Column = "Z1Id", Cascade = "none")]
         public virtual Zone Z1 { get; set; }
 
+        [JsonIgnore()]
         [ManyToOne(Column = "Z2Id", Cascade = "none")]
         public virtual Zone Z2 { get; set; }
 
@@ -87,12 +91,14 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
         }
 
+        [JsonIgnore()]
         public virtual Node Node1 {
             get {
                 return Branch!=null ? Branch.Node1 : null;
             }
         }
 
+        [JsonIgnore()]
         public virtual Node Node2 {
             get {
                 return Branch!=null ? Branch.Node2 : null;
@@ -111,43 +117,151 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         public virtual string Node1Code {
             get {
-                return Node1!=null ? Node1.Code : "";
+                if (Node1 != null) {
+                    return Node1.Code;
+                } else if (N1 != null) {
+                    return N1.Code;
+                } else {
+                    return "";
+                }
             }
         }
 
         public virtual string Node2Code {
             get {
-                return Node2!=null ? Node2.Code : "";
+                if (Node2 != null) {
+                    return Node2.Code;
+                } else if (N2 != null) {
+                    return N2.Code;
+                } else {
+                    return "";
+                }
             }
         }
 
-        public virtual string Node1Name {
+        public virtual int Node1Id
+        {
             get {
-                return Node1!=null ? Node1.Name : "";
+                if (Node1 != null) {
+                    return Node1.Id;
+                } else if (N1 != null) {
+                    return N1.Id;
+                } else {
+                    return 0;
+                }
+            }
+        }
+
+        public virtual int Node2Id
+        {
+            get {
+                if (Node2 != null) {
+                    return Node2.Id;
+                } else if (N2 != null) {
+                    return N2.Id;
+                } else {
+                    return 0;
+                }
+            }
+        }
+
+        public virtual string Node1Name
+        {
+            get {
+                if (Node1 != null) {
+                    return Node1.Name;
+                } else if (N1 != null) {
+                    return N1.Name;
+                } else {
+                    return "";
+                }
             }
         }
 
         public virtual string Node2Name {
             get {
-                return Node2!=null ? Node2.Name : "";
+                if (Node2 != null) {
+                    return Node2.Name;
+                } else if (N2 != null) {
+                    return N2.Name;
+                } else {
+                    return "";
+                }
             }
         }
 
         public virtual int Node1LocationId {
             get {
-                return Branch!=null ? Branch.Node1LocationId : 0;
+                if (Branch != null) {
+                    return Branch.Node1LocationId;
+                } else if (N1 != null && N1.Location != null) {
+                    return N1.Location.Id;
+                } else {
+                    return 0;
+                }
             }
         }
 
         public virtual int Node2LocationId {
             get {
-                return Branch!=null ? Branch.Node2LocationId : 0;
+                if (Branch != null) {
+                    return Branch.Node2LocationId;
+                } else if (N2 != null && N2.Location != null) {
+                    return N2.Location.Id;
+                } else {
+                    return 0;
+                }
             }
         }
 
-        public virtual string LineName {
+        public virtual string Zone1Code
+        {
             get {
-                return Branch!=null ? Branch.LineName : "";
+                if (Z1 != null) {
+                    return Z1.Code;
+                } else {
+                    return "";
+                }
+            }
+        }
+
+        public virtual string Zone2Code
+        {
+            get {
+                if (Z2 != null) {
+                    return Z2.Code;
+                } else {
+                    return "";
+                }
+            }
+        }
+
+        public virtual int Zone1Id
+        {
+            get {
+                if (Z1 != null) {
+                    return Z1.Id;
+                } else {
+                    return 0;
+                }
+            }
+        }
+
+        public virtual int Zone2Id
+        {
+            get {
+                if (Z2 != null) {
+                    return Z2.Id;
+                } else {
+                    return 0;
+                }
+            }
+        }
+
+        public virtual string LineName
+        {
+            get {
+                return Branch != null ? Branch.LineName : "";
             }
         }
 

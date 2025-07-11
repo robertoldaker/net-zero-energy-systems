@@ -4,6 +4,7 @@ import { LoadflowDataService } from '../../loadflow-data-service.service';
 import { ColumnDataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/cell-editor.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { DataTableBaseComponent } from '../../../datasets/data-table-base/data-table-base.component';
+import { NodeZoneNum } from './loadflow-data-ctrls-node-zone/loadflow-data-ctrls-node-zone.component';
 
 @Component({
     selector: 'app-loadflow-data-ctrls',
@@ -22,7 +23,7 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
         this.dataFilter.columnFilterMap.set(this.typeDataFilter.columnName, this.typeDataFilter)
 
         this.createDataSource(this.dataService.dataset,dataService.networkData.ctrls);
-        this.displayedColumns = ['buttons','code','node1Code','node2Code','type','minCtrl','maxCtrl','cost','setPoint']
+        this.displayedColumns = ['buttons','code','nodeZone1','nodeZone2','type','minCtrl','maxCtrl','cost','setPoint']
         this.addSub(dataService.NetworkDataLoaded.subscribe( (results) => {
             this.setPointError = false
             this.createDataSource(this.dataService.dataset,results.ctrls)
@@ -86,5 +87,6 @@ export class LoadflowDataCtrlsComponent extends DataTableBaseComponent<Ctrl> {
     }
 
     SetPointMode = SetPointMode
+    NodeZoneNum = NodeZoneNum
 
 }

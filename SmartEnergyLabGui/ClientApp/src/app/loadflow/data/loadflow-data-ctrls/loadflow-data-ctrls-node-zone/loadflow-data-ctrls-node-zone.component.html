@@ -1,0 +1,7 @@
+<app-loadflow-node-cell *ngIf="isNodeCell" [nodeCode]="nodeCode" [nodeName]="nodeName"
+    [isBranch]="true"></app-loadflow-node-cell>
+<div *ngIf="!isNodeCell">
+    <div>{{zoneCode}}</div>
+    <div class="nodeName">({{zoneGpc.toFixed(1)}}%)</div>
+</div>
+
