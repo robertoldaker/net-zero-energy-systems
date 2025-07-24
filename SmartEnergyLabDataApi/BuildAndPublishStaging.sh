@@ -12,9 +12,10 @@ function raiseError()
 
 # Check version control and also generate VersionData.cs before publishing
 python ../Scripts/CheckVersion.py . VersionData.csx VersionData.cs
-if [ $? -ne 0 ]; then
-    raiseError;
-fi 
+# allow any builds to staging area for testing
+#if [ $? -ne 0 ]; then
+#    raiseError;
+#fi
 echo "Deleting old ASP.NET build ..."
 rm -r ASP_BUILD
 echo "Building ASP.NET app .."

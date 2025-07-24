@@ -12,9 +12,10 @@ function raiseError()
 
 # Check version control and also update about-dialog before publishing
 python ../Scripts/CheckVersion.py . ./ClientApp/src/app/main/about-dialog/about-dialog.component.tsx ./ClientApp/src/app/main/about-dialog/about-dialog.component.ts
-if [ $? -ne 0 ]; then
-    raiseError;
-fi 
+# allow uncommitted changes for staging area
+#if [ $? -ne 0 ]; then
+#    raiseError;
+#fi
 echo "Deleting old ASP.NET build ..."
 rm -r ASP_BUILD
 # build angular separately

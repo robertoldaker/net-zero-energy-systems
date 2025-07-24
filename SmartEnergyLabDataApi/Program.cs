@@ -205,9 +205,12 @@ public class ExceptionLoggerFilter : IActionFilter, IOrderedFilter
 
     public void OnActionExecuted(ActionExecutedContext context)
     {
-        if (context.Exception !=null )
-        {
-            Logger.Instance.LogException(context.Exception,$"Exception handling [{context.HttpContext.Request.Path}]");
+        if (context.Exception != null) {
+            Logger.Instance.LogException(context.Exception, $"Exception handling [{context.HttpContext.Request.Path}]");
+            if (context.Controller is ControllerBase) {
+                context.Result = ((ControllerBase)context.Controller).StatusCode(500, context.Exception.Message);
+                context.Exception = null;
+            }
         }
     }
 }
