@@ -25,13 +25,13 @@
     <mat-tab label="Locations" labelClass="matTabLabelNarrow">
         <app-loadflow-data-locations></app-loadflow-data-locations>
     </mat-tab>
-    <mat-tab label="Transport models" labelClass="matTabLabelNarrow">
+    <mat-tab label="Generation models" labelClass="matTabLabelNarrow">
         <app-loadflow-data-transport-models></app-loadflow-data-transport-models>
     </mat-tab>
     <mat-tab *ngIf="hasTripResults" label="All trip results" labelClass="matTabLabelNarrow output">
         <app-loadflow-trip-results></app-loadflow-trip-results>
-    </mat-tab>    
-</mat-tab-group>    
+    </mat-tab>
+</mat-tab-group>
 <app-loadflow-map [ngClass]="{hide: !showMap}"></app-loadflow-map>
 
-  
+

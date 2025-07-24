@@ -11,7 +11,7 @@ public class TransportModelItemHandler : BaseEditItemHandler
         // name
         if (m.GetString("name", out string name)) {
             if (m.Da.BoundCalc.TransportModelExists(m.Dataset.Id, name, out Dataset? dataset)) {
-                m.AddError("name", $"Transport model already exists with name [{name}] in dataset [{dataset?.Name}]");
+                m.AddError("name", $"Generation model already exists with name [{name}] in dataset [{dataset?.Name}]");
             }
         } else if (m.ItemId == 0) {
             m.AddError("name", "Name must be set to something");

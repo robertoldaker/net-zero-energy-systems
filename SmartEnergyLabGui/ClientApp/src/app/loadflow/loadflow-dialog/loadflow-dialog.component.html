@@ -28,7 +28,7 @@
         </div>
         <div style="margin-right: 1rem">
             <mat-form-field appearance="fill" [color]="'primary'">
-                <mat-label>Transport model</mat-label>
+                <mat-label>Generation model</mat-label>
                 <mat-select (selectionChange)="transportModelChanged($event)" [ngModel]="this.transportModel?.id">
                     <mat-option *ngFor="let tm of transportModels" [value]="tm.id">{{tm.name}}</mat-option>
                 </mat-select>

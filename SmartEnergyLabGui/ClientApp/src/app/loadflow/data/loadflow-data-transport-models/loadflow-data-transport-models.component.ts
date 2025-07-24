@@ -6,6 +6,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { DataTableBaseComponent } from 'src/app/datasets/data-table-base/data-table-base.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { DatasetsService } from 'src/app/datasets/datasets.service';
+import { DialogFooterButtonsEnum } from 'src/app/dialogs/dialog-footer/dialog-footer.component';
+import { MessageDialogIcon } from 'src/app/dialogs/message-dialog/message-dialog.component';
 
 @Component({
     selector: 'app-loadflow-data-transport-models',
@@ -67,15 +69,24 @@ export class LoadflowDataTransportModelsComponent extends DataTableBaseComponent
     }
 
     add() {
-        this.dialogService.showLoadflowTransportModelDialog(undefined,(resp: DatasetData<any>[] | undefined)=>{
-            if ( resp ) {
-                // this will be the newly created transport model
-                let sm = resp.find(m=>m.tableName==="TransportModel")?.data[0]
-                if ( sm ) {
-                    this.selectModel(sm)
+        if ( this.datasetsService.currentDataset?.isReadOnly) {
+            this.dialogService.showMessageDialog(
+            {
+                message: `Cannot add a generator model as not owner of dataset`,
+                icon: MessageDialogIcon.Info,
+                buttons: DialogFooterButtonsEnum.Close
+            })
+        } else {
+            this.dialogService.showLoadflowTransportModelDialog(undefined, (resp: DatasetData<any>[] | undefined) => {
+                if (resp) {
+                    // this will be the newly created transport model
+                    let sm = resp.find(m => m.tableName === "TransportModel")?.data[0]
+                    if (sm) {
+                        this.selectModel(sm)
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     isEditable(tm: TransportModel):boolean {

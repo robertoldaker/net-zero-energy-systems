@@ -102,7 +102,9 @@ export class LoadflowNodeDialogComponent extends DialogBase implements OnInit {
     addZone() {
         this.dialogService.showLoadflowZoneDialog(undefined,(obj)=>{
             if (obj) {
+                console.log('addZone',obj)
                 this.setValue('zoneId',obj.id)
+                this.form.get('zoneId')?.markAsDirty()
             }
         })
     }
@@ -110,9 +112,14 @@ export class LoadflowNodeDialogComponent extends DialogBase implements OnInit {
     addGenerator() {
         this.dialogService.showLoadflowGeneratorDialog(undefined,(obj)=>{
             if (obj) {
+                console.log('addGenerator',obj)
                 let genIds:number[]=this.getValue('generatorIds')
+                if ( !genIds ) {
+                    genIds = []
+                }
                 genIds.push(obj.id)
                 this.setValue('generatorIds',genIds)
+                this.form.get('generatorIds')?.markAsDirty()
             }
         })
     }

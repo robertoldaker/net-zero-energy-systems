@@ -149,9 +149,9 @@ export class LoadflowBranchDialogComponent extends DialogBase {
             this.updateMinMaxCtrl()
         }
         this.needsLength = this.isLengthType(type)
-        if ( this.needsLength) {
+        //??if ( this.needsLength) {
             this.updateDist()
-        }
+        //??}
     }
 
     private isCtrlType(type: BranchType) {
@@ -206,23 +206,25 @@ export class LoadflowBranchDialogComponent extends DialogBase {
         if ( nodeId1 && nodeId2 ) {
             this.dataService.DistBetweenNodes(nodeId1, nodeId2, (dist) => {
                 let type = this.fType.value;
-                if (dist > 0) {
-                    if (type === BranchType.OHL) {
-                        this.fOHL.setValue(dist.toFixed(0))
-                        this.fCableLength.setValue(0)
-                    } else if (type === BranchType.Cable) {
-                        this.fCableLength.setValue(dist.toFixed(0))
-                        this.fOHL.setValue(0)
-                    } else if (type === BranchType.Composite) {
-                        this.fOHL.setValue((dist / 2).toFixed(0))
-                        this.fCableLength.setValue((dist / 2).toFixed(0))
-                    }
-                } else {
-                    this.fOHL.setValue(0)
+                if (type === BranchType.OHL) {
+                    this.fOHL.setValue(dist.toFixed(0))
                     this.fCableLength.setValue(0)
+                    this.fOHL.markAsDirty()
+                    this.fCableLength.markAsDirty()
+                } else if (type === BranchType.Cable) {
+                    this.fCableLength.setValue(dist.toFixed(0))
+                    this.fOHL.setValue(0)
+                    this.fOHL.markAsDirty()
+                    this.fCableLength.markAsDirty()
+                } else if (type === BranchType.Composite) {
+                    this.fOHL.setValue((dist / 2).toFixed(0))
+                    this.fCableLength.setValue((dist / 2).toFixed(0))
+                    this.fOHL.markAsDirty()
+                    this.fCableLength.markAsDirty()
+                } else {
+                    this.fOHL.setValue(null)
+                    this.fCableLength.setValue(null)
                 }
-                this.fOHL.markAsDirty()
-                this.fCableLength.markAsDirty()
             })
         }
     }

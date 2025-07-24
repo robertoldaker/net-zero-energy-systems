@@ -29,10 +29,10 @@ export class LoadflowTransportModelDialogComponent extends DialogBase implements
         fName.addValidators( [Validators.required])
         if ( dialogData?.id ) {
             this.tm = dialogData
-            this.title = `Edit transport model [${this.tm.name}]`
+            this.title = `Edit generation model [${this.tm.name}]`
             fName.setValue(this.tm.name)
         } else {
-            this.title = `Add transport model`
+            this.title = `Add generation model`
             let name = dialogData?.name ? dialogData.name : ''
             fName.setValue(name)
         }
