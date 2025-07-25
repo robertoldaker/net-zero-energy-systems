@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { GoogleMap } from '@angular/google-maps';
+import { ShowMessageService } from 'src/app/main/show-message/show-message.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 
 @Component({
@@ -9,6 +10,10 @@ import { ComponentBase } from 'src/app/utils/component-base';
 })
 
 export class AdminTestComponent extends ComponentBase implements OnInit, AfterViewInit {
+
+    constructor(private messageService: ShowMessageService) {
+        super();
+    }
 
     @ViewChild(GoogleMap, { static: false }) map: GoogleMap | undefined
     @ViewChild('key') key: ElementRef | undefined
@@ -50,14 +55,14 @@ export class AdminTestComponent extends ComponentBase implements OnInit, AfterVi
     center: google.maps.LatLngLiteral = {
         lat: 52.561928, lng: -1.464854
     }
-    options: google.maps.MapOptions = {            
+    options: google.maps.MapOptions = {
         disableDoubleClickZoom: true,
         mapTypeId: 'roadmap',
         minZoom: 3,
         //styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }, { stylers: [{ gamma: 1 }] }],
         styles: [
-            { featureType: "poi", stylers: [{ visibility: "off" }] }, 
-            { featureType: "road", stylers: [{ visibility: "off" }] }, 
+            { featureType: "poi", stylers: [{ visibility: "off" }] },
+            { featureType: "road", stylers: [{ visibility: "off" }] },
             { featureType: "landscape", stylers: [{ visibility: "off" }] },
             { featureType: "administrative", stylers: [{ visibility: "off" }]}],
         mapTypeControl: false,
@@ -82,6 +87,30 @@ export class AdminTestComponent extends ComponentBase implements OnInit, AfterVi
         let zoom = this.map?.googleMap?.getZoom();
         if ( zoom ) {
             this.map?.googleMap?.setZoom(zoom-1);
+        }
+    }
+
+    isModal = true
+    isError = true
+    canClose = true
+    withTimeout = false
+    showMsgBox() {
+        if ( this.withTimeout ) {
+            this.messageService.showMessageWithTimeout('message with timeout')
+        } else {
+            if (this.isModal) {
+                if (this.isError) {
+                    this.messageService.showModalErrorMessage('This is a modal error message', this.canClose)
+                } else {
+                    this.messageService.showModalMessage('This is a modal message', this.canClose)
+                }
+            } else {
+                if (this.isError) {
+                    this.messageService.showErrorMessage('This is an error message', this.canClose)
+                } else {
+                    this.messageService.showMessage('This is a message', this.canClose)
+                }
+            }
         }
     }
 }

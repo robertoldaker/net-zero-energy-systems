@@ -127,7 +127,7 @@ export class LoadflowDataService {
 
     private loadNetworkData(withMessage: boolean, newDataset:boolean, onLoad?: (()=>void)) {
         if ( withMessage ) {
-            this.messageService.showModalMessage('Loading ...')
+            this.messageService.showModalMessage('Loading ...', false)
         }
         let transportModelId:number
         if ( newDataset) {

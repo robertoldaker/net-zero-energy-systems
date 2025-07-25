@@ -191,7 +191,7 @@ export class DataClientService implements ILogs {
     }
 
     GetGeographicalAreaClassifications(id: number, aggregateResults: boolean, onLoad: (classifications: SubstationClassification[]) => void | undefined) {
-        this.showMessageService.showMessage("Loading geo classifications ...")
+        this.showMessageService.showMessage("Loading geo classifications ...", false)
         this.http.get<SubstationClassification[]>(this.baseUrl + `/Classifications/GeographicalAreaClassifications?id=${id}&aggregateResults=${aggregateResults}`).subscribe(result => {
             this.showMessageService.clearMessage()
             if (onLoad !== undefined) {
@@ -226,7 +226,7 @@ export class DataClientService implements ILogs {
      * Classification tool
      */
     RunClassificationTool(input: ClassificationToolInput, onLoad: (output: ClassificationToolOutput) => void, onError?:(resp:any)=>void, onComplete?:()=>void) {
-        this.showMessageService.showMessage("Calculating ...");
+        this.showMessageService.showMessage("Calculating ...", false);
         this.http.post<ClassificationToolOutput>(this.baseUrl + '/ClassificationTool/Run', input).subscribe(
             result => {
                 if (onLoad !== undefined) {
@@ -242,7 +242,7 @@ export class DataClientService implements ILogs {
     }
 
     RunClassificationToolOnSubstation(id: number, onLoad?: () => void) {
-        this.showMessageService.showMessage("Calculating ...");
+        this.showMessageService.showMessage("Calculating ...", false);
         this.http.post(this.baseUrl + `/ClassificationTool/RunOnSubstation?id=${id}`,{}).subscribe(result => {
             this.showMessageService.clearMessage();
             if (onLoad !== undefined) {
@@ -274,7 +274,7 @@ export class DataClientService implements ILogs {
 
     RunBoundCalc( datasetId: number, setPointMode: SetPointMode, transportModelId: number, nodeMarginals: boolean, boundaryName: string, boundaryTrips: boolean, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
-        this.showMessageService.showMessage("Calculating ...");
+        this.showMessageService.showModalMessage("Calculating ...", false);
         this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/Run?datasetId=${datasetId}&setPointMode=${setPointMode}&transportModelId=${transportModelId}&nodeMarginals=${nodeMarginals}&boundaryName=${boundaryName}&boundaryTrips=${boundaryTrips}&tripStr=${tripStr}&connectionId=${connectionId}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
@@ -285,7 +285,7 @@ export class DataClientService implements ILogs {
 
     RunBoundaryTrip( datasetId: number, setPointMode: SetPointMode, transportModelId: number, boundaryName: string, tripName: string, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
-        this.showMessageService.showMessage("Calculating ...");
+        this.showMessageService.showMessage("Calculating ...", false);
         let url = `/BoundCalc/RunBoundaryTrip?datasetId=${datasetId}&setPointMode=${setPointMode}&transportModelId=${transportModelId}&boundaryName=${boundaryName}&tripName=${tripName}&tripStr=${tripStr}&connectionId=${connectionId}`
         this.http.post<LoadflowResults>(this.baseUrl + url,{}).subscribe( result => {
             this.showMessageService.clearMessage()
@@ -297,7 +297,7 @@ export class DataClientService implements ILogs {
 
     AdjustBranchCapacities( datasetId: number, transportModelId: number, onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
-        this.showMessageService.showMessage("Calculating ...");
+        this.showMessageService.showMessage("Calculating ...", false);
         this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/AdjustBranchCapacities?datasetId=${datasetId}&transportModelId=${transportModelId}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
@@ -632,7 +632,7 @@ export class DataClientService implements ILogs {
     }
 
     private getRequestWithMessage<T>(message: string, url: string, onLoad: (resp: T)=>void | undefined) {
-        this.showMessageService.showMessage(message);
+        this.showMessageService.showMessage(message,false);
         this.http.get<T>(this.baseUrl + url).subscribe(resp => {
             this.showMessageService.clearMessage()
             if ( onLoad) {

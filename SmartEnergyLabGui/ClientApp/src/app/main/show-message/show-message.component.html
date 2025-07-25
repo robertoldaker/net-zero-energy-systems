@@ -1,5 +1,9 @@
 <div *ngIf="service.modal" class="messageOverlay messageModal" (click)="close()"></div>
 <div *ngIf="service.show" class="messageOverlay">
-    <div [ngClass]="{ messageBox: true, error: service.isError}" (click)="close()">{{service.message}}</div>
+    <div [ngClass]="{ messageBox: true, error: service.isError, withClose: service.canClose}" (click)="close()">{{service.message}}
+        <div *ngIf="service.canClose" class="close">
+            <mat-icon inline="true" class="close">close</mat-icon>
+        </div>
+    </div>
 </div>
 

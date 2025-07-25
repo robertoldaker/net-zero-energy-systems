@@ -30,8 +30,35 @@ div.messageBox {
     background-color: #093145;
     /* taken from angular material button */
     box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),0px 2px 2px 0px rgba(0, 0, 0, 0.14),0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+    position: relative;
+}
+
+.withClose {
+    padding-right: 1.5rem !important;
 }
 
 div.error {
     background-color: #900;
+}
+
+div.close {
+    font-size: 12pt;
+    font-weight: bolder;
+    position:absolute;
+    top: 0px;
+    right: 0px;
+    cursor: pointer;
+    background-color: grey;
+    vertical-align: middle;
+    padding: 2px;
+    line-height: 100%;
+    border-top-right-radius: 10px;
+}
+
+div.close > .close {
+    opacity: 0.7;
+}
+
+div.close > .close:hover {
+    opacity: 1;
 }

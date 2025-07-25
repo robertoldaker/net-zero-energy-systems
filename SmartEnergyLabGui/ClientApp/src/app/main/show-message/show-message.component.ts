@@ -9,7 +9,7 @@ import { ShowMessageService } from './show-message.service';
 
 export class ShowMessageComponent implements OnInit {
 
-    constructor(public service: ShowMessageService) { 
+    constructor(public service: ShowMessageService) {
 
     }
 
@@ -17,7 +17,9 @@ export class ShowMessageComponent implements OnInit {
     }
 
     close() {
-        this.service.clearMessage()
+        if ( this.service.canClose ) {
+            this.service.clearMessage()
+        }
     }
 
 }

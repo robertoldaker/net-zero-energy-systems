@@ -9,38 +9,40 @@ export class ShowMessageService {
     message: string = ""
     modal: boolean = false
     show: boolean = false
-    isError: boolean = false;
+    isError: boolean = false
+    canClose: boolean = true
     constructor( ) {
     }
 
-    private setMessage(message: string, modal: boolean, isError: boolean) {
+    private setMessage(message: string, modal: boolean, isError: boolean, canClose: boolean) {
         this.message = message
         this.modal = modal
         this.isError = isError
+        this.canClose = canClose
         this.show = message.length>0
     }
 
-    showModalErrorMessage(message: string) {
-        this.setMessage(message,true,true)
+    showModalErrorMessage(message: string,canClose:boolean = true) {
+        this.setMessage(message,true,true,canClose)
     }
 
-    showModalMessage(message: string) {
-        this.setMessage(message,true,false)
+    showModalMessage(message: string, canClose: boolean = true) {
+        this.setMessage(message,true,false, canClose)
     }
 
-    showMessage(message: string) {
-        this.setMessage(message,false,false)
+    showMessage(message: string, canClose: boolean = true) {
+        this.setMessage(message,false,false, canClose)
     }
 
-    showMessageWithTimeout(message: string) {
-        this.setMessage(message,false,false)
+    showMessageWithTimeout(message: string, canClose: boolean = true) {
+        this.setMessage(message,false,false, canClose)
         window.setTimeout(()=>{
             this.clearMessage()
         }, 2000)
     }
 
-    showErrorMessage(message: string) {
-        this.setMessage(message,false,true)
+    showErrorMessage(message: string, canClose: boolean = true) {
+        this.setMessage(message,false,true, canClose)
     }
 
     clearMessage() {
