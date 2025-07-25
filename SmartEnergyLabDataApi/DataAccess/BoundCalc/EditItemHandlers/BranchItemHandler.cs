@@ -152,11 +152,6 @@ public class BranchItemHandler : BaseEditItemHandler
         if ( m.GetString("code",out string code)) {
             b.Code = code;
         }
-        // reactance
-        var x = m.CheckDouble("x",0);
-        if ( x!=null ) {
-            b.X = (double) x;
-        }
         // capacity
         var cap = m.CheckDouble("cap",0);
         if ( cap!=null ) {
@@ -212,16 +207,6 @@ public class BranchItemHandler : BaseEditItemHandler
             }
         }
         //
-        var ohl = m.CheckDouble("ohl");
-        if (ohl != null) {
-            b.OHL = (double) ohl;
-        }
-        //
-        var cableLength = m.CheckDouble("cableLength");
-        if (cableLength != null) {
-            b.CableLength = (double)cableLength;
-        }
-        //
         if (b.Ctrl != null) {
             var minCtrl = m.CheckDouble("minCtrl");
             if (minCtrl != null) {
@@ -237,7 +222,32 @@ public class BranchItemHandler : BaseEditItemHandler
             }
         }
         //
-        if ( b.Id==0) {
+        if (b.Type == BoundCalcBranchType.OHL || b.Type == BoundCalcBranchType.Cable || b.Type == BoundCalcBranchType.Composite) {
+            var ohl = m.CheckDouble("ohl");
+            if (ohl != null) {
+                b.OHL = (double)ohl;
+            }
+            //
+            var cableLength = m.CheckDouble("cableLength");
+            if (cableLength != null) {
+                b.CableLength = (double)cableLength;
+            }
+        } else {
+            b.OHL = 0;
+            b.CableLength = 0;
+        }
+        //
+        if (b.Type == BoundCalcBranchType.HVDC) {
+            b.X = 0;
+        } else {
+            // reactance
+            var x = m.CheckDouble("x", 0);
+            if (x != null) {
+                b.X = (double)x;
+            }
+        }
+        //
+        if (b.Id == 0) {
             m.Da.BoundCalc.Add(b);
         }
         // set a unique code if non-set

@@ -22,8 +22,13 @@ export class DialogBase extends ComponentBase {
 
     protected fillErrors(error: any) {
         for (const key in error) {
-            this.form.get(key)?.setErrors({ serverError: error[key] });
-            this.form.get(key)?.markAsTouched();
+            let fc = this.form.get(key);
+            if ( fc ) {
+                fc.setErrors({ serverError: error[key] })
+                fc.markAllAsTouched()
+            } else {
+                console.log(`could not find control for key [${key}]`)
+            }
         }
     }
 

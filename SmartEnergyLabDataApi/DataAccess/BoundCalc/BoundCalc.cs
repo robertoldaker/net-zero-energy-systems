@@ -467,6 +467,13 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         {
             var query = Session.QueryOver<Ctrl>();
             query = query.
+                Fetch(SelectMode.Fetch, m => m.Branch).
+                Fetch(SelectMode.Fetch, m => m.Branch.Node1).
+                Fetch(SelectMode.Fetch, m => m.Branch.Node1.Location).
+                Fetch(SelectMode.Fetch, m => m.Branch.Node1.Location.GISData).
+                Fetch(SelectMode.Fetch, m => m.Branch.Node2).
+                Fetch(SelectMode.Fetch, m => m.Branch.Node2.Location).
+                Fetch(SelectMode.Fetch, m => m.Branch.Node2.Location.GISData).
                 Fetch(SelectMode.Fetch, m => m.N1).
                 Fetch(SelectMode.Fetch, m => m.N1.Location).
                 Fetch(SelectMode.Fetch, m => m.N1.Location.GISData).

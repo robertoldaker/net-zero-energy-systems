@@ -149,9 +149,13 @@ export class LoadflowBranchDialogComponent extends DialogBase {
             this.updateMinMaxCtrl()
         }
         this.needsLength = this.isLengthType(type)
-        //??if ( this.needsLength) {
+        if ( this.needsLength) {
             this.updateDist()
-        //??}
+        }
+        if ( type === BranchType.HVDC) {
+            this.fX.setValue(0)
+            this.fX.markAsDirty()
+        }
     }
 
     private isCtrlType(type: BranchType) {
@@ -203,28 +207,23 @@ export class LoadflowBranchDialogComponent extends DialogBase {
     private updateDist() {
         let nodeId1 = this.fNodeId1.value
         let nodeId2 = this.fNodeId2.value
-        if ( nodeId1 && nodeId2 ) {
+        if ( nodeId1 && nodeId2 && this.needsLength ) {
             this.dataService.DistBetweenNodes(nodeId1, nodeId2, (dist) => {
                 let type = this.fType.value;
                 if (type === BranchType.OHL) {
                     this.fOHL.setValue(dist.toFixed(0))
                     this.fCableLength.setValue(0)
-                    this.fOHL.markAsDirty()
-                    this.fCableLength.markAsDirty()
                 } else if (type === BranchType.Cable) {
                     this.fCableLength.setValue(dist.toFixed(0))
                     this.fOHL.setValue(0)
-                    this.fOHL.markAsDirty()
-                    this.fCableLength.markAsDirty()
                 } else if (type === BranchType.Composite) {
                     this.fOHL.setValue((dist / 2).toFixed(0))
                     this.fCableLength.setValue((dist / 2).toFixed(0))
-                    this.fOHL.markAsDirty()
-                    this.fCableLength.markAsDirty()
                 } else {
-                    this.fOHL.setValue(null)
-                    this.fCableLength.setValue(null)
+                    throw `Unexpected value of branch type found in updateDist [${type}]`
                 }
+                this.fOHL.markAsDirty()
+                this.fCableLength.markAsDirty()
             })
         }
     }
