@@ -1,0 +1,11 @@
+<div [class]="{helpText: true, hide: !service.show}" [style]="contentStyle"
+    (mouseenter)="mouseEnterText()" (mouseleave)="mouseLeaveText()" #helpTextDiv>
+    <div class="helpIconHotspot header small">?</div>
+    <div class="helpTextHeader">
+        <div>{{service.title}}</div>
+    </div>
+    <div class="helpTextContent">
+        <ng-content></ng-content>
+    </div>
+</div>
+

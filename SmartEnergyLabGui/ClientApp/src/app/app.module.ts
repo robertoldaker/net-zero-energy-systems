@@ -182,6 +182,9 @@ import { LoadflowInfoWindowComponent } from './loadflow/loadflow-map/loadflow-in
 import { GspSearchComponent } from './gsp-demand-profiles/gsp-search/gsp-search.component';
 import { LoadflowGenSvgsComponent } from './loadflow/loadflow-gen-svgs/loadflow-gen-svgs.component';
 import { LoadflowDataCtrlsNodeZoneComponent } from './loadflow/data/loadflow-data-ctrls/loadflow-data-ctrls-node-zone/loadflow-data-ctrls-node-zone.component';
+import { QuickHelpComponent } from './utils/quick-help/quick-help.component';
+import { QuickHelpContentComponent } from './utils/quick-help-content/quick-help-content.component';
+import { LoadflowQuickHelpComponent } from './loadflow/loadflow-quick-help/loadflow-quick-help.component';
 
 
 @NgModule({
@@ -318,7 +321,10 @@ import { LoadflowDataCtrlsNodeZoneComponent } from './loadflow/data/loadflow-dat
         LoadflowInfoWindowComponent,
         GspSearchComponent,
         LoadflowGenSvgsComponent,
-        LoadflowDataCtrlsNodeZoneComponent
+        LoadflowDataCtrlsNodeZoneComponent,
+        QuickHelpComponent,
+        QuickHelpContentComponent,
+        LoadflowQuickHelpComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

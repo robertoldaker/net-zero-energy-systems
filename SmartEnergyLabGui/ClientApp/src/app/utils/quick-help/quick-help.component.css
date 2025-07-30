@@ -1,0 +1,38 @@
+
+.helpIconHotspot {
+    display: inline-block;
+    width: 1.5em;
+    height: 1.5em;
+    text-align: center;
+    border-radius: 50%;
+    border: 2px solid var(--primary-colour);
+    cursor: pointer;
+    line-height: 120%;
+    color: black;
+    font-weight: bold;
+    opacity: 0.7;
+    vertical-align: middle;
+    cursor: pointer;
+    font-style:normal;
+}
+
+.small {
+    font-size: 8pt;
+    margin-right: 0.5em
+}
+
+.leftOffset {
+    position:absolute;
+    left: -2em;
+    top: 0.3em;
+}
+
+.medium {
+    font-size: 10pt;
+    margin-right: 0.5em;
+}
+
+.large {
+    font-size: 12pt;
+    margin-right: 0.5em;
+}

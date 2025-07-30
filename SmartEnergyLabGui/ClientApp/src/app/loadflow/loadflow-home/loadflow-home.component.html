@@ -5,7 +5,7 @@
             <as-split-area [size]="390" #leftDiv>
                 <app-loadflow-dialog></app-loadflow-dialog>
                 <hr style="margin:0; border: 2px solid #aaa;"/>
-                <app-loadflow-stages></app-loadflow-stages>    
+                <app-loadflow-stages></app-loadflow-stages>
             </as-split-area>
             <as-split-area #rightDiv>
                 <app-loadflow-data></app-loadflow-data>
@@ -13,8 +13,9 @@
         </as-split>
     </div>
     <div *ngIf="!this.user">
-        <div *ngIf="this.userInfoValid" class="noUser">Please <span class="link" (click)="logon()">logon</span> or <span class="link" (click)="register()">register</span> to use GB Electricity Market Simulator
+        <div *ngIf="this.userInfoValid" class="noUser">Please <span class="link" (click)="logon()">logon</span> or <span class="link" (click)="register()">register</span>
         </div>
     </div>
 </div>
 <app-maintenance-overlay></app-maintenance-overlay>
+<app-quick-help-content><app-loadflow-quick-help></app-loadflow-quick-help></app-quick-help-content>

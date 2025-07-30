@@ -1,4 +1,4 @@
-<app-table-paginator [dataFilter]="dataFilter" (onFilter)="filterTable($event)" (onAdd)="add()" [typeName]="'Node'"></app-table-paginator>
+<app-table-paginator [dataFilter]="dataFilter" helpId="data.nodes" helpTitle="Nodes" (onFilter)="filterTable($event)" (onAdd)="add()" [typeName]="'Node'"></app-table-paginator>
 
 <app-div-auto-scroller name="nodes">
 
@@ -14,6 +14,7 @@
         <!-- Code Column -->
         <ng-container matColumnDef="code">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <app-quick-help helpId="data.nodes.code" title="Code" iconClass="small leftOffset"></app-quick-help>
                 <app-column-filter [filter]="codeDataFilter" title="Code"></app-column-filter>
             </th>
             <td mat-cell *matCellDef="let element">
@@ -24,6 +25,7 @@
         <!-- Voltage Column -->
         <ng-container matColumnDef="voltage">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">
+                <app-quick-help helpId="data.nodes.voltage" title="Voltage" iconClass="small"></app-quick-help>
                 <app-column-filter [filter]="voltageDataFilter" title="Voltage"></app-column-filter>
             </th>
             <td mat-cell *matCellDef="let element">{{element.voltage.value}}</td>-->
@@ -32,6 +34,7 @@
         <!-- Zone Column -->
         <ng-container matColumnDef="zoneName">
             <th mat-header-cell *matHeaderCellDef mat-sort-header  arrowPosition="before">
+                <app-quick-help helpId="data.nodes.zone" iconClass="small" title="Zone"></app-quick-help>
                 <app-column-filter [filter]="zoneDataFilter" title="Zone"></app-column-filter>
             </th>
             <td mat-cell *matCellDef="let element">{{element.zoneName.value}}</td>-->
@@ -39,7 +42,10 @@
 
         <!-- Demand Column -->
         <ng-container matColumnDef="demand">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">Demand</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">
+                <app-quick-help helpId="data.nodes.demand"  title="Demand" iconClass="small"></app-quick-help>
+                <span>Demand</span>
+            </th>
             <td mat-cell *matCellDef="let element">
                 <app-cell-editor [data]="element.demand" [decimalPlaces]="0"></app-cell-editor>
             </td>
@@ -47,7 +53,9 @@
 
         <!-- Generator -->
         <ng-container matColumnDef="generation">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Generation (MW)
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <app-quick-help helpId="data.nodes.generation" title="Generation" iconClass="small"></app-quick-help>
+                Generation (MW)
             <td mat-cell *matCellDef="let element">
                 <table *ngIf="element.generators.value.length>0 || element.deletedGenerators.value.length> 0" class="genTable">
                     <tbody>
@@ -81,7 +89,10 @@
 
         <!-- Ext Column -->
         <ng-container matColumnDef="ext">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Ext</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <app-quick-help helpId="data.nodes.ext" title="External" iconClass="small leftOffset"></app-quick-help>
+                Ext
+            </th>
             <td mat-cell *matCellDef="let element">
                 <input type="checkbox" [checked]="element.ext.value" disabled/>
             </td>
@@ -89,19 +100,28 @@
 
         <!-- TLF Column -->
         <ng-container matColumnDef="tlf">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">TLF (%)</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">
+                <app-quick-help helpId="data.nodes.TLF"  title="Transmission Loss Factor" iconClass="small"></app-quick-help>
+                TLF (%)
+            </th>
             <td mat-cell *matCellDef="let element">{{getTLFPercent(element)}}</td>
         </ng-container>
 
         <!-- km Column -->
         <ng-container matColumnDef="km">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">km</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">
+                <app-quick-help helpId="data.nodes.km"  title="km" iconClass="small"></app-quick-help>
+                km
+            </th>
             <td mat-cell *matCellDef="let element">{{element.km?.value?.toFixed(1)}}</td>
         </ng-container>
 
         <!-- Mismatch  Column -->
         <ng-container matColumnDef="mismatch">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before"><div [style]="getOverallMismatchStyle()">Mismatch</div></th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">
+                <app-quick-help helpId="data.nodes.mismatch"  title="Mismatch" iconClass="small"></app-quick-help>
+                <div [style]="getOverallMismatchStyle()">Mismatch</div>
+            </th>
             <td mat-cell *matCellDef="let element"><div [style]="getMismatchStyle(element.mismatch?.value)">{{element.mismatch?.value?.toExponential(3)}}</div></td>
         </ng-container>
 

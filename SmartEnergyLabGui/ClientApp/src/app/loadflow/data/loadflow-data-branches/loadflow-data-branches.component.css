@@ -31,12 +31,12 @@
 
 .mat-column-cap {
     text-align: right;
-    padding-right: var(--col-padding-right);
+    padding-right: 2rem;
 }
 
 .mat-column-trip {
-    text-align: right;
-    padding-right:  var(--col-padding-right);
+    text-align: left;
+    padding-right: var(--col-padding-right);
 }
 
 .mat-column-freePower {

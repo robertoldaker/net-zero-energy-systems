@@ -1,6 +1,10 @@
+.quickHelpContainer {
+    padding-top: 2rem;
+    padding-left: 2rem;
+}
 .pageContainer {
     display: flex;
-    margin-top: 3rem;
+    margin-top: 0rem;
     margin-left: 5rem;
 }
 

@@ -1,3 +1,6 @@
+<div class="quickHelpContainer">
+    <app-quick-help helpId="data.generatorModels" title="Generator models" iconClass="medium"></app-quick-help>
+</div>
 <div class="pageContainer">
     <div class="models">
         <div [class]="getModelClass(tm)" *ngFor="let tm of transportModels" (click)="selectModel(tm)">
@@ -13,25 +16,37 @@
         <div *ngIf="selectedModel">
             <table class="dataTable" #table mat-table [dataSource]="data" matSort [matSortActive]="sortColumn" [matSortDirection]="sortDirection" matSortDisableClear (matSortChange)="sortTable($event)">
                  <ng-container matColumnDef="generatorType">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Generator Type</th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                        <app-quick-help helpId="data.generatorModels.type" title="Generator type" iconClass="small leftOffset"></app-quick-help>
+                        Generator Type
+                    </th>
                     <td mat-cell *matCellDef="let element">
                         {{generatorTypeEnum[element.generatorType.value]}}
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="totalCapacity">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header  arrowPosition="before">Total TEC (MW)</th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header  arrowPosition="before">
+                        <app-quick-help helpId="data.generatorModels.totalTEC" title="Total TEC" iconClass="small"></app-quick-help>
+                        Total TEC (MW)
+                    </th>
                     <td mat-cell *matCellDef="let element">
                         <div>{{element.totalCapacity.value.toFixed(0)}}</div>
                     </td>
                 </ng-container>
                  <ng-container matColumnDef="autoScaling">
-                    <th mat-header-cell *matHeaderCellDef>Auto scaling</th>
+                    <th mat-header-cell *matHeaderCellDef>
+                        <app-quick-help helpId="data.generatorModels.autoScaling" title="Auto Scaling" iconClass="small"></app-quick-help>
+                        Auto scaling
+                    </th>
                     <td mat-cell *matCellDef="let element">
                         <app-cell-editor [data]="element.autoScaling" [checkBox]="true"></app-cell-editor>
                     </td>
                 </ng-container>
                  <ng-container matColumnDef="scaling">
-                    <th mat-header-cell *matHeaderCellDef>Scaling (%)</th>
+                    <th mat-header-cell *matHeaderCellDef>
+                        <app-quick-help helpId="data.generatorModels.scaling" title="Scaling" iconClass="small"></app-quick-help>
+                        Scaling (%)
+                    </th>
                     <td mat-cell *matCellDef="let element">
                         <app-cell-editor *ngIf="!element.autoScaling.value" [data]="element.scaling" [decimalPlaces]="0" [scalingFac]="100"></app-cell-editor>
                         <div *ngIf="element.autoScaling.value">{{(element.scaling.value*100).toFixed(0)}}</div>

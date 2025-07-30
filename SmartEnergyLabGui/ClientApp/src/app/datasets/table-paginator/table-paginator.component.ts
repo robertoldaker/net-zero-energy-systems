@@ -11,7 +11,7 @@ import { DatasetsService } from '../datasets.service';
 })
 export class TablePaginatorComponent implements OnInit {
 
-    constructor(public datasetsService: DatasetsService) { 
+    constructor(public datasetsService: DatasetsService) {
 
     }
 
@@ -21,7 +21,7 @@ export class TablePaginatorComponent implements OnInit {
 
 
     @Input()
-    dataFilter:DataFilter = new DataFilter(20) 
+    dataFilter:DataFilter = new DataFilter(20)
 
     @Input()
     typeName:string = "?"
@@ -29,19 +29,25 @@ export class TablePaginatorComponent implements OnInit {
     @Input()
     allowAdd:boolean = true
 
+    @Input()
+    helpId: string = ""
+
+    @Input()
+    helpTitle: string = ""
+
     @Output()
     onFilter: EventEmitter<DataFilter> = new EventEmitter<DataFilter>()
 
     @Output()
     onAdd: EventEmitter<any> = new EventEmitter<any>()
 
-    @ViewChild(MatPaginator) 
+    @ViewChild(MatPaginator)
     paginator: MatPaginator | null = null
 
     get addTitle():string {
         return `Add a new ${this.typeName}`;
     }
- 
+
     page(e: PageEvent) {
         this.dataFilter.skip = e.pageIndex*e.pageSize
         this.raiseFilterEvent()
@@ -65,17 +71,17 @@ export class TablePaginatorComponent implements OnInit {
 
     raiseFilterEvent() {
         this.onFilter.emit(this.dataFilter)
-    } 
+    }
 
     raiseAddEvent() {
         this.datasetsService.canAdd( ()=>{
             this.onAdd.emit()
         });
-    } 
+    }
 
     firstPage() {
         this.paginator?.firstPage()
     }
-    
+
 }
 

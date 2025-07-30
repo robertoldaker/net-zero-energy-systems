@@ -1,0 +1,74 @@
+.helpIconHotspot {
+    display: inline-block;
+    width: 1.5em;
+    height: 1.5em;
+    text-align: center;
+    border-radius: 50%;
+    border: 2px solid var(--primary-colour);
+    cursor: pointer;
+    line-height: 120%;
+    color: black;
+    font-weight: bold;
+    opacity: 0.7;
+    vertical-align: middle;
+    cursor: pointer;
+    font-style: normal;
+}
+
+.small {
+    font-size: 8pt;
+    margin-right: 0.5em
+}
+
+.header {
+    position: absolute;
+    top: 10px;
+    left: 15px;
+    color: black;
+}
+
+div.helpText {
+    cursor: pointer;
+    position: fixed;
+    overflow: visible;
+    background-color: #d8d8d8;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0rem;
+    border-radius: 10px;
+    white-space: pre-line;
+    max-width: 500px;
+    z-index: 10000;
+    /* taken from angular material button */
+    box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.3), 0px 2px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 5px 0px rgba(0, 0, 0, 0.3);
+}
+
+
+div.helpTextHeader {
+    font-size: 12pt;
+    border-bottom: 1px solid grey;
+    padding-left: 1.5rem;
+    line-height: 140%;
+    padding-bottom: 0.3rem;
+}
+
+div.helpTextHeader>div {
+    font-size: 10pt;
+    color: var(--primary-colour);
+    font-weight: bold;
+    display: inline-block;
+    position: relative;
+}
+
+div.helpTextContent {
+    font-size: 10pt;
+    line-height: 120%;
+    color: #444;
+    padding-left: 1.5rem;
+    padding-top: 0.5rem;
+}
+
+.hide {
+    display: none;
+}

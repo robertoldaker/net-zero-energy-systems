@@ -27,11 +27,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 .small {
-    font-size: 9pt;    
+    font-size: 9pt;
 }
 
 .small {
-    font-size: 10pt;    
+    font-size: 10pt;
 }
 
 /* home pages */
@@ -48,11 +48,11 @@ div.borderBottom {
 
 /* chart headers */
 div.chartHeader {
-    padding: 0px 4px 0px 10px; 
-    display: grid; 
-    grid-auto-flow: column; 
-    align-items: baseline; 
-    font-size: 10pt; 
+    padding: 0px 4px 0px 10px;
+    display: grid;
+    grid-auto-flow: column;
+    align-items: baseline;
+    font-size: 10pt;
     background-color: #eee;
     min-height: 40px;
 }
@@ -68,36 +68,36 @@ div.chartHeader > div.title > img {
 }
 
 div.chartHeader > div.selectContainer {
-    justify-self: end; 
-    display: grid; 
-    grid-auto-flow: column; 
+    justify-self: end;
+    display: grid;
+    grid-auto-flow: column;
     align-items: center
 }
 
 /* grid */
 div.gridColumn {
     display: grid;
-    grid-auto-flow: column;    
+    grid-auto-flow: column;
 }
 
 div.gridRow {
     display: grid;
-    grid-auto-flow: row;   
+    grid-auto-flow: row;
 }
 
 /* flex */
 div.inlineFlexRow {
     display: inline-flex;
-    flex-direction: row; 
-    align-items:center;  
-    justify-items: flex-start;  
+    flex-direction: row;
+    align-items:center;
+    justify-items: flex-start;
 }
 
 div.flexRow {
     display: flex;
-    flex-direction: row; 
-    align-items:center;  
-    justify-items: flex-start;  
+    flex-direction: row;
+    align-items:center;
+    justify-items: flex-start;
 }
 
 /* map info window */
@@ -229,13 +229,13 @@ span.mode {
 }
 
 div.nodeName {
-    font-size: 0.8em; 
+    font-size: 0.8em;
     color: grey;
     white-space: normal;
 }
 
 div.prevValue {
-    font-size: 0.8em; 
+    font-size: 0.8em;
     color: grey
 }
 
@@ -312,7 +312,7 @@ div.flowLabel.critical {
 }
 
 div.flowLabel.warning {
-    background-color: coral;    
+    background-color: coral;
 }
 
 .hide {
@@ -321,4 +321,8 @@ div.flowLabel.warning {
 
 .disabled {
     opacity: 0.5;
+}
+
+span.pre {
+    font-family:'Courier New', Courier, monospace
 }
