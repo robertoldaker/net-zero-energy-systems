@@ -112,6 +112,9 @@
     reactive volt drops are 90 degrees ahead of current it manifests as a 0.01 radian voltage phase shift from send end to
     receive end per 100MW of flow.
 </ng-container>
+<ng-container *ngIf="helpId==='data.branches.r'">
+    <p>Resistance of the branch with units of % on a 100MVA base.
+</ng-container>
 <ng-container *ngIf="helpId==='data.branches.capacity'">
     <p>The power capacity of the branch in MW.
 </ng-container>

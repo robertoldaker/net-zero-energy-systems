@@ -32,7 +32,7 @@ export class LoadflowDataBranchesComponent extends DataTableBaseComponent<Branch
         })
 
         this.createDataSource(dataService.dataset,dataService.networkData.branches)
-        this.displayedColumns = ['buttons','code','node1Code','node2Code','typeStr','ohl','cableLength','x','cap','trip','freePower','powerFlow','percentCapacity','km','mwkm','loss']
+        this.displayedColumns = ['buttons','code','node1Code','node2Code','typeStr','ohl','cableLength','x','r','cap','trip','freePower','powerFlow','percentCapacity','km','mwkm','loss']
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
             this.branchCapacityError = false
             this.createDataSource(dataService.dataset,results.branches)

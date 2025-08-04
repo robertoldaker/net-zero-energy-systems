@@ -90,6 +90,17 @@
             </td>
         </ng-container>
 
+        <!-- r -->
+        <ng-container matColumnDef="r">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">
+                <app-quick-help helpId="data.branches.r" title="Resistance" iconClass="small"></app-quick-help>
+                R
+            </th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.r" [decimalPlaces]="3"></app-cell-editor>
+            </td>
+        </ng-container>
+
         <!-- cap -->
         <ng-container matColumnDef="cap">
             <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">
