@@ -129,10 +129,30 @@ sudo service postfix restart
 # sudo cat /var/log/mail.err
 # postqueue -p
 
+#
+#unattended upgrades
+# upgrade cycle gets run 06-07am (via systemd time /lib/systemd/system/apt-daily-upgrade.timer)
+sudo apt install unattended-upgrades
+sudo nano /etc/apt/apt.conf.d/50unattended-upgrades
+# make these changes to the file:-
+# Unattended-Upgrade::Mail "roldaker@gmail.com";
+# Unattended-Upgrade::Automatic-Reboot "true";
+# Unattended-Upgrade::Automatic-Reboot-Time "02:00";
+sudo nano /etc/apt/apt.conf.d/20auto-upgrades
+# APT::Periodic::AutocleanInterval "7";
+
 # add crontab enry to backup db daily
-cronteb -e
+crontab -e
 # add
-00 04 * * * wget http://localhost:5020/Admin/BackupDb
+MAILTO=roldaker@gmail.com
+#
+00 04 * * * curl --fail --no-progress-meter http://localhost:5020/Admin/BackupDb > /dev/null
+00 05 * * * curl --fail --no-progress-meter --request POST http://localhost:5020/Elexon/ImportGspDemandProfiles > /dev/null
+# Monitor dotnet installs and restart services if an update detected
+# unattended upgrades runs 6.30ish so scheduled for 8 to ensure its finished
+# only redirect stdout so that stderr gets emailed
+00 08 * * * cd websites && AutoRestartDotNetServices > /dev/null
+
 
 
 
