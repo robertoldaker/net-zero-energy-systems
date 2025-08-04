@@ -1,0 +1,8 @@
+.dialogContainer {
+    display: flex;
+    align-items: top;
+}
+
+.quickHelp {
+    padding-top: 1rem;
+}

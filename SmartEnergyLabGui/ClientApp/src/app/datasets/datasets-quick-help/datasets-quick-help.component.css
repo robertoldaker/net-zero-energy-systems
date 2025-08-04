@@ -1,0 +1,17 @@
+.lockIcon {
+    color: darkorange;
+    vertical-align: middle;
+}
+
+.cancelButton {
+    color: darkred;
+    vertical-align: middle;
+}
+
+.addButton {
+    font-size: 18pt;
+    color: grey;
+    vertical-align: middle;
+    padding: 0;
+    margin: 0;
+}

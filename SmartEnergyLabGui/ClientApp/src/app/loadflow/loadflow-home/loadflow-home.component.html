@@ -2,7 +2,7 @@
     <app-loadflow-header title="Transmission Boundary Capability Calculator"></app-loadflow-header>
     <div *ngIf="this.user">
         <as-split direction="horizontal" (dragStart)="splitStart()" (dragEnd)="splitEnd($event)" [unit]="'pixel'">
-            <as-split-area [size]="390" #leftDiv>
+            <as-split-area [size]="410" #leftDiv>
                 <app-loadflow-dialog></app-loadflow-dialog>
                 <hr style="margin:0; border: 2px solid #aaa;"/>
                 <app-loadflow-stages></app-loadflow-stages>
@@ -18,4 +18,7 @@
     </div>
 </div>
 <app-maintenance-overlay></app-maintenance-overlay>
-<app-quick-help-content><app-loadflow-quick-help></app-loadflow-quick-help></app-quick-help-content>
+<app-quick-help-content>
+    <app-datasets-quick-help></app-datasets-quick-help>
+    <app-loadflow-quick-help></app-loadflow-quick-help>
+</app-quick-help-content>

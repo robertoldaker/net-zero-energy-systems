@@ -20,9 +20,9 @@
 }
 
 .datasetButtons {
-    display: inline-block;
     white-space: nowrap;
     font-size: 18pt;
+    padding-bottom: 1rem;
 }
 
 .iconButton {
@@ -33,5 +33,16 @@
 
 .iconButton:hover {
     color: blue;
+}
+
+.datasetDropdown {
+    display: flex;
+    align-items: center;
+}
+
+.datasetSelector {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
 }
 

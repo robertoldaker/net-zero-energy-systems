@@ -1,28 +1,35 @@
-<mat-form-field appearance="fill" [color]="'primary'">
-    <mat-label>Dataset</mat-label>
-    <mat-select [value]="dataset?.id" (valueChange)="setDataset($event)">
-        <mat-select-trigger>
-            <mat-icon *ngIf="dataset?.isReadOnly" class="lockIcon">lock</mat-icon>
-            <div *ngIf="!dataset?.isReadOnly" class="lockIconSpacer"></div>
-            {{dataset?.name}}
-        </mat-select-trigger>
-        <mat-option *ngFor="let ds of datasetInfo" [value]="ds.dataset.id">
-            <span *ngIf="ds.indent==0">{{ds.dataset.name}}</span>    
-            <ng-container *ngIf="ds.indent>0">
-                <mat-icon class="datasetIcon" [ngStyle]="{ 'margin-left': ds.indent +'rem'}">subdirectory_arrow_right</mat-icon>                
-                <mat-icon *ngIf="ds.dataset.isReadOnly" class="lockIcon">lock</mat-icon>
-                <div *ngIf="!ds.dataset.isReadOnly" class="lockIconSpacer"></div>
-                <span>{{ds.dataset.name}}</span>
-            </ng-container>
-        </mat-option>
-    </mat-select>
-</mat-form-field>
-<div class="datasetButtons">
-    <mat-icon class="iconButton" (click)="addDataset()" [title]="'Add a new dataset'" [inline]="true">add</mat-icon>
-    <!-- dont allow Default dataset to be edited or deleted-->
-    <ng-container *ngIf="!dataset?.isReadOnly || userService.isAdmin" >
-        <mat-icon class="iconButton" (click)="editDataset()" [title]="'Edit dataset'" [inline]="true">edit</mat-icon>
-        <mat-icon class="iconButton" (click)="deleteDataset()" [title]="'Delete dataset'" [inline]="true">delete_forever</mat-icon>
-    </ng-container>    
-    <mat-icon class="iconButton" (click)="reloadDataset()" [title]="'Add a new dataset'" [inline]="true">refresh</mat-icon>
+<div class="datasetSelector">
+    <div class="datasetDropdown">
+        <div *ngIf="showQuickHelp" style="padding-bottom: 1rem">
+            <app-quick-help helpId="datasets.selector" title="Datasets"></app-quick-help>
+        </div>
+        <mat-form-field appearance="fill" [color]="'primary'">
+            <mat-label>Dataset</mat-label>
+            <mat-select [value]="dataset?.id" (valueChange)="setDataset($event)">
+                <mat-select-trigger>
+                    <mat-icon *ngIf="dataset?.isReadOnly" class="lockIcon">lock</mat-icon>
+                    <div *ngIf="!dataset?.isReadOnly" class="lockIconSpacer"></div>
+                    {{dataset?.name}}
+                </mat-select-trigger>
+                <mat-option *ngFor="let ds of datasetInfo" [value]="ds.dataset.id">
+                    <span *ngIf="ds.indent==0">{{ds.dataset.name}}</span>
+                    <ng-container *ngIf="ds.indent>0">
+                        <mat-icon class="datasetIcon" [ngStyle]="{ 'margin-left': ds.indent +'rem'}">subdirectory_arrow_right</mat-icon>
+                        <mat-icon *ngIf="ds.dataset.isReadOnly" class="lockIcon">lock</mat-icon>
+                        <div *ngIf="!ds.dataset.isReadOnly" class="lockIconSpacer"></div>
+                        <span>{{ds.dataset.name}}</span>
+                    </ng-container>
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+    <div class="datasetButtons">
+        <mat-icon class="iconButton" (click)="addDataset()" [title]="'Add a new dataset'" [inline]="true">add</mat-icon>
+        <!-- dont allow Default dataset to be edited or deleted-->
+        <ng-container *ngIf="!dataset?.isReadOnly || userService.isAdmin" >
+            <mat-icon class="iconButton" (click)="editDataset()" [title]="'Edit dataset'" [inline]="true">edit</mat-icon>
+            <mat-icon class="iconButton" (click)="deleteDataset()" [title]="'Delete dataset'" [inline]="true">delete_forever</mat-icon>
+        </ng-container>
+        <mat-icon class="iconButton" (click)="reloadDataset()" [title]="'Add a new dataset'" [inline]="true">refresh</mat-icon>
+    </div>
 </div>

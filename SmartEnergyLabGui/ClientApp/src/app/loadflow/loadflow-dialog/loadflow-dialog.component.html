@@ -1,10 +1,13 @@
 <div class="dialogContainer">
     <div class="controlGroup">
+        <!-- datasets selector -->
         <div style="margin-right: 1rem">
-            <app-dataset-selector [datasetType]="datasetTypes.BoundCalc"
+            <app-dataset-selector [datasetType]="datasetTypes.BoundCalc" [showQuickHelp]="true"
             (onSelected)="onDatasetSelected($event)" (onReload)="onReload($event)"></app-dataset-selector>
         </div>
-        <div>
+
+        <!-- Boundary -->
+        <app-quick-help-dialog-group helpId="dialog.boundary" helpTitle="Boundary" style="padding-right: 0.5rem">
             <mat-form-field appearance="fill" [color]="'primary'">
                 <mat-label>Boundary</mat-label>
                 <mat-select (selectionChange)="setBoundary()" [(ngModel)]="boundaryName">
@@ -12,39 +15,48 @@
                     <mat-option *ngFor="let b of boundaries" [value]="b.code">{{b.code}}</mat-option>
                 </mat-select>
             </mat-form-field>
-        </div>
-        <div class="tripsContainer" style="margin-right: 1rem">
-            <div *ngIf="this.boundaryName==='Unspecified'" style="margin-bottom: 1rem">
-                <b>{{numberOfTrips}}</b> trips <span class="cellLink" style="color: navy; text-decoration: underline;" (click)="clearTrips($event);">clear</span>
+        </app-quick-help-dialog-group>
+
+        <!-- Trips -->
+        <app-quick-help-dialog-group *ngIf="this.boundaryName==='Unspecified'" helpId="dialog.trips" helpTitle="Trips" style="margin-bottom: 1rem">
+            <div style="padding-top: 1rem">
+                <b>{{numberOfTrips}}</b> trips <span class="cellLink" style="color: navy; text-decoration: underline;"
+                (click)="clearTrips($event);">clear</span>
             </div>
-            <div *ngIf="this.boundaryName!=='Unspecified' && boundaryTripResults.length>0">
-                <mat-form-field appearance="fill" [color]="'primary'" style="width: 7rem">
-                    <mat-label>Trip</mat-label>
-                    <mat-select (selectionChange)="boundaryTripChanged($event)" [ngModel]="this.boundaryTripResult">
-                        <mat-option *ngFor="let tr of boundaryTripResults" [value]="tr">{{tr.trip==null ? "Intact" : tr.trip.text}} ({{tr.capacity.toFixed(0)}} MW)</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
-        </div>
-        <div style="margin-right: 1rem">
+        </app-quick-help-dialog-group>
+
+        <!-- Boundary trips -->
+        <app-quick-help-dialog-group *ngIf="this.boundaryName!=='Unspecified' && boundaryTripResults.length>0" helpId="dialog.boundaryTrips" helpTitle="Boundary trips">
+            <mat-form-field appearance="fill" [color]="'primary'" style="width: 7rem">
+                <mat-label>Trip</mat-label>
+                <mat-select (selectionChange)="boundaryTripChanged($event)" [ngModel]="this.boundaryTripResult">
+                    <mat-option *ngFor="let tr of boundaryTripResults" [value]="tr">{{tr.trip==null ? "Intact" : tr.trip.text}} ({{tr.capacity.toFixed(0)}} MW)</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </app-quick-help-dialog-group>
+
+        <!-- Generation models -->
+        <app-quick-help-dialog-group helpId="dialog.generationModels" helpTitle="Generation Models"  style="padding-right: 0.5rem">
             <mat-form-field appearance="fill" [color]="'primary'">
                 <mat-label>Generation model</mat-label>
                 <mat-select (selectionChange)="transportModelChanged($event)" [ngModel]="this.transportModel?.id">
                     <mat-option *ngFor="let tm of transportModels" [value]="tm.id">{{tm.name}}</mat-option>
                 </mat-select>
             </mat-form-field>
-        </div>
-        <div class="modelGroup"  style="margin-right: 2rem">
-            <div class="modelItem">
+        </app-quick-help-dialog-group>
+
+        <!-- set point mode-->
+        <app-quick-help-dialog-group helpId="dialog.setPointMode" helpTitle="Set Point Mode">
+            <div class="setPointMode">
                 <div class="miniTitle">Set point mode</div>
-                <mat-radio-group aria-label="Select an option" [value]="setPointMode"
-                    (change)="setPointModeChanged($event)">
+                <mat-radio-group aria-label="Select an option" [value]="setPointMode" (change)="setPointModeChanged($event)">
                     <div style="margin-bottom: 0.2rem"><mat-radio-button [value]="SetPointMode.Auto">Auto</mat-radio-button></div>
                     <div><mat-radio-button [value]="SetPointMode.Manual" [disabled]="!resultsLoaded">Manual</mat-radio-button></div>
                 </mat-radio-group>
             </div>
-        </div>
-        <div class="totalGroup" style="margin-right: 2rem">
+        </app-quick-help-dialog-group>
+
+        <div class="totalGroup">
             <div class="totalItem"  style="margin-right: 1rem">
                 <div>Total Demand</div>
                 <div class="total">{{totalDemand.toFixed(0)}} MW</div>
@@ -62,7 +74,8 @@
         <div class="calcGroup">
             <button mat-raised-button color="primary" (click)="calc()" [disabled]="!needsCalc">Calc</button>
             <button style="float: right; color: red; margin-left: 0.5rem" *ngIf="hasCapacityError" mat-stroked-button (click)="adjustBranchCapacities()">Adjust Capacities</button>
-            <label style="margin-left: 0.5rem">
+            <app-quick-help class="nodeMarginalsHelp" helpId="dialog.nodeMarginals" title="Node Marginals"></app-quick-help>
+            <label class="nodeMarginals">
                 <input type="checkbox" [(ngModel)]="nodeMarginals"/><span style="margin-left: 0.2rem">Node marginals</span>
             </label>
         </div>

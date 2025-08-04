@@ -185,6 +185,8 @@ import { LoadflowDataCtrlsNodeZoneComponent } from './loadflow/data/loadflow-dat
 import { QuickHelpComponent } from './utils/quick-help/quick-help.component';
 import { QuickHelpContentComponent } from './utils/quick-help-content/quick-help-content.component';
 import { LoadflowQuickHelpComponent } from './loadflow/loadflow-quick-help/loadflow-quick-help.component';
+import { DatasetsQuickHelpComponent } from './datasets/datasets-quick-help/datasets-quick-help.component';
+import { QuickHelpDialogGroupComponent } from './utils/quick-help-dialog-group/quick-help-dialog-group.component';
 
 
 @NgModule({
@@ -324,7 +326,9 @@ import { LoadflowQuickHelpComponent } from './loadflow/loadflow-quick-help/loadf
         LoadflowDataCtrlsNodeZoneComponent,
         QuickHelpComponent,
         QuickHelpContentComponent,
-        LoadflowQuickHelpComponent
+        LoadflowQuickHelpComponent,
+        DatasetsQuickHelpComponent,
+        QuickHelpDialogGroupComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

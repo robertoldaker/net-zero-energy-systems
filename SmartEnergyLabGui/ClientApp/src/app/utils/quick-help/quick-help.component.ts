@@ -19,7 +19,7 @@ export class QuickHelpComponent  {
     @Input()
     iconStyle = {}
     @Input()
-    iconClass="medium";
+    iconClass="small";
     @Input()
     title:string =""
 

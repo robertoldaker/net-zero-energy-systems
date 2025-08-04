@@ -16,14 +16,14 @@ import { DatasetsService } from '../datasets.service';
 })
 export class DatasetSelectorComponent implements OnInit {
 
-    constructor(private dataClientService: DataClientService, 
+    constructor(private dataClientService: DataClientService,
         private cookieService: CookieService,
         private dialogService: DialogService,
         private messageService: ShowMessageService,
         public userService: UserService,
         public datasetsService: DatasetsService
-        ) { 
-        
+        ) {
+
     }
 
     ngOnInit(): void {
@@ -38,12 +38,16 @@ export class DatasetSelectorComponent implements OnInit {
 
     @Input()
     datasetType: DatasetType = DatasetType.Elsi
+
+    @Input()
+    showQuickHelp: boolean = false
+
     dataset: Dataset | undefined
     datasetInfo: DatasetInfo[] = []
 
     getCookieName(): string {
         return `DatasetId_${this.datasetType}`
-    } 
+    }
 
     loadDatasets(id: number) {
         this.dataClientService.Datasets(this.datasetType, (data)=>{
@@ -53,13 +57,13 @@ export class DatasetSelectorComponent implements OnInit {
                     let savedDatasetId = savedDatasetStr ? parseInt(savedDatasetStr) : NaN
                     if ( !isNaN(savedDatasetId) ) {
                         id = savedDatasetId;
-                    }    
+                    }
                 }
                 this.setDataset(id)
             }
         )
     }
-    
+
     setDataset(datasetId: number) {
         let di = this.datasetInfo.find(m=>m.dataset.id == datasetId);
         this.dataset = di ? di.dataset : undefined
@@ -90,7 +94,7 @@ export class DatasetSelectorComponent implements OnInit {
             return children
         }
         this.datasetInfo = datasetInfo;
-    } 
+    }
 
 
     addDataset() {
@@ -100,7 +104,7 @@ export class DatasetSelectorComponent implements OnInit {
                 if ( datasetId ) {
                     this.loadDatasets(datasetId)
                 }
-            })    
+            })
         }
     }
 
@@ -130,14 +134,14 @@ export class DatasetSelectorComponent implements OnInit {
                     }
                 })
         }
-    } 
-    
+    }
+
     reloadDataset() {
         if ( this.dataset ) {
             this.onReload.emit(this.dataset)
         }
     }
-    
+
 }
 
 export interface DatasetInfo {

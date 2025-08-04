@@ -1,0 +1,11 @@
+<!-- datasets.selector -->
+<ng-container *ngIf="helpId==='datasets.selector'">
+    <p><i>Datasets</i> contain the user's input data for a program. Datasets can be owned by the system and in which case they will have
+        a lock icon (<mat-icon class="lockIcon" [inline]="true">lock</mat-icon>) next to the name .
+    <p>To try out different design scenarios datasets can be derived from a parent dataset. In this case the dataset will contain all of
+        data of the parent dataset plus any changes stored in the new dataset. Changes relative to the parent dataset can easily be displayed
+        by using the "Only edited rows" filter option. Changes can be undone by simply deleting the edit using the
+        delete button shown next to the edit (<mat-icon class="cancelButton" [inline]="true">cancel</mat-icon>).
+    <p>To add a new dataset simply click the add button (<mat-icon class="addButton">add</mat-icon>). The parent dataset will be the currently
+        selected dataset. To create a new empty dataset simply use dataset called "Empty" as the parent.
+</ng-container>

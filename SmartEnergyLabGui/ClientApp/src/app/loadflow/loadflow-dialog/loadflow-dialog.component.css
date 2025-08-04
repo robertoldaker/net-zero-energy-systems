@@ -2,7 +2,7 @@
     padding-right: 0rem;
     padding-top: 1rem;
     padding-bottom: 1rem;
-    padding-left: 1rem;
+    padding-left: 0.5rem;
 }
 
 .controlGroup {
@@ -10,29 +10,21 @@
     flex-wrap: wrap;
 }
 
-.tripsContainer {
-    padding-left: 1rem;
-}
-
 .miniTitle {
     font-weight: bold;;
     color: var(--primary-colour);
 }
 
-.modelGroup {
+.setPointMode {
     font-size: 9pt;
-    margin-bottom: 1rem;
-    white-space: nowrap;
-}
-
-.modelItem {
-    display: inline-block;
 }
 
 .totalGroup {
     font-size: 10pt;
     margin-bottom: 0.5rem;
     white-space: nowrap;
+    margin-left: 1.5rem;
+    margin-top: 0.5rem;
 }
 
 .total {
@@ -45,9 +37,22 @@
 
 .calcGroup {
     align-self: center;
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
     margin-bottom: 1rem;
+    margin-left: 1.5rem;
 }
 
 .error {
     color: red;
+}
+
+.nodeMarginals {
+    cursor: pointer;
+}
+
+.nodeMarginalsHelp {
+    margin-left: 0.5rem;
+    padding-bottom: 0.2rem;
 }

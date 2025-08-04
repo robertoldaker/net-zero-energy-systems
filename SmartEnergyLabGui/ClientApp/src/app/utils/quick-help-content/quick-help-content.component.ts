@@ -36,7 +36,6 @@ export class QuickHelpContentComponent extends ComponentBase {
                         let left = `${service.xPos.toFixed(0)}px`
                         this.contentStyle = { top: top, left: left }
                     }
-                    console.log('showQuickHelp', this.contentStyle)
                 },0)
             }
         }))

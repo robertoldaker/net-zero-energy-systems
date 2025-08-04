@@ -1,6 +1,6 @@
 <div class="outerContainer">
     <div class="search">
-        <app-quick-help *ngIf="helpId" [helpId]="helpId" [title]="helpTitle"></app-quick-help>
+        <app-quick-help *ngIf="helpId" [helpId]="helpId" [title]="helpTitle" iconClass="medium"></app-quick-help>
         <mat-icon style="vertical-align: middle; margin-left: 0;" *ngIf="datasetsService.isEditable && allowAdd" class="iconLink" (click)="raiseAddEvent()" [title]="addTitle">add</mat-icon>
         <mat-icon style="vertical-align: middle; margin-left: 0.5rem; opacity:0.5">search</mat-icon>
         <input class="searchInput" type="text" placeholder="Search for row" [(ngModel)]="dataFilter.searchStr" (keyup)="filter($event)"/>
