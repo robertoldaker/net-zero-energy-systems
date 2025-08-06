@@ -198,6 +198,9 @@ export class CellEditorComponent {
         if ( pv) {
             let pvFloat = parseFloat(pv)
             if ( !isNaN(pvFloat)) {
+                if ( this.scalingFac ) {
+                    pvFloat = pvFloat*this.scalingFac
+                }
                 return pvFloat.toFixed(this.decimalPlaces)
             }  else {
                 return pv;
