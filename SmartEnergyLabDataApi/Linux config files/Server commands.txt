@@ -41,7 +41,7 @@ CREATE DATABASE smart_energy_lab WITH OWNER = smart_energy_lab;
 # to move smart_energy_lab db to new location ..
 # on the current server dump db with
 pg_dump smart_energy_lab > smart_energy_lab.sql
-# then restore with 
+# then restore with
 psql -h <ip_address/hostname> -U smart_energy_lab < smart_energy_lab.sql
 
 # Install .net framework
@@ -59,7 +59,7 @@ dotnet --list-runtimes
 # more info https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/linux-nginx?view=aspnetcore-2.1&tabs=aspnetcore2x
 sudo apt install nginx
 sudo nano /etc/nginx/sites-available/lv-data.net-zero-energy-systems.org                            # use one from "Server config files"
-sudo ln -s /etc/nginx/sites-available/lv-data.net-zero-energy-systems.org /etc/nginx/sites-enabled/ # add symbolic link 
+sudo ln -s /etc/nginx/sites-available/lv-data.net-zero-energy-systems.org /etc/nginx/sites-enabled/ # add symbolic link
 sudo rm /etc/nginx/sites-available/default                                                          # remove default behaviour
 sudo nginx -t                                                                                       # to test configuration
 sudo nginx -s reload                                                                                # to reload config
@@ -141,6 +141,12 @@ sudo nano /etc/apt/apt.conf.d/50unattended-upgrades
 sudo nano /etc/apt/apt.conf.d/20auto-upgrades
 # APT::Periodic::AutocleanInterval "7";
 
+# also install needrestart - this should restart website services after upgrade to .net
+sudo apt install needrestart
+sudo nano /etc/needrestart/needrestart.conf
+# uncomment this line and chage the 'i' to 'a'
+$nrconf{restart} = 'a';
+
 # add crontab enry to backup db daily
 crontab -e
 # add
@@ -151,7 +157,8 @@ MAILTO=roldaker@gmail.com
 # Monitor dotnet installs and restart services if an update detected
 # unattended upgrades runs 6.30ish so scheduled for 8 to ensure its finished
 # only redirect stdout so that stderr gets emailed
-00 08 * * * cd websites && AutoRestartDotNetServices > /dev/null
+## commented out as assuming needrestart does this for us
+#00 08 * * * cd websites && AutoRestartDotNetServices > /dev/null
 
 
 
