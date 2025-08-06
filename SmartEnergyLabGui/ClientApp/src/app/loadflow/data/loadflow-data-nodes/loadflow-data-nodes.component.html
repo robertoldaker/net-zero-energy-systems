@@ -54,8 +54,10 @@
         <!-- Generator -->
         <ng-container matColumnDef="generation">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                <app-quick-help helpId="data.nodes.generation" title="Generation" iconClass="small"></app-quick-help>
-                Generation (MW)
+                <div class="genHeading">
+                    <app-quick-help helpId="data.nodes.generation" title="Generation" iconClass="small"></app-quick-help>
+                    Generation (MW)
+                </div>
             <td mat-cell *matCellDef="let element">
                 <table *ngIf="element.generators.value.length>0 || element.deletedGenerators.value.length> 0" class="genTable">
                     <tbody>
