@@ -102,15 +102,15 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
             // work out the transport model
             if (transportModelId > 0) {
-                var tmDi = _da.BoundCalc.GetTransportModelDatasetData(_dataset.Id, m => m.Id == transportModelId, true);
+                (var tmDi, var tmeDi) = _da.BoundCalc.GetTransportModelDatasetData(_dataset.Id, m => m.Id == transportModelId, true);
                 if (tmDi.Data.Count() == 0) {
                     throw new Exception($"Cannot find transport model with id=[{transportModelId}]");
                 }
                 _transportModel = tmDi.Data[0];
             } else {
                 // set the first one available
-                var tmDi = _da.BoundCalc.GetTransportModelDatasetData(_dataset.Id, null, true);
-                _transportModel = tmDi.Data.Count() > 0 ? tmDi.Data[0] : null;
+                (var tmDi, var tmeDi) = _da.BoundCalc.GetTransportModelDatasetData(_dataset.Id, null, true);
+                _transportModel = tmDi.Data.Count > 0 ? tmDi.Data[0] : null;
             }
 
             //
@@ -1301,7 +1301,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         {
             string msg = "";
             using (var da = new DataAccess()) {
-                var tmDi = da.BoundCalc.GetTransportModelDatasetData(datasetId, null, false);
+                (var tmDi, var tmeDi) = da.BoundCalc.GetTransportModelDatasetData(datasetId, null, false);
                 var dataset = da.Datasets.GetDataset(datasetId);
                 // If we haven;t got any transport models then add 2 default ones
                 if (tmDi.Data.Count == 0 && tmDi.DeletedData.Count == 0) {

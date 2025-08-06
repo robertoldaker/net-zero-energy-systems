@@ -25,7 +25,7 @@ public static class EditItemMethods {
         var tmId = editItem.GetTransportModelId();
         if (tmId != null) {
             // get transport model
-            var tmDi = da.BoundCalc.GetTransportModelDatasetData(datasetId, m => m.Id == tmId, true);
+            (var tmDi, var tmeDi) = da.BoundCalc.GetTransportModelDatasetData(datasetId, m => m.Id == tmId, true);
             var tm = tmDi.Data.Count > 0 ? tmDi.Data[0] : null;
             // get list of generators
             var nodeIds = nodeDi.Data.Select(m => m.Id).ToArray();

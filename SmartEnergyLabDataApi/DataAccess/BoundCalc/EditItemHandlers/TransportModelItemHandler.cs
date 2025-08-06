@@ -55,9 +55,7 @@ public class TransportModelItemHandler : BaseEditItemHandler
             var list = new List<DatasetData<object>>();
             var tm = (TransportModel) m.Item;
             // the transport model we have just created/edited
-            var di = da.BoundCalc.GetTransportModelDatasetData(m.Dataset.Id, m=>m.Id == tm.Id, true);
-            // the entries for this transport model
-            var diTME = da.BoundCalc.GetTransportModelEntryDatasetData(m.Dataset.Id, m=>m.TransportModel.Id == tm.Id);
+            (var di, var tmeDi) = da.BoundCalc.GetTransportModelDatasetData(m.Dataset.Id, m=>m.Id == tm.Id, true);
 
             // update the scaling for the transport model edited
             if (di.Data.Count > 0) {
@@ -67,7 +65,7 @@ public class TransportModelItemHandler : BaseEditItemHandler
 
             // return list of objects that have changed
             list.Add(di.getBaseDatasetData());
-            list.Add(diTME.getBaseDatasetData());
+            list.Add(tmeDi.getBaseDatasetData());
             return list;
         }
     }

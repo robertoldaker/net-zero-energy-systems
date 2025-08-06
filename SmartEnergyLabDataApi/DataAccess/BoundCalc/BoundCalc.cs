@@ -749,21 +749,23 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
             return zone != null;
         }
-        public DatasetData<TransportModel> GetTransportModelDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<TransportModel, bool>> expression, bool updateRefs)
+        public (DatasetData<TransportModel> diTM, DatasetData<TransportModelEntry>? diTME) GetTransportModelDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<TransportModel, bool>> expression, bool updateRefs)
         {
             var query = Session.QueryOver<TransportModel>();
             if (expression != null) {
                 query = query.Where(expression);
             }
-            var di = new DatasetData<TransportModel>(DataAccess, datasetId, m => m.Id.ToString(), query);
+
+            var diTM = new DatasetData<TransportModel>(DataAccess, datasetId, m => m.Id.ToString(), query);
+            DatasetData<TransportModelEntry> diTME = null;
             if (updateRefs) {
-                this.updateRefs(datasetId, di.Data);
+                diTME = this.updateRefs(datasetId, diTM.Data);
                 //?? not convinced this is required and seems to cause infinte loop if called??
                 //??updateRefs(datasetId, di.DeletedData);
             }
-            return di;
+            return (diTM, diTME);
         }
-        private void updateRefs(int datasetId, IList<TransportModel> tms)
+        private DatasetData<TransportModelEntry> updateRefs(int datasetId, IList<TransportModel> tms)
         {
             // update location references
             var tmIds = tms.Select(m => m.Id).ToArray();
@@ -771,6 +773,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             foreach (var tm in tms) {
                 tm.Entries = tmeDi.Data.Where(m => m.TransportModel.Id == tm.Id).ToList();
             }
+            return tmeDi;
         }
 
         #endregion

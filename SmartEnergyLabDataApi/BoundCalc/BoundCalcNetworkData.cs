@@ -30,10 +30,8 @@ namespace SmartEnergyLabDataApi.BoundCalc
             using (var da = new DataAccess()) {
                 // Locations
                 Locations = loadLocations(da, bc.Dataset.Id);
-                // Transport models
-                TransportModels = loadTransportModels(da, bc.Dataset.Id);
-                // Transport model entries
-                TransportModelEntries = loadTransportModelEntries(da, bc.Dataset.Id);
+                // Transport models and entries
+                (TransportModels, TransportModelEntries) = loadTransportModels(da, bc.Dataset.Id);
                 //
                 setTransportModelScalings(da, bc.Dataset.Id);
                 //
@@ -75,24 +73,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
             return objs;
         }
 
-        private DatasetData<TransportModel> loadTransportModels(DataAccess da, int datasetId)
+        private (DatasetData<TransportModel> tmDi, DatasetData<TransportModelEntry>? tmeDi) loadTransportModels(DataAccess da, int datasetId)
         {
-            var data = da.BoundCalc.GetTransportModelDatasetData(datasetId, null, true);
-            return data;
-        }
-
-        private DatasetData<NodeGenerator> loadNodeGenerators(DataAccess da, int datasetId)
-        {
-            var q = da.Session.QueryOver<NodeGenerator>();
-            var objs = new DatasetData<NodeGenerator>(da, datasetId, m => m.Id.ToString(), q);
-            return objs;
-        }
-
-        private DatasetData<TransportModelEntry> loadTransportModelEntries(DataAccess da, int datasetId)
-        {
-            var q = da.Session.QueryOver<TransportModelEntry>();
-            var objs = new DatasetData<TransportModelEntry>(da, datasetId, m => m.Id.ToString(), q);
-            return objs;
+            return da.BoundCalc.GetTransportModelDatasetData(datasetId, null, true);
         }
 
         private void setTransportModelScalings(DataAccess da, int datasetId)

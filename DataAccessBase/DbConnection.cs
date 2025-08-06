@@ -122,7 +122,7 @@ namespace HaloSoft.DataAccess
             config.SetProperty("use_outer_join", "true");
             config.SetProperty("query.substitutions", "true 1, false 0");
             config.SetProperty("adonet.batch_size", "10000");
-            config.SetProperty("command_timeout","600");
+            config.SetProperty("command_timeout","30");
             //
             //
             return config;
