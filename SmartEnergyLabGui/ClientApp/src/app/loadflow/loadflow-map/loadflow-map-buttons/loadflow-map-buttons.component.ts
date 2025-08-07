@@ -46,7 +46,7 @@ export class LoadflowMapButtonsComponent  extends ComponentBase implements OnIni
     }
 
     get isEditable():boolean {
-        return !this.dataService.dataset.isReadOnly
+        return !this.dataService.dataset?.isReadOnly
     }
 
     get hasResults():boolean {

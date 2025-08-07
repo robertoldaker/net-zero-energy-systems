@@ -40,7 +40,7 @@ export class LoadflowDialogComponent extends ComponentBase {
                 this.trips = results.boundaryTrips.trips
             }
             // this enables the adjustCapacities button and should only appear if we have a capacity error and the dataset is not read only
-            this.hasCapacityError = results.branchCapacityError && !this.dataService.dataset.isReadOnly;
+            this.hasCapacityError = results.branchCapacityError && !this.dataService.dataset?.isReadOnly;
         }))
         this.addSub(dataService.AllTripsProgress.subscribe((data)=>{
             this.currentTrip = data.msg;
@@ -85,7 +85,7 @@ export class LoadflowDialogComponent extends ComponentBase {
 
     onDatasetSelected(dataset: Dataset) {
         this.hasCapacityError = false
-        this.dataService.setDataset(dataset)
+        this.dataService.loadDataset(dataset)
     }
 
     transportModelChanged(e: any) {

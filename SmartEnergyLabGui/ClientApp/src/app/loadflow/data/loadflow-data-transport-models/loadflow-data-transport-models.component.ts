@@ -90,7 +90,7 @@ export class LoadflowDataTransportModelsComponent extends DataTableBaseComponent
     }
 
     isEditable(tm: TransportModel):boolean {
-        return this.datasetsService.isEditable && ( tm.datasetId === this.dataService.dataset.id )
+        return this.datasetsService.isEditable && ( tm.datasetId === this.dataService.dataset?.id )
     }
 
     edit(tm: TransportModel) {

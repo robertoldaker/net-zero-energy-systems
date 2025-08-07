@@ -75,7 +75,9 @@ export class LoadflowDataService {
         })
     }
 
-    dataset: Dataset = {id: 0, type: DatasetType.BoundCalc, name: '', parent: null, isReadOnly: true}
+    get dataset(): Dataset | undefined {
+        return this.datasetsService.currentDataset
+    }
     totalDemand: number = 0
     totalGeneration: number = 0
     totalMaxTEC: number = 0
@@ -110,10 +112,9 @@ export class LoadflowDataService {
         return this._showFlowsAsPercent
     }
 
-    setDataset(dataset: Dataset) {
-        this.dataset = dataset;
+    loadDataset(dataset: Dataset) {
         //
-        this.loadNetworkData(true,true);
+        this.loadNetworkData(dataset, true,true);
     }
 
     setNodeMarginals(value: boolean) {
@@ -122,10 +123,12 @@ export class LoadflowDataService {
     }
 
     private reloadDataset(onLoad: (()=>void) | undefined = undefined) {
-        this.loadNetworkData(true, false, onLoad);
+        if ( this.dataset ) {
+            this.loadNetworkData(this.dataset, true, false, onLoad);
+        }
     }
 
-    private loadNetworkData(withMessage: boolean, newDataset:boolean, onLoad?: (()=>void)) {
+    private loadNetworkData(dataset: Dataset, withMessage: boolean, newDataset:boolean, onLoad?: (()=>void)) {
         if ( withMessage ) {
             this.messageService.showModalMessage('Loading ...', false)
         }
@@ -135,9 +138,12 @@ export class LoadflowDataService {
         } else {
             transportModelId = this.transportModel!=null ? this.transportModel.id : 0
         }
-        this.dataClientService.GetNetworkData( this.dataset.id, transportModelId, (results)=>{
+        this.dataClientService.GetNetworkData( dataset.id, transportModelId, (results)=>{
             this.networkData = results
             this.messageService.clearMessage()
+            //
+            this.datasetsService.setDataset(dataset)
+            //
             this.needsCalc = true
             this.loadFlowResults = undefined
             if ( results.transportModel) {
@@ -149,6 +155,7 @@ export class LoadflowDataService {
             this.calcTotals()
             this.NetworkDataLoaded.emit(results)
             this.updateLocationData(false)
+            //
             if ( onLoad ) {
                 onLoad()
             }
@@ -261,7 +268,7 @@ export class LoadflowDataService {
         if ( boundaryTrips) {
             this.clearBoundaryTrips()
         }
-        if ( this.transportModel) {
+        if ( this.transportModel && this.dataset ) {
             this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, this.transportModel.id, this.nodeMarginals, boundaryName, boundaryTrips, tripStr, (results)=>{
                 if ( boundaryTrips && results.boundaryTripResults) {
                     this.setBoundaryTrips(results.boundaryTripResults)
@@ -307,12 +314,11 @@ export class LoadflowDataService {
     }
 
     runBoundaryTrip(tripResult: AllTripResult) {
-        if ( this.boundaryName && this.transportModel ) {
+        if ( this.boundaryName && this.transportModel && this.dataset ) {
             let trip = tripResult.trip
             let tripStr = trip!=null ? trip.lineNames.join(',') : ''
             let tripName = trip!=null ? trip.text : "Intact"
             this.inRun = true;
-
             this.dataClientService.RunBoundaryTrip( this.dataset.id, this.setPointMode, this.transportModel.id, this.boundaryName, tripName, tripStr, (results)=>{
                 this.setBoundaryTrip(tripResult)
                 this.afterCalc(results, true)
@@ -371,18 +377,20 @@ export class LoadflowDataService {
             for( let ctrl of this.loadFlowResults.ctrls.data) {
                 setPoints.push({ctrlId: ctrl.id, setPoint: ctrl.setPoint ? ctrl.setPoint : 0})
             }
-            this.dataClientService.ManualSetPointMode(this.dataset.id, setPoints, (results)=> {
-                this.reloadDataset(()=>{
-                    this.setPointMode = setPointMode
-                    this.SetPointModeChanged.emit(this.setPointMode)
+            if ( this.dataset) {
+                this.dataClientService.ManualSetPointMode(this.dataset.id, setPoints, (results) => {
+                    this.reloadDataset(() => {
+                        this.setPointMode = setPointMode
+                        this.SetPointModeChanged.emit(this.setPointMode)
+                    })
                 })
-            })
+            }
         }
     }
 
     adjustBranchCapacities() {
         this.inRun = true;
-        if ( this.transportModel ) {
+        if ( this.transportModel && this.dataset ) {
             this.dataClientService.AdjustBranchCapacities( this.dataset.id, this.transportModel.id, (results) => {
                 this.inRun = false;
                 this.loadFlowResults = results;
@@ -805,7 +813,7 @@ export class LoadflowDataService {
         let branchData
         let df = new DataFilter(1)
         let branch = this.networkData.branches.data.find(m=>m.id === branchId)
-        if ( branch ) {
+        if ( branch && this.dataset) {
             let branchDataset = {
                 tableName: this.networkData.branches.tableName,
                 data: [branch],
@@ -836,7 +844,7 @@ export class LoadflowDataService {
     public getNodeEditorData(nodeId: number):ICellEditorDataDict {
         let df = new DataFilter(1)
         let node = this.networkData.nodes.data.find(m=>m.id === nodeId)
-        if ( node ) {
+        if ( node && this.dataset ) {
             let branchDataset = {
                 tableName: this.networkData.nodes.tableName,
                 data: [node],
@@ -853,7 +861,7 @@ export class LoadflowDataService {
     public getLocationEditorData(locId: number):ICellEditorDataDict {
         let df = new DataFilter(1)
         let loc = this.networkData.locations.data.find(m=>m.id === locId)
-        if ( loc ) {
+        if ( loc && this.dataset ) {
             let datasetData = {
                 tableName: this.networkData.locations.tableName,
                 data: [loc],
@@ -912,7 +920,7 @@ export class LoadflowDataService {
 
     public get locationDragging(): boolean {
         // don't allow dragging if a readonly dataset
-        return this._locationDragging && !this.dataset.isReadOnly
+        return this._locationDragging  && !(this.dataset?.isReadOnly)
     }
 
     public setLocationDragging( value: boolean ) {

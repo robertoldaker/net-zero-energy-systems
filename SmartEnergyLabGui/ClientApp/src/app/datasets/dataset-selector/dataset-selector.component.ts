@@ -8,13 +8,14 @@ import { MessageDialogIcon } from 'src/app/dialogs/message-dialog/message-dialog
 import { ShowMessageService } from 'src/app/main/show-message/show-message.service';
 import { UserService } from 'src/app/users/user.service';
 import { DatasetsService } from '../datasets.service';
+import { ComponentBase } from 'src/app/utils/component-base';
 
 @Component({
     selector: 'app-dataset-selector',
     templateUrl: './dataset-selector.component.html',
     styleUrls: ['./dataset-selector.component.css']
 })
-export class DatasetSelectorComponent implements OnInit {
+export class DatasetSelectorComponent extends ComponentBase implements OnInit {
 
     constructor(private dataClientService: DataClientService,
         private cookieService: CookieService,
@@ -23,6 +24,11 @@ export class DatasetSelectorComponent implements OnInit {
         public userService: UserService,
         public datasetsService: DatasetsService
         ) {
+            super()
+            this.addSub( datasetsService.SetDataset.subscribe( (ds)=>{
+                // store dataset id in cookie for next re-start
+                this.cookieService.set(this.getCookieName(), ds.id.toString());
+            }) )
 
     }
 
@@ -42,7 +48,9 @@ export class DatasetSelectorComponent implements OnInit {
     @Input()
     showQuickHelp: boolean = false
 
-    dataset: Dataset | undefined
+    get dataset(): Dataset | undefined {
+        return this.datasetsService.currentDataset
+    }
     datasetInfo: DatasetInfo[] = []
 
     getCookieName(): string {
@@ -59,26 +67,26 @@ export class DatasetSelectorComponent implements OnInit {
                         id = savedDatasetId;
                     }
                 }
-                this.setDataset(id)
+                this.datasetSelected(id)
             }
         )
     }
 
-    setDataset(datasetId: number) {
+    datasetSelected(datasetId: number) {
         let di = this.datasetInfo.find(m=>m.dataset.id == datasetId);
-        this.dataset = di ? di.dataset : undefined
-        if ( !this.dataset && this.datasetInfo.length>0 ) {
+        let dataset = di ? di.dataset : undefined
+        if ( !dataset && this.datasetInfo.length>0 ) {
             if ( this.datasetInfo.length>1) {
-                this.dataset = this.datasetInfo[1].dataset
+                dataset = this.datasetInfo[1].dataset
             } else {
-                this.dataset = this.datasetInfo[0].dataset
+                dataset = this.datasetInfo[0].dataset
             }
-            datasetId = this.dataset.id;
+            datasetId = dataset.id;
         }
-        this.cookieService.set(this.getCookieName(), datasetId.toString());
         //
-        this.onSelected.emit(this.dataset)
-        this.datasetsService.setDataset(this.dataset)
+        if ( dataset ) {
+            this.onSelected.emit(dataset)
+        }
     }
 
     private setDatasets(datasets: Dataset[]) {

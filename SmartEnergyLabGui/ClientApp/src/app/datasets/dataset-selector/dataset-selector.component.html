@@ -5,7 +5,7 @@
         </div>
         <mat-form-field appearance="fill" [color]="'primary'">
             <mat-label>Dataset</mat-label>
-            <mat-select [value]="dataset?.id" (valueChange)="setDataset($event)">
+            <mat-select [value]="dataset?.id" (valueChange)="datasetSelected($event)">
                 <mat-select-trigger>
                     <mat-icon *ngIf="dataset?.isReadOnly" class="lockIcon">lock</mat-icon>
                     <div *ngIf="!dataset?.isReadOnly" class="lockIconSpacer"></div>

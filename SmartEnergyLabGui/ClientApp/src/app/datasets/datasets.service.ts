@@ -26,6 +26,7 @@ export class DatasetsService {
     currentDataset: Dataset | undefined
     setDataset(dataset: Dataset | undefined) {
         this.currentDataset = dataset;
+        this.SetDataset.emit(this.currentDataset)
     }
     customData: {name: string, value: any} | undefined
     //
@@ -287,6 +288,7 @@ export class DatasetsService {
         }
     }
 
+    SetDataset: EventEmitter<Dataset> = new EventEmitter<Dataset>()
     AfterEdit:EventEmitter<AfterEditData> = new EventEmitter<AfterEditData>()
     AfterDelete:EventEmitter<AfterDeleteData> = new EventEmitter<AfterDeleteData>()
     AfterUnDelete:EventEmitter<AfterUnDeleteData> = new EventEmitter<AfterUnDeleteData>()
