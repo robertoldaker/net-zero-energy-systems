@@ -8,17 +8,19 @@ import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { UserService } from '../users/user.service';
 import { ServiceBase } from '../utils/service-base';
 import { DialogFooterButtonsEnum } from '../dialogs/dialog-footer/dialog-footer.component';
+import { DatasetsService } from '../datasets/datasets.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class ElsiDataService extends ServiceBase {
 
-    constructor(        
-        private dataClientService: DataClientService, 
-        private signalRService: SignalRService, 
+    constructor(
+        private dataClientService: DataClientService,
+        private signalRService: SignalRService,
         private cookieService: CookieService,
         private dialogService: DialogService,
+        private datasetsService: DatasetsService,
         private userService: UserService) {
 
         super()
@@ -37,6 +39,13 @@ export class ElsiDataService extends ServiceBase {
         this.signalRService.hubConnection.on('Elsi_Log', (data) => {
             this.LogMessageAvailable.emit(data);
         })
+        //
+        this.addSub(this.datasetsService.AfterEdit.subscribe( (resp)=>{
+            if (resp.type != DatasetType.Elsi) {
+                return;
+            }
+            this.reloadDataset()
+        }))
        //
     }
 
@@ -57,7 +66,7 @@ export class ElsiDataService extends ServiceBase {
                 this.inRun = true
                 this.elsiProgress.numToDo = endDay - startDay + 1;
                 this.elsiProgress.numComplete = 0;
-            });    
+            });
         }
     }
 
@@ -67,21 +76,35 @@ export class ElsiDataService extends ServiceBase {
         this.cookieService.set('ElsiScenario', scenario.toString());
         this.loadResults();
     }
-    dataset: Dataset = {id: 0, type: DatasetType.Elsi, name: '', parent: null, isReadOnly: true}
-    setDataset(dataset: Dataset) {
-        this.dataset = dataset
-        this.loadDataset();
+    get dataset(): Dataset {
+        let ds = this.datasetsService.currentDataset
+        if ( ds?.type === DatasetType.Elsi) {
+            return ds
+        } else {
+            return {id: 0, name: "?", type: DatasetType.Elsi, isReadOnly: true, parent: null }
+        }
     }
 
-    loadDataset() {
-        if ( this.dataset ) {
-            this.dataClientService.ElsiDatasetInfo(this.dataset.id, (data)=>{
-                this.datasetInfo = data
-                this.DatasetInfoChange.emit(this.datasetInfo);
-            })
+    setDataset(dataset: Dataset) {
+        //??this.dataset = dataset
+        this.loadDataset(dataset);
+    }
+
+    loadDataset(dataset: Dataset) {
+        this.dataClientService.ElsiDatasetInfo(dataset.id, (data)=>{
+            this.datasetsService.setDataset(dataset)
+            //
+            this.datasetInfo = data
+            this.DatasetInfoChange.emit(this.datasetInfo)
             //
             this.loadResults();
-        } 
+        })
+    }
+
+    reloadDataset() {
+        if ( this.dataset ) {
+            this.loadDataset(this.dataset)
+        }
     }
 
     loadResults() {
@@ -89,14 +112,14 @@ export class ElsiDataService extends ServiceBase {
             this.dataClientService.ElsiResults(this.dataset.id,this.scenario,(data)=>{
                 this.results = data
                 this.ResultsChange.emit(this.results);
-            })    
+            })
         }
     }
 
     private inRun: boolean
     private elsiProgress: ElsiProgress
     get canRun():boolean {
-        return this.dataset.parent!=null && this.signalRService.isConnected && !this.inRun
+        return this.dataset?.parent!=null && this.signalRService.isConnected && !this.inRun
     }
 
     // Elsi scenarios
@@ -115,17 +138,17 @@ export class ElsiDataService extends ServiceBase {
                         buttons: DialogFooterButtonsEnum.OKCancel
                         }, ()=>{
                             this.saveUserEdit(userEdit);
-                        })        
+                        })
                 } else {
                     this.saveUserEdit(userEdit);
                 }
-            })    
-        }        
+            })
+        }
     }
 
     private saveUserEdit(userEdit: UserEdit) {
         this.dataClientService.SaveElsiUserEdit(userEdit, ()=>{
-            this.loadDataset()
+            this.reloadDataset()
         })
     }
 
@@ -139,17 +162,17 @@ export class ElsiDataService extends ServiceBase {
                         buttons: DialogFooterButtonsEnum.OKCancel
                         }, ()=>{
                             this.deleteUserEdit(userEditId);
-                        })        
+                        })
                 } else {
                     this.deleteUserEdit(userEditId);
                 }
-            })    
-        }                
+            })
+        }
     }
 
     private deleteUserEdit(userEditId: number) {
         this.dataClientService.DeleteElsiUserEdit(userEditId, ()=>{
-            this.loadDataset()
+            this.reloadDataset()
         })
     }
 
@@ -173,7 +196,7 @@ export class ElsiScenarioInfo {
             if ( typeof value == 'number') {
                 this.keys.push(value);
             }
-        }        
+        }
     }
 
     private map: Map<ElsiScenario,string>

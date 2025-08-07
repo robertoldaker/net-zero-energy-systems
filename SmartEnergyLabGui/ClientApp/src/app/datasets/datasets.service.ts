@@ -18,7 +18,6 @@ export class DatasetsService {
     constructor(
         private dataService:DataClientService,
         private dialogService: DialogService,
-        private elsiDataService: ElsiDataService,
         private userService: UserService ) {
 
     }
@@ -27,6 +26,9 @@ export class DatasetsService {
     setDataset(dataset: Dataset | undefined) {
         this.currentDataset = dataset;
         this.SetDataset.emit(this.currentDataset)
+    }
+    reset() {
+        this.currentDataset = undefined
     }
     customData: {name: string, value: any} | undefined
     //
@@ -101,12 +103,7 @@ export class DatasetsService {
     afterEdit(cellData: CellEditorData, resp: EditItemResults, onEdited: (resp:EditItemResults)=>void ) {
         if ( this.currentDataset ) {
             let type = this.currentDataset.type
-            if ( type === DatasetType.Elsi ) {
-                this.elsiDataService.loadDataset()
-            } else {
-                //??this.editFcns.afterEditFcn.call(this.editFcns.thisObj,resp)
-                this.AfterEdit.emit({ type: type, datasets: resp.datasets, deletedItems: resp.deletedItems})
-            }
+            this.AfterEdit.emit({ type: type, datasets: resp.datasets, deletedItems: resp.deletedItems})
             if ( onEdited) {
                 onEdited(resp)
             }

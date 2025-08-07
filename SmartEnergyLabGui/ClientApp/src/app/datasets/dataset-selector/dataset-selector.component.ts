@@ -33,7 +33,9 @@ export class DatasetSelectorComponent extends ComponentBase implements OnInit {
     }
 
     ngOnInit(): void {
-        this.loadDatasets(0);
+        //
+        this.datasetsService.reset()
+        this.loadDatasets(0)
     }
 
     @Output()
