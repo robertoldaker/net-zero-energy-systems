@@ -102,6 +102,8 @@ public class GeneratorItemHandler : BaseEditItemHandler {
                 tm.UpdateScaling(da, m.Dataset.Id);
                 tm.UpdateGenerators(genDi.Data);
             }
+            // update the generation field for each generator attached to the nodes
+            m.EditItem.UpdateNodeGeneration(da, m.Dataset.Id, nodeDi);
 
             list.Add(genDi.getBaseDatasetData());
             list.Add(nodeDi.getBaseDatasetData());
