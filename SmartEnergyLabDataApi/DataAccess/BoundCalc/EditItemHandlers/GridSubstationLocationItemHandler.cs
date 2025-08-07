@@ -109,7 +109,7 @@ public class GridSubstationLocationItemHandler : BaseEditItemHandler
         var list = new List<DatasetData<object>>();
         // location
         GridSubstationLocation loc = (GridSubstationLocation) m.Item;
-        using ( var da = new DataAccess()) {
+        using ( var da = new DataAccess(false)) {
             DatasetData<Node>? nodeDi = null;
             DatasetData<Branch>? branchDi = null;
             DatasetData<Ctrl>? ctrlDi = null;

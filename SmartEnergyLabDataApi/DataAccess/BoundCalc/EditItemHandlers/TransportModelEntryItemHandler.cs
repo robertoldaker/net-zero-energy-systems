@@ -41,7 +41,7 @@ public class TransportModelEntryItemHandler : BaseEditItemHandler
 
     public override List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
-        using( var da = new DataAccess() ) {
+        using( var da = new DataAccess(false) ) {
             var list = new List<DatasetData<object>>();
             var tme = (TransportModelEntry) m.Item;
 

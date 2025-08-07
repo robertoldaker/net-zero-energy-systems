@@ -8,7 +8,7 @@ namespace SmartEnergyLabDataApi.Data
     public class DataAccess : DataAccessBase
     {
 
-        public DataAccess() : base()
+        public DataAccess(bool withTransaction=true) : base(withTransaction)
         {
             SimplusGridTool = new SimplusGridTool(this);
             Substations = new Substations(this);

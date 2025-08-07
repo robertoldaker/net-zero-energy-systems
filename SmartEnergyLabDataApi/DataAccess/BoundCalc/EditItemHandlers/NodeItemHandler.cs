@@ -207,7 +207,7 @@ public class NodeItemHandler : BaseEditItemHandler {
 
     public override List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
-        using (var da = new DataAccess()) {
+        using (var da = new DataAccess(false)) {
             var list = new List<DatasetData<object>>();
             var node = (Node)m.Item;
             // need all nodes since they can all change since generation

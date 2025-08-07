@@ -258,7 +258,7 @@ public class CtrlItemHandler : BaseEditItemHandler
 
     public override List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
-        using( var da = new DataAccess() ) {
+        using( var da = new DataAccess(false) ) {
             var list = new List<DatasetData<object>>();
             var ctrl = (Ctrl) m.Item;
             var ctrlDi = da.BoundCalc.GetCtrlDatasetData(m.Dataset.Id,m=>m.Id == ctrl.Id);

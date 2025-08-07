@@ -91,7 +91,7 @@ public class GeneratorItemHandler : BaseEditItemHandler {
 
     public override List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
-        using (var da = new DataAccess()) {
+        using (var da = new DataAccess(false)) {
             var list = new List<DatasetData<object>>();
             var gen = (Generator)m.Item;
             var genDi = da.BoundCalc.GetGeneratorDatasetData(m.Dataset.Id);

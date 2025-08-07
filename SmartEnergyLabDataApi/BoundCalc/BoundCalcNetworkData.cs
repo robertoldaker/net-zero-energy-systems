@@ -27,7 +27,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             // Generators
             Generators = bc.Generators;
             //
-            using (var da = new DataAccess()) {
+            using (var da = new DataAccess(false)) {
                 // Locations
                 Locations = loadLocations(da, bc.Dataset.Id);
                 // Transport models and entries

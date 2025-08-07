@@ -63,7 +63,7 @@ public class BoundaryItemHandler : BaseEditItemHandler
 
     public override List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
-        using( var da = new DataAccess() ) {
+        using( var da = new DataAccess(false) ) {
             var list = new List<DatasetData<object>>();
             var boundary = (Boundary) m.Item;
             var boundDi = da.BoundCalc.GetBoundaryDatasetData(m.Dataset.Id, m=>m.Id == boundary.Id);

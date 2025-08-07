@@ -23,9 +23,9 @@ namespace HaloSoft.DataAccess
         private ITransaction _transaction;
         private static object _checkDbLock = new object();
 
-        public DataAccessBase()
+        public DataAccessBase(bool withTransaction=true)
         {
-            setSession();
+            setSession(withTransaction);
             Configuration = new Configuration(this);
         }
 
@@ -67,11 +67,13 @@ namespace HaloSoft.DataAccess
             }
         }
 
-        protected void setSession()
+        protected void setSession(bool withTransaction)
         {
             _session = _dbConnection.SessionFactory.OpenSession();
             try {
-                _transaction  = _session.BeginTransaction();
+                if (withTransaction) {
+                    _transaction = _session.BeginTransaction();
+                }
             } catch( Exception e ) {
                 Console.WriteLine(e.Message);
             }
@@ -102,7 +104,7 @@ namespace HaloSoft.DataAccess
             //MemoryStream s = NHibernate.Mapping.Attributes.HbmSerializer.Default.Serialize( Assembly.GetExecutingAssembly());
             //byte[] bytes = s.ToArray();
             //string str = Encoding.UTF8.GetString(bytes);
-            //config.AddInputStream( s); 
+            //config.AddInputStream( s);
             //return config;
            // if (dataBaseName == "SBT_System")
            // {
@@ -111,7 +113,7 @@ namespace HaloSoft.DataAccess
            // else
            // {
            //     return GetClientConfiguration(dataBaseName);
-           // }            
+           // }
         //}
 
         protected static string _rootFolder;
@@ -215,14 +217,19 @@ namespace HaloSoft.DataAccess
         {
             try
             {
+                if (_transaction == null) {
+                    throw new Exception("Attempt to commit changes without valid transaction");
+                }
                 _transaction.Commit();
             }
             catch
             {
-                _transaction.Rollback();
+                if (_transaction != null) {
+                    _transaction.Rollback();
+                }
                 throw;
             }
-            finally 
+            finally
             {
                 _session.Close();
             }
@@ -246,17 +253,20 @@ namespace HaloSoft.DataAccess
 
         public virtual void ReOpen()
         {
-            if (_transaction.IsActive)
-            {
-                _transaction.Rollback();
+            if (_transaction != null) {
+                if (_transaction.IsActive) {
+                    _transaction.Rollback();
+                }
+                _transaction.Dispose();
             }
-            _transaction.Dispose();
             if (_session.IsOpen)
             {
                 _session.Close();
             }
             _session = _dbConnection.SessionFactory.OpenSession();
-            _transaction = _session.BeginTransaction();
+            if (_transaction != null) {
+                _transaction = _session.BeginTransaction();
+            }
         }
 
         public virtual void DatabaseSchemaUpdated(int? oldVersion, int? newVersion)
@@ -337,11 +347,11 @@ namespace HaloSoft.DataAccess
                 var version = cmd.ExecuteNonQuery().ToString();
             }
         }
-        
+
         public static void RunPostgreSQLQuery(string sql, Action<NpgsqlDataReader> rowRead)
         {
             var connStr = _dbConnection.GetConnectionString();
-            
+
             using ( var con = new NpgsqlConnection(connStr)) {
                 con.Open();
                 using var cmd = new NpgsqlCommand(sql, con);
@@ -352,7 +362,7 @@ namespace HaloSoft.DataAccess
                         rowRead.Invoke(reader);
                     }
                 }
-                
+
             }
         }
 
@@ -445,8 +455,8 @@ WHERE
                 indexes.Add(indexName);
             });
             return indexes;
-        }        
-        
+        }
+
         public static List<DbIndex> CreateIndexesIfNotExist(List<DbIndex> indexes) {
             if ( _dbConnection.DbProvider != DbProvider.PostgreSQL ) {
                 throw new Exception("CreateIndexesIfNotExist is only available for postgresql");
@@ -501,7 +511,7 @@ order by
                     } else {
                         dbIndex = new DbIndex() {
                             Name = indexName,
-                            TableName = tableName                            
+                            TableName = tableName
                         };
                         indexes.Add(indexName,dbIndex);
                     }

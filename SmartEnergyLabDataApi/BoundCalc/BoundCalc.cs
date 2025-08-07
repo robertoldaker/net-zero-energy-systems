@@ -89,8 +89,8 @@ namespace SmartEnergyLabDataApi.BoundCalc
         {
             // Ensure we have at least one transport model
             BoundCalc.AddDefaultTransportModels(datasetId);
-            //
-            _da = new DataAccess();
+            // Open in read-only mode
+            _da = new DataAccess(false);
             _dataset = _da.Datasets.GetDataset(datasetId);
             if (_dataset == null) {
                 throw new Exception($"Cannot find dataset with id=[{datasetId}]");
@@ -1313,7 +1313,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
                         { GeneratorType.WindOffshore, 0 },
                         { GeneratorType.WindOnshore, 0 },
                     });
-                    msg += addTransportModel(da, dataset, "Year Round", new Dictionary<GeneratorType, double>()
+                    msg += addTransportModel(da, dataset, "Economy Test", new Dictionary<GeneratorType, double>()
                     {
                         { GeneratorType.Interconnector, 1 },
                         { GeneratorType.Nuclear, 0.85 },
@@ -1326,8 +1326,6 @@ namespace SmartEnergyLabDataApi.BoundCalc
                     });
                     da.CommitChanges();
                 }
-
-
             }
             return msg;
         }

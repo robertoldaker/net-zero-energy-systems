@@ -37,7 +37,7 @@ public class ZoneItemHandler : BaseEditItemHandler
 
     public override List<DatasetData<object>> GetDatasetData(EditItemModel m)
     {
-        using( var da = new DataAccess() ) {
+        using( var da = new DataAccess(false) ) {
             var list = new List<DatasetData<object>>();
             var zone = (Zone) m.Item;
             var zoneDi = da.BoundCalc.GetZoneDatasetData(m.Dataset.Id, m=>m.Id == zone.Id);
