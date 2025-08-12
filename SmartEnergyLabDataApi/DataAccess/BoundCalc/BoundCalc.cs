@@ -211,9 +211,12 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             return zone != null;
         }
 
-        public DatasetData<Zone> GetZoneDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Zone, bool>> expression)
+        public DatasetData<Zone> GetZoneDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Zone, bool>> expression=null)
         {
-            var zoneQuery = Session.QueryOver<Zone>().Where(expression);
+            var zoneQuery = Session.QueryOver<Zone>();
+            if (expression != null) {
+                zoneQuery = zoneQuery.Where(expression);
+            }
             var zoneDi = new DatasetData<Zone>(DataAccess, datasetId, m => m.Id.ToString(), zoneQuery);
             return zoneDi;
         }
@@ -246,9 +249,12 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
                 OrderBy(m => m.Id).Asc.
                 List();
         }
-        public DatasetData<Boundary> GetBoundaryDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Boundary, bool>> expression)
+        public DatasetData<Boundary> GetBoundaryDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<Boundary, bool>> expression=null)
         {
-            var boundQuery = Session.QueryOver<Boundary>().Where(expression);
+            var boundQuery = Session.QueryOver<Boundary>();
+            if (expression != null) {
+                boundQuery = boundQuery.Where(expression);
+            }
             var boundDi = new DatasetData<Boundary>(DataAccess, datasetId, m => m.Id.ToString(), boundQuery);
             // add zones they belong to
             var boundDict = GetBoundaryZoneDict(boundDi.Data);

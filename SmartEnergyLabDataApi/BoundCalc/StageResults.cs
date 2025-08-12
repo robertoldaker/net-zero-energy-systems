@@ -5,16 +5,20 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
         private List<BoundCalcStageResult> _stageResults;
 
-        public BoundCalcStageResults() {
+        public BoundCalcStageResults()
+        {
             _stageResults = new List<BoundCalcStageResult>();
         }
-        public BoundCalcStageResult NewStage(string name) {            
+        public BoundCalcStageResult NewStage(string name) {
             return new BoundCalcStageResult(name);
         }
 
         public void StageResult(BoundCalcStageResult sr, BoundCalcStageResultEnum result, string comment) {
             sr.Finish(result, comment);
-            _stageResults.Add(sr);
+            // protect against multiple threads since they may be used ...
+            lock (_stageResults) {
+                _stageResults.Add(sr);
+            }
         }
         public List<BoundCalcStageResult> Results {
             get {

@@ -1,3 +1,7 @@
+using Lad.NetworkLibrary;
+using NHibernate.Util;
+using SmartEnergyLabDataApi.Data.BoundCalc;
+
 namespace SmartEnergyLabDataApi.BoundCalc
 {
     public enum BoundCalcBoundaryTripType { Single, Double, Multi }
@@ -81,9 +85,27 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 _branches = new List<BranchWrapper>(trip.Branches);
                 LineNames = _branches.Select(m=>m.LineName).ToList<string>();
                 BranchCodes = _branches.Select(m=>m.Obj.Code).ToList<string>();
-                BranchIds = _branches.Select(m=>m.Obj.Id).ToList<int>();                
+                BranchIds = _branches.Select(m=>m.Obj.Id).ToList<int>();
             }
-            public int Index {get; private set;}
+
+            public BoundCalcBoundaryTrip(BoundCalcNetworkData nd, Network.TripSpec ts)
+            {
+                _text = ts.Name;
+                // Need ids etc. of branch objects so look them up in the NetworkData class
+                var branches = nd.GetBranches(ts.ItemNames);
+                // Used in the gui
+                LineNames = branches.Select(m => m.LineName).ToList<string>();
+                BranchCodes = branches.Select(m => m.Code).ToList<string>();
+                BranchIds = branches.Select(m => m.Id).ToList<int>();
+                // Not sure if intact needs its own type??
+                if (ts.ItemNames.Length == 2) {
+                    Type = BoundCalcBoundaryTripType.Double;
+                } else {
+                    Type = BoundCalcBoundaryTripType.Single;
+                }
+            }
+
+            public int Index { get; private set; }
             public BoundCalcBoundaryTripType Type {get; set;}
 
             private string _text;

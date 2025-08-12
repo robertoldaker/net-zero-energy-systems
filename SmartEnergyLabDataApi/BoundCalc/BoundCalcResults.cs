@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
+using Lad.NetworkLibrary;
 using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.BoundCalc;
@@ -47,17 +48,45 @@ namespace SmartEnergyLabDataApi.BoundCalc
             SetPointError = bc.Ctrls.DatasetData.Data.Any(cw => cw.SetPoint!=null && cw.SetPoint>cw.MaxCtrl || cw.SetPoint<cw.MinCtrl);
         }
 
-        public BoundCalcResults(string errorMsg) {
+        public BoundCalcResults(BoundCalcNetworkData nd, BoundCalcBoundaryTripResults bTripResults)
+        {
+            Dataset = nd.Dataset;
+            // stage results
+            StageResults = nd.StageResults;
+            // Nodes
+            Nodes = nd.Nodes;
+            // Branches
+            Branches = nd.Branches;
+            // Controls
+            Ctrls = nd.Ctrls;
+
+            // Populate BoundaryTripResults if we have performed a boundary trip
+            //??if (nd.WorstTrip != null) {
+            //??    BoundaryTripResults = new BoundCalcBoundaryTripResults(bc);
+            //??}
+            BoundaryTripResults = bTripResults;
+
+            var misMatches = nd.Nodes.Data.Where(n => n.Mismatch != null && Math.Abs((double)n.Mismatch) > 0.01).Select(n => n.Mismatch).OrderBy(m => m).ToList();
+            NodeMismatchError = misMatches.Count > 0;
+            if (NodeMismatchError) {
+                NodeMismatchErrorAsc = Math.Abs((double)misMatches[0]) > Math.Abs((double)misMatches[misMatches.Count - 1]);
+            }
+            BranchCapacityError = nd.Branches.Data.Any(nw => nw.FreePower != null && nw.FreePower < -1e-2);
+            SetPointError = nd.Ctrls.Data.Any(cw => cw.SetPoint != null && cw.SetPoint > cw.MaxCtrl || cw.SetPoint < cw.MinCtrl);
+        }
+
+        public BoundCalcResults(string errorMsg)
+        {
             StageResults = new BoundCalcStageResults();
             var sr = new BoundCalcStageResult("Error");
-            sr.Finish(BoundCalcStageResultEnum.Fail,errorMsg);
+            sr.Finish(BoundCalcStageResultEnum.Fail, errorMsg);
             StageResults.Results.Add(sr);
         }
 
         public Dataset Dataset {get; set;}
         public BoundCalcStageResults StageResults {get; private set;}
         public DatasetData<Node> Nodes {get; private set;}
-        public DatasetData<Branch> Branches {get; private set;}        
+        public DatasetData<Branch> Branches {get; private set;}
         public DatasetData<Ctrl> Ctrls {get; private set;}
 
         public BoundCalcBoundaryTripResults BoundaryTripResults {get; private set;}
@@ -73,7 +102,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             using( var da = new DataAccess() ) {
                 string json = JsonSerializer.Serialize(this,new JsonSerializerOptions() {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });                
+                });
                 var lfr = da.BoundCalc.GetBoundCalcResult(Dataset.Id);
                 if ( lfr==null ) {
                     lfr = new BoundCalcResult(Dataset);
@@ -92,7 +121,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             Mismatch = nw.Mismatch;
             Code = nw.Obj.Code;
         }
-        public int Id {get; set;} 
+        public int Id {get; set;}
         public string Code {get; set;}
         public double? Mismatch {get; set;}
 
@@ -121,6 +150,23 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 SetPoint = cw.SetPoint;
             }
         }
+        public BoundCalcCtrlResult(Ctrl ctrl, double sp)
+        {
+            Id = ctrl.Id;
+            Code = ctrl.Code;
+            SetPoint = sp;
+        }
+        public BoundCalcCtrlResult(Network.Control control, double sp)
+        {
+            Id = 0;
+            var cpnts = control.Name.Split(':');
+            if (cpnts.Length > 1) {
+                Code = cpnts[1];
+            } else {
+                Code = control.Name;
+            }
+            SetPoint = sp;
+        }
         public int Id {get; set;}
         public string Code {get; set;}
         public double? SetPoint {get; set;}
@@ -134,7 +180,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
             DemOutside = dout;
             IA = ia;
         }
-        public double GenInside {get; private set;} 
+        public double GenInside {get; private set;}
         public double DemInside {get; private set;}
         public double GenOutside {get; private set;}
         public double DemOutside {get; private set;}
@@ -149,7 +195,56 @@ namespace SmartEnergyLabDataApi.BoundCalc
             DoubleTrips = bc.DoubleTrips;
             WorstTrip = new BoundCalcBoundaryTrip(bc.WorstTrip);
         }
-        public List<BoundCalcAllTripsResult> IntactTrips {get; private set;}
+        public BoundCalcBoundaryTripResults(BoundCalcNetworkData nd,
+                                            Network.Boundary.LimitList bIntact,
+                                            Network.Boundary.LimitList bSingle,
+                                            Network.Boundary.LimitList bDouble,
+                                            Network.Boundary.Limit worstLimit)
+        {
+            IntactTrips = new List<BoundCalcAllTripsResult>();
+            foreach (var limit in bIntact.TopN) {
+                IntactTrips.Add(getTripResult(limit, nd));
+            }
+            SingleTrips = new List<BoundCalcAllTripsResult>();
+            foreach (var limit in bSingle.TopN) {
+                SingleTrips.Add(getTripResult(limit, nd));
+            }
+            DoubleTrips = new List<BoundCalcAllTripsResult>();
+            foreach (var limit in bDouble.TopN) {
+                DoubleTrips.Add(getTripResult(limit, nd));
+            }
+            //
+            WorstTrip = new BoundCalcBoundaryTrip(nd, worstLimit.Loadflow.NState.Trip);
+        }
+
+        private BoundCalcAllTripsResult getTripResult(Network.Boundary.Limit limit, BoundCalcNetworkData nd)
+        {
+            var tripResult = new BoundCalcAllTripsResult();
+            Network.TripSpec ts = limit.Loadflow.NState.Trip;
+            tripResult.Capacity = limit.BoundCap;
+            tripResult.Surplus = limit.Surplus;
+            tripResult.LimCct = limit.LimBranches.Select(br => br.Name).ToList();
+            tripResult.Trip = new BoundCalcBoundaryTrip(nd, ts);
+            tripResult.Ctrls = getCtrls(limit, nd);
+            return tripResult;
+        }
+
+        private List<BoundCalcCtrlResult> getCtrls(Network.Boundary.Limit limit, BoundCalcNetworkData nd)
+        {
+            if (limit.SetPoints != null) {
+                var ctrls = nd.Ctrls.Data;
+                var ctrlResults = new List<BoundCalcCtrlResult>();
+                foreach (var c in ctrls) {
+                    var nc = nd.GetNetworkControl(c);
+                    var cResult = new BoundCalcCtrlResult(c, limit.SetPoints[nc]);
+                    ctrlResults.Add(cResult);
+                }
+                return ctrlResults;
+            } else {
+                return null;
+            }
+        }
+        public List<BoundCalcAllTripsResult> IntactTrips { get; private set; }
         public List<BoundCalcAllTripsResult> SingleTrips {get; private set;}
         public List<BoundCalcAllTripsResult> DoubleTrips {get; private set;}
 

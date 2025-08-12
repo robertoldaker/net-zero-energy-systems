@@ -1,201 +1,491 @@
-using System.Linq;
-using System.Text.Json.Serialization;
-using HaloSoft.EventLogger;
-using Microsoft.Extensions.ObjectPool;
-using NHibernate;
-using NHibernate.Criterion;
-using Org.BouncyCastle.Asn1.Icao;
-using Org.BouncyCastle.Crypto.Signers;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.BoundCalc;
+using Lad.NetworkLibrary;
+using Microsoft.AspNetCore.SignalR;
+using Lad.NetworkOptimiser;
+using Lad.LinearProgram;
+using GeneratorType = SmartEnergyLabDataApi.Data.BoundCalc.GeneratorType;
 
-namespace SmartEnergyLabDataApi.BoundCalc
-{
-    public class BoundCalcNetworkData {
-        public BoundCalcNetworkData(BoundCalc bc)
-        {
-            // Nodes
-            Nodes = bc.Nodes.DatasetData;
-            // Branches
-            Branches = bc.Branches.DatasetData;
-            // Controls
-            Ctrls = bc.Ctrls.DatasetData;
-            // Boundaries
-            Boundaries = bc.Boundaries.DatasetData;
-            // Zones
-            Zones = bc.Zones;
-            // Generators
-            Generators = bc.Generators;
+
+namespace SmartEnergyLabDataApi.BoundCalc;
+
+public class BoundCalcNetworkData {
+    private Dictionary<Node, Network.Node> _nodeDict = new Dictionary<Node, Network.Node>();
+    private Dictionary<Network.Node, Node> _reverseNodeDict = new Dictionary<Network.Node, Node>();
+    private Dictionary<Branch, Network.BranchSpec> _branchDict = new Dictionary<Branch, Network.BranchSpec>();
+    private Dictionary<Network.BranchSpec, Branch> _reverseBranchDict = new Dictionary<Network.BranchSpec, Branch>();
+    private Dictionary<Ctrl, Network.Control> _ctrlDict = new Dictionary<Ctrl, Network.Control>();
+    private Dictionary<Network.Control, Ctrl> _reverseCtrlDict = new Dictionary<Network.Control, Ctrl>();
+    private Reporter _reporter = new Reporter();
+    public BoundCalcNetworkData(BoundCalc bc)
+    {
+        // Nodes
+        Nodes = bc.Nodes.DatasetData;
+        // Branches
+        Branches = bc.Branches.DatasetData;
+        // Controls
+        Ctrls = bc.Ctrls.DatasetData;
+        // Boundaries
+        Boundaries = bc.Boundaries.DatasetData;
+        // Zones
+        Zones = bc.Zones;
+        // Generators
+        Generators = bc.Generators;
+        //
+        using (var da = new DataAccess()) {
+            // Locations
+            Locations = loadLocations(da, bc.Dataset.Id);
+            // Transport models and entries
+            (TransportModels, TransportModelEntries) = loadTransportModels(da, bc.Dataset.Id);
             //
-            using (var da = new DataAccess(false)) {
-                // Locations
-                Locations = loadLocations(da, bc.Dataset.Id);
-                // Transport models and entries
-                (TransportModels, TransportModelEntries) = loadTransportModels(da, bc.Dataset.Id);
-                //
-                setTransportModelScalings(da, bc.Dataset.Id);
-                //
-                //?? Test to see if we can connect GSPs from the Elexon data
-                //??assignIsGGSP(da);
+            setTransportModelScalings(da, bc.Dataset.Id);
+            //
+            //?? Test to see if we can connect GSPs from the Elexon data
+            //??assignIsGGSP(da);
+        }
+        // Boundary branches
+        BoundaryDict = new Dictionary<string, int[]>();
+        foreach (var b in bc.Boundaries.Objs) {
+            var boundaries = b.BoundCcts.Items.Select(m => m.Obj.Id).ToArray();
+            BoundaryDict.Add(b.name, boundaries);
+        }
+        //
+        TransportModel = bc.TransportModel;
+    }
+
+    public BoundCalcNetworkData(int datasetId, int transportModelId = 0, SetPointMode setPointMode = SetPointMode.Auto)
+    {
+        // Ensure we have at least one transport model
+        BoundCalcNetworkData.AddDefaultTransportModels(datasetId);
+
+        using (var da = new DataAccess(false)) {
+            Dataset = da.Datasets.GetDataset(datasetId);
+            if (Dataset == null) {
+                throw new Exception($"Cannot find dataset with id=[{datasetId}]");
+            }
+            SetPointMode = setPointMode;
+            //
+            StageResults = _reporter.StageResults;
+
+            // Transport models
+            (TransportModels, TransportModelEntries) = da.BoundCalc.GetTransportModelDatasetData(datasetId, null, true);
+            // work out the transport model
+            if (transportModelId > 0) {
+                TransportModel = TransportModels.Data.Where(m => m.Id == transportModelId).FirstOrDefault();
+                if (TransportModel == null) {
+                    throw new Exception($"Cannot find transport model with id=[{transportModelId}]");
+                }
+            } else {
+                // set the first one available
+                TransportModel = TransportModels.Data.Count() > 0 ? TransportModels.Data[0] : null;
+            }
+            // Locations
+            Locations = da.NationalGrid.GetLocationDatasetData(datasetId);
+            var ngDi = da.BoundCalc.GetNodeGeneratorDatasetData(datasetId);
+            // Nodes
+            Nodes = da.BoundCalc.GetNodeDatasetData(datasetId, null, true);
+            // Branches and controls
+            (Branches, Ctrls) = da.BoundCalc.GetBranchDatasetData(datasetId, null, true);
+            // Boundaries
+            Boundaries = da.BoundCalc.GetBoundaryDatasetData(datasetId);
+            // Zones
+            Zones = da.BoundCalc.GetZoneDatasetData(datasetId, null);
+            // Generators
+            Generators = da.BoundCalc.GetGeneratorDatasetData(datasetId);
+            // Update scalings for all transport models
+            foreach (var tm in this.TransportModels.Data) {
+                tm.UpdateScaling(Nodes.Data, ngDi.Data, this.Generators.Data);
+            }
+            // Update generator values using the specified transport model
+            if (TransportModel != null) {
+                TransportModel.UpdateGenerators(Generators.Data);
             }
             // Boundary branches
             BoundaryDict = new Dictionary<string, int[]>();
-            foreach (var b in bc.Boundaries.Objs) {
-                var boundaries = b.BoundCcts.Items.Select(m => m.Obj.Id).ToArray();
-                BoundaryDict.Add(b.name, boundaries);
+            foreach (var b in Boundaries.Data) {
+                var branchIds = getBranchIds(b, Branches);
+                BoundaryDict.Add(b.Code, branchIds);
+            }
+        }
+
+        //
+        Model = createNetworkModel();
+    }
+
+    public Dataset Dataset { get; private set; }
+    public BoundCalcStageResults StageResults { get; private set; }
+    public SetPointMode SetPointMode { get; private set; }
+    public DatasetData<Node> Nodes { get; private set; }
+    public DatasetData<Branch> Branches { get; private set; }
+    public DatasetData<Ctrl> Ctrls { get; private set; }
+    public DatasetData<Boundary> Boundaries { get; private set; }
+    public DatasetData<Zone> Zones { get; private set; }
+    public DatasetData<GridSubstationLocation> Locations { get; private set; }
+    public DatasetData<Generator> Generators { get; private set; }
+    public DatasetData<TransportModel> TransportModels { get; private set; }
+    public TransportModel? TransportModel { get; private set; }
+    public DatasetData<TransportModelEntry> TransportModelEntries { get; private set; }
+    public Dictionary<string, int[]> BoundaryDict { get; private set; }
+    public Network? Model { get; private set; }
+
+    private ProgressManager _progressManager = new ProgressManager();
+    public ProgressManager ProgressManager
+    {
+        get {
+            return _progressManager;
+        }
+    }
+
+    private int[] getBranchIds(Boundary b, DatasetData<Branch> branchDi)
+    {
+        var branchIds = new List<int>();
+        foreach (var br in branchDi.Data) {
+            var z1 = br.Node1.Zone;
+            var z2 = br.Node2.Zone;
+            var in1 = b.Zones.FirstOrDefault(m => m.Id == z1.Id) != null;
+            var in2 = b.Zones.FirstOrDefault(m => m.Id == z2.Id) != null;
+            if (in1 ^ in2) {
+                branchIds.Add(br.Id);
+            }
+        }
+        return branchIds.ToArray();
+    }
+
+    private DatasetData<GridSubstationLocation> loadLocations(DataAccess da, int datasetId)
+    {
+        var q = da.Session.QueryOver<GridSubstationLocation>();
+        var locs = new DatasetData<GridSubstationLocation>(da, datasetId, m => m.Id.ToString(), q);
+        return locs;
+    }
+
+    private (DatasetData<TransportModel> tmDi, DatasetData<TransportModelEntry>? tmeDi) loadTransportModels(DataAccess da, int datasetId)
+    {
+        return da.BoundCalc.GetTransportModelDatasetData(datasetId, null, true);
+    }
+
+    private void setTransportModelScalings(DataAccess da, int datasetId)
+    {
+        var nodeGenDi = da.BoundCalc.GetNodeGeneratorDatasetData(datasetId, null);
+    }
+
+    private Network? createNetworkModel()
+    {
+        // Clear dictionaries
+        _nodeDict.Clear();
+        _reverseNodeDict.Clear();
+        _branchDict.Clear();
+        _reverseBranchDict.Clear();
+        _ctrlDict.Clear();
+        _reverseCtrlDict.Clear();
+        // set as static field in Network to allow diagnostic messages to be generated "internally" and get recorded as a StageResult
+        // and hence shown in the gui
+        // Network.Nodes
+        List<Network.Node> networkNodes = [];
+        foreach (var n in Nodes.Data) {
+            Network.Node netNode = new(n.Code, n.ZoneName, 1, n.Demand, n.Generation, n.ScInFeed(), n.FaultLimit(), n.Ext);
+            _nodeDict.Add(n, netNode);
+            _reverseNodeDict.Add(netNode, n);
+            networkNodes.Add(netNode);
+        }
+        // Network.Branches
+        List<Network.Branch> networkBranches = [];
+        foreach (var b in Branches.Data) {
+            Network.BranchSpec bsSpec = new(b.LineName, b.X, b.Cap, b.R, 0, b.CableLength + b.OHL);
+            var node1 = _nodeDict[b.Node1];
+            var node2 = _nodeDict[b.Node2];
+            Network.Branch bs = new(node1, node2, bsSpec);
+            _branchDict.Add(b, bs);
+            _reverseBranchDict.Add(bs, b);
+            networkBranches.Add(bs);
+        }
+        // Boundaries
+        List<Network.BoundSpec> networkBoundaries = [];
+        foreach (var bo in Boundaries.Data) {
+            var zoneNames = bo.Zones.Select(m => m.Code).ToArray();
+            networkBoundaries.Add(new(bo.Code, zoneNames));
+        }
+        // Controls
+        List<Network.ControlSpec> networkControlSpecs = [];
+        foreach (var co in Ctrls.Data) {
+            Network.ControlSpec cs = new(co.LineName, co.Type.ToString(), co.Cost, co.MinCtrl, co.MaxCtrl);
+            networkControlSpecs.Add(cs);
+        }
+
+        // Ensure we have some nodes
+        if (networkNodes.Count > 0) {
+            Network fullnet = new(networkNodes, networkBranches, networkControlSpecs, networkBoundaries);
+            //
+            int i = 0;
+            // add the actual controls created to a dictionary - relies on fact that they are in the Controls list
+            // in the same order as appears in networkControlSpecs list
+            foreach (var control in fullnet.Controls) {
+                var ctrl = Ctrls.Data[i];
+                _ctrlDict.Add(ctrl, control);
+                _reverseCtrlDict.Add(control, ctrl);
+                i++;
             }
             //
-            TransportModel = bc.TransportModel;
-        }
 
-        public DatasetData<Node> Nodes { get; private set; }
-        public DatasetData<Branch> Branches { get; private set; }
-        public DatasetData<Ctrl> Ctrls { get; private set; }
-        public DatasetData<Boundary> Boundaries { get; private set; }
-        public DatasetData<Zone> Zones { get; private set; }
-        public DatasetData<GridSubstationLocation> Locations { get; private set; }
-        public DatasetData<Generator> Generators { get; private set; }
-        public DatasetData<TransportModel> TransportModels { get; private set; }
-        public TransportModel? TransportModel { get; private set; }
-        public DatasetData<TransportModelEntry> TransportModelEntries { get; private set; }
-        public Dictionary<string, int[]> BoundaryDict { get; private set; }
-        private DatasetData<GridSubstationLocation> loadLocations(DataAccess da, int datasetId)
-        {
-            var q = da.Session.QueryOver<GridSubstationLocation>();
-            var locs = new DatasetData<GridSubstationLocation>(da, datasetId, m => m.Id.ToString(), q);
-            return locs;
-        }
-
-        private DatasetData<Generator> loadGenerators(DataAccess da, int datasetId)
-        {
-            var q = da.Session.QueryOver<Generator>();
-            var objs = new DatasetData<Generator>(da, datasetId, m => m.Id.ToString(), q);
-            return objs;
-        }
-
-        private (DatasetData<TransportModel> tmDi, DatasetData<TransportModelEntry>? tmeDi) loadTransportModels(DataAccess da, int datasetId)
-        {
-            return da.BoundCalc.GetTransportModelDatasetData(datasetId, null, true);
-        }
-
-        private void setTransportModelScalings(DataAccess da, int datasetId)
-        {
-            var nodeGenDi = da.BoundCalc.GetNodeGeneratorDatasetData(datasetId, null);
-            foreach (var tm in this.TransportModels.Data) {
-                tm.UpdateScaling(Nodes.Data, nodeGenDi.Data, this.Generators.Data);
-            }
-        }
-
-        private void assignNodeLocations()
-        {
-            // create dictionary using ref. as key
-            var locs = Locations.Data;
-            var nodes = Nodes.Data;
-            var locDict = new Dictionary<string, GridSubstationLocation>();
-            foreach (var loc in locs) {
-                if (!locDict.ContainsKey(loc.Reference)) {
-                    locDict.Add(loc.Reference, loc);
-                }
-            }
-            // look up node location based on first 4 chars of code
-            foreach (var n in nodes) {
-                var locCode = n.Code.Substring(0, 4);
-                if (n.Ext) {
-                    locCode += "X";
-                }
-                if (locDict.ContainsKey(locCode)) {
-                    n.Location = locDict[locCode];
-                }
-            }
-
-        }
-
-        private void assignIsGGSP(DataAccess da)
-        {
-            Logger.Instance.LogInfoEvent("Started finding GSPs for nodes");
-            var dates = da.Elexon.GetGspDemandDates();
-            var endDate = dates[dates.Count - 1];
-            var profiles = da.Elexon.GetGspDemandProfiles(endDate, endDate, null);
-            var codes = profiles.Select(m => m.GspCode).Distinct().ToList();
-            var codeDict = new Dictionary<string, int>(codes.Count);
-            foreach (var code in codes) {
-                codeDict.Add(code, 0);
-            }
-            List<Node> missingGspNodes = new List<Node>();
-            foreach (var node in Nodes.Data) {
-                var nodeRef = node.Code.Substring(0, 4);
-                // often demand are < 0 as well as > 0
-                if (node.Demand != 0 && codeDict.TryGetValue(nodeRef, out int count)) {
-                    node.IsGSP = true;
-                    count++;
-                    codeDict[nodeRef] = count;
-                } else {
-                    node.IsGSP = false;
-                    if (node.Demand != 0) {
-                        missingGspNodes.Add(node);
-                    }
-                }
-            }
+            fullnet.Reporter = _reporter;
             //
-            var nonRefGSPs = codeDict.Where(m => m.Value == 0).Select(m => m.Key).OrderBy(m => m).ToList();
-            //foreach (var gsp in nonRefGSPs) {
-            //    Logger.Instance.LogInfoEvent($"GSP not referenced by nodes [{gsp}]");
-            //}
+            Report("Nodes", fullnet.Nodes.Count);
+            Report("Branches", fullnet.Branches.Count);
+            Report("Controls", fullnet.Controls.Count);
+            Report("Boundaries", fullnet.BoundaryDict.Count);
+            Report("HVDC nodes", fullnet.Nord.NodeCount - fullnet.Nord.ACNodeCount);
+            Report("INZC", fullnet.Nord.INZC);
+            Report("FNZC", fullnet.Nord.FNZC);
+            Report("Total Demand (MW)", fullnet.SystemDemand.ToString("F0"));
+            Report("Total Generation (MW)", fullnet.SystemGeneration.ToString("F0"));
+            Report("Ref. node", fullnet.Nord.LFReference().Name);
 
-            double demand = 0;
-            int missingNodes = 0;
-            foreach (var node in missingGspNodes) {
-                var gspGroupId = getGspDemandGroupId(node.Dem_zone);
-                var poss1 = profiles.Where(m => nonRefGSPs.Contains(m.GspCode)).ToList();
-                var poss2 = poss1.Where(m => m.GspGroupId == gspGroupId && m.GspCode.StartsWith(node.Code.Substring(0, 3))).ToList();
-                if (poss2.Count == 1) {
-                    codeDict[poss2[0].GspCode]++;
-                } else {
-                    demand += node.Demand;
-                    missingNodes++;
-                    Logger.Instance.LogInfoEvent($"Cannot find GSP for node [{node.Code}] [{node.Demand}]");
-                }
-            }
-            nonRefGSPs = codeDict.Where(m => m.Value == 0).Select(m => m.Key).OrderBy(m => m).ToList();
-            foreach (var gsp in nonRefGSPs) {
-                Logger.Instance.LogInfoEvent($"GSP not referenced by nodes [{gsp}]");
-            }
-            Logger.Instance.LogInfoEvent($"Finished finding GSPs for nodes, total nodes with missing GSP [{missingNodes}], demand=[{demand}], GSPs not ref. by nodes=[{nonRefGSPs.Count}]");
-        }
-
-        private string getGspDemandGroupId(int? dem_zone) {
-            if (dem_zone == 1) {
-                return "_P";
-            } else if (dem_zone == 2) {
-                return "_N";
-            } else if (dem_zone == 3) {
-                return "_F";
-            } else if (dem_zone == 4) {
-                return "_G";
-            } else if (dem_zone == 5) {
-                return "_M";
-            } else if (dem_zone == 6) {
-                return "_D";
-            } else if (dem_zone == 7) {
-                return "_B";
-            } else if (dem_zone == 8) {
-                return "_E";
-            } else if (dem_zone == 9) {
-                return "_A";
-            } else if (dem_zone == 10) {
-                return "_K";
-            } else if (dem_zone == 11) {
-                return "J";
-            } else if (dem_zone == 12) {
-                return "_C";
-            } else if (dem_zone == 13) {
-                return "_H";
-            } else if (dem_zone == 14) {
-                return "_L";
-            } else {
-                throw new Exception($"Unexpected value for dmeand zone [{dem_zone}]");
-            }
+            return fullnet;
+        } else {
+            return null;
         }
 
     }
+
+
+    public static string AddDefaultTransportModels(int datasetId)
+    {
+        string msg = "";
+        using (var da = new DataAccess()) {
+            (var tmDi, var tmeDi) = da.BoundCalc.GetTransportModelDatasetData(datasetId, null, false);
+            var dataset = da.Datasets.GetDataset(datasetId);
+            // If we haven;t got any transport models then add 2 default ones
+            if (tmDi.Data.Count == 0 && tmDi.DeletedData.Count == 0) {
+                msg += addTransportModel(da, dataset, "Peak Security", new Dictionary<GeneratorType, double>() {
+                    { GeneratorType.Interconnector, 0 },
+                    { GeneratorType.Tidal, 0 },
+                    { GeneratorType.Wave, 0 },
+                    { GeneratorType.WindOffshore, 0 },
+                    { GeneratorType.WindOnshore, 0 },
+                });
+                msg += addTransportModel(da, dataset, "Economy Test", new Dictionary<GeneratorType, double>() {
+                    { GeneratorType.Interconnector, 1 },
+                    { GeneratorType.Nuclear, 0.85 },
+                    { GeneratorType.OCGT, 0 },
+                    { GeneratorType.PumpStorage, 0.5 },
+                    { GeneratorType.Tidal, 0.7 },
+                    { GeneratorType.Wave, 0.7 },
+                    { GeneratorType.WindOffshore, 0.7 },
+                    { GeneratorType.WindOnshore, 0.7 },
+                });
+                da.CommitChanges();
+            }
+        }
+        return msg;
+    }
+
+    private static string addTransportModel(DataAccess da, Dataset dataset, string name, Dictionary<GeneratorType, double> initialScalingDict)
+    {
+        string msg = "";
+        var tm = new TransportModel(dataset);
+        tm.Name = name;
+        da.BoundCalc.Add(tm);
+        //
+        foreach (var gt in Enum.GetValues<GeneratorType>()) {
+            // ignore interconnectors as modelled as a control
+            var autoScaling = true;
+            double scaling = 0;
+            if (initialScalingDict.ContainsKey(gt)) {
+                autoScaling = false;
+                scaling = initialScalingDict[gt];
+            }
+            var tme = new TransportModelEntry(tm, dataset) {
+                GeneratorType = gt,
+                TransportModel = tm,
+                AutoScaling = autoScaling,
+                Scaling = scaling,
+            };
+            da.BoundCalc.Add(tme);
+        }
+        msg += $"Added transport model [{name}]\n";
+        return msg;
+    }
+
+    public void Report(string msg, object obj, ReportState state = ReportState.Pass)
+    {
+        _reporter.Report(msg, obj, state);
+    }
+
+    public static BoundCalcResults Run(
+        int datasetId,
+        SetPointMode setPointMode,
+        int transportModelId,
+        bool nodeMarginals,
+        string? boundaryName = null,
+        bool boundaryTrips = false,
+        string? tripStr = null,
+        string? connectionId = null,
+        IHubContext<NotificationHub> hubContext = null)
+    {
+        var nd = new BoundCalcNetworkData(datasetId, transportModelId);
+        if (connectionId != null) {
+            nd.ProgressManager.ProgressUpdate += (m, p) => {
+                hubContext.Clients.Client(connectionId).SendAsync("BoundCalc_AllTripsProgress", new { msg = m, percent = p });
+            };
+        }
+        nd.ProgressManager.Start("Calculating", 1);
+
+        // Get network model and check not null
+        var fullnet = nd.Model;
+        if (fullnet == null) {
+            throw new Exception("Unexpected null Network model");
+        }
+        //
+        Network.BaseLoadFlow baseLf = new(fullnet, Network.Node.DefaultGetGen, Network.Node.DefaultGetDem);
+        Network.Node lmn = baseLf.LargestMismatch();
+        nd.Report($"No control max. mismatch at {lmn.Name}", baseLf.Mismatch(lmn).ToString("F1"));
+
+        // Create network optimiser model for this network - (this could be stored in Network object?)
+        NetOptimiserDescription netoptdesc = new(fullnet);
+        // Create network optimiser instance
+        NetOptimiser netopt = new(netoptdesc);
+
+        //Initial setpoints for controls (manual controls may be adjusted)
+        Network.CtrlSetPoints isetpts = new("isetpts", fullnet);
+        //Updated set to balance HVDC nodes
+        (LPResult rc1, int rc2) = netopt.BalanceHVDCNodes(isetpts, out Network.CtrlSetPoints hvdcsetpts);
+        nd.Report($"\nBalancing HVDC nodes result", $"{rc1}:{rc2}");
+
+        BoundCalcBoundaryTripResults bcTripResults = null;
+        if (boundaryName == null) {
+            //
+            // No boundary specified
+            //
+            Network.TripSpec ts = null;
+            if (tripStr != null) {
+                // with user supplied trips
+                string[] trips = tripStr.Split(',');
+                ts = new("", trips);
+            } else {
+                // no trips
+                ts = new("Intact");
+            }
+            Network.NetState ns = new(baseLf, ts , isetpts);
+            (rc1, rc2, bool disc) = netopt.OptimiseNet(ns, out Network.FullLoadFlow lf, out _);
+            nd.Report($"\nOptimising network", $"{rc1}:{rc2}");
+            // Fill in node mismatches, branch flows etc into NetworkData
+            nd.FillResults(lf, ns.NSetPts, nodeMarginals);
+        } else {
+            //
+            // Boundary specified
+            //
+            // Get boundary from fullnet
+            Network.Boundary bnd = fullnet.BoundaryDict[boundaryName];
+            // Get ranking limits for intact boundary
+            Network.Boundary.LimitList bIntact = netopt.OptimiseBoundary(isetpts, bnd, bnd.InterconMargin, baseLf, [new("Intact")], 12);
+            // Get ranking limits for single ccts
+            Network.Boundary.LimitList bSingle = netopt.OptimiseBoundary(isetpts, bnd, bnd.InterconMargin, baseLf, bnd.SCTrips, 24);
+            // Get ranking limits for double ccts
+            Network.Boundary.LimitList bDouble = netopt.OptimiseBoundary(isetpts, bnd, 0.5 * bnd.InterconMargin, baseLf, bnd.DCTrips, 24);
+            // Calculate worst limit from the worst 3 we have
+            var lims = new List<Network.Boundary.Limit> { bIntact.TopN[0], bSingle.TopN[0], bDouble.TopN[0] };
+            Network.Boundary.Limit worstLimit = lims.OrderBy(m => m.BoundCap).FirstOrDefault();
+            // Fill branch/node/ctrl results with worstLimit
+            if (worstLimit.SetPoints != null) {
+                nd.FillResults(worstLimit.Loadflow, worstLimit.SetPoints, nodeMarginals);
+            } else {
+                throw new Exception("Unexpected null SetPoints");
+            }
+            //
+            bcTripResults = new BoundCalcBoundaryTripResults(nd, bIntact, bSingle, bDouble, worstLimit);
+        }
+
+        nd.ProgressManager.Finish();
+
+        //
+        return new BoundCalcResults(nd, bcTripResults);
+    }
+
+    public void FillResults(Network.LoadFlow lf, Network.CtrlSetPoints setPts, bool nodeMarginals = false)
+    {
+        // always do node marginals
+        double[]? margkm = null, tlf = null;
+        if (nodeMarginals) {
+            lf.CalcNodeMarginals(out margkm, out tlf);
+        }
+        foreach (var n in Nodes.Data) {
+            var netNode = _nodeDict[n];
+            n.Mismatch = lf.Mismatch(netNode);
+            if (nodeMarginals && tlf != null && margkm != null) {
+                n.TLF = tlf[netNode.Index];
+                n.km = margkm[netNode.Index];
+            }
+        }
+        foreach (var b in Branches.Data) {
+            if (Model.BranchDict.TryGetValue(b.LineName, out Network.Branch netBranch)) {
+                b.PowerFlow = lf.Flow(netBranch);
+                b.FreePower = lf.CalcBrFree(netBranch);
+            } else {
+                throw new Exception($"Cannot find Network.Branch with code {b.LineName}");
+            }
+        }
+        foreach (var c in Ctrls.Data) {
+            var lineName = c.LineName;
+            var netControl = Model.Controls.Where(m => m.Name == lineName).FirstOrDefault();
+            if (netControl != null) {
+                c.SetPoint = setPts[netControl];
+            } else {
+                throw new Exception($"Cannot find Network.Control with code {lineName}");
+            }
+        }
+    }
+
+    public Network.Control GetNetworkControl(Ctrl ctrl)
+    {
+        if (_ctrlDict.TryGetValue(ctrl, out var cs)) {
+            return cs;
+        } else {
+            throw new Exception($"Ctrl dict does contain expected key [{ctrl.Code}]");
+        }
+    }
+
+    public List<Branch> GetBranches( IEnumerable<string> itemNames)
+    {
+        var fullnet = Model;
+        var branches = new List<Branch>();
+        foreach (var itemName in itemNames) {
+            if (fullnet.BranchDict.TryGetValue(itemName, out var nb)) {
+                if (_reverseBranchDict.TryGetValue(nb, out var br)) {
+                    branches.Add(br);
+                } else {
+                    throw new Exception($"Cannot find Branch with name [{nb.Name}]");
+                }
+            } else {
+                throw new Exception($"Cannot find Network.Branch with name [{itemName}]");
+            }
+        }
+        //
+        return branches;
+    }
+
+    public class Reporter : IReporter {
+        private BoundCalcStageResults _stageResults = new BoundCalcStageResults();
+        public void Report(string msg, object obj, ReportState state = ReportState.Pass)
+        {
+            BoundCalcStageResultEnum result;
+            if (state == ReportState.Pass) {
+                result = BoundCalcStageResultEnum.Pass;
+            } else if (state == ReportState.Fail) {
+                result = BoundCalcStageResultEnum.Fail;
+            } else if (state == ReportState.Warning) {
+                result = BoundCalcStageResultEnum.Warn;
+            } else {
+                throw new Exception($"Unexpected value of ReportState [{state}]");
+            }
+            var sr = _stageResults.NewStage(msg);
+            _stageResults.StageResult(sr, result, obj != null ? obj.ToString() : "");
+        }
+
+        public BoundCalcStageResults StageResults
+        {
+            get {
+                return _stageResults;
+            }
+        }
+    }
+
 }
