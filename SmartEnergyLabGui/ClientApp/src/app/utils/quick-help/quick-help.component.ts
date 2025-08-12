@@ -23,18 +23,30 @@ export class QuickHelpComponent  {
     @Input()
     title:string =""
 
+    private timeoutId: number = 0
     mouseEnterIcon() {
-        console.log('mouseEnterIcon')
         if (this.helpIcon) {
             var element = this.helpIcon.nativeElement
             let box = element.getBoundingClientRect()
             let xPos = box.x - 15
             let yPos = box.y - 10
-            this.helpService.showQuickHelp(this.helpId, this.title, xPos, yPos )
+            // clear any that haven;t been fired yet
+            if ( this.timeoutId) {
+                window.clearTimeout(this.timeoutId)
+            }
+            this.timeoutId = window.setTimeout( ()=>{
+                this.timeoutId = 0
+                this.helpService.showQuickHelp(this.helpId, this.title, xPos, yPos)
+            }, 300 )
         }
     }
 
     mouseLeaveIcon() {
+        // Cancel any pending timeouts. This allows the user to quickly mouse over
+        // icon and cause the quickHelp to be displayed
+        if ( this.timeoutId) {
+            window.clearTimeout(this.timeoutId)
+        }
     }
 
 
