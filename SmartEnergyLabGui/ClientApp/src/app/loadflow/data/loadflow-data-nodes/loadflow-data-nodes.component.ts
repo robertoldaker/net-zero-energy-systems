@@ -7,6 +7,7 @@ import { DataTableBaseComponent } from '../../../datasets/data-table-base/data-t
 import { SortDirection } from '@angular/material/sort';
 import { LoadflowHomeComponent } from '../../loadflow-home/loadflow-home.component';
 import { LoadflowDataComponent } from '../loadflow-data/loadflow-data.component';
+import { DatasetsService } from 'src/app/datasets/datasets.service';
 
 @Component({
     selector: 'app-loadflow-data-nodes',
@@ -18,7 +19,7 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
     constructor(
         private dataService: LoadflowDataService,
         private dialogService: DialogService,
-        private dataComponent: LoadflowDataComponent,
+        private datasetsService: DatasetsService,
      ) {
         super();
         this.dataFilter.sort = { active: 'code', direction: 'asc'};
@@ -114,7 +115,9 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
         let node = this.dataService.networkData.nodes.data.find(m=>m.id == nodeId)
         if ( node ) {
             let genId = gen.id
-            return node.newGenerators.find(m=>m.id == genId) ? true : false
+            let newGen = node.newGenerators.find(m=>m.id == genId) ? true : false
+            let delGen = node.deletedGenerators.find(m => m.id == genId) ? true : false
+            return newGen || delGen;
         } else {
             throw `Cannot find node with id ${nodeId}`
         }
@@ -132,6 +135,10 @@ export class LoadflowDataNodesComponent extends DataTableBaseComponent<Node> {
                 console.log(errors)
             })
         }
+    }
+
+    get isEditable():boolean {
+        return this.datasetsService.isEditable
     }
 
     codeDataFilter: ColumnDataFilter

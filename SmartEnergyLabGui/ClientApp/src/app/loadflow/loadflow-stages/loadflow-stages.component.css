@@ -1,11 +1,12 @@
 .mat-column-result {
-    text-align: center;    
+    text-align: center;
 }
 td.mat-column-comment {
     padding-left: 1rem;
     font-size: 0.8rem;
     font-style: italic;
     text-align: right;
+    white-space: nowrap;
 }
 th.mat-column-comment {
     padding-left: 1rem;

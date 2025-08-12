@@ -64,7 +64,8 @@
                         <tr *ngFor="let g of element.generators.value">
                             <td>
                                 <div class="generatorButton" [class]="{isLocalEdit: isLocalGenerator(element.id.value, g)}">
-                                    <app-mini-icon-button title="Delete" (click)="deleteGenerator(element.id.value,g)" iconName="delete_forever" style="font-size: 1rem; vertical-align: middle;"></app-mini-icon-button>
+                                    <app-mini-icon-button *ngIf="isEditable" title="Delete" (click)="deleteGenerator(element.id.value,g)"
+                                        iconName="delete_forever" style="font-size: 1rem; vertical-align: middle;"></app-mini-icon-button>
                                     <app-loadflow-gen-svgs [genType]="g.type" [width]="'25px'"></app-loadflow-gen-svgs>
                                     <span>{{g.name}}</span>
                                 </div>
@@ -73,8 +74,10 @@
                         </tr>
                         <tr *ngFor="let g of element.deletedGenerators.value" class="deleted">
                             <td>
-                                <app-mini-icon-button title="Un-delete" (click)="unDeleteGenerator(element.id.value,g)" iconName="restore_from_trash" style="font-size: 1rem; vertical-align: middle;"></app-mini-icon-button>
-                                <span>{{g.name}}</span>
+                                <div class="generatorButton"  [class]="{isLocalEdit: isLocalGenerator(element.id.value, g)}">
+                                    <app-mini-icon-button title="Un-delete" (click)="unDeleteGenerator(element.id.value,g)" iconName="restore_from_trash" style="font-size: 1rem; vertical-align: middle;"></app-mini-icon-button>
+                                    <span>{{g.name}}</span>
+                                </div>
                             </td>
                             <td></td>
                         </tr>
