@@ -155,6 +155,7 @@ export class LoadflowDataService {
             this.calcTotals()
             this.NetworkDataLoaded.emit(results)
             this.updateLocationData(false)
+            this.setSetPointMode(SetPointMode.Auto)
             //
             if ( onLoad ) {
                 onLoad()
@@ -366,8 +367,13 @@ export class LoadflowDataService {
     public setSetPointMode(setPointMode: SetPointMode) {
         if ( setPointMode == SetPointMode.Auto) {
             this.setPointMode = setPointMode
+            this.needsCalc = true
             this.SetPointModeChanged.emit(this.setPointMode)
-        } else {
+        } else if (setPointMode == SetPointMode.BalanceHVDCNodes) {
+            this.setPointMode = setPointMode
+            this.needsCalc = true
+            this.SetPointModeChanged.emit(this.setPointMode)
+        } else if ( setPointMode == SetPointMode.Manual) {
             // manual mode so setup the user edits
             if ( this.loadFlowResults == undefined) {
                 throw "Unexpected undefined loadflow results"

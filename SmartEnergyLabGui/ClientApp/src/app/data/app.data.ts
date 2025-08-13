@@ -271,7 +271,7 @@ export interface EVDemandStatus {
  * BoundCalc
  */
 
-export enum SetPointMode {Zero,Auto,Manual}
+export enum SetPointMode {Auto, Manual, BalanceHVDCNodes}
 
 export interface LoadflowResults {
     stageResults: StageResults,
@@ -600,7 +600,7 @@ export interface UserEdit {
     columnName: string,
     value: string,
     prevValue: string,
-    newDatasetId: number
+    newDatasetId: number,
 }
 
 export interface DatasetData<T> {

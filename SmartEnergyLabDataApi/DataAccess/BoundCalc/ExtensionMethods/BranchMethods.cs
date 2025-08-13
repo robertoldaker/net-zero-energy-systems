@@ -6,6 +6,86 @@ using SmartEnergyLabDataApi.Models;
 namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
     public static class BranchMethods {
+        private static Dictionary<string, Dictionary<int, double>> _kmScalingOHL = new Dictionary<string, Dictionary<int, double>>()
+{
+            {
+                "NGC",new Dictionary<int, double>()
+                {
+                    {400, 1 },
+                    {275, 1.2},
+                    {132, 2.87}
+                }
+            },
+            {
+                "SP",new Dictionary<int, double>()
+                {
+                    {400, 1 },
+                    {275, 1.2},
+                    {132, 2.87}
+                }
+            },
+            {
+                "SSE",new Dictionary<int, double>()
+                {
+                    {400, 1 },
+                    {275, 1.2},
+                    {132, 2.59}
+                }
+            },
+        };
+
+        private static Dictionary<string, Dictionary<int, double>> _kmScalingCable = new Dictionary<string, Dictionary<int, double>>()
+        {
+            {
+                "NGC",new Dictionary<int, double>()
+                {
+                    {400, 10.2 },
+                    {275, 11.45},
+                    {132, 22.58}
+                }
+            },
+            {
+                "SP",new Dictionary<int, double>()
+                {
+                    {400, 10.2 },
+                    {275, 11.45},
+                    {132, 22.58}
+                }
+            },
+            {
+                "SSE",new Dictionary<int, double>()
+                {
+                    {400, 10.2 },
+                    {275, 11.45},
+                    {132, 22.77}
+                }
+            },
+        };
+
+        public static void SetKm(this Branch br)
+        {
+            // non transformer with non-zero cable or OHL length
+            if (br.Node1.Voltage == br.Node2.Voltage && (br.OHL > 0 || br.CableLength > 0)) {
+                double scalingOHL, scalingCable;
+                Dictionary<int, double> voltageDict;
+                if (_kmScalingOHL.TryGetValue(br.Region, out voltageDict)) {
+                    if (!voltageDict.TryGetValue(br.Node1.Voltage, out scalingOHL)) {
+                        throw new Exception($"Cannot find OHL scaling factor for node [{br.Node1.Name}], voltage [{br.Node1.Voltage}]");
+                    }
+                } else {
+                    throw new Exception($"Cannot find OHL scaling factor for branch [{br.Code}], region [{br.Region}]");
+                }
+                if (_kmScalingCable.TryGetValue(br.Region, out voltageDict)) {
+                    if (!voltageDict.TryGetValue(br.Node1.Voltage, out scalingCable)) {
+                        throw new Exception($"Cannot find OHL scaling factor for node [{br.Node1.Name}], voltage [{br.Node1.Voltage}]");
+                    }
+                } else {
+                    throw new Exception($"Cannot find OHL scaling factor for branch [{br.Code}], region [{br.Region}]");
+                }
+                br.km = br.OHL * scalingOHL + br.CableLength * scalingCable;
+            }
+        }
+
         public static string GetKey(this Branch b)
         {
             return b.LineName;

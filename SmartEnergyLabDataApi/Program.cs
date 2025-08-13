@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.OpenApi.Models;
 using Npgsql;
+using SmartEnergyLabDataApi.BoundCalc;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.Data.BoundCalc;
 using SmartEnergyLabDataApi.Models;
@@ -170,6 +171,9 @@ public static class Program
         EditItemModel.AddHandler<Link>(new LinkItemHandler());
         EditItemModel.AddHandler<MiscParams>(new MiscParamsItemHandler());
         EditItemModel.AddHandler<PeakDemand>(new PeakDemandItemHandler());
+
+        // add new dataset handler for BoundCalc
+        NewDatasetModel.RegisterAfterSave(DatasetType.BoundCalc, BoundCalcNetworkData.NewDataset);
 
         app.Run();
     }

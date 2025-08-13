@@ -5,11 +5,15 @@ using Microsoft.AspNetCore.SignalR;
 using Lad.NetworkOptimiser;
 using Lad.LinearProgram;
 using GeneratorType = SmartEnergyLabDataApi.Data.BoundCalc.GeneratorType;
+using System.Text.RegularExpressions;
 
 
 namespace SmartEnergyLabDataApi.BoundCalc;
 
+public enum SetPointModeNew { Auto, Manual, BalanceHVDCNodes }
+
 public class BoundCalcNetworkData {
+
     private Dictionary<Node, Network.Node> _nodeDict = new Dictionary<Node, Network.Node>();
     private Dictionary<Network.Node, Node> _reverseNodeDict = new Dictionary<Network.Node, Node>();
     private Dictionary<Branch, Network.BranchSpec> _branchDict = new Dictionary<Branch, Network.BranchSpec>();
@@ -53,7 +57,7 @@ public class BoundCalcNetworkData {
         TransportModel = bc.TransportModel;
     }
 
-    public BoundCalcNetworkData(int datasetId, int transportModelId = 0, SetPointMode setPointMode = SetPointMode.Auto)
+    public BoundCalcNetworkData(int datasetId, int transportModelId = 0)
     {
         // Ensure we have at least one transport model
         BoundCalcNetworkData.AddDefaultTransportModels(datasetId);
@@ -63,7 +67,6 @@ public class BoundCalcNetworkData {
             if (Dataset == null) {
                 throw new Exception($"Cannot find dataset with id=[{datasetId}]");
             }
-            SetPointMode = setPointMode;
             //
             StageResults = _reporter.StageResults;
 
@@ -86,6 +89,10 @@ public class BoundCalcNetworkData {
             Nodes = da.BoundCalc.GetNodeDatasetData(datasetId, null, true);
             // Branches and controls
             (Branches, Ctrls) = da.BoundCalc.GetBranchDatasetData(datasetId, null, true);
+            // This sets br.km
+            foreach (var br in Branches.Data) {
+                br.SetKm();
+            }
             // Boundaries
             Boundaries = da.BoundCalc.GetBoundaryDatasetData(datasetId);
             // Zones
@@ -114,7 +121,6 @@ public class BoundCalcNetworkData {
 
     public Dataset Dataset { get; private set; }
     public BoundCalcStageResults StageResults { get; private set; }
-    public SetPointMode SetPointMode { get; private set; }
     public DatasetData<Node> Nodes { get; private set; }
     public DatasetData<Branch> Branches { get; private set; }
     public DatasetData<Ctrl> Ctrls { get; private set; }
@@ -312,7 +318,7 @@ public class BoundCalcNetworkData {
 
     public static BoundCalcResults Run(
         int datasetId,
-        SetPointMode setPointMode,
+        SetPointModeNew setPointMode,
         int transportModelId,
         bool nodeMarginals,
         string? boundaryName = null,
@@ -344,17 +350,15 @@ public class BoundCalcNetworkData {
         // Create network optimiser instance
         NetOptimiser netopt = new(netoptdesc);
 
-        //Initial setpoints for controls (manual controls may be adjusted)
+        // Initial setpoints for controls (manual controls may be adjusted)
         Network.CtrlSetPoints isetpts = new("isetpts", fullnet);
-        //Updated set to balance HVDC nodes
-        (LPResult rc1, int rc2) = netopt.BalanceHVDCNodes(isetpts, out Network.CtrlSetPoints hvdcsetpts);
-        nd.Report($"\nBalancing HVDC nodes result", $"{rc1}:{rc2}");
 
         BoundCalcBoundaryTripResults bcTripResults = null;
         if (boundaryName == null) {
             //
             // No boundary specified
             //
+            // setup trips
             Network.TripSpec ts = null;
             if (tripStr != null) {
                 // with user supplied trips
@@ -364,11 +368,32 @@ public class BoundCalcNetworkData {
                 // no trips
                 ts = new("Intact");
             }
-            Network.NetState ns = new(baseLf, ts , isetpts);
-            (rc1, rc2, bool disc) = netopt.OptimiseNet(ns, out Network.FullLoadFlow lf, out _);
-            nd.Report($"\nOptimising network", $"{rc1}:{rc2}");
-            // Fill in node mismatches, branch flows etc into NetworkData
-            nd.FillResults(lf, ns.NSetPts, nodeMarginals);
+            if (setPointMode == SetPointModeNew.Auto) {
+                Network.NetState ns = new(baseLf, ts, isetpts);
+                (var rc1, var rc2, bool disc) = netopt.OptimiseNet(ns, out Network.FullLoadFlow lf, out _);
+                var state = rc1 == LPResult.Optimum ? ReportState.Pass : ReportState.Fail;
+                nd.Report($"\nOptimising network", $"{rc1}:{rc2}", state);
+                // Fill in node mismatches, branch flows etc into NetworkData
+                nd.FillResults(lf, ns.NSetPts, nodeMarginals);
+            } else if (setPointMode == SetPointModeNew.BalanceHVDCNodes) {
+                (LPResult rc1, int rc2) = netopt.BalanceHVDCNodes(isetpts, out Network.CtrlSetPoints hvdcsetpts);
+                var state = rc1 == LPResult.Optimum ? ReportState.Pass : ReportState.Fail;
+                nd.Report($"\nBalancing HVDC nodes result", $"{rc1}:{rc2}");
+                Network.NetState ns = new(baseLf, ts, hvdcsetpts);
+                var lf = ns.MakeLoadFlow();
+                nd.FillResults(lf, hvdcsetpts, nodeMarginals);
+            } else {
+                // set setpoints from the Ctrl objects
+                foreach (var ctrl in nd.Ctrls.Data) {
+                    var control = nd.GetNetworkControl(ctrl);
+                    if (ctrl.SetPoint != null) {
+                        isetpts[control] = (double)ctrl.SetPoint;
+                    }
+                }
+                Network.NetState ns = new(baseLf, ts, isetpts);
+                var lf = ns.MakeLoadFlow();
+                nd.FillResults(lf, ns.NSetPts, nodeMarginals);
+            }
         } else {
             //
             // Boundary specified
@@ -400,9 +425,51 @@ public class BoundCalcNetworkData {
         return new BoundCalcResults(nd, bcTripResults);
     }
 
+    public static BoundCalcResults RunBoundaryTrip(int datasetId, int transportModelId, string boundaryName, string tripName, string tripStr)
+    {
+        var nd = new BoundCalcNetworkData(datasetId, transportModelId);
+        // Get network model and check not null
+        var fullnet = nd.Model;
+        //
+        if (fullnet == null) {
+            throw new Exception("Unexpected null full network model");
+        }
+        //
+        Network.BaseLoadFlow baseLf = new(fullnet, Network.Node.DefaultGetGen, Network.Node.DefaultGetDem);
+        Network.Node lmn = baseLf.LargestMismatch();
+        nd.Report($"No control max. mismatch at {lmn.Name}", baseLf.Mismatch(lmn).ToString("F1"));
+
+        // Create network optimiser model for this network - (this could be stored in Network object?)
+        NetOptimiserDescription netoptdesc = new(fullnet);
+        // Create network optimiser instance
+        NetOptimiser netopt = new(netoptdesc);
+
+        //Initial setpoints for controls (manual controls may be adjusted)
+        Network.CtrlSetPoints isetpts = new("isetpts", fullnet);
+
+        // Get boundary from fullnet
+        Network.Boundary bnd = fullnet.BoundaryDict[boundaryName];
+        // Create a new setpoints object with the bnd the active boundary
+        Network.CtrlSetPoints bndsetpts = new(bnd.Name + ">" + isetpts.Name, isetpts) { ActiveBoundary = bnd };
+        //
+        // with user supplied trips
+        Network.TripSpec ts;
+        if (string.IsNullOrEmpty(tripStr)) {
+            ts = new(tripName);
+        } else {
+            string[] trips = tripStr.Split(',');
+            ts = new(tripName, trips);
+        }
+
+        Network.NetState ns = new(baseLf, ts, bndsetpts); // Create a new netstate with the tripspec and setpoints
+        (LPResult r1, int r2, bool discon) = netopt.OptimiseNet(ns, out Network.FullLoadFlow lf, out double _);
+        nd.FillResults(lf, ns.NSetPts, false);
+        return new BoundCalcResults(nd);
+    }
+
     public void FillResults(Network.LoadFlow lf, Network.CtrlSetPoints setPts, bool nodeMarginals = false)
     {
-        // always do node marginals
+        // do node marginals if required (is processing heavy)
         double[]? margkm = null, tlf = null;
         if (nodeMarginals) {
             lf.CalcNodeMarginals(out margkm, out tlf);
@@ -434,6 +501,60 @@ public class BoundCalcNetworkData {
         }
     }
 
+    public static void NewDataset(Dataset newDataset)
+    {
+        int datasetId = newDataset.Id;
+        // Get branches in separate DataAccess instance to prevent it being overwritten
+        DatasetData<Branch> branchDi;
+        using (var da = new DataAccess()) {
+            var q = da.Session.QueryOver<Branch>();
+            branchDi = new DatasetData<Branch>(da, datasetId, m => m.Id.ToString(), q);
+        }
+
+        using (var da = new DataAccess()) {
+            // Check the dataset is owned by the user
+            var dataset = da.Datasets.GetDataset(datasetId);
+            if (dataset == null) {
+                throw new Exception($"Cannot find dataset with id [{datasetId}]");
+            }
+            //
+            var regEx = new Regex(@"^GB network (\d{4})\/\d{2} \((\d{4})\)$");
+            var match = regEx.Match(dataset.Parent.Name);
+            if (match.Success) {
+                int year, targetYear;
+                targetYear = int.Parse(match.Groups[1].Value);
+                year = int.Parse(match.Groups[2].Value);
+                adjustBranchCapacities(da, branchDi, dataset, year, targetYear);
+            }
+            da.CommitChanges();
+        }
+    }
+
+    private static void adjustBranchCapacities(DataAccess da, DatasetData<Branch> branchDi, Dataset dataset, int year, int targetYear)
+    {
+        var adjustments = da.BoundCalc.GetBoundCalcAdjustments(year, targetYear);
+        var userEdits = da.Datasets.GetUserEdits(typeof(Branch).Name, dataset.Id);
+        foreach (var adj in adjustments) {
+            var branch = branchDi.Data.FirstOrDefault(b => b.Code == adj.BranchCode);
+            if (branch != null) {
+                var userEdit = userEdits.FirstOrDefault(e => e.Key == branch.Id.ToString());
+                if (userEdit == null) {
+                    userEdit = new UserEdit() {
+                        Dataset = dataset,
+                        Key = branch.Id.ToString(),
+                        TableName = typeof(Branch).Name,
+                        ColumnName = "Cap"
+                    };
+                    da.Datasets.Add(userEdit);
+                }
+                var cap = adj.Capacity * 1.1;
+                userEdit.Value = cap.ToString();
+            } else {
+                throw new Exception($"Cannot find branch with code [{adj.BranchCode}]");
+            }
+        }
+    }
+
     public Network.Control GetNetworkControl(Ctrl ctrl)
     {
         if (_ctrlDict.TryGetValue(ctrl, out var cs)) {
@@ -443,7 +564,7 @@ public class BoundCalcNetworkData {
         }
     }
 
-    public List<Branch> GetBranches( IEnumerable<string> itemNames)
+    public List<Branch> GetBranches(IEnumerable<string> itemNames)
     {
         var fullnet = Model;
         var branches = new List<Branch>();

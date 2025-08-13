@@ -51,7 +51,8 @@
                 <div class="miniTitle">Set point mode</div>
                 <mat-radio-group aria-label="Select an option" [value]="setPointMode" (change)="setPointModeChanged($event)">
                     <div style="margin-bottom: 0.2rem"><mat-radio-button [value]="SetPointMode.Auto">Auto</mat-radio-button></div>
-                    <div><mat-radio-button [value]="SetPointMode.Manual" [disabled]="!resultsLoaded">Manual</mat-radio-button></div>
+                    <div style="margin-bottom: 0.2rem"><mat-radio-button [value]="SetPointMode.BalanceHVDCNodes">Balance HVDC nodes</mat-radio-button></div>
+                    <div><mat-radio-button [value]="SetPointMode.Manual" [disabled]="!canSelectManual">Manual</mat-radio-button></div>
                 </mat-radio-group>
             </div>
         </app-quick-help-dialog-group>

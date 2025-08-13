@@ -66,7 +66,7 @@ namespace SmartEnergyLabDataApi.Controllers
         [HttpPost]
         [Route("Run")]
         public IActionResult Run(int datasetId,
-                                    SetPointMode setPointMode,
+                                    SetPointModeNew setPointMode,
                                     int transportModelId,
                                     bool nodeMarginals = false,
                                     string? boundaryName = null,
@@ -87,10 +87,10 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("RunBoundaryTrip")]
-        public IActionResult RunBoundaryTrip(int datasetId, SetPointMode setPointMode, int transportModelId, string boundaryName, string tripName, string? tripStr)
+        public IActionResult RunBoundaryTrip(int datasetId, int transportModelId, string boundaryName, string tripName, string? tripStr)
         {
             try {
-                var resp = BoundCalc.BoundCalc.RunBoundaryTrip(datasetId, setPointMode, transportModelId, boundaryName, tripName, tripStr);
+                var resp = BoundCalcNetworkData.RunBoundaryTrip(datasetId, transportModelId, boundaryName, tripName, tripStr);
                 return this.Ok(resp);
             } catch (Exception e) {
                 return this.Ok(new BoundCalcResults(e.Message));
@@ -175,9 +175,7 @@ namespace SmartEnergyLabDataApi.Controllers
         [HttpGet]
         [Route("NetworkData")]
         public BoundCalcNetworkData NetworkData(int datasetId, int transportModelId=0) {
-            //??using( var bc = new BoundCalc.BoundCalc(datasetId,transportModelId) ) {
-                return new BoundCalcNetworkData(datasetId,transportModelId);
-            //??}
+            return new BoundCalcNetworkData(datasetId,transportModelId);
         }
 
         /// <summary>

@@ -1196,7 +1196,7 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public static BoundCalcResults Run(int datasetId,
                                                 SetPointMode setPointMode,
                                                 int transportModelId,
-                                                bool nodeMarginals=false,
+                                                bool nodeMarginals = false,
                                                 string? boundaryName = null,
                                                 bool boundaryTrips = false,
                                                 string? tripStr = null,
@@ -1278,13 +1278,14 @@ namespace SmartEnergyLabDataApi.BoundCalc
                 if (dataset.User?.Id != userId) {
                     throw new Exception($"Not authorised");
                 }
-                var ues = da.Datasets.GetUserEdits(typeof(Ctrl).Name, datasetId);
+                var colName = "SetPoint";
+                var ues = da.Datasets.GetUserEdits(typeof(Ctrl).Name, datasetId, colName );
                 foreach (var sp in initialSetPoints) {
                     var ue = ues.FirstOrDefault(m => m.Key.ToString() == sp.CtrlId.ToString());
                     if (ue == null) {
                         ue = new UserEdit() {
                             TableName = typeof(Ctrl).Name,
-                            ColumnName = "SetPoint",
+                            ColumnName = colName,
                             Dataset = dataset,
                             Key = sp.CtrlId.ToString()
                         };

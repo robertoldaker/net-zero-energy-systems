@@ -99,6 +99,16 @@ public class Datasets : DataSet {
         return data;
     }
 
+    public IList<UserEdit> GetUserEdits(string tableName, int datasetId, string colName)
+    {
+        var data = Session.QueryOver<UserEdit>().
+            Where(m => m.Dataset.Id == datasetId).
+            And(m => m.TableName == tableName).
+            And(m => m.ColumnName == colName).
+            List();
+        return data;
+    }
+
     public IList<UserEdit> GetUserEdits(string tableName, string key) {
         var data = Session.QueryOver<UserEdit>().
             Where(m => m.Key == key).

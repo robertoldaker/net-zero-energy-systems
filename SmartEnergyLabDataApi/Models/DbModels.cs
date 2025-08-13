@@ -1,3 +1,4 @@
+using System.Reflection.Metadata;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication;
@@ -105,7 +106,7 @@ namespace SmartEnergyLabDataApi.Models
     public class EditDataset {
         public string Name {get; set;}
         public int Id {get; set;}
-        
+
         [ValidateNever]
         [JsonIgnore]
         public User user {get; set;}
@@ -113,7 +114,20 @@ namespace SmartEnergyLabDataApi.Models
 
     public class NewDatasetModel : DbModel
     {
-        private NewDataset _obj;
+        private static Dictionary<DatasetType, Action<Dataset>> _afterSaveCallbackDict = new Dictionary<DatasetType, Action<Dataset>>();
+
+        public static void RegisterAfterSave(DatasetType type, Action<Dataset> afterSave)
+        {
+            lock (_afterSaveCallbackDict) {
+                if (_afterSaveCallbackDict.ContainsKey(type)) {
+                    throw new Exception($"Attempt to register second afterSave action, type=[{type}]");
+                }
+                _afterSaveCallbackDict.Add(type, afterSave);
+            }
+        }
+        protected NewDataset _obj;
+        private Dataset? _newObj;
+
         public NewDatasetModel(ControllerBase c, NewDataset obj) : base(c)
         {
             _obj = obj;
@@ -132,19 +146,29 @@ namespace SmartEnergyLabDataApi.Models
 
         protected override void beforeSave()
         {
-            Dataset newObj;
             var user = _da.Users.GetUser(_c.GetUserId());
-            newObj = new Dataset();
+            _newObj = new Dataset();
             var parentObj = _da.Datasets.GetDataset(_obj.ParentId);
-            newObj.Parent = parentObj;
-            newObj.User = user;
-            _da.Datasets.Add(newObj);
-            newObj.Name = _obj.Name;
-            newObj.Type = parentObj.Type;
-            Id = newObj.Id;
+            _newObj.Parent = parentObj;
+            _newObj.User = user;
+            _da.Datasets.Add(_newObj);
+            _newObj.Name = _obj.Name;
+            _newObj.Type = parentObj.Type;
+            Id = _newObj.Id;
         }
 
-        public int Id {get; private set;}
+        protected override void afterSave()
+        {
+            base.afterSave();
+            //
+            var type = _newObj.Type;
+            //
+            if (_afterSaveCallbackDict.ContainsKey(type)) {
+                _afterSaveCallbackDict[type].Invoke(_newObj);
+            }
+        }
+
+        public int Id { get; private set; }
     }
 
 

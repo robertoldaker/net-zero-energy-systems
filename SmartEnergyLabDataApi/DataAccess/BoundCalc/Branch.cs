@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Lad.NetworkLibrary;
 using Microsoft.Extensions.ObjectPool;
 using MySqlX.XDevAPI;
 using NHibernate.Classic;
@@ -246,7 +247,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         public virtual double? loss {
             get {
                 if ( this.PowerFlow!=null ) {
-                    return (((double) this.PowerFlow* (double) this.PowerFlow) * this.R)/SmartEnergyLabDataApi.BoundCalc.BoundCalc.PUCONV;
+                    return (((double) this.PowerFlow* (double) this.PowerFlow) * this.R)/Network.PUCONV;
                 } else {
                     return null;
                 }
