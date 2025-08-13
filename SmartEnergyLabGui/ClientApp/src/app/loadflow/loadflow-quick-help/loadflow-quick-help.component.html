@@ -322,12 +322,15 @@
         demand.
 </ng-container>
 <ng-container *ngIf="helpId==='dialog.setPointMode'">
-    <p>Using manual <i>set point mode</i> allows a user to finely tune the control's set points to see the effect they
+    <p><i>Auto</i> set point mode will get the system to optimise the set of control set points.
+    <p><i>Balance HVDC nodes</i> will only calculate the necessary set points for the HVDC controls and
+        set all other set points to 0.
+    <p>Using <i>Manual</i> set point mode allows a user to finely tune the control's set points to see the effect they
         have on the network.
-    <p>To use manual mode, the user will need to first perform a run using automatic mode (to obtain initial values)
-        after which manual mode can be
-        selected. When put into manual mode the user can modify the control set points by editing the values in the
-        <i>Set Point></i> column of the <i>Controls</i> data table.
+    <p>To use <i>manual</i> mode, the user will need to first perform a run using either <i>auto </i>mode or <i>Balance
+            HVDC nodes</i> mode (to obtain initial values) after which manual mode can be selected. When put into manual
+        mode the user can modify the control set points by editing the values in the <i>Set Point</i> column of the
+        <i>Controls</i> data table.
 </ng-container>
 <ng-container *ngIf="helpId==='dialog.nodeMarginals'">
     <p>When clicked, this will cause so called <i>Node Marginals</i> to be calculated. Node Marginals are the data in
