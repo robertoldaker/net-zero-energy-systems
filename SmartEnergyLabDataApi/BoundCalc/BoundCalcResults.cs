@@ -225,7 +225,9 @@ namespace SmartEnergyLabDataApi.BoundCalc
             tripResult.Surplus = limit.Surplus;
             tripResult.LimCct = limit.LimBranches.Select(br => br.Name).ToList();
             tripResult.Trip = new BoundCalcBoundaryTrip(nd, ts);
-            tripResult.Ctrls = getCtrls(limit, nd);
+            //?? not needed as ctrl table will hold ctrl setpoints
+            //??tripResult.Ctrls = getCtrls(limit, nd);
+            tripResult.TripOutcome = limit.TripOutcome;
             return tripResult;
         }
 
@@ -254,11 +256,13 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
     public class BoundCalcAllTripsResult {
 
-        public double Surplus {get; set;}
-        public double Capacity {get; set;}
-        public BoundCalcBoundaryTrip Trip {get; set;}
-        public IList<string> LimCct {get; set;}
-        public IList<BoundCalcCtrlResult> Ctrls {get; set;}
+        public double Surplus { get; set; }
+        public double Capacity { get; set; }
+        public BoundCalcBoundaryTrip Trip { get; set; }
+        public IList<string> LimCct { get; set; }
+        [JsonIgnore()]
+        public IList<BoundCalcCtrlResult> Ctrls { get; set; }
+        public string TripOutcome { get; set; }
 
     }
 

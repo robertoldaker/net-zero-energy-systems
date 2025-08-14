@@ -537,7 +537,7 @@ export interface AllTripResult {
     capacity: number
     trip: BoundaryTrip | null
     limCct: string[]
-    ctrls: CtrlResult[]
+    tripOutcome: string
 }
 
 export interface CtrlSetPoint {

@@ -6,6 +6,8 @@ using Lad.NetworkOptimiser;
 using Lad.LinearProgram;
 using GeneratorType = SmartEnergyLabDataApi.Data.BoundCalc.GeneratorType;
 using System.Text.RegularExpressions;
+using NLog.LayoutRenderers;
+using Microsoft.JSInterop.Infrastructure;
 
 
 namespace SmartEnergyLabDataApi.BoundCalc;
@@ -333,13 +335,17 @@ public class BoundCalcNetworkData {
                 hubContext.Clients.Client(connectionId).SendAsync("BoundCalc_AllTripsProgress", new { msg = m, percent = p });
             };
         }
-        nd.ProgressManager.Start("Calculating", 1);
 
         // Get network model and check not null
         var fullnet = nd.Model;
         if (fullnet == null) {
             throw new Exception("Unexpected null Network model");
         }
+        // Get boundary from fullnet
+        Network.Boundary? bnd = boundaryName!=null ? fullnet.BoundaryDict[boundaryName] : null;
+        int nCycles = bnd != null ? bnd.SCTrips.Count + bnd.DCTrips.Count + 2 : 1;
+        nd.ProgressManager.Start("Calculating", nCycles);
+
         //
         Network.BaseLoadFlow baseLf = new(fullnet, Network.Node.DefaultGetGen, Network.Node.DefaultGetDem);
         Network.Node lmn = baseLf.LargestMismatch();
@@ -354,7 +360,7 @@ public class BoundCalcNetworkData {
         Network.CtrlSetPoints isetpts = new("isetpts", fullnet);
 
         BoundCalcBoundaryTripResults bcTripResults = null;
-        if (boundaryName == null) {
+        if (bnd == null) {
             //
             // No boundary specified
             //
@@ -398,22 +404,26 @@ public class BoundCalcNetworkData {
             //
             // Boundary specified
             //
-            // Get boundary from fullnet
-            Network.Boundary bnd = fullnet.BoundaryDict[boundaryName];
             // Get ranking limits for intact boundary
-            Network.Boundary.LimitList bIntact = netopt.OptimiseBoundary(isetpts, bnd, bnd.InterconMargin, baseLf, [new("Intact")], 12);
+            Network.Boundary.LimitList bIntact = netopt.OptimiseBoundary(isetpts, bnd, bnd.InterconMargin, baseLf, [new("Intact")], 12, (Network.TripSpec ts)=> {
+                return optimiseBoundaryProgress(ts, nd.ProgressManager);
+            });
             // Get ranking limits for single ccts
-            Network.Boundary.LimitList bSingle = netopt.OptimiseBoundary(isetpts, bnd, bnd.InterconMargin, baseLf, bnd.SCTrips, 24);
+            Network.Boundary.LimitList bSingle = netopt.OptimiseBoundary(isetpts, bnd, bnd.InterconMargin, baseLf, bnd.SCTrips, 24, (Network.TripSpec ts) => {
+                return optimiseBoundaryProgress(ts, nd.ProgressManager);
+            });
             // Get ranking limits for double ccts
-            Network.Boundary.LimitList bDouble = netopt.OptimiseBoundary(isetpts, bnd, 0.5 * bnd.InterconMargin, baseLf, bnd.DCTrips, 24);
+            Network.Boundary.LimitList bDouble = netopt.OptimiseBoundary(isetpts, bnd, 0.5 * bnd.InterconMargin, baseLf, bnd.DCTrips, 24, (Network.TripSpec ts) => {
+                return optimiseBoundaryProgress(ts, nd.ProgressManager);
+            });
             // Calculate worst limit from the worst 3 we have
             var lims = new List<Network.Boundary.Limit> { bIntact.TopN[0], bSingle.TopN[0], bDouble.TopN[0] };
             Network.Boundary.Limit worstLimit = lims.OrderBy(m => m.BoundCap).FirstOrDefault();
             // Fill branch/node/ctrl results with worstLimit
-            if (worstLimit.SetPoints != null) {
-                nd.FillResults(worstLimit.Loadflow, worstLimit.SetPoints, nodeMarginals);
+            if (worstLimit.Loadflow != null) {
+                nd.FillResults(worstLimit.Loadflow, worstLimit.Loadflow.NState.NSetPts, nodeMarginals);
             } else {
-                throw new Exception("Unexpected null SetPoints");
+                throw new Exception("Unexpected null Loadflow");
             }
             //
             bcTripResults = new BoundCalcBoundaryTripResults(nd, bIntact, bSingle, bDouble, worstLimit);
@@ -423,6 +433,11 @@ public class BoundCalcNetworkData {
 
         //
         return new BoundCalcResults(nd, bcTripResults);
+    }
+
+    private static bool optimiseBoundaryProgress(Network.TripSpec ts, ProgressManager pm) {
+        pm.Update(ts.Name);
+        return false;
     }
 
     public static BoundCalcResults RunBoundaryTrip(int datasetId, int transportModelId, string boundaryName, string tripName, string tripStr)

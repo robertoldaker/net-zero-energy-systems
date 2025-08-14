@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../Power-System-Analysis"
+		}
+	],
+    "settings": {
+        "dotnet.defaultSolution": "SmartEnergyLabDataApi.sln"
+    }
+}
