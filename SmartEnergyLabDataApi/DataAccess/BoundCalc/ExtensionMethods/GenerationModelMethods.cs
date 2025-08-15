@@ -18,15 +18,15 @@ public static class GenerationModelMethods {
         //
         double totalDemand = nodes.Sum(m => m.Demand);
 
-        // work total capacity for each transport model entry
+        // work total capacity for each generation model entry
         foreach (var tme in tm.Entries) {
-            // set total capacity for each transport model entry
+            // set total capacity for each generation model entry
             var tc = generators.Where(m => m.Type == tme.GeneratorType && m.NodeCount > 0).Sum(m => m.Capacity);
             //
             tme.TotalCapacity = tc;
         }
 
-        // Calculate scaling factors for each transport model that uses autoScaling
+        // Calculate scaling factors for each generation model that uses autoScaling
         var totalScalingGeneration = tm.Entries.Where(m => !m.AutoScaling).Sum(m => m.TotalCapacity * m.Scaling);
         var totalAutoScalingCapacity = tm.Entries.Where(m => m.AutoScaling).Sum(m => m.TotalCapacity);
         var scaling = (totalDemand - totalScalingGeneration) / totalAutoScalingCapacity;
@@ -64,7 +64,7 @@ public static class GenerationModelMethods {
             throw new Exception($"Attempt to update generators with null node count. Please call GenerationModel.UpdateScaling to update nodeCount");
         }
 
-        // Work out generation for each generator based on the transport model scaling factors and node count
+        // Work out generation for each generator based on the generation model scaling factors and node count
         foreach (var gen in generators) {
             if (gen.NodeCount > 0) {
                 var tme = tm.Entries.Where(m => m.GeneratorType == gen.Type).FirstOrDefault();

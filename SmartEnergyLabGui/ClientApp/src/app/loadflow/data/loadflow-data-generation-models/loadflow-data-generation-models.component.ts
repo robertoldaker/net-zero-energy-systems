@@ -79,7 +79,7 @@ export class LoadflowDataGenerationModelsComponent extends DataTableBaseComponen
         } else {
             this.dialogService.showLoadflowGenerationModelDialog(undefined, (resp: DatasetData<any>[] | undefined) => {
                 if (resp) {
-                    // this will be the newly created transport model
+                    // this will be the newly created generation model
                     let sm = resp.find(m => m.tableName === "GenerationModel")?.data[0]
                     if (sm) {
                         this.selectModel(sm)
@@ -96,7 +96,7 @@ export class LoadflowDataGenerationModelsComponent extends DataTableBaseComponen
     edit(tm: GenerationModel) {
         this.dialogService.showLoadflowGenerationModelDialog(tm,(resp: DatasetData<any>[] | undefined)=>{
             if ( resp ) {
-                // this will be the newly created transport model
+                // this will be the newly created generation model
                 let sm = resp.find(m=>m.tableName==="GenerationModel")?.data[0]
                 if ( sm ) {
                     this.selectModel(sm)

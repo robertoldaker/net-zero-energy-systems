@@ -45,7 +45,7 @@ public class GenerationModelEntryItemHandler : BaseEditItemHandler
             var list = new List<DatasetData<object>>();
             var tme = (GenerationModelEntry) m.Item;
 
-            // get transport model
+            // get generation model
             (var diTM,var diTME) = da.BoundCalc.GetGenerationModelDatasetData(m.Dataset.Id,m => m.Id == tme.GenerationModelId, true);
             var tm = diTM.Data[0];
 

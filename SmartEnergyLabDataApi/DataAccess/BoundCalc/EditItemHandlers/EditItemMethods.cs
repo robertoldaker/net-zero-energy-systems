@@ -19,7 +19,7 @@ public static class EditItemMethods {
         // Update the generation value of a Dataset of nodes
         var tmId = editItem.GetGenerationModelId();
         if (tmId != null) {
-            // get transport model
+            // get generation model
             (var tmDi, var tmeDi) = da.BoundCalc.GetGenerationModelDatasetData(datasetId, m => m.Id == tmId, true);
             var tm = tmDi.Data.Count > 0 ? tmDi.Data[0] : null;
             // get list of generators

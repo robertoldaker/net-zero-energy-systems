@@ -54,12 +54,12 @@ public class GenerationModelItemHandler : BaseEditItemHandler
         using( var da = new DataAccess(false) ) {
             var list = new List<DatasetData<object>>();
             var tm = (GenerationModel) m.Item;
-            // the transport model we have just created/edited
+            // the generation model we have just created/edited
             (var di, var tmeDi) = da.BoundCalc.GetGenerationModelDatasetData(m.Dataset.Id, m=>m.Id == tm.Id, true);
 
-            // update the scaling for the transport model edited
+            // update the scaling for the generation model edited
             if (di.Data.Count > 0) {
-                tm = di.Data[0]; // important to update the reference to transport model
+                tm = di.Data[0]; // important to update the reference to generation model
                 tm.UpdateScaling(da, m.Dataset.Id);
             }
 

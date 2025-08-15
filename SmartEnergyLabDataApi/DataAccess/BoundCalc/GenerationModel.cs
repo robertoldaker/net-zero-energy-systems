@@ -46,7 +46,7 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
         {
-            // Delete entris pointing at this transport model
+            // Delete entries pointing at this generation model
             var entries = s.QueryOver<GenerationModelEntry>().Where( m=>m.GenerationModel.Id == Id).List();
             foreach( var tme in entries) {
                 s.Delete(tme);

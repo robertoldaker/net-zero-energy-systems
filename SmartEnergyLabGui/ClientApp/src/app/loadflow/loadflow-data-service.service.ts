@@ -547,7 +547,7 @@ export class LoadflowDataService {
         if ( data.type!=DatasetType.BoundCalc) {
             return;
         }
-        // do a reload if edited the current transport model
+        // do a reload if edited the current generation model
         let tms = data.datasets.find(m=>m.tableName === "GenerationModel");
         if ( tms && this.generationModel) {
             let tm = tms.data.find(m=>m.id === this.generationModel?.id)
@@ -587,7 +587,7 @@ export class LoadflowDataService {
             return;
         }
         let deletedItems = data.deletedItems
-        // Check we haven't deleted the currently selected transport model
+        // Check we haven't deleted the currently selected generation model
         if ( deletedItems.length>0 && deletedItems[0].className==='GenerationModel') {
             if ( this.generationModel && this.generationModel.id === deletedItems[0].id) {
                 this.generationModel = null

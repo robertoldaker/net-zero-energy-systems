@@ -312,7 +312,7 @@ public class Datasets : DataSet {
             foreach (var g in generators) {
                 Session.Delete(g);
             }
-            // Transport models
+            // Generation models
             var tms = Session.QueryOver<GenerationModel>().Where(m => m.Dataset.Id == dataset.Id).List();
             foreach (var tm in tms) {
                 Session.Delete(tm);

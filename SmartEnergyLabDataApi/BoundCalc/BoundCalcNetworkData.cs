@@ -36,13 +36,13 @@ public class BoundCalcNetworkData {
             //
             StageResults = _reporter.StageResults;
 
-            // Transport models
+            // Generation models
             (GenerationModels, GenerationModelEntries) = da.BoundCalc.GetGenerationModelDatasetData(datasetId, null, true);
-            // work out the transport model
+            // work out the generation model
             if (generationModelId > 0) {
                 GenerationModel = GenerationModels.Data.Where(m => m.Id == generationModelId).FirstOrDefault();
                 if (GenerationModel == null) {
-                    throw new Exception($"Cannot find transport model with id=[{generationModelId}]");
+                    throw new Exception($"Cannot find generation model with id=[{generationModelId}]");
                 }
             } else {
                 // set the first one available
@@ -65,11 +65,11 @@ public class BoundCalcNetworkData {
             Zones = da.BoundCalc.GetZoneDatasetData(datasetId, null);
             // Generators
             Generators = da.BoundCalc.GetGeneratorDatasetData(datasetId);
-            // Update scalings for all transport models
+            // Update scalings for all generation models
             foreach (var tm in this.GenerationModels.Data) {
                 tm.UpdateScaling(Nodes.Data, ngDi.Data, this.Generators.Data);
             }
-            // Update generator values using the specified transport model
+            // Update generator values using the specified generation model
             if (GenerationModel != null) {
                 GenerationModel.UpdateGenerators(Generators.Data);
             }
@@ -168,7 +168,7 @@ public class BoundCalcNetworkData {
 
         // Ensure we have some nodes
         if (networkNodes.Count > 0) {
-            Network fullnet = new(networkNodes, networkBranches, networkControlSpecs, networkBoundaries);
+            Network fullnet = new(networkNodes, networkBranches, networkControlSpecs, networkBoundaries, _reporter);
             //
             int i = 0;
             // add the actual controls created to a dictionary - relies on fact that they are in the Controls list
@@ -180,20 +180,6 @@ public class BoundCalcNetworkData {
                 i++;
             }
             //
-
-            fullnet.Reporter = _reporter;
-            //
-            Report("Nodes", fullnet.Nodes.Count);
-            Report("Branches", fullnet.Branches.Count);
-            Report("Controls", fullnet.Controls.Count);
-            Report("Boundaries", fullnet.BoundaryDict.Count);
-            Report("HVDC nodes", fullnet.Nord.NodeCount - fullnet.Nord.ACNodeCount);
-            Report("INZC", fullnet.Nord.INZC);
-            Report("FNZC", fullnet.Nord.FNZC);
-            Report("Total Demand (MW)", fullnet.SystemDemand.ToString("F0"));
-            Report("Total Generation (MW)", fullnet.SystemGeneration.ToString("F0"));
-            Report("Ref. node", fullnet.Nord.LFReference().Name);
-
             return fullnet;
         } else {
             return null;
@@ -208,7 +194,7 @@ public class BoundCalcNetworkData {
         using (var da = new DataAccess()) {
             (var tmDi, var tmeDi) = da.BoundCalc.GetGenerationModelDatasetData(datasetId, null, false);
             var dataset = da.Datasets.GetDataset(datasetId);
-            // If we haven;t got any transport models then add 2 default ones
+            // If we haven;t got any generation models then add 2 default ones
             if (tmDi.Data.Count == 0 && tmDi.DeletedData.Count == 0) {
                 msg += addGenerationModel(da, dataset, "Peak Security", new Dictionary<GeneratorType, double>() {
                     { GeneratorType.Interconnector, 0 },
@@ -256,7 +242,7 @@ public class BoundCalcNetworkData {
             };
             da.BoundCalc.Add(tme);
         }
-        msg += $"Added transport model [{name}]\n";
+        msg += $"Added generation model [{name}]\n";
         return msg;
     }
 
@@ -295,8 +281,6 @@ public class BoundCalcNetworkData {
 
         //
         Network.BaseLoadFlow baseLf = new(fullnet, Network.Node.DefaultGetGen, Network.Node.DefaultGetDem);
-        Network.Node lmn = baseLf.LargestMismatch();
-        nd.Report($"No control max. mismatch at {lmn.Name}", baseLf.Mismatch(lmn).ToString("F1"));
 
         // Create network optimiser model for this network - (this could be stored in Network object?)
         NetOptimiserDescription netoptdesc = new(fullnet);
@@ -324,14 +308,10 @@ public class BoundCalcNetworkData {
             if (setPointMode == SetPointModeNew.Auto) {
                 Network.NetState ns = new(baseLf, ts, isetpts);
                 (var rc1, var rc2, bool disc) = netopt.OptimiseNet(ns, out Network.FullLoadFlow lf, out _);
-                var state = rc1 == LPResult.Optimum ? ReportState.Pass : ReportState.Fail;
-                nd.Report($"\nOptimising network", $"{rc1}:{rc2}", state);
                 // Fill in node mismatches, branch flows etc into NetworkData
                 nd.FillResults(lf, ns.NSetPts, nodeMarginals);
             } else if (setPointMode == SetPointModeNew.BalanceHVDCNodes) {
                 (LPResult rc1, int rc2) = netopt.BalanceHVDCNodes(isetpts, out Network.CtrlSetPoints hvdcsetpts);
-                var state = rc1 == LPResult.Optimum ? ReportState.Pass : ReportState.Fail;
-                nd.Report($"\nBalancing HVDC nodes result", $"{rc1}:{rc2}");
                 Network.NetState ns = new(baseLf, ts, hvdcsetpts);
                 var lf = ns.MakeLoadFlow();
                 nd.FillResults(lf, hvdcsetpts, nodeMarginals);
@@ -424,7 +404,6 @@ public class BoundCalcNetworkData {
         //
         Network.BaseLoadFlow baseLf = new(fullnet, Network.Node.DefaultGetGen, Network.Node.DefaultGetDem);
         Network.Node lmn = baseLf.LargestMismatch();
-        nd.Report($"No control max. mismatch at {lmn.Name}", baseLf.Mismatch(lmn).ToString("F1"));
 
         // Create network optimiser model for this network - (this could be stored in Network object?)
         NetOptimiserDescription netoptdesc = new(fullnet);

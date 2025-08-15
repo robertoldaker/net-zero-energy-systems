@@ -320,7 +320,7 @@ public class BoundCalcTnuosLoader {
                 };
                 _da.BoundCalc.Add(tme);
             }
-            msg += $"Added transport model [{name}]\n";
+            msg += $"Added generation model [{name}]\n";
         }
         return msg;
     }
