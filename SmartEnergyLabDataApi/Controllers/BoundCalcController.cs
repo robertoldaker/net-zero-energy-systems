@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.SignalR;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.BoundCalc;
 using SmartEnergyLabDataApi.Data.BoundCalc;
-using static SmartEnergyLabDataApi.BoundCalc.BoundCalc;
 using SmartEnergyLabDataApi.Models;
+using static SmartEnergyLabDataApi.BoundCalc.BoundCalcNetworkData;
 
 namespace SmartEnergyLabDataApi.Controllers
 {
@@ -107,18 +107,8 @@ namespace SmartEnergyLabDataApi.Controllers
         [Route("ManualSetPointMode")]
         public IActionResult ManualSetPointMode(int datasetId, [FromBody] List<CtrlSetPoint> initialSetPoints)
         {
-            BoundCalc.BoundCalc.ManualSetPointMode(datasetId, this.GetUserId(), initialSetPoints);
+            BoundCalc.BoundCalcNetworkData.ManualSetPointMode(datasetId, this.GetUserId(), initialSetPoints);
             return Ok();
-        }
-
-        /// <summary>
-        /// Adjusts branch capcities to remove overloads
-        /// </summary>
-        [HttpPost]
-        [Route("AdjustBranchCapacities")]
-        public BoundCalcResults AdjustBranchCapacities(int datasetId, int transportModelId)
-        {
-            return BoundCalc.BoundCalc.AdjustBranchCapacities(datasetId, transportModelId, this.GetUserId());
         }
 
         /// <summary>

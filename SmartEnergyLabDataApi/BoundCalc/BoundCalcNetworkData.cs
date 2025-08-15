@@ -23,42 +23,6 @@ public class BoundCalcNetworkData {
     private Dictionary<Ctrl, Network.Control> _ctrlDict = new Dictionary<Ctrl, Network.Control>();
     private Dictionary<Network.Control, Ctrl> _reverseCtrlDict = new Dictionary<Network.Control, Ctrl>();
     private Reporter _reporter = new Reporter();
-    public BoundCalcNetworkData(BoundCalc bc)
-    {
-        // Nodes
-        Nodes = bc.Nodes.DatasetData;
-        // Branches
-        Branches = bc.Branches.DatasetData;
-        // Controls
-        Ctrls = bc.Ctrls.DatasetData;
-        // Boundaries
-        Boundaries = bc.Boundaries.DatasetData;
-        // Zones
-        Zones = bc.Zones;
-        // Generators
-        Generators = bc.Generators;
-        //
-        using (var da = new DataAccess()) {
-            // Locations
-            Locations = loadLocations(da, bc.Dataset.Id);
-            // Transport models and entries
-            (TransportModels, TransportModelEntries) = loadTransportModels(da, bc.Dataset.Id);
-            //
-            setTransportModelScalings(da, bc.Dataset.Id);
-            //
-            //?? Test to see if we can connect GSPs from the Elexon data
-            //??assignIsGGSP(da);
-        }
-        // Boundary branches
-        BoundaryDict = new Dictionary<string, int[]>();
-        foreach (var b in bc.Boundaries.Objs) {
-            var boundaries = b.BoundCcts.Items.Select(m => m.Obj.Id).ToArray();
-            BoundaryDict.Add(b.name, boundaries);
-        }
-        //
-        TransportModel = bc.TransportModel;
-    }
-
     public BoundCalcNetworkData(int datasetId, int transportModelId = 0)
     {
         // Ensure we have at least one transport model
@@ -538,6 +502,42 @@ public class BoundCalcNetworkData {
             } else {
                 throw new Exception($"Cannot find Network.Control with code {lineName}");
             }
+        }
+    }
+
+    public class CtrlSetPoint {
+        public int CtrlId { get; set; }
+        public double SetPoint { get; set; }
+    }
+
+    public static void ManualSetPointMode(int datasetId, int userId, List<CtrlSetPoint> initialSetPoints)
+    {
+        //
+        using (var da = new DataAccess()) {
+            var dataset = da.Datasets.GetDataset(datasetId);
+            if (dataset == null) {
+                throw new Exception($"Cannot find dataset with id={datasetId}");
+            }
+            if (dataset.User?.Id != userId) {
+                throw new Exception($"Not authorised");
+            }
+            var colName = "SetPoint";
+            var ues = da.Datasets.GetUserEdits(typeof(Ctrl).Name, datasetId, colName);
+            foreach (var sp in initialSetPoints) {
+                var ue = ues.FirstOrDefault(m => m.Key.ToString() == sp.CtrlId.ToString());
+                if (ue == null) {
+                    ue = new UserEdit() {
+                        TableName = typeof(Ctrl).Name,
+                        ColumnName = colName,
+                        Dataset = dataset,
+                        Key = sp.CtrlId.ToString()
+                    };
+                    da.Datasets.Add(ue);
+                }
+                ue.Value = sp.SetPoint.ToString();
+            }
+            //
+            da.CommitChanges();
         }
     }
 

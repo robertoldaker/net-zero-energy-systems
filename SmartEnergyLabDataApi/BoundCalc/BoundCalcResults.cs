@@ -14,40 +14,6 @@ using static SmartEnergyLabDataApi.BoundCalc.BoundCalcBoundaryTrips;
 namespace SmartEnergyLabDataApi.BoundCalc
 {
     public class BoundCalcResults {
-        public BoundCalcResults(BoundCalc bc, BoundCalcBoundaryFlowResult? bfr=null, BoundCalcBoundaryTrips? bts=null) {
-
-            Dataset = bc.Dataset;
-            // stage results
-            StageResults = bc.StageResults;
-            // Nodes
-            Nodes = bc.Nodes.DatasetData;
-            // Branches
-            Branches = bc.Branches.DatasetData;
-            // Controls
-            Ctrls = bc.Ctrls.DatasetData;
-            if ( bc.SetPointMode==SetPointMode.Auto) {
-                foreach( var ct in bc.Ctrls.Objs) {
-                    ct.SetPoint = ct.GetSetPoint(bc.SetPointMode);
-                }
-            }
-
-            // Populate BoundaryTripResults if we ave performed a boundary trip
-            if ( bc.WorstTrip!=null ) {
-                BoundaryTripResults = new BoundCalcBoundaryTripResults(bc);
-            }
-
-            BoundaryFlowResult = bfr;
-            BoundaryTrips = bts;
-
-            var misMatches  = bc.Nodes.DatasetData.Data.Where(nw => nw.Mismatch!=null && Math.Abs((double) nw.Mismatch)>0.01).Select(nw => nw.Mismatch).OrderBy(m=>m).ToList();
-            NodeMismatchError = misMatches.Count>0;
-            if ( NodeMismatchError ) {
-                NodeMismatchErrorAsc = Math.Abs((double) misMatches[0]) > Math.Abs((double) misMatches[misMatches.Count-1]);
-            }
-            BranchCapacityError = bc.Branches.DatasetData.Data.Any(nw => nw.FreePower!=null && nw.FreePower<-1e-2);
-            SetPointError = bc.Ctrls.DatasetData.Data.Any(cw => cw.SetPoint!=null && cw.SetPoint>cw.MaxCtrl || cw.SetPoint<cw.MinCtrl);
-        }
-
         public BoundCalcResults(BoundCalcNetworkData nd, BoundCalcBoundaryTripResults? bTripResults=null)
         {
             Dataset = nd.Dataset;
@@ -115,56 +81,11 @@ namespace SmartEnergyLabDataApi.BoundCalc
 
     }
 
-    public class NodeResult {
-        public NodeResult(NodeWrapper nw) {
-            Id = nw.Obj.Id;
-            Mismatch = nw.Mismatch;
-            Code = nw.Obj.Code;
-        }
-        public int Id {get; set;}
-        public string Code {get; set;}
-        public double? Mismatch {get; set;}
-
-    }
-
-    public class BranchResult {
-        public BranchResult(BranchWrapper bw) {
-            Id = bw.Obj.Id;
-            Code = bw.Obj.Code;
-            PowerFlow = bw.PowerFlow;
-            FreePower = bw.FreePower;
-        }
-        public int Id {get; set;}
-        public string Code {get; set;}
-        public double? PowerFlow {get; set;}
-        public double? FreePower {get; set;}
-    }
-
     public class BoundCalcCtrlResult {
-        public BoundCalcCtrlResult( CtrlWrapper cw, double? sp=null) {
-            Id = cw.Obj.Id;
-            Code = cw.Obj.Code;
-            if ( sp!=null ) {
-                SetPoint = sp;
-            } else {
-                SetPoint = cw.SetPoint;
-            }
-        }
         public BoundCalcCtrlResult(Ctrl ctrl, double sp)
         {
             Id = ctrl.Id;
             Code = ctrl.Code;
-            SetPoint = sp;
-        }
-        public BoundCalcCtrlResult(Network.Control control, double sp)
-        {
-            Id = 0;
-            var cpnts = control.Name.Split(':');
-            if (cpnts.Length > 1) {
-                Code = cpnts[1];
-            } else {
-                Code = control.Name;
-            }
             SetPoint = sp;
         }
         public int Id {get; set;}
@@ -189,12 +110,6 @@ namespace SmartEnergyLabDataApi.BoundCalc
     }
 
     public class BoundCalcBoundaryTripResults {
-        public BoundCalcBoundaryTripResults(BoundCalc bc) {
-            IntactTrips = bc.IntactTrips;
-            SingleTrips = bc.SingleTrips;
-            DoubleTrips = bc.DoubleTrips;
-            WorstTrip = new BoundCalcBoundaryTrip(bc.WorstTrip);
-        }
         public BoundCalcBoundaryTripResults(BoundCalcNetworkData nd,
                                             Network.Boundary.LimitList bIntact,
                                             Network.Boundary.LimitList bSingle,
