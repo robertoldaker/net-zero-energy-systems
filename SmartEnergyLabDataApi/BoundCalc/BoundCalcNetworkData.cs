@@ -416,17 +416,15 @@ public class BoundCalcNetworkData {
             Network.Boundary.LimitList bDouble = netopt.OptimiseBoundary(isetpts, bnd, 0.5 * bnd.InterconMargin, baseLf, bnd.DCTrips, 24, (Network.TripSpec ts) => {
                 return optimiseBoundaryProgress(ts, nd.ProgressManager);
             });
-            // Calculate worst limit from the worst 3 we have
-            var lims = new List<Network.Boundary.Limit> { bIntact.TopN[0], bSingle.TopN[0], bDouble.TopN[0] };
-            Network.Boundary.Limit worstLimit = lims.OrderBy(m => m.BoundCap).FirstOrDefault();
+            var worstTrip = GetWorstTrip(bIntact, bSingle, bDouble);
             // Fill branch/node/ctrl results with worstLimit
-            if (worstLimit.Loadflow != null) {
-                nd.FillResults(worstLimit.Loadflow, worstLimit.Loadflow.NState.NSetPts, nodeMarginals);
+            if (worstTrip.Loadflow != null) {
+                nd.FillResults(worstTrip.Loadflow, worstTrip.Loadflow.NState.NSetPts, nodeMarginals);
             } else {
                 throw new Exception("Unexpected null Loadflow");
             }
             //
-            bcTripResults = new BoundCalcBoundaryTripResults(nd, bIntact, bSingle, bDouble, worstLimit);
+            bcTripResults = new BoundCalcBoundaryTripResults(nd, bIntact, bSingle, bDouble, worstTrip);
         }
 
         nd.ProgressManager.Finish();
@@ -435,7 +433,34 @@ public class BoundCalcNetworkData {
         return new BoundCalcResults(nd, bcTripResults);
     }
 
-    private static bool optimiseBoundaryProgress(Network.TripSpec ts, ProgressManager pm) {
+    private static Network.Boundary.Limit GetWorstTrip(Network.Boundary.LimitList bIntact, Network.Boundary.LimitList bSingle, Network.Boundary.LimitList bDouble)
+    {
+        // Get first trip that does not have a failed outcome
+        var lims = new List<Network.Boundary.Limit>();
+        var wIntact = bIntact.TopN.Where(m => string.IsNullOrEmpty(m.TripOutcome)).FirstOrDefault();
+        if (wIntact != null) {
+            lims.Add(wIntact);
+        }
+        var wSingle = bSingle.TopN.Where(m => string.IsNullOrEmpty(m.TripOutcome)).FirstOrDefault();
+        if (wSingle != null) {
+            lims.Add(wSingle);
+        }
+        var wDouble = bDouble.TopN.Where(m => string.IsNullOrEmpty(m.TripOutcome)).FirstOrDefault();
+        if (wDouble != null) {
+            lims.Add(wDouble);
+        }
+        //
+        var worstLimit = lims.OrderBy(m => m.BoundCap).FirstOrDefault();
+        //
+        if (worstLimit != null) {
+            return worstLimit;
+        } else {
+            throw new Exception("No valid trip could be performed");
+        }
+    }
+
+    private static bool optimiseBoundaryProgress(Network.TripSpec ts, ProgressManager pm)
+    {
         pm.Update(ts.Name);
         return false;
     }
