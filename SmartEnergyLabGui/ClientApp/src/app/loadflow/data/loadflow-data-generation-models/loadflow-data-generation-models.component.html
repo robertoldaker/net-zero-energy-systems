@@ -3,7 +3,7 @@
 </div>
 <div class="pageContainer">
     <div class="models">
-        <div [class]="getModelClass(tm)" *ngFor="let tm of transportModels" (click)="selectModel(tm)">
+        <div [class]="getModelClass(tm)" *ngFor="let tm of generationModels" (click)="selectModel(tm)">
             <ng-container *ngIf="isEditable(tm)">
                 <app-mini-icon-button title="Edit" (click)="edit(tm)" iconName="edit" style="margin-left: 0.3rem"></app-mini-icon-button>
                 <app-mini-icon-button title="Delete" (click)="delete(tm)" iconName="delete_forever" style="margin-right: 0.2rem" [disabled]="disableDelete"></app-mini-icon-button>

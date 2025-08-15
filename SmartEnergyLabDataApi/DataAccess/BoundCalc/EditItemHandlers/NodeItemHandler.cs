@@ -218,7 +218,7 @@ public class NodeItemHandler : BaseEditItemHandler {
 
             // branches and controls that reference this node
             (var branchDi, var ctrlDi) = da.BoundCalc.GetBranchDatasetData(m.Dataset.Id, m => m.Node1.Id == node.Id || m.Node2.Id == node.Id, true);
-            var tmeDi = da.BoundCalc.GetTransportModelEntryDatasetData(m.Dataset.Id);
+            var tmeDi = da.BoundCalc.GetGenerationModelEntryDatasetData(m.Dataset.Id);
 
             list.Add(nodeDi.getBaseDatasetData());
             list.Add(genDi.getBaseDatasetData());

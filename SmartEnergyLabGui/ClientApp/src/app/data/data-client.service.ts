@@ -264,18 +264,18 @@ export class DataClientService implements ILogs {
      *  BoundCalc
      */
     controller='BoundCalc'
-    GetNetworkData( datasetId: number, transportModelId: number, onLoad: (networkData: NetworkData)=> void | undefined) {
-        this.http.get<NetworkData>(this.baseUrl + `/${this.controller}/NetworkData?datasetId=${datasetId}&transportModelId=${transportModelId}`).subscribe( result => {
+    GetNetworkData( datasetId: number, generationModelId: number, onLoad: (networkData: NetworkData)=> void | undefined) {
+        this.http.get<NetworkData>(this.baseUrl + `/${this.controller}/NetworkData?datasetId=${datasetId}&generationModelId=${generationModelId}`).subscribe( result => {
             if ( onLoad ) {
                 onLoad(result)
             }
         }, error => this.logErrorMessage(error));
     }
 
-    RunBoundCalc( datasetId: number, setPointMode: SetPointMode, transportModelId: number, nodeMarginals: boolean, boundaryName: string, boundaryTrips: boolean, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
+    RunBoundCalc( datasetId: number, setPointMode: SetPointMode, generationModelId: number, nodeMarginals: boolean, boundaryName: string, boundaryTrips: boolean, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.showMessageService.showModalMessage("Calculating ...", false);
-        this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/Run?datasetId=${datasetId}&setPointMode=${setPointMode}&transportModelId=${transportModelId}&nodeMarginals=${nodeMarginals}&boundaryName=${boundaryName}&boundaryTrips=${boundaryTrips}&tripStr=${tripStr}&connectionId=${connectionId}`,{}).subscribe( result => {
+        this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/Run?datasetId=${datasetId}&setPointMode=${setPointMode}&generationModelId=${generationModelId}&nodeMarginals=${nodeMarginals}&boundaryName=${boundaryName}&boundaryTrips=${boundaryTrips}&tripStr=${tripStr}&connectionId=${connectionId}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
                 onLoad(result)
@@ -283,22 +283,11 @@ export class DataClientService implements ILogs {
         }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );
     }
 
-    RunBoundaryTrip( datasetId: number, setPointMode: SetPointMode, transportModelId: number, boundaryName: string, tripName: string, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
+    RunBoundaryTrip( datasetId: number, setPointMode: SetPointMode, generationModelId: number, boundaryName: string, tripName: string, tripStr: string, onLoad: (results: LoadflowResults)=> void | undefined) {
         let connectionId = this.signalRService.hubConnection?.connectionId;
         this.showMessageService.showMessage("Calculating ...", false);
-        let url = `/BoundCalc/RunBoundaryTrip?datasetId=${datasetId}&setPointMode=${setPointMode}&transportModelId=${transportModelId}&boundaryName=${boundaryName}&tripName=${tripName}&tripStr=${tripStr}&connectionId=${connectionId}`
+        let url = `/BoundCalc/RunBoundaryTrip?datasetId=${datasetId}&setPointMode=${setPointMode}&generationModelId=${generationModelId}&boundaryName=${boundaryName}&tripName=${tripName}&tripStr=${tripStr}&connectionId=${connectionId}`
         this.http.post<LoadflowResults>(this.baseUrl + url,{}).subscribe( result => {
-            this.showMessageService.clearMessage()
-            if ( onLoad ) {
-                onLoad(result)
-            }
-        }, error => { this.showMessageService.clearMessage(); this.logErrorMessage(error)} );
-    }
-
-    AdjustBranchCapacities( datasetId: number, transportModelId: number, onLoad: (results: LoadflowResults)=> void | undefined) {
-        let connectionId = this.signalRService.hubConnection?.connectionId;
-        this.showMessageService.showMessage("Calculating ...", false);
-        this.http.post<LoadflowResults>(this.baseUrl + `/BoundCalc/AdjustBranchCapacities?datasetId=${datasetId}&transportModelId=${transportModelId}`,{}).subscribe( result => {
             this.showMessageService.clearMessage()
             if ( onLoad ) {
                 onLoad(result)

@@ -6,16 +6,16 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_transport_model_entries")]
-    public class TransportModelEntry : IDatasetIId
+    public class GenerationModelEntry : IDatasetIId
     {
-        public TransportModelEntry()
+        public GenerationModelEntry()
         {
 
         }
 
-        public TransportModelEntry(TransportModel tm, Dataset dataset)
+        public GenerationModelEntry(GenerationModel tm, Dataset dataset)
         {
-            this.TransportModel = tm;
+            this.GenerationModel = tm;
             this.Dataset = dataset;
         }
 
@@ -41,13 +41,13 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         [JsonIgnore()]
         [ManyToOne(Column = "TransportModelId", Cascade = "none")]
-        public virtual TransportModel TransportModel { get; set; }
+        public virtual GenerationModel GenerationModel { get; set; }
 
-        public virtual int TransportModelId
+        public virtual int GenerationModelId
         {
             get
             {
-                return TransportModel.Id;
+                return GenerationModel.Id;
             }
         }
 

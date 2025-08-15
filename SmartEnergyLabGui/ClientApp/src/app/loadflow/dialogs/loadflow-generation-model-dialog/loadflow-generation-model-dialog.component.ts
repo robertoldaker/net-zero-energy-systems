@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Dataset, TransportModel, Zone } from 'src/app/data/app.data';
+import { Dataset, GenerationModel, Zone } from 'src/app/data/app.data';
 import { DataClientService } from 'src/app/data/data-client.service';
 import { DatasetDialogComponent } from 'src/app/datasets/dataset-dialog/dataset-dialog.component';
 import { DialogBase } from 'src/app/dialogs/dialog-base';
@@ -11,14 +11,14 @@ import { Validators } from '@angular/forms';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 
 @Component({
-    selector: 'app-loadflow-transport-model-dialog',
-    templateUrl: './loadflow-transport-model-dialog.component.html',
-    styleUrls: ['../../../dialogs/dialog-base.css','./loadflow-transport-model-dialog.component.css']
+    selector: 'app-loadflow-generation-model-dialog',
+    templateUrl: './loadflow-generation-model-dialog.component.html',
+    styleUrls: ['../../../dialogs/dialog-base.css','./loadflow-generation-model-dialog.component.css']
 })
-export class LoadflowTransportModelDialogComponent extends DialogBase implements OnInit {
+export class LoadflowGenerationModelDialogComponent extends DialogBase implements OnInit {
 
     constructor(public dialogRef: MatDialogRef<DatasetDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) dialogData:TransportModel | undefined,
+        @Inject(MAT_DIALOG_DATA) dialogData:GenerationModel | undefined,
         private dataService: DataClientService,
         private loadflowService: LoadflowDataService,
         private datasetsService: DatasetsService,
@@ -42,14 +42,14 @@ export class LoadflowTransportModelDialogComponent extends DialogBase implements
     }
 
     title: string
-    tm: TransportModel | undefined
+    tm: GenerationModel | undefined
 
     save() {
         if ( this.datasetsService.currentDataset) {
             let changedControls = this.getUpdatedControls()
 
             let id:number = this.tm ? this.tm.id : 0
-            this.loadflowService.saveDialog(id, "TransportModel",changedControls, () => {
+            this.loadflowService.saveDialog(id, "GenerationModel",changedControls, () => {
                 this.dialogRef.close()
             }, (errors) => {
                 this.fillErrors(errors)

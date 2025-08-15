@@ -6,9 +6,9 @@ using SmartEnergyLabDataApi.Models;
 
 namespace SmartEnergyLabDataApi.Data.BoundCalc;
 
-public static class TransportModelMethods {
+public static class GenerationModelMethods {
 
-    public static void UpdateScaling(this TransportModel tm, IList<Node> nodes, IList<NodeGenerator> nodeGenerators, IList<Generator> generators)
+    public static void UpdateScaling(this GenerationModel tm, IList<Node> nodes, IList<NodeGenerator> nodeGenerators, IList<Generator> generators)
     {
         // update generator node count
         foreach (var gen in generators) {
@@ -39,7 +39,7 @@ public static class TransportModelMethods {
 
     }
 
-    public static void UpdateScaling(this TransportModel tm, DataAccess da, int datasetId)
+    public static void UpdateScaling(this GenerationModel tm, DataAccess da, int datasetId)
     {
         // get nodes
         var nodeQuery = da.Session.QueryOver<Node>();
@@ -57,11 +57,11 @@ public static class TransportModelMethods {
         tm.UpdateScaling(diNode.Data, diNodeGen.Data, diGen.Data);
     }
 
-    public static void UpdateGenerators(this TransportModel tm, IList<Generator> generators)
+    public static void UpdateGenerators(this GenerationModel tm, IList<Generator> generators)
     {
         var nullNodeCount = generators.Where(m => m.NodeCount == null).FirstOrDefault();
         if (nullNodeCount != null) {
-            throw new Exception($"Attempt to update generators with null node count. Please call TransportModel.UpdateScaling to update nodeCount");
+            throw new Exception($"Attempt to update generators with null node count. Please call GenerationModel.UpdateScaling to update nodeCount");
         }
 
         // Work out generation for each generator based on the transport model scaling factors and node count

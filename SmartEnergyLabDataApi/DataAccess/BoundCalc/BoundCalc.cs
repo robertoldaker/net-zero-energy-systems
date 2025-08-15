@@ -717,32 +717,32 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 
         #endregion
 
-        #region TransportModel
-        public void Add(TransportModel obj)
+        #region GenerationModel
+        public void Add(GenerationModel obj)
         {
             Session.Save(obj);
         }
-        public void Delete(TransportModel obj)
+        public void Delete(GenerationModel obj)
         {
             Session.Delete(obj);
         }
-        public TransportModel GetTransportModel(int id)
+        public GenerationModel GetGenerationModel(int id)
         {
-            return Session.Get<TransportModel>(id);
+            return Session.Get<GenerationModel>(id);
         }
-        public IList<TransportModel> GetTransportModels(Dataset dataset)
+        public IList<GenerationModel> GetGenerationModels(Dataset dataset)
         {
-            return Session.QueryOver<TransportModel>().
+            return Session.QueryOver<GenerationModel>().
             Where(m => m.Dataset == dataset).
             OrderBy(m => m.Id).Asc.
             List();
         }
-        public bool TransportModelExists(int datasetId, string name, out Dataset? dataset)
+        public bool GenerationModelExists(int datasetId, string name, out Dataset? dataset)
         {
             // need to look at all datasets belonging to the user
             var derivedIds = DataAccess.Datasets.GetDerivedDatasetIds(datasetId);
             var inheritedIds = DataAccess.Datasets.GetInheritedDatasetIds(datasetId);
-            var zone = Session.QueryOver<TransportModel>().
+            var zone = Session.QueryOver<GenerationModel>().
                 Where(m => m.Name.IsInsensitiveLike(name)).
                 Where(m => m.Dataset.Id.IsIn(derivedIds) || m.Dataset.Id.IsIn(inheritedIds)).
                 Fetch(SelectMode.Fetch, m => m.Dataset).
@@ -755,15 +755,15 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
             return zone != null;
         }
-        public (DatasetData<TransportModel> diTM, DatasetData<TransportModelEntry>? diTME) GetTransportModelDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<TransportModel, bool>> expression, bool updateRefs)
+        public (DatasetData<GenerationModel> diTM, DatasetData<GenerationModelEntry>? diTME) GetGenerationModelDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<GenerationModel, bool>> expression, bool updateRefs)
         {
-            var query = Session.QueryOver<TransportModel>();
+            var query = Session.QueryOver<GenerationModel>();
             if (expression != null) {
                 query = query.Where(expression);
             }
 
-            var diTM = new DatasetData<TransportModel>(DataAccess, datasetId, m => m.Id.ToString(), query);
-            DatasetData<TransportModelEntry> diTME = null;
+            var diTM = new DatasetData<GenerationModel>(DataAccess, datasetId, m => m.Id.ToString(), query);
+            DatasetData<GenerationModelEntry> diTME = null;
             if (updateRefs) {
                 diTME = this.updateRefs(datasetId, diTM.Data);
                 //?? not convinced this is required and seems to cause infinte loop if called??
@@ -771,38 +771,38 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
             }
             return (diTM, diTME);
         }
-        private DatasetData<TransportModelEntry> updateRefs(int datasetId, IList<TransportModel> tms)
+        private DatasetData<GenerationModelEntry> updateRefs(int datasetId, IList<GenerationModel> tms)
         {
             // update location references
             var tmIds = tms.Select(m => m.Id).ToArray();
-            var tmeDi = GetTransportModelEntryDatasetData(datasetId, m => m.TransportModel.Id.IsIn(tmIds));
+            var tmeDi = GetGenerationModelEntryDatasetData(datasetId, m => m.GenerationModel.Id.IsIn(tmIds));
             foreach (var tm in tms) {
-                tm.Entries = tmeDi.Data.Where(m => m.TransportModel.Id == tm.Id).ToList();
+                tm.Entries = tmeDi.Data.Where(m => m.GenerationModel.Id == tm.Id).ToList();
             }
             return tmeDi;
         }
 
         #endregion
-        #region TransportModelEntry
-        public void Add(TransportModelEntry obj)
+        #region GenerationModelEntry
+        public void Add(GenerationModelEntry obj)
         {
             Session.Save(obj);
         }
-        public void Delete(TransportModelEntry obj)
+        public void Delete(GenerationModelEntry obj)
         {
             Session.Delete(obj);
         }
-        public TransportModelEntry GetTransportModelEntry(int id)
+        public GenerationModelEntry GetGenerationModelEntry(int id)
         {
-            return Session.Get<TransportModelEntry>(id);
+            return Session.Get<GenerationModelEntry>(id);
         }
-        public DatasetData<TransportModelEntry> GetTransportModelEntryDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<TransportModelEntry, bool>> expression = null)
+        public DatasetData<GenerationModelEntry> GetGenerationModelEntryDatasetData(int datasetId, System.Linq.Expressions.Expression<Func<GenerationModelEntry, bool>> expression = null)
         {
-            var query = Session.QueryOver<TransportModelEntry>();
+            var query = Session.QueryOver<GenerationModelEntry>();
             if (expression != null) {
                 query = query.Where(expression);
             }
-            var di = new DatasetData<TransportModelEntry>(DataAccess, datasetId, m => m.Id.ToString(), query);
+            var di = new DatasetData<GenerationModelEntry>(DataAccess, datasetId, m => m.Id.ToString(), query);
             return di;
         }
 

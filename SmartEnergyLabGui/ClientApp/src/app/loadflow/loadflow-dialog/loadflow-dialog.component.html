@@ -39,8 +39,8 @@
         <app-quick-help-dialog-group helpId="dialog.generationModels" helpTitle="Generation Models"  style="padding-right: 0.5rem">
             <mat-form-field appearance="fill" [color]="'primary'">
                 <mat-label>Generation model</mat-label>
-                <mat-select (selectionChange)="transportModelChanged($event)" [ngModel]="this.transportModel?.id">
-                    <mat-option *ngFor="let tm of transportModels" [value]="tm.id">{{tm.name}}</mat-option>
+                <mat-select (selectionChange)="generationModelChanged($event)" [ngModel]="this.generationModel?.id">
+                    <mat-option *ngFor="let tm of generationModels" [value]="tm.id">{{tm.name}}</mat-option>
                 </mat-select>
             </mat-form-field>
         </app-quick-help-dialog-group>
@@ -74,7 +74,6 @@
         </div>
         <div class="calcGroup">
             <button mat-raised-button color="primary" (click)="calc()" [disabled]="!needsCalc">Calc</button>
-            <button style="float: right; color: red; margin-left: 0.5rem" *ngIf="hasCapacityError" mat-stroked-button (click)="adjustBranchCapacities()">Adjust Capacities</button>
             <app-quick-help class="nodeMarginalsHelp" helpId="dialog.nodeMarginals" title="Node Marginals"></app-quick-help>
             <label class="nodeMarginals">
                 <input type="checkbox" [(ngModel)]="nodeMarginals"/><span style="margin-left: 0.2rem">Node marginals</span>

@@ -163,8 +163,8 @@ public static class Program
         EditItemModel.AddHandler<Ctrl>(new CtrlItemHandler());
         EditItemModel.AddHandler<GridSubstationLocation>(new GridSubstationLocationItemHandler());
         EditItemModel.AddHandler<Generator>(new GeneratorItemHandler());
-        EditItemModel.AddHandler<TransportModel>(new TransportModelItemHandler());
-        EditItemModel.AddHandler<TransportModelEntry>(new TransportModelEntryItemHandler());
+        EditItemModel.AddHandler<GenerationModel>(new GenerationModelItemHandler());
+        EditItemModel.AddHandler<GenerationModelEntry>(new GenerationModelEntryItemHandler());
         // Elsi
         EditItemModel.AddHandler<GenCapacity>(new GenCapacityItemHandler());
         EditItemModel.AddHandler<GenParameter>(new GenParameterItemHandler());

@@ -313,7 +313,7 @@ public class Datasets : DataSet {
                 Session.Delete(g);
             }
             // Transport models
-            var tms = Session.QueryOver<TransportModel>().Where(m => m.Dataset.Id == dataset.Id).List();
+            var tms = Session.QueryOver<GenerationModel>().Where(m => m.Dataset.Id == dataset.Id).List();
             foreach (var tm in tms) {
                 Session.Delete(tm);
             }

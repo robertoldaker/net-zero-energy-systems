@@ -96,7 +96,7 @@ public class GeneratorItemHandler : BaseEditItemHandler {
             var gen = (Generator)m.Item;
             var genDi = da.BoundCalc.GetGeneratorDatasetData(m.Dataset.Id);
             var nodeDi = da.BoundCalc.GetNodeDatasetData(m.Dataset.Id, null, true);
-            (var tmDi, var tmeDi) = da.BoundCalc.GetTransportModelDatasetData(m.Dataset.Id, null, true);
+            (var tmDi, var tmeDi) = da.BoundCalc.GetGenerationModelDatasetData(m.Dataset.Id, null, true);
 
             foreach (var tm in tmDi.Data) {
                 tm.UpdateScaling(da, m.Dataset.Id);

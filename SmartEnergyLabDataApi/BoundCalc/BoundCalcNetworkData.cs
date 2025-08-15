@@ -23,10 +23,10 @@ public class BoundCalcNetworkData {
     private Dictionary<Ctrl, Network.Control> _ctrlDict = new Dictionary<Ctrl, Network.Control>();
     private Dictionary<Network.Control, Ctrl> _reverseCtrlDict = new Dictionary<Network.Control, Ctrl>();
     private Reporter _reporter = new Reporter();
-    public BoundCalcNetworkData(int datasetId, int transportModelId = 0)
+    public BoundCalcNetworkData(int datasetId, int generationModelId = 0)
     {
-        // Ensure we have at least one transport model
-        BoundCalcNetworkData.AddDefaultTransportModels(datasetId);
+        // Ensure we have at least one generation model
+        BoundCalcNetworkData.AddDefaultGenerationModels(datasetId);
 
         using (var da = new DataAccess(false)) {
             Dataset = da.Datasets.GetDataset(datasetId);
@@ -37,16 +37,16 @@ public class BoundCalcNetworkData {
             StageResults = _reporter.StageResults;
 
             // Transport models
-            (TransportModels, TransportModelEntries) = da.BoundCalc.GetTransportModelDatasetData(datasetId, null, true);
+            (GenerationModels, GenerationModelEntries) = da.BoundCalc.GetGenerationModelDatasetData(datasetId, null, true);
             // work out the transport model
-            if (transportModelId > 0) {
-                TransportModel = TransportModels.Data.Where(m => m.Id == transportModelId).FirstOrDefault();
-                if (TransportModel == null) {
-                    throw new Exception($"Cannot find transport model with id=[{transportModelId}]");
+            if (generationModelId > 0) {
+                GenerationModel = GenerationModels.Data.Where(m => m.Id == generationModelId).FirstOrDefault();
+                if (GenerationModel == null) {
+                    throw new Exception($"Cannot find transport model with id=[{generationModelId}]");
                 }
             } else {
                 // set the first one available
-                TransportModel = TransportModels.Data.Count() > 0 ? TransportModels.Data[0] : null;
+                GenerationModel = GenerationModels.Data.Count() > 0 ? GenerationModels.Data[0] : null;
             }
             // Locations
             Locations = da.NationalGrid.GetLocationDatasetData(datasetId);
@@ -66,12 +66,12 @@ public class BoundCalcNetworkData {
             // Generators
             Generators = da.BoundCalc.GetGeneratorDatasetData(datasetId);
             // Update scalings for all transport models
-            foreach (var tm in this.TransportModels.Data) {
+            foreach (var tm in this.GenerationModels.Data) {
                 tm.UpdateScaling(Nodes.Data, ngDi.Data, this.Generators.Data);
             }
             // Update generator values using the specified transport model
-            if (TransportModel != null) {
-                TransportModel.UpdateGenerators(Generators.Data);
+            if (GenerationModel != null) {
+                GenerationModel.UpdateGenerators(Generators.Data);
             }
             // Boundary branches
             BoundaryDict = new Dictionary<string, int[]>();
@@ -94,9 +94,9 @@ public class BoundCalcNetworkData {
     public DatasetData<Zone> Zones { get; private set; }
     public DatasetData<GridSubstationLocation> Locations { get; private set; }
     public DatasetData<Generator> Generators { get; private set; }
-    public DatasetData<TransportModel> TransportModels { get; private set; }
-    public TransportModel? TransportModel { get; private set; }
-    public DatasetData<TransportModelEntry> TransportModelEntries { get; private set; }
+    public DatasetData<GenerationModel> GenerationModels { get; private set; }
+    public GenerationModel? GenerationModel { get; private set; }
+    public DatasetData<GenerationModelEntry> GenerationModelEntries { get; private set; }
     public Dictionary<string, int[]> BoundaryDict { get; private set; }
     public Network? Model { get; private set; }
 
@@ -121,23 +121,6 @@ public class BoundCalcNetworkData {
             }
         }
         return branchIds.ToArray();
-    }
-
-    private DatasetData<GridSubstationLocation> loadLocations(DataAccess da, int datasetId)
-    {
-        var q = da.Session.QueryOver<GridSubstationLocation>();
-        var locs = new DatasetData<GridSubstationLocation>(da, datasetId, m => m.Id.ToString(), q);
-        return locs;
-    }
-
-    private (DatasetData<TransportModel> tmDi, DatasetData<TransportModelEntry>? tmeDi) loadTransportModels(DataAccess da, int datasetId)
-    {
-        return da.BoundCalc.GetTransportModelDatasetData(datasetId, null, true);
-    }
-
-    private void setTransportModelScalings(DataAccess da, int datasetId)
-    {
-        var nodeGenDi = da.BoundCalc.GetNodeGeneratorDatasetData(datasetId, null);
     }
 
     private Network? createNetworkModel()
@@ -219,22 +202,22 @@ public class BoundCalcNetworkData {
     }
 
 
-    public static string AddDefaultTransportModels(int datasetId)
+    public static string AddDefaultGenerationModels(int datasetId)
     {
         string msg = "";
         using (var da = new DataAccess()) {
-            (var tmDi, var tmeDi) = da.BoundCalc.GetTransportModelDatasetData(datasetId, null, false);
+            (var tmDi, var tmeDi) = da.BoundCalc.GetGenerationModelDatasetData(datasetId, null, false);
             var dataset = da.Datasets.GetDataset(datasetId);
             // If we haven;t got any transport models then add 2 default ones
             if (tmDi.Data.Count == 0 && tmDi.DeletedData.Count == 0) {
-                msg += addTransportModel(da, dataset, "Peak Security", new Dictionary<GeneratorType, double>() {
+                msg += addGenerationModel(da, dataset, "Peak Security", new Dictionary<GeneratorType, double>() {
                     { GeneratorType.Interconnector, 0 },
                     { GeneratorType.Tidal, 0 },
                     { GeneratorType.Wave, 0 },
                     { GeneratorType.WindOffshore, 0 },
                     { GeneratorType.WindOnshore, 0 },
                 });
-                msg += addTransportModel(da, dataset, "Economy Test", new Dictionary<GeneratorType, double>() {
+                msg += addGenerationModel(da, dataset, "Economy Test", new Dictionary<GeneratorType, double>() {
                     { GeneratorType.Interconnector, 1 },
                     { GeneratorType.Nuclear, 0.85 },
                     { GeneratorType.OCGT, 0 },
@@ -250,10 +233,10 @@ public class BoundCalcNetworkData {
         return msg;
     }
 
-    private static string addTransportModel(DataAccess da, Dataset dataset, string name, Dictionary<GeneratorType, double> initialScalingDict)
+    private static string addGenerationModel(DataAccess da, Dataset dataset, string name, Dictionary<GeneratorType, double> initialScalingDict)
     {
         string msg = "";
-        var tm = new TransportModel(dataset);
+        var tm = new GenerationModel(dataset);
         tm.Name = name;
         da.BoundCalc.Add(tm);
         //
@@ -265,9 +248,9 @@ public class BoundCalcNetworkData {
                 autoScaling = false;
                 scaling = initialScalingDict[gt];
             }
-            var tme = new TransportModelEntry(tm, dataset) {
+            var tme = new GenerationModelEntry(tm, dataset) {
                 GeneratorType = gt,
-                TransportModel = tm,
+                GenerationModel = tm,
                 AutoScaling = autoScaling,
                 Scaling = scaling,
             };
@@ -285,7 +268,7 @@ public class BoundCalcNetworkData {
     public static BoundCalcResults Run(
         int datasetId,
         SetPointModeNew setPointMode,
-        int transportModelId,
+        int generationModelId,
         bool nodeMarginals,
         string? boundaryName = null,
         bool boundaryTrips = false,
@@ -293,7 +276,7 @@ public class BoundCalcNetworkData {
         string? connectionId = null,
         IHubContext<NotificationHub> hubContext = null)
     {
-        var nd = new BoundCalcNetworkData(datasetId, transportModelId);
+        var nd = new BoundCalcNetworkData(datasetId, generationModelId);
         if (connectionId != null) {
             nd.ProgressManager.ProgressUpdate += (m, p) => {
                 hubContext.Clients.Client(connectionId).SendAsync("BoundCalc_AllTripsProgress", new { msg = m, percent = p });
@@ -429,9 +412,9 @@ public class BoundCalcNetworkData {
         return false;
     }
 
-    public static BoundCalcResults RunBoundaryTrip(int datasetId, int transportModelId, string boundaryName, string tripName, string tripStr)
+    public static BoundCalcResults RunBoundaryTrip(int datasetId, int generationModelId, string boundaryName, string tripName, string tripStr)
     {
-        var nd = new BoundCalcNetworkData(datasetId, transportModelId);
+        var nd = new BoundCalcNetworkData(datasetId, generationModelId);
         // Get network model and check not null
         var fullnet = nd.Model;
         //

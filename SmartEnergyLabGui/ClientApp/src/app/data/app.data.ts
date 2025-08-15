@@ -398,15 +398,15 @@ export interface NodeGenerator {
     generatorId: number
 }
 
-export interface TransportModel {
+export interface GenerationModel {
     id: number
     name: string
     datasetId: number
 }
 
-export interface TransportModelEntry {
+export interface GenerationModelEntry {
     id: number
-    transportModelId: number
+    generationModelId: number
     generatorType: GeneratorType
     autoScaling: boolean
     scaling: number
@@ -509,9 +509,9 @@ export interface NetworkData {
     zones: DatasetData<Zone>
     locations: DatasetData<GridSubstationLocation>
     generators: DatasetData<Generator>
-    transportModels: DatasetData<TransportModel>
-    transportModelEntries: DatasetData<TransportModelEntry>
-    transportModel: TransportModel | null
+    generationModels: DatasetData<GenerationModel>
+    generationModelEntries: DatasetData<GenerationModelEntry>
+    generationModel: GenerationModel | null
 }
 
 export enum GridSubstationLocationSource { NGET, SHET, SPT, GoogleMaps, Estimated, UserDefined}

@@ -7,14 +7,14 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
 {
     [ApplicationGroup(ApplicationGroup.BoundCalc)]
     [Class(0, Table = "boundcalc_transport_models")]
-    public class TransportModel : IDatasetIId, ILifecycle
+    public class GenerationModel : IDatasetIId, ILifecycle
     {
-        public TransportModel()
+        public GenerationModel()
         {
-            Entries = new List<TransportModelEntry>();
+            Entries = new List<GenerationModelEntry>();
         }
 
-        public TransportModel(Dataset dataset)
+        public GenerationModel(Dataset dataset)
         {
             this.Dataset = dataset;
         }
@@ -42,12 +42,12 @@ namespace SmartEnergyLabDataApi.Data.BoundCalc
         }
 
         [JsonIgnore()]
-        public virtual IList<TransportModelEntry> Entries { get; set; }
+        public virtual IList<GenerationModelEntry> Entries { get; set; }
 
         public virtual LifecycleVeto OnDelete(NHibernate.ISession s)
         {
             // Delete entris pointing at this transport model
-            var entries = s.QueryOver<TransportModelEntry>().Where( m=>m.TransportModel.Id == Id).List();
+            var entries = s.QueryOver<GenerationModelEntry>().Where( m=>m.GenerationModel.Id == Id).List();
             foreach( var tme in entries) {
                 s.Delete(tme);
             }

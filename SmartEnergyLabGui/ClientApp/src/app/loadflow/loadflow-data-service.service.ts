@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { AllTripResult, BoundaryTrip, BoundaryTripResults, Branch, BranchType, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, LoadflowCtrlType, LoadflowResults, NetworkData, Node, SetPointMode, TransportModel, Generator, GeneratorType} from '../data/app.data';
+import { AllTripResult, BoundaryTrip, BoundaryTripResults, Branch, BranchType, Ctrl, CtrlResult, CtrlSetPoint, Dataset, DatasetData, DatasetType, GISData, GridSubstation, GridSubstationLocation, LoadflowCtrlType, LoadflowResults, NetworkData, Node, SetPointMode, GenerationModel, Generator, GeneratorType} from '../data/app.data';
 import { DataClientService } from '../data/data-client.service';
 import { SignalRService } from '../main/signal-r-status/signal-r.service';
 import { ShowMessageService } from '../main/show-message/show-message.service';
@@ -49,9 +49,9 @@ export class LoadflowDataService {
             zones: { tableName: '',data:[], userEdits: [],deletedData: [] },
             locations: { tableName: '',data:[], userEdits: [],deletedData: [] },
             generators: { tableName: '', data:[], userEdits: [], deletedData: []},
-            transportModels: { tableName: '', data:[], userEdits: [], deletedData: []},
-            transportModelEntries: { tableName: '', data:[], userEdits: [], deletedData: []},
-            transportModel: null
+            generationModels: { tableName: '', data:[], userEdits: [], deletedData: []},
+            generationModelEntries: { tableName: '', data:[], userEdits: [], deletedData: []},
+            generationModel: null
         }
         this.locationData = { locations: [], links: []}
         this.locMap = new Map<number,LoadflowLocation>()
@@ -89,7 +89,7 @@ export class LoadflowDataService {
     loadFlowResults: LoadflowResults | undefined
     boundaryName: string | undefined
     boundaryBranchIds: number[] = []
-    transportModel: TransportModel | null = null
+    generationModel: GenerationModel | null = null
     inRun: boolean = false
     trips: Map<number,boolean> = new Map()
     setPointMode: SetPointMode = SetPointMode.Auto
@@ -132,13 +132,13 @@ export class LoadflowDataService {
         if ( withMessage ) {
             this.messageService.showModalMessage('Loading ...', false)
         }
-        let transportModelId:number
+        let generationModelId:number
         if ( newDataset) {
-            transportModelId = 0
+            generationModelId = 0
         } else {
-            transportModelId = this.transportModel!=null ? this.transportModel.id : 0
+            generationModelId = this.generationModel!=null ? this.generationModel.id : 0
         }
-        this.dataClientService.GetNetworkData( dataset.id, transportModelId, (results)=>{
+        this.dataClientService.GetNetworkData( dataset.id, generationModelId, (results)=>{
             this.networkData = results
             this.messageService.clearMessage()
             //
@@ -146,8 +146,8 @@ export class LoadflowDataService {
             //
             this.needsCalc = true
             this.loadFlowResults = undefined
-            if ( results.transportModel) {
-                this.setTransportModel(results.transportModel, false)
+            if ( results.generationModel) {
+                this.setGenerationModel(results.generationModel, false)
             }
             this._locationDragging = false
             this.clearMapSelection()
@@ -170,9 +170,9 @@ export class LoadflowDataService {
             this.totalGeneration = 0
             this.networkData.nodes.data.forEach( m=>this.totalGeneration+=m.generation)
             this.totalMaxTEC = 0
-            if ( this.networkData.transportModels.data.length>0 ) {
-                let tm = this.networkData.transportModels.data[0]
-                let entries =  this.networkData.transportModelEntries.data.filter(m=>m.transportModelId == tm.id)
+            if ( this.networkData.generationModels.data.length>0 ) {
+                let tm = this.networkData.generationModels.data[0]
+                let entries =  this.networkData.generationModelEntries.data.filter(m=>m.generationModelId == tm.id)
                 entries.forEach(m=>this.totalMaxTEC+=m.totalCapacity)
             }
         }
@@ -250,11 +250,11 @@ export class LoadflowDataService {
         }
     }
 
-    setTransportModel(transportModel: TransportModel, reload: boolean=true) {
-        this.transportModel = transportModel
+    setGenerationModel(generationModel: GenerationModel, reload: boolean=true) {
+        this.generationModel = generationModel
         // This gets sent to the datasets edit/delete/undelete methods as an extra data field
-        if ( this.transportModel ) {
-            this.datasetsService.customData = {name: '_transportModelId', value: this.transportModel.id}
+        if ( this.generationModel ) {
+            this.datasetsService.customData = {name: '_generationModelId', value: this.generationModel.id}
         } else {
             this.datasetsService.customData = undefined
         }
@@ -269,8 +269,8 @@ export class LoadflowDataService {
         if ( boundaryTrips) {
             this.clearBoundaryTrips()
         }
-        if ( this.transportModel && this.dataset ) {
-            this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, this.transportModel.id, this.nodeMarginals, boundaryName, boundaryTrips, tripStr, (results)=>{
+        if ( this.generationModel && this.dataset ) {
+            this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, this.generationModel.id, this.nodeMarginals, boundaryName, boundaryTrips, tripStr, (results)=>{
                 if ( boundaryTrips && results.boundaryTripResults) {
                     this.setBoundaryTrips(results.boundaryTripResults)
                 }
@@ -315,12 +315,12 @@ export class LoadflowDataService {
     }
 
     runBoundaryTrip(tripResult: AllTripResult) {
-        if ( this.boundaryName && this.transportModel && this.dataset ) {
+        if ( this.boundaryName && this.generationModel && this.dataset ) {
             let trip = tripResult.trip
             let tripStr = trip!=null ? trip.lineNames.join(',') : ''
             let tripName = trip!=null ? trip.text : "Intact"
             this.inRun = true;
-            this.dataClientService.RunBoundaryTrip( this.dataset.id, this.setPointMode, this.transportModel.id, this.boundaryName, tripName, tripStr, (results)=>{
+            this.dataClientService.RunBoundaryTrip( this.dataset.id, this.setPointMode, this.generationModel.id, this.boundaryName, tripName, tripStr, (results)=>{
                 this.setBoundaryTrip(tripResult)
                 this.afterCalc(results, true)
             });
@@ -391,20 +391,6 @@ export class LoadflowDataService {
                     })
                 })
             }
-        }
-    }
-
-    adjustBranchCapacities() {
-        this.inRun = true;
-        if ( this.transportModel && this.dataset ) {
-            this.dataClientService.AdjustBranchCapacities( this.dataset.id, this.transportModel.id, (results) => {
-                this.inRun = false;
-                this.loadFlowResults = results;
-                this.needsCalc = true
-                // need to copy branch userEdits into NetworkData to ensure further edits work
-                this.networkData.branches.userEdits = results.branches.userEdits
-                this.ResultsLoaded.emit(results);
-            });
         }
     }
 
@@ -562,9 +548,9 @@ export class LoadflowDataService {
             return;
         }
         // do a reload if edited the current transport model
-        let tms = data.datasets.find(m=>m.tableName === "TransportModel");
-        if ( tms && this.transportModel) {
-            let tm = tms.data.find(m=>m.id === this.transportModel?.id)
+        let tms = data.datasets.find(m=>m.tableName === "GenerationModel");
+        if ( tms && this.generationModel) {
+            let tm = tms.data.find(m=>m.id === this.generationModel?.id)
             if ( tm ) {
                 console.log('reload!!')
                 this.reload()
@@ -602,9 +588,9 @@ export class LoadflowDataService {
         }
         let deletedItems = data.deletedItems
         // Check we haven't deleted the currently selected transport model
-        if ( deletedItems.length>0 && deletedItems[0].className==='TransportModel') {
-            if ( this.transportModel && this.transportModel.id === deletedItems[0].id) {
-                this.transportModel = null
+        if ( deletedItems.length>0 && deletedItems[0].className==='GenerationModel') {
+            if ( this.generationModel && this.generationModel.id === deletedItems[0].id) {
+                this.generationModel = null
                 // do a reload since any data will be stale
                 this.reload()
             }
@@ -805,10 +791,10 @@ export class LoadflowDataService {
             return this.networkData.locations
         } else if ( typeName == "Generator") {
             return this.networkData.generators
-        } else if ( typeName == "TransportModel") {
-            return this.networkData.transportModels
-        } else if ( typeName == "TransportModelEntry") {
-            return this.networkData.transportModelEntries
+        } else if ( typeName == "GenerationModel") {
+            return this.networkData.generationModels
+        } else if ( typeName == "GenerationModelEntry") {
+            return this.networkData.generationModelEntries
         } else {
             throw `Unexpected typeName found [${typeName}]`
         }
@@ -993,7 +979,7 @@ export class LoadflowDataService {
     }
 
     saveDialog(id: number, className:string, data: IFormControlDict, onOK: (resp: any)=>void, onError: (errors: any)=>void) {
-        data['_transportModelId'] = this.transportModel?.id
+        data['_generationModelId'] = this.generationModel?.id
         if ( this.datasetsService.currentDataset) {
             this.dataClientService.EditItem({id: id, datasetId: this.datasetsService.currentDataset.id, className: className, data: data }, (resp)=>{
                 this.afterEdit({type: DatasetType.BoundCalc, datasets: resp.datasets, deletedItems: resp.deletedItems})

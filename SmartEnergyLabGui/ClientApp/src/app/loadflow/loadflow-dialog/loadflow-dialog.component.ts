@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Boundary, BoundaryTrip, Branch, AllTripResult, Dataset, DatasetType, NetworkData, SetPointMode, TransportModel } from '../../data/app.data';
+import { Boundary, BoundaryTrip, Branch, AllTripResult, Dataset, DatasetType, NetworkData, SetPointMode, GenerationModel } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { DataClientService } from 'src/app/data/data-client.service';
@@ -85,23 +85,18 @@ export class LoadflowDialogComponent extends ComponentBase {
     }
 
     onDatasetSelected(dataset: Dataset) {
-        this.hasCapacityError = false
         this.dataService.loadDataset(dataset)
     }
 
-    transportModelChanged(e: any) {
-        let tm = this.transportModels.find(m=>m.id === e.value)
+    generationModelChanged(e: any) {
+        let tm = this.generationModels.find(m=>m.id === e.value)
         if ( tm ) {
-            this.dataService.setTransportModel(tm);
+            this.dataService.setGenerationModel(tm);
         }
     }
 
     setPointModeChanged(e: any) {
         this.dataService.setSetPointMode(e.value);
-    }
-
-    adjustBranchCapacities() {
-        this.dataService.adjustBranchCapacities();
     }
 
     get numberOfTrips() {
@@ -116,8 +111,8 @@ export class LoadflowDialogComponent extends ComponentBase {
         return this.dataService.loadFlowResults && (!this.dataService.dataset?.isReadOnly) ? true : false
     }
 
-    get transportModel():TransportModel | null {
-        return this.dataService.transportModel
+    get generationModel():GenerationModel | null {
+        return this.dataService.generationModel
     }
 
     get totalGeneration():number {
@@ -148,9 +143,9 @@ export class LoadflowDialogComponent extends ComponentBase {
         return this.dataService.boundaryTripResult
     }
 
-    get transportModels():TransportModel[] {
+    get generationModels():GenerationModel[] {
         if ( this.dataService.networkData ) {
-            return this.dataService.networkData.transportModels.data
+            return this.dataService.networkData.generationModels.data
         } else {
             return []
         }
@@ -180,6 +175,5 @@ export class LoadflowDialogComponent extends ComponentBase {
     boundaryName: string
     trips: BoundaryTrip[]
     datasetTypes = DatasetType
-    hasCapacityError:boolean = false
     SetPointMode = SetPointMode
 }
