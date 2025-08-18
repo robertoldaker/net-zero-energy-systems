@@ -233,8 +233,14 @@ export class DataClientService implements ILogs {
                     onLoad(result);
                 }
             },
-            error => { this.logErrorMessage(error) },
+            error => {
+                console.log('error')
+                this.logErrorMessage(error)
+                // complete is not being called with an error??
+                if (onComplete) onComplete()
+            },
             ()=> {
+                console.log('complete')
                 this.showMessageService.clearMessage();
                 if ( onComplete ) onComplete()
             }

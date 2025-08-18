@@ -42,6 +42,12 @@ export class ClassificationToolInputComponent implements OnInit {
     }
 
     run() {
+        for(var i=0;i<this.input.elexonProfile.length;i++) {
+            var ep = this.input.elexonProfile[i];
+            if ( typeof(ep) === 'string') {
+                this.input.elexonProfile[i] = parseFloat(ep)
+            }
+        }
         this.service.run(this.input)
     }
 
