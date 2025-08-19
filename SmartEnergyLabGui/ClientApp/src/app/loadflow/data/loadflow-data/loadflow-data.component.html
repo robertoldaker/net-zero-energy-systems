@@ -1,9 +1,11 @@
 <div [ngClass]="{hide: showMap}" class="mapButton" (click)="toggleMap()" title="show map">
-    <div>
-        <img [src]="mapButtonImage"/>
+    <div [class]="{ offset: tabButtonsShown}">
+        <img [src]="mapButtonImage" />
     </div>
 </div>
-<mat-tab-group [ngClass]="{hide: showMap}" animationDuration="0ms" [preserveContent]="true" [selectedIndex]="selected.value" (selectedIndexChange)="selected.setValue($event)" (selectedTabChange)="tabChange($event)">
+<mat-tab-group [ngClass]="{hide: showMap}" animationDuration="0ms" [preserveContent]="true"
+    [selectedIndex]="selected.value" (selectedIndexChange)="selected.setValue($event)"
+    (selectedTabChange)="tabChange($event)" #matTabGroup>
     <mat-tab label="Nodes" [labelClass]="getNodeTabLabelClass()">
         <app-loadflow-data-nodes></app-loadflow-data-nodes>
     </mat-tab>
@@ -33,5 +35,3 @@
     </mat-tab>
 </mat-tab-group>
 <app-loadflow-map [ngClass]="{hide: !showMap}"></app-loadflow-map>
-
-

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, HostListener, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { LoadflowDataService, MapItemLocationTab } from '../../loadflow-data-service.service';
@@ -24,7 +24,7 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
     private readonly LOCATIONS_INDEX = 6
     private readonly ALL_TRIP_RESULTS_INDEX = 8
 
-    constructor(private dataService: LoadflowDataService) { 
+    constructor(private dataService: LoadflowDataService) {
         super()
         this.selected = new FormControl(0);
         this.addSub( dataService.ResultsLoaded.subscribe( (results) => {
@@ -54,7 +54,7 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
             }
         }))
     }
-    
+
     ngAfterViewInit(): void {
         // dispatch this so that app-div-auto-scroller can detect size change
         // need to do this otherwise the location of the div is calculated incorrectly
@@ -62,7 +62,7 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
             window.dispatchEvent(new Event('resize'));
         })
     }
-    
+
     get mapButtonImage(): string {
         return this.showMap ? '/assets/images/table.png' : '/assets/images/world.png'
     }
@@ -76,7 +76,7 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
     hasNodesError: boolean = false
     hasBranchesError: boolean = false
     hasCtrlsError: boolean = false
-    @ViewChild(MatTabGroup) 
+    @ViewChild(MatTabGroup)
     matTabGroup: MatTabGroup | null = null;
     @ViewChild(LoadflowDataBranchesComponent)
     branchesComponent: LoadflowDataBranchesComponent | null = null;
@@ -88,6 +88,21 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
     locationsComponent: LoadflowDataLocationsComponent | null = null;
     @ViewChild(LoadflowMapComponent)
     mapComponent: LoadflowMapComponent | null = null;
+    tabButtonsShown = false;
+
+    @HostListener('window:resize', [])
+    onResize() {
+        if ( this.matTabGroup ) {
+            // this will be  "< button", header, "> button"
+            let childNodes = this.matTabGroup._elementRef?.nativeElement?.firstChild.childNodes;
+            if ( childNodes.length>0 ) {
+                // " < button"
+                let button = childNodes[0]
+                let computedStyle = window.getComputedStyle(button)
+                this.tabButtonsShown = computedStyle.display !== 'none'
+            }
+        }
+    }
 
     toggleMap() {
         this.showMap = !this.showMap;
@@ -96,7 +111,7 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
                 if ( this.mapComponent) {
                     this.mapComponent.redraw();
                 }
-            },0 )    
+            },0 )
         }
     }
 

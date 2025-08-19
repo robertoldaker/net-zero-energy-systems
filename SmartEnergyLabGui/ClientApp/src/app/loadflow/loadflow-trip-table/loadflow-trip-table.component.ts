@@ -11,22 +11,13 @@ import { LoadflowDataService } from '../loadflow-data-service.service';
     templateUrl: './loadflow-trip-table.component.html',
     styleUrls: ['./loadflow-trip-table.component.css']
 })
-export class LoadflowTripTableComponent implements OnInit, AfterViewInit, OnDestroy {
+export class LoadflowTripTableComponent implements OnInit, AfterViewInit {
 
-    subs1: Subscription
     constructor(private splitService: LoadflowSplitService, private dataService: LoadflowDataService) {
         this.sort = null
         this.ctrls=[]
-        this.parentWidth = 'calc(100vw - 495px)';
         this.displayedColumns = ['selected','capacity', 'surplus', 'trip', 'limCct']
         this.trips = new MatTableDataSource();
-        this.subs1 = splitService.SplitChange.subscribe( (splitData)=> {
-            let clientWidth = splitData.left + 45
-            this.parentWidth = `calc(100vw - ${clientWidth}px)`;
-        })
-    }
-    ngOnDestroy(): void {
-        this.subs1.unsubscribe()
     }
     ngAfterViewInit(): void {
         if ( this.sort ) {
@@ -62,7 +53,7 @@ export class LoadflowTripTableComponent implements OnInit, AfterViewInit, OnDest
                 return ctrl?.setPoint?.toFixed(2)
             } else {
                 return "0.00"
-            }    
+            }
         } else {
             return ""
         }
@@ -82,12 +73,12 @@ export class LoadflowTripTableComponent implements OnInit, AfterViewInit, OnDest
 
     displayedColumns: string[]
     ctrls: CtrlResult[]
-    parentWidth: string
+    //??parentWidth: string
 
     @Input()
     trips: MatTableDataSource<AllTripResult>
 
-    @ViewChild(MatSort) 
+    @ViewChild(MatSort)
     sort: MatSort | null
 
 }

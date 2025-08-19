@@ -20,13 +20,22 @@ export class LoadflowHomeComponent implements OnInit, AfterViewInit{
             titleService.setTitle('Bound Calc')
     }
     ngAfterViewInit(): void {
-        this.updateSplitData()
+        window.setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, 1000)
     }
 
     @ViewChild('leftDiv')
     leftView: ElementRef | undefined;
     @ViewChild('rightDiv')
     rightView: ElementRef | undefined;
+
+    leftWidthPx = 410
+    rightWidth = this.getRightWidthStr(this.leftWidthPx)
+
+    getRightWidthStr(lw: number):string {
+        return `calc(100vw - ${lw + 11}px)`
+    }
 
     ngOnInit(): void {
     }
@@ -38,14 +47,20 @@ export class LoadflowHomeComponent implements OnInit, AfterViewInit{
     splitEnd(e: any) {
         // update data
         this.updateSplitData()
-        // also dispatch resize event so other elements can perform any sizing etc. in response
-        window.dispatchEvent(new Event('resize'));
     }
 
     updateSplitData() {
-        let lw = this.leftView?.nativeElement.clientWidth
-        let rw = this.rightView?.nativeElement.clientWidth
-        this.splitService.updateSplitData(lw,rw)
+        window.setTimeout(()=>{
+            let lw = this.leftView?.nativeElement.clientWidth
+            let rw = this.rightView?.nativeElement.clientWidth
+            this.splitService.updateSplitData(lw, rw)
+            console.log('lw', lw)
+            this.rightWidth = this.getRightWidthStr(lw);
+            // this is required to get horizontal scroll bar positioned correctly
+            window.setTimeout( ()=>{
+                window.dispatchEvent(new Event('resize'));
+            },0)
+        },0)
     }
 
     get user() {
