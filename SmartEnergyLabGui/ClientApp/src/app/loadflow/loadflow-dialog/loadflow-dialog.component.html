@@ -71,6 +71,7 @@
             </div>
             <div class="error">{{errorMsg}}</div>
         </div>
+
         <div class="calcGroup">
             <button mat-raised-button color="primary" (click)="calc()" [disabled]="!needsCalc">Calc</button>
             <button style="float: right; color: red; margin-left: 0.5rem" *ngIf="hasCapacityError" mat-stroked-button (click)="adjustBranchCapacities()">Adjust Capacities</button>

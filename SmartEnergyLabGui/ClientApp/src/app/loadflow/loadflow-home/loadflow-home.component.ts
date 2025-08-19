@@ -31,6 +31,7 @@ export class LoadflowHomeComponent implements OnInit, AfterViewInit{
     rightView: ElementRef | undefined;
 
     leftWidthPx = 410
+    leftWidth = this.leftWidthPx + 'px'
     rightWidth = this.getRightWidthStr(this.leftWidthPx)
 
     getRightWidthStr(lw: number):string {
@@ -54,8 +55,8 @@ export class LoadflowHomeComponent implements OnInit, AfterViewInit{
             let lw = this.leftView?.nativeElement.clientWidth
             let rw = this.rightView?.nativeElement.clientWidth
             this.splitService.updateSplitData(lw, rw)
-            console.log('lw', lw)
             this.rightWidth = this.getRightWidthStr(lw);
+            this.leftWidth = lw + 'px'
             // this is required to get horizontal scroll bar positioned correctly
             window.setTimeout( ()=>{
                 window.dispatchEvent(new Event('resize'));
