@@ -2,15 +2,15 @@
     <app-loadflow-header title="Transmission Boundary Capability Calculator"></app-loadflow-header>
     <div *ngIf="this.user">
         <as-split direction="horizontal" (dragStart)="splitStart()" (dragEnd)="splitEnd($event)" [unit]="'pixel'">
-            <as-split-area [size]="leftWidthPx" #leftDiv>
-                <div style="overflow-x: auto;" [style]="{width: leftWidth}">
+            <as-split-area [size]="leftWidthPx" #leftArea>
+                <div style="overflow-x: auto;" #leftDiv>
                     <app-loadflow-dialog></app-loadflow-dialog>
                     <hr style="margin:0; border: 2px solid #aaa;"/>
                     <app-loadflow-stages></app-loadflow-stages>
                 </div>
             </as-split-area>
-            <as-split-area auto="true" #rightDiv>
-                <div style="overflow-x: auto;" [style]="{width: rightWidth}">
+            <as-split-area>
+                <div #rightDiv>
                     <app-loadflow-data></app-loadflow-data>
                 </div>
             </as-split-area>

@@ -90,18 +90,26 @@ export class LoadflowDataComponent extends ComponentBase implements AfterViewIni
     mapComponent: LoadflowMapComponent | null = null;
     tabButtonsShown = false;
 
+    timeoutId: number = 0
     @HostListener('window:resize', [])
     onResize() {
-        if ( this.matTabGroup ) {
-            // this will be  "< button", header, "> button"
-            let childNodes = this.matTabGroup._elementRef?.nativeElement?.firstChild.childNodes;
-            if ( childNodes.length>0 ) {
-                // " < button"
-                let button = childNodes[0]
-                let computedStyle = window.getComputedStyle(button)
-                this.tabButtonsShown = computedStyle.display !== 'none'
-            }
+        // clear timeout if not yet fired
+        if ( this.timeoutId) {
+            window.clearTimeout(this.timeoutId)
         }
+        this.timeoutId = window.setTimeout(()=>{
+            this.timeoutId = 0
+            if (this.matTabGroup) {
+                // this will be  "< button", header, "> button"
+                let childNodes = this.matTabGroup._elementRef?.nativeElement?.firstChild.childNodes;
+                if (childNodes.length > 0) {
+                    // " < button"
+                    let button = childNodes[0]
+                    let computedStyle = window.getComputedStyle(button)
+                    this.tabButtonsShown = computedStyle.display !== 'none'
+                }
+            }
+        }, 250)
     }
 
     toggleMap() {

@@ -13,7 +13,7 @@ import { LoadflowDataService } from '../loadflow-data-service.service';
 })
 export class LoadflowTripTableComponent implements OnInit, AfterViewInit {
 
-    constructor(private splitService: LoadflowSplitService, private dataService: LoadflowDataService) {
+    constructor(private dataService: LoadflowDataService) {
         this.sort = null
         this.ctrls=[]
         this.displayedColumns = ['selected','capacity', 'surplus', 'trip', 'limCct']

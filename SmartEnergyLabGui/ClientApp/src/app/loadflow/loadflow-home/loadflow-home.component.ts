@@ -1,4 +1,4 @@
-import { AfterContentInit, AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterContentInit, AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { LoadflowSplitService } from '../loadflow-split.service';
 import { UserService } from 'src/app/users/user.service';
 import { DialogService } from 'src/app/dialogs/dialog.service';
@@ -13,29 +13,32 @@ import { Title } from '@angular/platform-browser';
 export class LoadflowHomeComponent implements OnInit, AfterViewInit{
 
     constructor(
-        private splitService: LoadflowSplitService,
         private userService: UserService,
         private dialogService:DialogService,
         titleService: Title) {
             titleService.setTitle('Bound Calc')
     }
     ngAfterViewInit(): void {
-        window.setTimeout(() => {
-            window.dispatchEvent(new Event('resize'));
-        }, 1000)
     }
 
+    @ViewChild('leftArea')
+    leftArea: ElementRef | undefined;
     @ViewChild('leftDiv')
-    leftView: ElementRef | undefined;
+    leftDiv: ElementRef | undefined;
     @ViewChild('rightDiv')
-    rightView: ElementRef | undefined;
+    rightDiv: ElementRef | undefined;
+    @HostListener('window:resize', [])
+    onResize() {
+        this.resizeDivs()
+    }
 
     leftWidthPx = 410
     leftWidth = this.leftWidthPx + 'px'
     rightWidth = this.getRightWidthStr(this.leftWidthPx)
 
     getRightWidthStr(lw: number):string {
-        return `calc(100vw - ${lw + 11}px)`
+       let width = window.innerWidth - lw - 11;
+       return width + 'px'
     }
 
     ngOnInit(): void {
@@ -51,17 +54,25 @@ export class LoadflowHomeComponent implements OnInit, AfterViewInit{
     }
 
     updateSplitData() {
-        window.setTimeout(()=>{
-            let lw = this.leftView?.nativeElement.clientWidth
-            let rw = this.rightView?.nativeElement.clientWidth
-            this.splitService.updateSplitData(lw, rw)
-            this.rightWidth = this.getRightWidthStr(lw);
-            this.leftWidth = lw + 'px'
-            // this is required to get horizontal scroll bar positioned correctly
-            window.setTimeout( ()=>{
-                window.dispatchEvent(new Event('resize'));
-            },0)
+        this.resizeDivs()
+        // this is required to get horizontal scroll bar positioned correctly
+        window.setTimeout( ()=>{
+            window.dispatchEvent(new Event('resize'));
         },0)
+    }
+
+    private resizeDivs() {
+        let lw = this.leftArea?.nativeElement.clientWidth
+        let rightWidth = this.getRightWidthStr(lw);
+        let leftWidth = lw + 'px'
+        let leftElement = this.leftDiv?.nativeElement
+        if (leftElement) {
+            leftElement.style.width = leftWidth
+        }
+        let rightElement = this.rightDiv?.nativeElement
+        if (rightElement) {
+            rightElement.style.width = rightWidth
+        }
     }
 
     get user() {

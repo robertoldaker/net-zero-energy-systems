@@ -49,7 +49,6 @@ export class DivAutoScrollerComponent implements AfterViewInit {
         if ( this.timeoutId === 0) {
             this.timeoutId = window.setTimeout(()=>{
                 if ( this.div ) {
-                    console.log('scrollTop')
                     let element = this.div.nativeElement
                     element.scrollTop = element.scrollHeight
                 }

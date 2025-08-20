@@ -3,12 +3,17 @@ div.mapButton {
 }
 
 div.mapButton > div {
+    display: flex;
+    align-items: center;
     position:absolute;
     right: 12px;
-    top: 6px;
+    top: 0px;
     width: 35px;
-    height: 35px;
-    padding: 5px;
+    height: 48px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 5px;
+    padding-right: 5px;
     z-index: 2000; /* needed to prevent being covered by the tab control and mouse over title of the paginator */
     background-color: white;
 }
@@ -21,10 +26,12 @@ div.mapButton > div > img:hover {
 div.mapButton > div > img {
     width: 100%;
     opacity: 0.5;
+    vertical-align: bottom;
 }
 
 div.mapButton > div.offset {
-    right: 40px;
+    right: 36px;
+    border-left: 1px solid #ddd;
 }
 
 .hide {
