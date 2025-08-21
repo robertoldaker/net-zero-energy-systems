@@ -1,12 +1,15 @@
-<div [formGroup]="dialog.form">
+<div [formGroup]="dialog.form" class="dialogContainer">
+    <div class="quickHelp">
+        <app-quick-help [helpId]="helpId" [title]="helpTitle" [disabled]="_helpDisabled"></app-quick-help>
+    </div>
     <mat-form-field appearance="fill" [color]="'primary'">
-        <mat-label>{{label}}</mat-label>             
+        <mat-label>{{label}}</mat-label>
         <mat-select [formControlName]="name" [multiple]="multiple" (selectionChange)="selectionChange($event)">
             <mat-option *ngFor="let d of data" [value]="valueFcn(d)">
-                <span>{{displayFcn(d)}}</span> 
+                <span>{{displayFcn(d)}}</span>
             </mat-option>
         </mat-select>
-        <mat-error>{{error}}</mat-error>    
+        <mat-error>{{error}}</mat-error>
     </mat-form-field>
 </div>
 

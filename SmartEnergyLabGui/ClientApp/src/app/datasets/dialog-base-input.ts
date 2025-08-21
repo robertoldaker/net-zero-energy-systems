@@ -21,6 +21,19 @@ export class DialogBaseInput implements OnInit {
     @Input()
     dialog: DialogBase = new DialogBase()
 
+    @Input()
+    helpId: string = ""
+
+    @Input()
+    helpTitle: string = ""
+
+    @Input()
+    helpDisabled:boolean = false
+
+    protected get _helpDisabled(): boolean {
+        return this.helpId ? this.helpDisabled : true
+    }
+
     get error():string {
         return this.dialog?.getError(this.name)
     }

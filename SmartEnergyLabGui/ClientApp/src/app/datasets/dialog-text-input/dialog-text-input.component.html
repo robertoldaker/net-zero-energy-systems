@@ -1,11 +1,14 @@
-<div [formGroup] = "dialog.form" [ngClass]="{ disabled: false }">
+<div [formGroup] = "dialog.form" [ngClass]="{ disabled: false }" class="dialogContainer">
+    <div class="quickHelp">
+        <app-quick-help [helpId]="helpId" [title]="helpTitle" [disabled]="_helpDisabled"></app-quick-help>
+    </div>
     <mat-form-field appearance="fill" [color]="'primary'" [ngClass]="fieldClasses">
-        <mat-label>{{label}}</mat-label> 
+        <mat-label>{{label}}</mat-label>
         <div class="inputContainer">
             <input matInput [ngClass]="{'existing': hasUserEdit}" [formControlName]="name"  [type]="'text'" [readonly]="false" (keyup)="keyUp($event)" />
             <mat-icon *ngIf="hasUserEdit" (click)="revert()" title="Revert edit" [inline]="true">cancel</mat-icon>
-        </div>       
-        <mat-hint align="end">{{placeholder}}</mat-hint> 
-        <mat-error>{{error}}</mat-error>    
-    </mat-form-field>    
+        </div>
+        <mat-hint align="end">{{placeholder}}</mat-hint>
+        <mat-error>{{error}}</mat-error>
+    </mat-form-field>
 </div>

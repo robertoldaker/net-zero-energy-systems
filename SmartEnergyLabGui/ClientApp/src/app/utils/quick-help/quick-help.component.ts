@@ -22,10 +22,26 @@ export class QuickHelpComponent  {
     iconClass="small";
     @Input()
     title:string =""
+    @Input()
+    disabled:boolean = false
+
+    get iconClasses():any {
+        let classes:any = { helpIconHotspot: true}
+        if ( this.disabled ) {
+            classes.disabled = true;
+        }
+        if ( this.iconClass ) {
+            let classCpnts = this.iconClass.split(' ')
+            for( let cls of classCpnts) {
+                classes[cls] = true
+            }
+        }
+        return classes
+    }
 
     private timeoutId: number = 0
     mouseEnterIcon() {
-        if (this.helpIcon) {
+        if (this.helpIcon && !this.disabled) {
             var element = this.helpIcon.nativeElement
             let box = element.getBoundingClientRect()
             let xPos = box.x - 15

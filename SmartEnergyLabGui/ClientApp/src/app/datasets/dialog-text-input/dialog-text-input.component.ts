@@ -24,6 +24,7 @@ export class DialogTextInputComponent extends DialogBaseInput implements OnInit 
 
     @Input()
     placeholder: string = ""
+
     isUserEditReverted = false
 
     @Input()

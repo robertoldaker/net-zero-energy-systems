@@ -3,11 +3,11 @@
     <form [formGroup]="form">
         <div class="row">
             <div>
-                <app-dialog-text-input [dialog]="dialog" name="code" placeholder="Enter code" label="Code"></app-dialog-text-input>
+                <app-dialog-text-input helpId="data.boundaries.code" helpTitle="Boundary code" [dialog]="dialog" name="code" placeholder="Enter code" label="Code"></app-dialog-text-input>
             </div>
             <div>
-                <app-dialog-selector [dialog]="dialog"  name="zoneIds" label="Zone" [data]="zones" [displayFcn]="displayZone" [multiple]="true"></app-dialog-selector>
-            </div>    
+                <app-dialog-selector helpId="data.boundaries.zones" helpTitle="Boundary zones"  [dialog]="dialog"  name="zoneIds" label="Zone" [data]="zones" [displayFcn]="displayZone" [multiple]="true"></app-dialog-selector>
+            </div>
         </div>
     </form>
 </div>

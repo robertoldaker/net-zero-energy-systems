@@ -14,7 +14,7 @@ div.mapButton > div {
     padding-bottom: 8px;
     padding-left: 5px;
     padding-right: 5px;
-    z-index: 2000; /* needed to prevent being covered by the tab control and mouse over title of the paginator */
+    z-index: 1000; /* needed to prevent being covered by the tab control and mouse over title of the paginator */
     background-color: white;
 }
 

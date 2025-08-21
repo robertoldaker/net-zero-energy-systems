@@ -1,4 +1,7 @@
-<div [formGroup] = "dialog.form">
+<div [formGroup] = "dialog.form" class="dialogContainer">
+    <div *ngIf="helpId" class="quickHelp">
+        <app-quick-help [helpId]="helpId" [title]="helpTitle" [disabled]="_helpDisabled"></app-quick-help>
+    </div>
     <mat-checkbox [formControlName]="name">External</mat-checkbox>
 </div>
 

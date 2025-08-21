@@ -16,6 +16,11 @@
     font-style:normal;
 }
 
+.helpIconHotspot.disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
 .small {
     font-size: 8pt;
     margin-right: 0.5em

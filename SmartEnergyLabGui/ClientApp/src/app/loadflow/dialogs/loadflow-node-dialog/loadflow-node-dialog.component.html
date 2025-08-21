@@ -3,25 +3,25 @@
     <form [formGroup]="form">
         <div class="row leftAlign">
             <div>
-                <app-dialog-text-input [dialog]="dialog" name="code" placeholder="Enter code" label="Code"></app-dialog-text-input>
+                <app-dialog-text-input [dialog]="dialog" name="code" placeholder="Enter code" label="Code" helpId="data.nodes.code" helpTitle="Code"></app-dialog-text-input>
             </div>
             <div class="zone">
-                <app-dialog-selector [dialog]="dialog"  name="zoneId" label="Zone" [data]="zones" [displayFcn]="displayZone"></app-dialog-selector>
+                <app-dialog-selector [dialog]="dialog"  name="zoneId" label="Zone" [data]="zones" [displayFcn]="displayZone"  helpId="data.nodes.zone" helpTitle="Zone"></app-dialog-selector>
                 <mat-icon class="iconLink addButton" (click)="addZone()" [title]="'Add a new zone'">add</mat-icon>
             </div>
         </div>
         <div class="row leftAlign">
             <div>
-                <app-dialog-text-input [dialog]="dialog" name="demand" placeholder="Enter demand in MW" label="Demand (MW)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
+                <app-dialog-text-input [dialog]="dialog" name="demand" placeholder="Enter demand in MW" label="Demand (MW)" [fieldClasses]="{numeric: true}"  helpId="data.nodes.demand" helpTitle="Demand"></app-dialog-text-input>
             </div>
             <div class="zone">
-                <app-dialog-selector [dialog]="dialog"  name="generatorIds" label="Generators" [data]="generators" [displayFcn]="displayGen" [multiple]="true"></app-dialog-selector>
+                <app-dialog-selector [dialog]="dialog"  name="generatorIds" label="Generators" [data]="generators" [displayFcn]="displayGen" [multiple]="true" helpId="data.nodes.generation" helpTitle="Generators" ></app-dialog-selector>
                 <mat-icon class="iconLink addButton" (click)="addGenerator()" [title]="'Add a new generator'">add</mat-icon>
             </div>
         </div>
         <div class="row leftAlign">
             <div>
-                <app-dialog-checkbox [dialog]="dialog" label="External" name="ext"></app-dialog-checkbox>
+                <app-dialog-checkbox [dialog]="dialog" label="External" name="ext" helpId="data.nodes.ext" helpTitle="External" ></app-dialog-checkbox>
             </div>
         </div>
     </form>

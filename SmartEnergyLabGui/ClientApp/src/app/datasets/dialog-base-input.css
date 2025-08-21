@@ -12,7 +12,7 @@
 }
 
 div.inputContainer {
-    white-space:nowrap; 
+    white-space:nowrap;
 }
 
 div.inputContainer > .mat-icon {
@@ -25,7 +25,7 @@ div.inputContainer > .mat-icon {
 }
 
 div.inputContainer > input {
-    width: 80% !important;    
+    width: 80% !important;
 }
 
 .delete {
@@ -38,5 +38,14 @@ div.inputContainer > input {
 
 .numeric {
     text-align: right;
+}
+
+.dialogContainer {
+    display: flex;
+    align-items: top;
+}
+
+.quickHelp {
+    padding-top: 1rem;
 }
 

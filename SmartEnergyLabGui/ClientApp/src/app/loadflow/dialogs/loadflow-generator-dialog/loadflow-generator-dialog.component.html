@@ -3,15 +3,15 @@
     <form [formGroup]="form">
         <div class="row">
             <div>
-                <app-dialog-text-input [dialog]="dialog" name="name" placeholder="Enter name" label="Name"></app-dialog-text-input>
+                <app-dialog-text-input [dialog]="dialog" name="name" placeholder="Enter name" label="Name" helpId="data.generators.name" helpTitle="Name" [helpDisabled]="true"></app-dialog-text-input>
             </div>
             <div>
-                <app-dialog-selector [dialog]="dialog"  name="type" label="Generator type" [enum]="generatorType"></app-dialog-selector>
+                <app-dialog-selector [dialog]="dialog"  name="type" label="Generator type" [enum]="generatorType" helpId="data.generators.type" helpTitle="Generator type"></app-dialog-selector>
             </div>
         </div>
         <div class="row">
             <div>
-                <app-dialog-text-input [dialog]="dialog" name="capacity" placeholder="Enter Max TEC" label="Max TEC (MW)" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
+                <app-dialog-text-input [dialog]="dialog" name="capacity" placeholder="Enter Max TEC" label="Max TEC (MW)" [fieldClasses]="{numeric: true}" helpId="data.generators.scaledGeneration" helpTitle="Max TEC"></app-dialog-text-input>
             </div>
             <div>
             </div>

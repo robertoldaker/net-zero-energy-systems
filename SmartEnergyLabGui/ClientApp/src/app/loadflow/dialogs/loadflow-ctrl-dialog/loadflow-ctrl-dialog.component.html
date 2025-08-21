@@ -3,7 +3,7 @@
     <form [formGroup]="form">
         <div class="row">
             <div>
-                <app-dialog-selector [dialog]="dialog" name="type" placeholder="Enter control type" label="Type"
+                <app-dialog-selector helpId="data.ctrls.type" helpTitle="Control type" [dialog]="dialog" name="type" placeholder="Enter control type" label="Type"
                     [data]="controlTypes" (onSelectionChange)="typeChanged()"></app-dialog-selector>
             </div>
             <div>
@@ -11,21 +11,21 @@
         </div>
         <div class="row">
             <div *ngIf="type === CtrlType.DecInc || type == CtrlType.InterTrip">
-                <app-dialog-selector [dialog]="dialog" placeholder="Select node 1" name="nodeId1" label="Node 1" [data]="nodes1"
+                <app-dialog-selector helpId="data.ctrls.nodeZone" helpTitle="Node/Zone" [dialog]="dialog" placeholder="Select node 1" name="nodeId1" label="Node 1" [data]="nodes1"
                     [displayFcn]="displayNode" (onSelectionChange)="node1Changed($event)"></app-dialog-selector>
             </div>
             <div *ngIf="type === CtrlType.Transfer">
-                <app-dialog-selector [dialog]="dialog" placeholder="Select zone 1" name="zoneId1" label="Zone 1" [data]="zones"
+                <app-dialog-selector helpId="data.ctrls.nodeZone" helpTitle="Node/Zone" [dialog]="dialog" placeholder="Select zone 1" name="zoneId1" label="Zone 1" [data]="zones"
                     [displayFcn]="displayZone" (onSelectionChange)="zone1Changed($event)"></app-dialog-selector>
                 <app-dialog-text-input [dialog]="dialog" name="gpc1" label="Generation (%)"
                     [fieldClasses]="{numeric: true}"></app-dialog-text-input>
             </div>
             <div *ngIf="type === CtrlType.DecInc">
-                <app-dialog-selector [dialog]="dialog" placeholder="Select node 2" name="nodeId2" label="Node 2" [data]="nodes2"
+                <app-dialog-selector helpId="data.ctrls.nodeZone" helpTitle="Node/Zone" [dialog]="dialog" placeholder="Select node 2" name="nodeId2" label="Node 2" [data]="nodes2"
                     [displayFcn]="displayNode" (onSelectionChange)="node2Changed($event)"></app-dialog-selector>
             </div>
             <div *ngIf="type === CtrlType.InterTrip || type === CtrlType.Transfer">
-                <app-dialog-selector [dialog]="dialog" placeholder="Select zone 2" name="zoneId2" label="Zone 2" [data]="zones"
+                <app-dialog-selector helpId="data.ctrls.nodeZone" helpTitle="Node/Zone" [dialog]="dialog" placeholder="Select zone 2" name="zoneId2" label="Zone 2" [data]="zones"
                     [displayFcn]="displayZone" (onSelectionChange)="zone2Changed($event)"></app-dialog-selector>
                 <app-dialog-text-input [dialog]="dialog" name="gpc2" label="Generation (%)"
                     [fieldClasses]="{numeric: true}"></app-dialog-text-input>
@@ -33,15 +33,15 @@
         </div>
         <div class="row">
             <div>
-                <app-dialog-text-input [dialog]="dialog" name="minCtrl" label="Min Ctrl" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
+                <app-dialog-text-input helpId="data.ctrls.minCtrl" helpTitle="Min set point" [dialog]="dialog" name="minCtrl" label="Min Ctrl" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
             </div>
             <div>
-                <app-dialog-text-input [dialog]="dialog" name="maxCtrl" label="Max Ctrl" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
+                <app-dialog-text-input helpId="data.ctrls.maxCtrl" helpTitle="Max set point" [dialog]="dialog" name="maxCtrl" label="Max Ctrl" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
             </div>
         </div>
         <div class="row">
             <div>
-                <app-dialog-text-input [dialog]="dialog" name="cost" label="Cost" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
+                <app-dialog-text-input helpId="data.ctrls.cost" helpTitle="Cost" [dialog]="dialog" name="cost" label="Cost" [fieldClasses]="{numeric: true}"></app-dialog-text-input>
             </div>
         </div>
     </form>
