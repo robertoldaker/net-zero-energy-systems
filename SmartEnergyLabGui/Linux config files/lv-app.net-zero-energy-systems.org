@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name lv-app.net-zero-energy-systems.org;
+    server_name lv-app.net-zero-energy-systems.org lv-app-tmp.net-zero-energy-systems.org;
     location / {
         if ( -f /home/rob/websites/SmartEnergyToolsGui/app_offline.html ) {
                 return 503;

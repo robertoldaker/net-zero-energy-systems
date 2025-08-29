@@ -1,5 +1,6 @@
 #
-dest="roberto@lv-app.net-zero-energy-systems.org"
+#dest="roberto@lv-app.net-zero-energy-systems.org"
+dest=roberto@217.154.35.244
 app="SmartEnergyLabDataApi"
 
 function raiseError()
@@ -13,7 +14,7 @@ function raiseError()
 python ../Scripts/CheckVersion.py . VersionData.csx VersionData.cs
 if [ $? -ne 0 ]; then
     raiseError;
-fi 
+fi
 echo "Deleting old ASP.NET build ..."
 rm -r ASP_BUILD
 echo "Building ASP.NET app .."

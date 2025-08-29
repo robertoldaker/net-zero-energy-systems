@@ -1,5 +1,6 @@
 #
-dest="roberto@77.68.31.100"
+#dest="roberto@77.68.31.100"
+dest="roberto@217.154.35.244"
 app="SmartEnergyLabGui"
 
 function raiseError()
@@ -13,7 +14,7 @@ function raiseError()
 python ../Scripts/CheckVersion.py . ./ClientApp/src/app/main/about-dialog/about-dialog.component.tsx ./ClientApp/src/app/main/about-dialog/about-dialog.component.ts
 if [ $? -ne 0 ]; then
     raiseError;
-fi 
+fi
 echo "Deleting old ASP.NET build ..."
 rm -r ASP_BUILD
 # build angular separately
@@ -31,6 +32,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Zipping files .."
+rm $app.zip
 pushd ASP_BUILD
 zip -r ../$app.zip *
 popd

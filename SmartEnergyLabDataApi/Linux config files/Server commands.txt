@@ -2,6 +2,8 @@
 # Assumes you have a fresh installation of Ubuntu server
 #
 
+# logon to IONOS and set lv-app-tmp and lv-data-tmp subdomains to point to ip address of new server
+
 # Create user - logged on as root
 adduser roberto
 # add to group sudo
@@ -36,20 +38,32 @@ ALTER USER smart_energy_lab PASSWORD '1234567890';
 CREATE DATABASE smart_energy_lab WITH OWNER = smart_energy_lab;
 \q
 #
+# Edit config to accept external connections ...
+sudo nano /etc/postgresql/16/main/postgresql.conf
+# add/uncomment this line
+listen_addresses = '*'
+#
+sudo nano /etc/postgresql/16/main/pg_hba.conf
+# add these lines (this gives access to these account from home)
+host    all             smart_energy_lab             92.27.146.67/32              md5
+host    all             rob             92.27.146.67/32              md5
+#
+#
 # Should be able to connect to smart_energy_lab using beaverdb ...
 #
-# to move smart_energy_lab db to new location ..
-# on the current server dump db with
-pg_dump smart_energy_lab > smart_energy_lab.sql
-# then restore with
-psql -h <ip_address/hostname> -U smart_energy_lab < smart_energy_lab.sql
+
+# Move smart_energy_lab db to new location ..
+# (quicker to go direct)
+# FROM CURRENT PRODUCTION SERVER
+# dump current db
+/usr/bin/pg_dump -h "localhost" -p 5432 -U smart_energy_lab -f db.dump -Fc smart_energy_lab
+/usr/bin/pg_restore --clean --if-exists -v -h "<ip address new server>" -U smart_energy_lab -d smart_energy_lab db.dump
+# this will take some time ...
 
 # Install .net framework
 # (more info here https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu)
-sudo apt-get update; \
-  sudo apt-get install -y apt-transport-https && \
-  sudo apt-get update && \
-  sudo apt-get install -y dotnet-sdk-6.0
+sudo apt-get update && \
+  sudo apt-get install -y aspnetcore-runtime-8.0
 # should appear on list of runtime
 dotnet --list-runtimes
 
@@ -59,24 +73,21 @@ dotnet --list-runtimes
 # more info https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/linux-nginx?view=aspnetcore-2.1&tabs=aspnetcore2x
 sudo apt install nginx
 sudo nano /etc/nginx/sites-available/lv-data.net-zero-energy-systems.org                            # use one from "Server config files"
+# replace IP address at top with new ip address of server
 sudo ln -s /etc/nginx/sites-available/lv-data.net-zero-energy-systems.org /etc/nginx/sites-enabled/ # add symbolic link
-sudo rm /etc/nginx/sites-available/default                                                          # remove default behaviour
+sudo rm /etc/nginx/sites-enabled/default                                                            # remove default behaviour
 sudo nginx -t                                                                                       # to test configuration
 sudo nginx -s reload                                                                                # to reload config
 
-
 #
-# GO BACK to  development machine
+# ON LOCAL TERMINAL
 #
 # use private key instead of password
 ssh-copy-id roberto@<ip address or hostname>
 
 #
-# sFtp autoInstall.sh,SmartEnergyLabDataApi.service to home directory
-#
-
-#
-# Configure services with port to list on and urls to serve
+# sFtp autoInstall.sh to ~/installs
+# sFtp SmartEnergyLabDataApi.service to home directory
 # and move to system location
 sudo mv SmartEnergyLabDataApi.service /etc/systemd/system
 # enable service
@@ -89,8 +100,9 @@ sudo apt install unzip
 bash BuildAndPublishProduction.sh
 
 #
-# Should work on http://lv-data.net-zero-energy-systems.org now!
+# Should work on http://lv-data-tmp.net-zero-energy-systems.org/swagger now!
 #
+
 # GO BACK to server and install certbot
 sudo snap install --classic certbot
 # run certbot to add support for https:
@@ -101,15 +113,15 @@ sudo certbot --nginx -d lv-data.net-zero-energy-systems.org
 # install gdal
 #
 # download anaconda from https://www.anaconda.com
-wget https://repo.anaconda.com/archive/Anaconda3-2023.03-1-Linux-x86_64.sh
-bash Anaconda3-2023.03-1-Linux-x86_64.sh
+#curl -O https://repo.anaconda.com/archive/Anaconda3-2025.06-0-Linux-x86_64.sh
 # then restart terminal and ...
-conda install gdal
+#conda install gdal
+sudo apt install gdal-bin
 # then run this to check it works
 ogr2ogr
 # add symbolic link to websites install dir
-cd websites/SmartEnergyLabDataApi
-ln -s /home/rob/anaconda3/bin/ogr2ogr .
+#cd websites/SmartEnergyLabDataApi
+#ln -s /home/rob/anaconda3/bin/ogr2ogr .
 
 #
 # install smtp server - also installs postfix which is what we want
@@ -122,8 +134,8 @@ sudo apt install mailutils
 sudo nano /etc/postfix/main.cf
 # make it only respond locally by ensuring "inet_interfaces = loopback-only" is set
 
-# restart postfix (could use sudo systemctl restart postfix?)
-sudo service postfix restart
+# restart postfix
+sudo systemctl restart postfix
 # Look in these places for errors
 # sudo cat /var/log/mail.log
 # sudo cat /var/log/mail.err

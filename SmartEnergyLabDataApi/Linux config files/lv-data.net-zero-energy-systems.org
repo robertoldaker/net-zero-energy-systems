@@ -1,6 +1,6 @@
 server {
-    listen: 80
-    server_name lv-data.net-zero-energy-systems.org;
+    listen 80;
+    server_name lv-data.net-zero-energy-systems.org lv-data-tmp.net-zero-energy-systems.org;
     location / {
         if ( -f /home/rob/websites/SmartEnergyToolsDataApi/app_offline.html ) {
                 return 503;
@@ -37,7 +37,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-	
+
     error_page 503 /app_offline.html;
     location = /app_offline.html {
         root /home/rob/websites/SmartEnergyToolsDataApi/;
