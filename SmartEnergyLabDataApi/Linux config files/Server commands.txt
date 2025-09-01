@@ -132,7 +132,11 @@ sudo apt install mailutils
 # and "net-zero-energy-systems.org" as domain
 # now configure postfix
 sudo nano /etc/postfix/main.cf
-# make it only respond locally by ensuring "inet_interfaces = loopback-only" is set
+# ensure
+## myhostname = lv-data.net-zero-energy-systems.org
+## myorigin = net-zero-energy-systems.org
+## mydestination = ubuntu, localhost.localdomain, localhost
+## inet_interfaces = loopback-only
 
 # restart postfix
 sudo systemctl restart postfix
