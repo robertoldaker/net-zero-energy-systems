@@ -3,7 +3,9 @@
 #
 
 # logon to IONOS and set lv-app-tmp and lv-data-tmp subdomains to point to ip address of new server
-
+# set hostname so we can recognise server
+sudo hostnamectl set-hostname <new-hostname>
+#
 # Create user - logged on as root
 adduser roberto
 # add to group sudo
@@ -105,8 +107,14 @@ bash BuildAndPublishProduction.sh
 
 # GO BACK to server and install certbot
 sudo snap install --classic certbot
+# This clears dns cache
+sudo systemctl restart systemd-resolved
+# check new ip address is correct
+dig lv-data.net-zero-energy-systems.org
 # run certbot to add support for https:
 sudo certbot --nginx -d lv-data.net-zero-energy-systems.org
+# clear firefox cache
+goto "about:networking#dns"
 # test with https://lv-data.net-zero-energy-systems.org!
 
 #
