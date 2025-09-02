@@ -79,8 +79,8 @@ namespace EnergySystemLabDataApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("BackupDb")]
-        public IActionResult BackupDb() {
-            _backupDbTask.Run();
+        public IActionResult BackupDb(bool sFtp=true, bool restoreToStagingServer=false) {
+            _backupDbTask.Run(sFtp, restoreToStagingServer);
             return this.Ok();
         }
 

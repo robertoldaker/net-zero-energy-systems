@@ -1,6 +1,20 @@
 <div class="header">
     <div class="toolbar">
-        <button mat-raised-button color="primary" (click)="backupDb()">Backup database to server</button>
+        <button mat-raised-button color="primary" [matMenuTriggerFor]="dbBackupMenu">
+            Backup database
+            <mat-icon>keyboard_arrow_down</mat-icon>
+        </button>
+        <mat-menu #dbBackupMenu="matMenu">
+            <button mat-menu-item (click)="backupDb(true,false)">
+                <span>SFTP to Backup server</span>
+            </button>
+            <button mat-menu-item (click)="backupDb(false,true)">
+                <span>Restore to Staging server</span>
+            </button>
+            <button mat-menu-item (click)="backupDb(true,true)">
+                <span>SFTP and Restore</span>
+            </button>
+        </mat-menu>
         <button mat-raised-button color="primary" [matMenuTriggerFor]="loadNetworkDataMenu">
             Backup database locally
             <mat-icon>keyboard_arrow_down</mat-icon>
@@ -12,8 +26,8 @@
             <button mat-menu-item (click)="backupDbLocally(ElsiAndBoundCalc)">
                 <span>BoundCalc and Elsi only</span>
             </button>
-        </mat-menu>     
-        <button mat-raised-button color="primary" (click)="performCleanup()" disabled="{{inCleanup}}">            
+        </mat-menu>
+        <button mat-raised-button color="primary" (click)="performCleanup()" disabled="{{inCleanup}}">
             <div *ngIf="inCleanup" style="display: inline-block">
                 <mat-spinner diameter="20"></mat-spinner>
             </div>
@@ -34,5 +48,5 @@
         <mat-tab label="Distribution network">
             <app-dist-data></app-dist-data>
         </mat-tab>
-    </mat-tab-group>            
+    </mat-tab-group>
 </div>

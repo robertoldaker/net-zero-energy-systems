@@ -466,8 +466,8 @@ export class DataClientService implements ILogs {
         this.getBasicRequest('/Admin/SystemInfo', onComplete)
     }
 
-    BackupDb(onComplete: (resp: any)=> void | undefined) {
-        this.getBasicRequest('/Admin/BackupDb', onComplete);
+    BackupDb(sFtp: boolean, restoreToStagingServer: boolean, onComplete: (resp: any)=> void | undefined) {
+        this.getBasicRequest(`/Admin/BackupDb?sFtp=${sFtp}&restoreToStagingServer=${restoreToStagingServer}`, onComplete);
     }
 
     LoadDistributionData(source: LoadNetworkDataSource, onComplete: (resp: any)=> void | undefined) {

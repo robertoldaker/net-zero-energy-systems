@@ -139,22 +139,24 @@ namespace SmartEnergyLabDataApi.Models
     public class DatabaseBackupBackgroundTask : BackgroundTaskBase
     {
         private TaskRunner _ctTask;
+        private bool _sFtp;
+        private bool _restoreToStagingServer;
 
-        protected DatabaseBackupBackgroundTask(IBackgroundTasks tasks) : base(tasks) {
-            _ctTask = new TaskRunner( (taskRunner) =>
-            {
+        protected DatabaseBackupBackgroundTask(IBackgroundTasks tasks) : base(tasks)
+        {
+            _ctTask = new TaskRunner((taskRunner) => {
                 stateUpdate(TaskState.RunningState.Running, "Database backup started", 0);
                 try {
                     var m = new DatabaseBackup((TaskRunner?)taskRunner);
-                    m.Run();
+                    m.Run(_sFtp,_restoreToStagingServer);
                     stateUpdate(TaskState.RunningState.Finished, "Database backup finished", 100);
-                } catch( Exception e) {
-                    stateUpdate(TaskState.RunningState.Finished, $"Database task aborted aborted [{e.Message}]", 0);
+                } catch (Exception e) {
+                    stateUpdate(TaskState.RunningState.Finished, $"Database task aborted [{e.Message}]", 0);
                 }
             });
-            _ctTask.StateUpdateEvent+=stateUpdate;
-            _ctTask.ProgressUpdateEvent+=percentUpdate;
-            _ctTask.MessageUpdateEvent+=messageUpdate;
+            _ctTask.StateUpdateEvent += stateUpdate;
+            _ctTask.ProgressUpdateEvent += percentUpdate;
+            _ctTask.MessageUpdateEvent += messageUpdate;
         }
         public override bool IsRunning =>  _ctTask.IsRunning;
 
@@ -163,10 +165,11 @@ namespace SmartEnergyLabDataApi.Models
             _ctTask.Cancel();
         }
 
-        public void Run()
+        public void Run(bool sFtp, bool restoreToStagingServer)
         {
-            if (_ctTask.IsRunning)
-            {
+            _sFtp = sFtp;
+            _restoreToStagingServer = restoreToStagingServer;
+            if (_ctTask.IsRunning) {
                 throw new Exception("Database backup is currently in progress, please try again later");
             }
             _ctTask.Run();
@@ -231,7 +234,7 @@ namespace SmartEnergyLabDataApi.Models
         }
 
         public void Run(LoadNetworkDataSource source)
-        {            
+        {
             if (_ctTask.IsRunning)
             {
                 throw new Exception($"{NAME} is currently in progress, please try again later");

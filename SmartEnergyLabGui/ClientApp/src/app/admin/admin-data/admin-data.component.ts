@@ -11,7 +11,7 @@ import { ApplicationGroup } from 'src/app/data/app.data';
   styleUrls: ['./admin-data.component.css']
 })
 export class AdminDataComponent extends ComponentBase {
-    
+
     constructor(private dataService: DataClientService, private dialogService: DialogService, @Inject('DATA_URL') private baseUrl: string) {
         super()
         this.inCleanup = false;
@@ -20,12 +20,12 @@ export class AdminDataComponent extends ComponentBase {
 
     model: DataModel | undefined;
 
-    backupDb() {
-        this.dataService.BackupDb((result)=>{
+    backupDb(sFtp: boolean, restoreToStagingServer: boolean) {
+        this.dataService.BackupDb(sFtp, restoreToStagingServer, (result)=>{
         })
     }
 
-    backupDbLocally(appGroup: ApplicationGroup) {        
+    backupDbLocally(appGroup: ApplicationGroup) {
         window.location.href = `${this.baseUrl}/Admin/BackupDbLocally?appGroup=${appGroup}`;
     }
 
