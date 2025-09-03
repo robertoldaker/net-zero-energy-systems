@@ -60,7 +60,12 @@ public static class Program
         {
             options.AddPolicy(corsPolicyName,
                                   builder => {
-                                      builder.WithOrigins("http://localhost:44463","http://odin.local:5021","https://lv-app.net-zero-energy-systems.org","http://lv-app-test.net-zero-energy-systems.org", "http://lv-app-tmp.net-zero-energy-systems.org")
+                                      builder.WithOrigins("http://localhost:44463",
+                                                "http://odin.local:5021",
+                                                "https://lv-app.net-zero-energy-systems.org",
+                                                "http://lv-app-test.net-zero-energy-systems.org",
+                                                "https://lv-app-test.net-zero-energy-systems.org",
+                                                "http://lv-app-tmp.net-zero-energy-systems.org")
                                             .AllowCredentials()
                                             .AllowAnyHeader()
                                             .AllowAnyMethod();

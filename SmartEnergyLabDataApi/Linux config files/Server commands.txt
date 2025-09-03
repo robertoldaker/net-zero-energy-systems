@@ -51,6 +51,8 @@ sudo systemctl restart postgresql
 # add these lines (this gives access to these account from home)
 host    all             smart_energy_lab             92.27.146.67/32              md5
 host    all             rob             92.27.146.67/32              md5
+# for staging server add this to allow copying of db
+host    all             smart_energy_lab             <ip-address of production server>/32              md5
 #
 #
 # Should be able to connect to smart_energy_lab using beaverdb ...
