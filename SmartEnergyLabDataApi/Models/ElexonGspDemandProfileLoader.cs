@@ -11,14 +11,6 @@ namespace SmartEnergyLabDataApi.Models;
 
 public class ElexonGspDemandProfileLoader {
 
-    private string[] _urls = {
-        "https://www.elexon.co.uk/open-data/GP9_2020.zip",
-        "https://www.elexon.co.uk/open-data/GP9_2021.zip",
-        "https://www.elexon.co.uk/open-data/GP9_2023.zip",
-        "https://www.elexon.co.uk/open-data/GP9_2023.zip",
-        "https://www.elexon.co.uk/open-data/GP9_2024.zip",
-        "https://www.elexon.co.uk/open-data/GP9_2025.zip"
-    };
     private int _startYear = 2020;
     private HttpClient _httpClient;
     private object _httpClientLock = new object();
@@ -114,10 +106,12 @@ public class ElexonGspDemandProfileLoader {
 
     private void deleteCsvFiles(string folder)
     {
-        var gspFiles = Directory.EnumerateFiles(folder, "*.csv");
-        foreach (var file in gspFiles) {
-            //
-            File.Delete(file);
+        if (Directory.Exists(folder)) {
+            var gspFiles = Directory.EnumerateFiles(folder, "*.csv");
+            foreach (var file in gspFiles) {
+                //
+                File.Delete(file);
+            }
         }
     }
 
