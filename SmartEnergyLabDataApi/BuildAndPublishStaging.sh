@@ -1,6 +1,7 @@
 #
-dest="rob@lv-data-test.net-zero-energy-systems.org"
-port="2358"
+dest="rob@87.106.102.220"
+#port="2358"
+port="22"
 app="SmartEnergyLabDataApi"
 
 function raiseError()

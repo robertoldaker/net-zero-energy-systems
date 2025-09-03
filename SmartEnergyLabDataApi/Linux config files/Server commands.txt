@@ -46,13 +46,15 @@ sudo nano /etc/postgresql/16/main/postgresql.conf
 listen_addresses = '*'
 #
 sudo nano /etc/postgresql/16/main/pg_hba.conf
+# restart postgresql
+sudo systemctl restart postgresql
 # add these lines (this gives access to these account from home)
 host    all             smart_energy_lab             92.27.146.67/32              md5
 host    all             rob             92.27.146.67/32              md5
 #
 #
 # Should be able to connect to smart_energy_lab using beaverdb ...
-#
+# (ensure port 5432 is open on firewall for server)
 
 # Move smart_energy_lab db to new location ..
 # (quicker to go direct)
