@@ -36,6 +36,15 @@ public class Elexon : DataSet {
         return date;
     }
 
+    public DateTime? GetEarliestDate()
+    {
+        DateTime? date = Session.QueryOver<GspDemandProfileData>().
+            OrderBy(m => m.Date).Asc.
+            Select(m => m.Date).
+            Take(1).SingleOrDefault<DateTime>();
+        return date;
+    }
+
     public IList<GspDemandProfileData> GetGspDemandProfilesWithNoLocation()
     {
         return Session.QueryOver<GspDemandProfileData>().Where(m => m.Location == null).List();

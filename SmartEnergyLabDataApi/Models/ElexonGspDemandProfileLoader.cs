@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using HaloSoft.EventLogger;
 using LumenWorks.Framework.IO.Csv;
 using Org.BouncyCastle.Crypto.Signers;
@@ -10,7 +11,15 @@ namespace SmartEnergyLabDataApi.Models;
 
 public class ElexonGspDemandProfileLoader {
 
-    private string _url = "https://www.elexon.co.uk/open-data/GP9_2025.zip";
+    private string[] _urls = {
+        "https://www.elexon.co.uk/open-data/GP9_2020.zip",
+        "https://www.elexon.co.uk/open-data/GP9_2021.zip",
+        "https://www.elexon.co.uk/open-data/GP9_2023.zip",
+        "https://www.elexon.co.uk/open-data/GP9_2023.zip",
+        "https://www.elexon.co.uk/open-data/GP9_2024.zip",
+        "https://www.elexon.co.uk/open-data/GP9_2025.zip"
+    };
+    private int _startYear = 2020;
     private HttpClient _httpClient;
     private object _httpClientLock = new object();
     private enum CsvColumn {
@@ -28,29 +37,88 @@ public class ElexonGspDemandProfileLoader {
 
     public void Load()
     {
-        var latestDate = getLatestDate();
+        // get current date range of entries
+        var dateRange = getDateRange();
+        //
+        var currentYear = DateTime.Now.Year;
+        //
+        for(int year=_startYear; year<=currentYear; year++) {
+            var url = getUrl(year);
+            if (dateRange.earliest == null || (year <= ((DateTime)dateRange.earliest).Year) ||
+                  dateRange.latest == null || (year >= ((DateTime)dateRange.latest).Year)) {
+                var zipFile = Path.Combine(AppFolders.Instance.Temp, $"GP9_{year}.zip");
+                if (File.Exists(zipFile)) {
+                    processZipFile(zipFile, dateRange);
+                } else {
+                    processUrl(url, dateRange);
+                }
+            }
+        }
+        addLocations();
+    }
+
+    private string getUrl(int year)
+    {
+        return $"https://www.elexon.co.uk/open-data/GP9_{year}.zip";
+    }
+
+    private int getYear(string url)
+    {
+        var regEx = new Regex(@"GP9_(\d{4}).zip$");
+        var match = regEx.Match(url);
+        if (match.Success) {
+            var yearStr = match.Groups[1].Value;
+            var year = int.Parse(yearStr);
+            return year;
+        } else {
+            throw new Exception($"Could not get year from url [{url}]");
+        }
+    }
+
+    private void processUrl(string url, (DateTime? earliest, DateTime? latest) dateRange) {
         var outFolder = Path.Combine(AppFolders.Instance.Temp, "GSP_Data");
-        // Download json
         var client = getHttpClient();
-        using (HttpRequestMessage message = getRequestMessage(HttpMethod.Get, _url)) {
+        using (HttpRequestMessage message = getRequestMessage(HttpMethod.Get, url)) {
             var response = client.SendAsync(message).Result;
             //
             if (response.IsSuccessStatusCode) {
                 var stream = response.Content.ReadAsStream();
                 var cd = response.Content.Headers.ContentDisposition;
                 if (stream != null) {
+                    // Clear out folder before extracting .zip
+                    deleteCsvFiles(outFolder);
+                    // Extract files from zip
                     ZipFile.ExtractToDirectory(stream, outFolder, true);
-                    //
-                    processFiles(outFolder, latestDate);
+                    // process files
+                    processFiles(outFolder, dateRange);
                 } else {
-                    throw new Exception($"NUll stream downloading data from [{_url}]");
+                    throw new Exception($"NUll stream downloading data from [{url}]");
                 }
 
             } else {
                 throw new Exception($"Unexpected response [{response.StatusCode}] [{response.ReasonPhrase}]");
             }
         }
-        addLocations();
+    }
+
+    private void processZipFile(string zipFile, (DateTime? earliest, DateTime? latest) dateRange)
+    {
+        var outFolder = Path.Combine(AppFolders.Instance.Temp, "GSP_Data");
+        // Clear out folder before extracting .zip
+        deleteCsvFiles(outFolder);
+        // Extract files from zip
+        ZipFile.ExtractToDirectory(zipFile, outFolder, true);
+        // process files
+        processFiles(outFolder, dateRange);
+    }
+
+    private void deleteCsvFiles(string folder)
+    {
+        var gspFiles = Directory.EnumerateFiles(folder, "*.csv");
+        foreach (var file in gspFiles) {
+            //
+            File.Delete(file);
+        }
     }
 
     private void addLocations()
@@ -67,30 +135,62 @@ public class ElexonGspDemandProfileLoader {
         }
     }
 
-    private DateTime? getLatestDate()
+    private (DateTime? earliest, DateTime? latest) getDateRange()
     {
+        DateTime? earliest, latest;
         using (var da = new DataAccess()) {
-            return da.Elexon.GetLatestDate();
+            latest = da.Elexon.GetLatestDate();
+            earliest = da.Elexon.GetEarliestDate();
         }
+        return (earliest, latest);
     }
 
-    private void processFiles(string folder, DateTime? latestDate)
+    private void processFiles(string folder, (DateTime? earliest, DateTime? latest) dateRange)
     {
         var gspFiles = Directory.EnumerateFiles(folder);
-        gspFiles = gspFiles.OrderBy(m => File.GetLastWriteTime(m)).ToList();
+        gspFiles = gspFiles.OrderBy(m => getDateTimeForCsv(m)).ToList();
 
         foreach (var file in gspFiles) {
             if (Path.GetExtension(file) == ".csv") {
-                // since the settlementdates in the file lag the write times of the file
-                // by about 7 days add some wiggle room
-                if (latestDate < File.GetLastWriteTime(file) - new TimeSpan(10, 0, 0)) {
-                    processFile(file, latestDate);
+                try {
+                    var fileDateTime = getDateTimeForCsv(file);
+                    // since the settlement dates in the file lag the write times of the file
+                    // by about 7 days add some wiggle room
+                    var startTime = fileDateTime - new TimeSpan(10, 0, 0, 0);
+                    var endTime = fileDateTime + new TimeSpan(31, 0, 0, 0);
+                    if (dateRange.latest == null || dateRange.latest < endTime ||
+                        dateRange.earliest == null || dateRange.earliest > startTime) {
+                        processFile(file, dateRange);
+                    } else {
+                        var fn = Path.GetFileName(file);
+                        Logger.Instance.LogInfoEvent($"Skipping GSP Period Data file [{fn}]");
+                    }
+                } finally {
+                    // clear up files
+                    if (File.Exists(file)) {
+                        File.Delete(file);
+                    }
                 }
             }
         }
     }
 
-    private void processFile(string file, DateTime? latestDate)
+    private DateTime getDateTimeForCsv(string file)
+    {
+        var regEx = new Regex(@"(\d{4})(\d{2})\.csv$");
+        var match = regEx.Match(file);
+        if (match.Success) {
+            var yearStr = match.Groups[1].Value;
+            var year = int.Parse(yearStr);
+            var monthStr = match.Groups[2].Value;
+            var month = int.Parse(monthStr);
+            return new DateTime(year,month,1);
+        } else {
+            throw new Exception($"Cannot find month from csv file [{file}");
+        }
+    }
+
+    private void processFile(string file, (DateTime? earliest, DateTime? latest) dateRange)
     {
         _headerDict.Clear();
         var fn = Path.GetFileName(file);
@@ -101,7 +201,7 @@ public class ElexonGspDemandProfileLoader {
             using (CsvReader reader = new CsvReader(tr, true)) {
                 setHeaderDict(reader);
                 reader.ReadNextRecord();
-                while (processCsvSegment(reader, latestDate, ref profileCount)) {
+                while (processCsvSegment(reader, dateRange, ref profileCount)) {
                     Logger.Instance.LogInfoEvent($"Saved [{profileCount}] profiles");
                 }
             }
@@ -133,7 +233,7 @@ public class ElexonGspDemandProfileLoader {
 
     }
 
-    private bool processCsvSegment(CsvReader reader, DateTime? latestDate, ref int profileCount)
+    private bool processCsvSegment(CsvReader reader, (DateTime? earliest, DateTime? latest) dateRange, ref int profileCount)
     {
         int nProfiles = 0;
         int profilesToProcess = 500;
@@ -151,7 +251,7 @@ public class ElexonGspDemandProfileLoader {
                     _taskRunner.CheckCancelled();
                 }
                 */
-                (bool processedFile, moreData) = processProfile(da, reader, latestDate);
+                (bool processedFile, moreData) = processProfile(da, reader, dateRange);
                 if (processedFile) {
                     profileCount++;
                     nProfiles++;
@@ -166,7 +266,7 @@ public class ElexonGspDemandProfileLoader {
         return moreAvailable;
     }
 
-    private (bool processedFile, bool moreData) processProfile(DataAccess da, CsvReader reader, DateTime? latestDate)
+    private (bool processedFile, bool moreData) processProfile(DataAccess da, CsvReader reader, (DateTime? earliest, DateTime? latest) dateRange)
     {
         bool moreData = false;
         // only process ones with settlement run time = II
@@ -181,8 +281,9 @@ public class ElexonGspDemandProfileLoader {
         var month = int.Parse(sdStr.Substring(4, 2));
         var date = int.Parse(sdStr.Substring(6, 2));
         var dt = new DateTime(year, month, date);
-        // date has to be after our latest date to add to db so ignore if before or the same
-        if (latestDate!=null && dt <= latestDate) {
+        // if date outside range then exit
+        if ( (dateRange.latest!=null && dt <= dateRange.latest) &&
+             (dateRange.earliest!=null && dt >= dateRange.earliest) ) {
             moreData = reader.ReadNextRecord();
             return (false, moreData);
         }
@@ -220,8 +321,12 @@ public class ElexonGspDemandProfileLoader {
                     break;
                 }
                 (demand, isEstimate) = getDemand(reader);
-                data.Demand[sp - 1] = demand;
-                data.IsEstimate[sp - 1] = isEstimate;
+                if (sp < 0 || sp > data.Demand.Length) {
+                    Logger.Instance.LogWarningEvent($"Unexpected value for sp, found [{sp}]");
+                } else {
+                    data.Demand[sp - 1] = demand;
+                    data.IsEstimate[sp - 1] = isEstimate;
+                }
                 spCount++;
             }
             // add to database
