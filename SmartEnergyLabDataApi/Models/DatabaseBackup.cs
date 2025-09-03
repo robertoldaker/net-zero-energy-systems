@@ -47,11 +47,13 @@ namespace SmartEnergyLabDataApi.Models {
         private void restoreToStagingServer(string filename)
         {
             var host = "lv-data-test.net-zero-energy-systems.org";
+            _taskRunner?.Update(RunningState.Running, $"Restoring to staging server [{host}] ...");
             var backup = new Execute();
             var args = getPgRestoreArgs(host,filename);
             var pgRestore = getPgRestore();
             var exitCode = backup.Run(pgRestore, args, null, (line) => {
-                _taskRunner?.Update(RunningState.Running, line);
+                // Do not add to log
+                _taskRunner?.Update(line, false);
                 if (_taskRunner != null) {
                     return _taskRunner.CancellationToken.IsCancellationRequested;
                 } else {
@@ -77,7 +79,8 @@ namespace SmartEnergyLabDataApi.Models {
             var args = getPgDumpArgs(filename, true);
             var pgDump = getPgDump();
             var exitCode = backup.Run(pgDump, args, null, (line) => {
-                _taskRunner?.Update(RunningState.Running, line);
+                // Do not add to log
+                _taskRunner?.Update(line, false);
                 if (_taskRunner != null) {
                     return _taskRunner.CancellationToken.IsCancellationRequested;
                 } else {
