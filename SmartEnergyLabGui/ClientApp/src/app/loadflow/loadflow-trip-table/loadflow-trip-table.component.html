@@ -32,7 +32,7 @@
         <ng-container matColumnDef="tripOutcome">
             <th mat-header-cell *matHeaderCellDef><div [style]="getOverallTripOutcomeStyle()">Trip outcome</div></th>
             <td mat-cell *matCellDef="let element">
-                <div [style]="getTripOutcomeStyle(element.tripOutcome)">{{element.tripOutcome}}</div>
+                <div [style]="getTripOutcomeStyle(element.tripOutcome)">{{getTripOutcome(element.tripOutcome)}}</div>
             </td>
         </ng-container>
 

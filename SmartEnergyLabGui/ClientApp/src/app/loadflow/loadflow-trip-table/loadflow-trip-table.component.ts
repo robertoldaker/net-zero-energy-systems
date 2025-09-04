@@ -60,6 +60,10 @@ export class LoadflowTripTableComponent implements OnInit, AfterViewInit {
         }
     }
 
+    getTripOutcome(tripOutcome: string) {
+        return tripOutcome ? tripOutcome : "OK"
+    }
+
     displayedColumns: string[]
 
     @Input()
