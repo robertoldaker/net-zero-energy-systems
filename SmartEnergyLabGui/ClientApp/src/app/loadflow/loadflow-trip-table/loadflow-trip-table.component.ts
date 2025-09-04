@@ -15,7 +15,6 @@ export class LoadflowTripTableComponent implements OnInit, AfterViewInit {
 
     constructor(private dataService: LoadflowDataService) {
         this.sort = null
-        this.parentWidth = 'calc(100vw - 495px)';
         this.displayedColumns = ['selected','capacity', 'surplus', 'trip', 'limCct','tripOutcome']
         this.trips = new MatTableDataSource();
     }
@@ -62,7 +61,6 @@ export class LoadflowTripTableComponent implements OnInit, AfterViewInit {
     }
 
     displayedColumns: string[]
-    parentWidth: string
 
     @Input()
     trips: MatTableDataSource<AllTripResult>
