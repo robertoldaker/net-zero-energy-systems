@@ -4,13 +4,13 @@ using Microsoft.Extensions.ObjectPool;
 namespace SmartEnergyLabDataApi.Data.BoundCalc;
 
 
-public class TransportModelItemHandler : BaseEditItemHandler
+public class GenerationModelItemHandler : BaseEditItemHandler
 {
     public override void Check(EditItemModel m)
     {
         // name
         if (m.GetString("name", out string name)) {
-            if (m.Da.BoundCalc.TransportModelExists(m.Dataset.Id, name, out Dataset? dataset)) {
+            if (m.Da.BoundCalc.GenerationModelExists(m.Dataset.Id, name, out Dataset? dataset)) {
                 m.AddError("name", $"Generation model already exists with name [{name}] in dataset [{dataset?.Name}]");
             }
         } else if (m.ItemId == 0) {
@@ -22,16 +22,16 @@ public class TransportModelItemHandler : BaseEditItemHandler
     {
         var id = m.ItemId;
         if (id > 0) {
-            return m.Da.BoundCalc.GetTransportModel(id);
+            return m.Da.BoundCalc.GetGenerationModel(id);
         } else {
-            var tm = new TransportModel(m.Dataset);
+            var tm = new GenerationModel(m.Dataset);
             return tm;
         }
     }
 
     public override void Save(EditItemModel m)
     {
-        TransportModel obj = (TransportModel) m.Item;
+        GenerationModel obj = (GenerationModel) m.Item;
         //
         if ( m.GetString("name",out string name)) {
             obj.Name = name;
@@ -41,7 +41,7 @@ public class TransportModelItemHandler : BaseEditItemHandler
             m.Da.BoundCalc.Add(obj);
             // add entries - one for each generator type
             foreach (var gt in Enum.GetValues<GeneratorType>()) {
-                var tme = new TransportModelEntry(obj,m.Dataset);
+                var tme = new GenerationModelEntry(obj,m.Dataset);
                 tme.AutoScaling = true;
                 tme.GeneratorType = gt;
                 m.Da.BoundCalc.Add(tme);
@@ -53,13 +53,13 @@ public class TransportModelItemHandler : BaseEditItemHandler
     {
         using( var da = new DataAccess(false) ) {
             var list = new List<DatasetData<object>>();
-            var tm = (TransportModel) m.Item;
-            // the transport model we have just created/edited
-            (var di, var tmeDi) = da.BoundCalc.GetTransportModelDatasetData(m.Dataset.Id, m=>m.Id == tm.Id, true);
+            var tm = (GenerationModel) m.Item;
+            // the generation model we have just created/edited
+            (var di, var tmeDi) = da.BoundCalc.GetGenerationModelDatasetData(m.Dataset.Id, m=>m.Id == tm.Id, true);
 
-            // update the scaling for the transport model edited
+            // update the scaling for the generation model edited
             if (di.Data.Count > 0) {
-                tm = di.Data[0]; // important to update the reference to transport model
+                tm = di.Data[0]; // important to update the reference to generation model
                 tm.UpdateScaling(da, m.Dataset.Id);
             }
 

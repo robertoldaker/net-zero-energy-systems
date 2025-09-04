@@ -4,7 +4,7 @@ using Microsoft.Extensions.ObjectPool;
 namespace SmartEnergyLabDataApi.Data.BoundCalc;
 
 
-public class TransportModelEntryItemHandler : BaseEditItemHandler
+public class GenerationModelEntryItemHandler : BaseEditItemHandler
 {
     public override void Check(EditItemModel m)
     {
@@ -17,12 +17,12 @@ public class TransportModelEntryItemHandler : BaseEditItemHandler
     public override IDatasetIId GetItem(EditItemModel m)
     {
         var id = m.ItemId;
-        return id > 0 ? m.Da.BoundCalc.GetTransportModelEntry(id) : throw new Exception("Unexpected zero id found for TransportModelEntry");
+        return id > 0 ? m.Da.BoundCalc.GetGenerationModelEntry(id) : throw new Exception("Unexpected zero id found for GenerationModelEntry");
     }
 
     public override void Save(EditItemModel m)
     {
-        TransportModelEntry obj = (TransportModelEntry) m.Item;
+        GenerationModelEntry obj = (GenerationModelEntry) m.Item;
         // autoScaling
         var autoScaling = m.CheckBoolean("autoScaling");
         if (autoScaling!=null) {
@@ -43,10 +43,10 @@ public class TransportModelEntryItemHandler : BaseEditItemHandler
     {
         using( var da = new DataAccess(false) ) {
             var list = new List<DatasetData<object>>();
-            var tme = (TransportModelEntry) m.Item;
+            var tme = (GenerationModelEntry) m.Item;
 
-            // get transport model
-            (var diTM,var diTME) = da.BoundCalc.GetTransportModelDatasetData(m.Dataset.Id,m => m.Id == tme.TransportModelId, true);
+            // get generation model
+            (var diTM,var diTME) = da.BoundCalc.GetGenerationModelDatasetData(m.Dataset.Id,m => m.Id == tme.GenerationModelId, true);
             var tm = diTM.Data[0];
 
             tm.UpdateScaling(da, m.Dataset.Id);

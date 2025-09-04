@@ -1,3 +1,7 @@
+using Lad.NetworkLibrary;
+using NHibernate.Util;
+using SmartEnergyLabDataApi.Data.BoundCalc;
+
 namespace SmartEnergyLabDataApi.BoundCalc
 {
     public enum BoundCalcBoundaryTripType { Single, Double, Multi }
@@ -5,48 +9,6 @@ namespace SmartEnergyLabDataApi.BoundCalc
     public class BoundCalcBoundaryTrips {
 
         private Dictionary<string,BoundCalcBoundaryTrip> _dict;
-
-        public BoundCalcBoundaryTrips(Branches branches, NodeBoundaryData nbd) {
-            Trips = new List<BoundCalcBoundaryTrip>();
-            _dict = new Dictionary<string, BoundCalcBoundaryTrip>();
-            var branchList = new List<BranchWrapper>();
-            double tc = 0;
-
-            foreach( var bw in branches.Objs) {
-                if ( nbd.IsInBoundary(bw.Node1) ^ nbd.IsInBoundary(bw.Node2) ) {
-                    branchList.Add(bw);
-                    tc+= bw.Obj.Cap;
-                }
-            }
-
-            // Single trip from the branch list
-            int index=1;
-            foreach( var bw in branchList) {
-                Trips.Add(new BoundCalcBoundaryTrip(index, bw));
-                index++;
-            }
-
-            // Double trip using combinations of each trip in list
-            for(int i=0; i<branchList.Count; i++) {
-                for(int j=i+1;j<branchList.Count;j++) {
-                    Trips.Add(new BoundCalcBoundaryTrip(index, branchList[i],branchList[j]));
-                    index++;
-                }
-            }
-
-            // list of boundary names
-            LineNames = new List<string>();
-            foreach( var bw in branchList) {
-                LineNames.Add(bw.LineName);
-            }
-
-            // Add to dictionary for fast lookup
-            foreach( var trip in Trips) {
-                _dict.Add(trip.Text,trip);
-            }
-
-            TotalCapacity = tc;
-        }
 
         public BoundCalcBoundaryTrip GetTrip(string name) {
             BoundCalcBoundaryTrip trip;
@@ -61,29 +23,25 @@ namespace SmartEnergyLabDataApi.BoundCalc
         public double TotalCapacity {get; private set;}
 
         public class BoundCalcBoundaryTrip {
-            private List<BranchWrapper> _branches;
-            public BoundCalcBoundaryTrip(int index,BranchWrapper bw1, BranchWrapper bw2=null) {
-                Index = index;
-                _branches = new List<BranchWrapper>() { bw1 };
-                if ( bw2!=null) {
-                    _branches.Add(bw2);
-                    Type=BoundCalcBoundaryTripType.Double;
+
+            public BoundCalcBoundaryTrip(BoundCalcNetworkData nd, Network.TripSpec ts)
+            {
+                _text = ts.Name;
+                // Need ids etc. of branch objects so look them up in the NetworkData class
+                var branches = nd.GetBranches(ts.ItemNames);
+                // Used in the gui
+                LineNames = branches.Select(m => m.LineName).ToList<string>();
+                BranchCodes = branches.Select(m => m.Code).ToList<string>();
+                BranchIds = branches.Select(m => m.Id).ToList<int>();
+                // Not sure if intact needs its own type??
+                if (ts.ItemNames.Length == 2) {
+                    Type = BoundCalcBoundaryTripType.Double;
                 } else {
-                    Type=BoundCalcBoundaryTripType.Single;
+                    Type = BoundCalcBoundaryTripType.Single;
                 }
-                LineNames = _branches.Select(m=>m.LineName).ToList<string>();
-                BranchCodes = _branches.Select(m=>m.Obj.Code).ToList<string>();
-                BranchIds = _branches.Select(m=>m.Obj.Id).ToList<int>();
             }
 
-            public BoundCalcBoundaryTrip(Trip trip) {
-                _text = trip.name;
-                _branches = new List<BranchWrapper>(trip.Branches);
-                LineNames = _branches.Select(m=>m.LineName).ToList<string>();
-                BranchCodes = _branches.Select(m=>m.Obj.Code).ToList<string>();
-                BranchIds = _branches.Select(m=>m.Obj.Id).ToList<int>();                
-            }
-            public int Index {get; private set;}
+            public int Index { get; private set; }
             public BoundCalcBoundaryTripType Type {get; set;}
 
             private string _text;

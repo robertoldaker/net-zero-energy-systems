@@ -48,106 +48,6 @@ public class BoundCalcReference {
         }
     }
 
-    public BoundCalcErrors RunBase(bool showAllErrors) {
-        //
-        if ( File.Exists(getBaseFilename())) {
-            var BoundCalcErrors = new BoundCalcErrors(showAllErrors);
-            var m = new BoundCalcXlsmReader();
-            m.LoadResults(getBaseFilename());
-            Dataset ds;
-            using( var da = new DataAccess() ) {
-                var name = "GB network";
-                ds = da.Datasets.GetDataset(DatasetType.BoundCalc,name);
-                if ( ds==null) {
-                    throw new Exception($"Cannot find dataset [{name}]");
-                }
-            }
-            using( var bc = new BoundCalc(ds.Id, 0) ) {
-                bc.RunBoundCalc(null,null,false,true);
-                var lfr = new BoundCalcResults(bc);
-                // nodes
-                foreach( var nw in bc.Nodes.Objs) {
-                    if ( m.NodeResults.TryGetValue(nw.Obj.Code, out BoundCalcXlsmReader.NodeResult nr)) {
-                        BoundCalcErrors.AddNodeResult(nw.Obj.Code,nw,nr);
-                    } else {
-                        throw new Exception($"Could not find node [{nw.Obj.Code}] in ref spreadsheet");
-                    }
-                }
-                // branches
-                foreach( var bw in bc.Branches.Objs ) {
-                    if ( m.BranchResults.TryGetValue(bw.LineName, out BoundCalcXlsmReader.BranchResult br)) {
-                        BoundCalcErrors.AddBranchResult(bw.LineName,bw,br);
-                    } else {
-                        throw new Exception($"Could not find branch [{bw.LineName}] in ref spreadsheet");
-                    }
-                }
-                // controls
-                foreach( var cw in bc.Ctrls.Objs ) {
-                    if ( m.CtrlResults.TryGetValue(cw.Obj.Code, out BoundCalcXlsmReader.CtrlResult cr)) {
-                        BoundCalcErrors.AddCtrlResult(cw.Obj.Code,cw,cr);
-                    } else {
-                        throw new Exception($"Could not find ctrl [{cw.Obj.Code}] in ref spreadsheet");
-                    }
-                }
-            }
-            return BoundCalcErrors;
-        } else {
-            throw new Exception("No base reference has been loaded. Please load a base reference spreadsheet.");
-        }
-
-        //
-
-    }
-
-    public BoundCalcErrors RunB8(bool showAllErrors) {
-        //
-        if ( File.Exists(getB8Filename())) {
-            var BoundCalcErrors = new BoundCalcErrors(showAllErrors);
-            var m = new BoundCalcXlsmReader();
-            m.LoadResults(getB8Filename(),"B8");
-            var boundaryName="B8";
-            Dataset ds;
-            using( var da = new DataAccess() ) {
-                var name = "GB network";
-                ds = da.Datasets.GetDataset(DatasetType.BoundCalc,name);
-                if ( ds==null) {
-                    throw new Exception($"Cannot find dataset [{name}]");
-                }
-            }
-            using( var bc = new BoundCalc(ds.Id,0) ) {
-                var bnd = bc.Boundaries.GetBoundary(boundaryName);
-                if ( bnd == null ) {
-                    throw new Exception($"Cannot find boundary with name [{boundaryName}]");
-                }
-                bc.RunAllTrips(bnd);
-
-                var lfr = new BoundCalcResults(bc);
-                // Single trips
-                foreach( var st in bc.SingleTrips ) {
-                    if ( m.SingleTripResults.TryGetValue(st.Trip.Text, out BoundCalcXlsmReader.TripResult tr)) {
-                        BoundCalcErrors.AddTripResult(st.Trip.Text,BoundCalcRefErrorType.SingleTrip,st,tr);
-                    } else {
-                        throw new Exception($"Could not find trip [{st.Trip.Text}] in ref spreadsheet");
-                    }
-                }
-                // Dual trips
-                foreach( var st in bc.DoubleTrips ) {
-                    if ( m.DualTripResults.TryGetValue(st.Trip.Text, out BoundCalcXlsmReader.TripResult tr)) {
-                        BoundCalcErrors.AddTripResult(st.Trip.Text,BoundCalcRefErrorType.DualTrip,st,tr);
-                    } else {
-                        //?? Server does all 2-trip combinations but spreadsheet only does some.
-                        //??throw new Exception($"Could not find trip [{st.Trip.Text}] in ref spreadsheet");
-                    }
-                }
-            }
-            return BoundCalcErrors;
-        } else {
-            throw new Exception("No B8 reference has been loaded. Please load a B8 reference spreadsheet.");
-        }
-
-        //
-    }
-
     public class BoundCalcErrors {
         private List<BoundCalcRefError> _allErrors;
         public  bool _showAllErrors;
@@ -162,11 +62,6 @@ public class BoundCalcReference {
             }
         }
 
-        public void AddNodeResult(string name, NodeWrapper nw, BoundCalcXlsmReader.NodeResult cr) {
-            var error = new BoundCalcRefError(name,BoundCalcRefErrorType.Node,"Mismatch",nw.Mismatch,cr.Mismatch);
-            _allErrors.Add(error);
-        }
-
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<BoundCalcRefError> NodeErrors {
             get {
@@ -175,24 +70,12 @@ public class BoundCalcReference {
             }
         }
 
-        public void AddBranchResult(string name, BranchWrapper bw, BoundCalcXlsmReader.BranchResult br) {
-            var bFlow = new BoundCalcRefError(name,BoundCalcRefErrorType.Branch,"Power flow",bw.PowerFlow,br.bFlow);
-            _allErrors.Add(bFlow);
-            double? fp = bw.FreePower==99999 ? null: bw.FreePower;
-            var fPower = new BoundCalcRefError(name,BoundCalcRefErrorType.Branch,"Free power",fp,br.freePower);
-            _allErrors.Add(fPower);
-        }
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<BoundCalcRefError> BranchErrors {
             get {
                 var list = _showAllErrors ? filterAllErrors(BoundCalcRefErrorType.Branch) : null;
                 return list;
             }
-        }
-
-        public void AddCtrlResult(string name, CtrlWrapper cw, BoundCalcXlsmReader.CtrlResult cr) {
-            var sp = new BoundCalcRefError(name,BoundCalcRefErrorType.Ctrl,"Set point",cw.SetPoint,cr.SetPoint);
-            _allErrors.Add(sp);
         }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

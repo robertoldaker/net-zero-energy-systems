@@ -102,7 +102,7 @@ public class BoundCalcTnuosLoader {
     private ObjectCache<BoundaryZone> _boundaryZoneCache;
     private ObjectCache<Generator> _generatorCache;
     private ObjectCache<NodeGenerator> _nodeGeneratorCache;
-    private ObjectCache<TransportModel> _transportModelCache;
+    private ObjectCache<GenerationModel> _generationModelCache;
     private IList<BoundCalcAdjustment> _branchAdjustments;
     private int _year, _targetYear;
 
@@ -249,8 +249,8 @@ public class BoundCalcTnuosLoader {
             var existingGenerators = _da.BoundCalc.GetGenerators(_dataset);
             _generatorCache = new ObjectCache<Generator>(_da, existingGenerators, m=>m.Name, (m,name)=>m.Name=name );
 
-            var existingTMs = _da.BoundCalc.GetTransportModels(_dataset);
-            _transportModelCache = new ObjectCache<TransportModel>(_da, existingTMs, m=>m.Name, (m,name)=>m.Name=name );
+            var existingTMs = _da.BoundCalc.GetGenerationModels(_dataset);
+            _generationModelCache = new ObjectCache<GenerationModel>(_da, existingTMs, m=>m.Name, (m,name)=>m.Name=name );
 
             var existingNodeGenerators = _da.BoundCalc.GetNodeGenerators(_dataset);
             _nodeGeneratorCache = new ObjectCache<NodeGenerator>(_da, existingNodeGenerators, m=>$"{m.Node.Id}:{m.Generator.Id}" );
@@ -264,17 +264,17 @@ public class BoundCalcTnuosLoader {
             //??msg+=loadInterconnectors(formFile) + "\n";
             msg+=loadGenerators(formFile) + "\n";
             //
-            msg+=addTransportModels() + "\n";
+            msg+=addGenerationModels() + "\n";
             //
             _da.CommitChanges();
         }
         return msg;
     }
 
-    private string addTransportModels()
+    private string addGenerationModels()
     {
         string msg = "";
-        msg += addTransportModel("Peak Security", new Dictionary<GeneratorType, double>()
+        msg += addGenerationModel("Peak Security", new Dictionary<GeneratorType, double>()
         {
             { GeneratorType.Interconnector, 0 },
             { GeneratorType.Tidal, 0 },
@@ -282,7 +282,7 @@ public class BoundCalcTnuosLoader {
             { GeneratorType.WindOffshore, 0 },
             { GeneratorType.WindOnshore, 0 },
         });
-        msg += addTransportModel("Year Round", new Dictionary<GeneratorType, double>()
+        msg += addGenerationModel("Year Round", new Dictionary<GeneratorType, double>()
         {
             { GeneratorType.Interconnector, 1 },
             { GeneratorType.Nuclear, 0.85 },
@@ -296,10 +296,10 @@ public class BoundCalcTnuosLoader {
         return msg;
     }
 
-    private string addTransportModel(string name, Dictionary<GeneratorType, double> initialScalingDict)
+    private string addGenerationModel(string name, Dictionary<GeneratorType, double> initialScalingDict)
     {
         string msg = "";
-        var tm = _transportModelCache.GetOrCreate(name, out bool created);
+        var tm = _generationModelCache.GetOrCreate(name, out bool created);
         if (created)
         {
             tm.Dataset = _dataset;
@@ -312,15 +312,15 @@ public class BoundCalcTnuosLoader {
                     autoScaling = false;
                     scaling = initialScalingDict[gt];
                 }
-                var tme = new TransportModelEntry(tm, _dataset) {
+                var tme = new GenerationModelEntry(tm, _dataset) {
                     GeneratorType = gt,
-                    TransportModel = tm,
+                    GenerationModel = tm,
                     AutoScaling = autoScaling,
                     Scaling = scaling,
                 };
                 _da.BoundCalc.Add(tme);
             }
-            msg += $"Added transport model [{name}]\n";
+            msg += $"Added generation model [{name}]\n";
         }
         return msg;
     }

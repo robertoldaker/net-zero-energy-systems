@@ -4,14 +4,9 @@ using Npgsql.Replication;
 namespace SmartEnergyLabDataApi.Data.BoundCalc;
 
 public static class EditItemMethods {
-    public static int? GetTransportModelId(this EditItem editItem)
+    public static int? GetGenerationModelId(this EditItem editItem)
     {
-        if (editItem.data.TryGetValue("_transportModelId", out object value)) {
-            //var valueStr = (string)value;
-            //int transportModelId;
-            //if (int.TryParse(valueStr, out transportModelId)) {
-            //    return transportModelId;
-            //}
+        if (editItem.data.TryGetValue("_generationModelId", out object value)) {
             var jsonElement = (System.Text.Json.JsonElement)value;
             var tmId = jsonElement.GetInt32();
             return tmId;
@@ -22,10 +17,10 @@ public static class EditItemMethods {
     public static DatasetData<Generator>  UpdateNodeGeneration(this EditItem editItem, DataAccess da, int datasetId, DatasetData<Node> nodeDi)
     {
         // Update the generation value of a Dataset of nodes
-        var tmId = editItem.GetTransportModelId();
+        var tmId = editItem.GetGenerationModelId();
         if (tmId != null) {
-            // get transport model
-            (var tmDi, var tmeDi) = da.BoundCalc.GetTransportModelDatasetData(datasetId, m => m.Id == tmId, true);
+            // get generation model
+            (var tmDi, var tmeDi) = da.BoundCalc.GetGenerationModelDatasetData(datasetId, m => m.Id == tmId, true);
             var tm = tmDi.Data.Count > 0 ? tmDi.Data[0] : null;
             // get list of generators
             var nodeIds = nodeDi.Data.Select(m => m.Id).ToArray();
@@ -38,10 +33,10 @@ public static class EditItemMethods {
                 tm.UpdateGenerators(genDi.Data);
                 return genDi;
             } else {
-                throw new Exception($"Could not find transportModel with id=[{tmId}]");
+                throw new Exception($"Could not find GenerationModel with id=[{tmId}]");
             }
         } else {
-            throw new Exception("TransportModelId is not set");
+            throw new Exception("GenerationModelId is not set");
         }
     }
 }

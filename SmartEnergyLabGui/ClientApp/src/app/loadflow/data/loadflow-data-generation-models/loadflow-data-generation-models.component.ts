@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { LoadflowDataService } from '../../loadflow-data-service.service';
-import { DatasetData, GeneratorType, TransportModel, TransportModelEntry } from 'src/app/data/app.data';
+import { DatasetData, GeneratorType, GenerationModel, GenerationModelEntry } from 'src/app/data/app.data';
 import { MatTableDataSource } from '@angular/material/table';
 import { DataTableBaseComponent } from 'src/app/datasets/data-table-base/data-table-base.component';
 import { DialogService } from 'src/app/dialogs/dialog.service';
@@ -10,11 +10,11 @@ import { DialogFooterButtonsEnum } from 'src/app/dialogs/dialog-footer/dialog-fo
 import { MessageDialogIcon } from 'src/app/dialogs/message-dialog/message-dialog.component';
 
 @Component({
-    selector: 'app-loadflow-data-transport-models',
-    templateUrl: './loadflow-data-transport-models.component.html',
-    styleUrls: ['./loadflow-data-transport-models.component.css']
+    selector: 'app-loadflow-data-generation-models',
+    templateUrl: './loadflow-data-generation-models.component.html',
+    styleUrls: ['./loadflow-data-generation-models.component.css']
 })
-export class LoadflowDataTransportModelsComponent extends DataTableBaseComponent<TransportModelEntry> {
+export class LoadflowDataGenerationModelsComponent extends DataTableBaseComponent<GenerationModelEntry> {
 
     constructor(
         private dataService: LoadflowDataService,
@@ -26,43 +26,43 @@ export class LoadflowDataTransportModelsComponent extends DataTableBaseComponent
         this.data  = new MatTableDataSource()
 
         this.addSub( dataService.NetworkDataLoaded.subscribe( (results) => {
-            this.transportModels = results.transportModels.data
-            this.transportModelEntries = results.transportModelEntries
-            let sm: TransportModel | undefined
+            this.generationModels = results.generationModels.data
+            this.generationModelEntries = results.generationModelEntries
+            let sm: GenerationModel | undefined
             // need to see if currently selected model still exists
-            sm = this.transportModels.find(m=>m.id == this.selectedModel?.id)
+            sm = this.generationModels.find(m=>m.id == this.selectedModel?.id)
             // select a new model (means the dataset has changed)
             if ( !sm ) {
                 // else first one in the list
-                sm = this.transportModels.length>0 ? this.transportModels[0] : undefined
+                sm = this.generationModels.length>0 ? this.generationModels[0] : undefined
             }
             this.selectModel(sm)
         }))
     }
 
-    transportModels: TransportModel[] = []
-    transportModelEntries: DatasetData<TransportModelEntry> | undefined
-    selectedModel: TransportModel | undefined
+    generationModels: GenerationModel[] = []
+    generationModelEntries: DatasetData<GenerationModelEntry> | undefined
+    selectedModel: GenerationModel | undefined
     displayedColumns:string[] = ['generatorType','totalCapacity','autoScaling','scaling']
     generatorTypeEnum = GeneratorType
 
-    selectModel( tm: TransportModel | undefined ) {
+    selectModel( tm: GenerationModel | undefined ) {
         this.selectedModel = tm
-        if ( this.selectedModel && this.transportModelEntries ) {
-            let tmEntries = this.getEntries(this.selectedModel,this.transportModelEntries)
+        if ( this.selectedModel && this.generationModelEntries ) {
+            let tmEntries = this.getEntries(this.selectedModel,this.generationModelEntries)
             this.createDataSource(this.dataService.dataset,tmEntries);
         }
     }
 
-    getEntries(tm: TransportModel, allEntries: DatasetData<TransportModelEntry>):DatasetData<TransportModelEntry> {
-        let filteredEntries:DatasetData<TransportModelEntry> = {tableName: "TransportModelEntry", data: [], deletedData: [], userEdits: []}
-        filteredEntries.data = allEntries.data.filter( m=>m.transportModelId == tm.id)
-        filteredEntries.deletedData = allEntries.deletedData.filter( m=>m.transportModelId == tm.id)
+    getEntries(tm: GenerationModel, allEntries: DatasetData<GenerationModelEntry>):DatasetData<GenerationModelEntry> {
+        let filteredEntries:DatasetData<GenerationModelEntry> = {tableName: "GenerationModelEntry", data: [], deletedData: [], userEdits: []}
+        filteredEntries.data = allEntries.data.filter( m=>m.generationModelId == tm.id)
+        filteredEntries.deletedData = allEntries.deletedData.filter( m=>m.generationModelId == tm.id)
         filteredEntries.userEdits = allEntries.userEdits
         return filteredEntries
     }
 
-    getModelClass(tm: TransportModel) {
+    getModelClass(tm: GenerationModel) {
         let className = "modelSelector"
         className+= tm===this.selectedModel ? " selected" : ""
         return className
@@ -77,10 +77,10 @@ export class LoadflowDataTransportModelsComponent extends DataTableBaseComponent
                 buttons: DialogFooterButtonsEnum.Close
             })
         } else {
-            this.dialogService.showLoadflowTransportModelDialog(undefined, (resp: DatasetData<any>[] | undefined) => {
+            this.dialogService.showLoadflowGenerationModelDialog(undefined, (resp: DatasetData<any>[] | undefined) => {
                 if (resp) {
-                    // this will be the newly created transport model
-                    let sm = resp.find(m => m.tableName === "TransportModel")?.data[0]
+                    // this will be the newly created generation model
+                    let sm = resp.find(m => m.tableName === "GenerationModel")?.data[0]
                     if (sm) {
                         this.selectModel(sm)
                     }
@@ -89,15 +89,15 @@ export class LoadflowDataTransportModelsComponent extends DataTableBaseComponent
         }
     }
 
-    isEditable(tm: TransportModel):boolean {
+    isEditable(tm: GenerationModel):boolean {
         return this.datasetsService.isEditable && ( tm.datasetId === this.dataService.dataset?.id )
     }
 
-    edit(tm: TransportModel) {
-        this.dialogService.showLoadflowTransportModelDialog(tm,(resp: DatasetData<any>[] | undefined)=>{
+    edit(tm: GenerationModel) {
+        this.dialogService.showLoadflowGenerationModelDialog(tm,(resp: DatasetData<any>[] | undefined)=>{
             if ( resp ) {
-                // this will be the newly created transport model
-                let sm = resp.find(m=>m.tableName==="TransportModel")?.data[0]
+                // this will be the newly created generation model
+                let sm = resp.find(m=>m.tableName==="GenerationModel")?.data[0]
                 if ( sm ) {
                     this.selectModel(sm)
                 }
@@ -105,8 +105,8 @@ export class LoadflowDataTransportModelsComponent extends DataTableBaseComponent
         });
     }
 
-    delete(tm: TransportModel) {
-        this.datasetsService.deleteItemWithCheck(tm.id,"TransportModel")
+    delete(tm: GenerationModel) {
+        this.datasetsService.deleteItemWithCheck(tm.id,"GenerationModel")
     }
 
     get disableDelete():boolean {

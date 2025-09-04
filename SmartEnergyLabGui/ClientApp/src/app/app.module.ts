@@ -171,8 +171,8 @@ import { LoadflowTripCellComponent } from './loadflow/loadflow-trip-table/loadfl
 import { LoadflowBranchInfoTableComponent } from './loadflow/loadflow-map/loadflow-branch-info-table/loadflow-branch-info-table.component';
 import { LoadflowNodeInfoTableComponent } from './loadflow/loadflow-map/loadflow-node-info-table/loadflow-node-info-table.component';
 import { LoadflowDataGeneratorsComponent } from './loadflow/data/loadflow-data-generators/loadflow-data-generators.component';
-import { LoadflowDataTransportModelsComponent } from './loadflow/data/loadflow-data-transport-models/loadflow-data-transport-models.component';
-import { LoadflowTransportModelDialogComponent } from './loadflow/dialogs/loadflow-transport-model-dialog/loadflow-transport-model-dialog.component';
+import { LoadflowDataGenerationModelsComponent } from './loadflow/data/loadflow-data-generation-models/loadflow-data-generation-models.component';
+import { LoadflowGenerationModelDialogComponent } from './loadflow/dialogs/loadflow-generation-model-dialog/loadflow-generation-model-dialog.component';
 import { LoadflowGeneratorDialogComponent } from './loadflow/dialogs/loadflow-generator-dialog/loadflow-generator-dialog.component';
 import { GspHomeComponent } from './gsp-demand-profiles/gsp-home/gsp-home.component';
 import { GspHeaderComponent } from './gsp-demand-profiles/gsp-header/gsp-header.component';
@@ -313,8 +313,8 @@ import { QuickHelpDialogGroupComponent } from './utils/quick-help-dialog-group/q
         LoadflowBranchInfoTableComponent,
         LoadflowNodeInfoTableComponent,
         LoadflowDataGeneratorsComponent,
-        LoadflowDataTransportModelsComponent,
-        LoadflowTransportModelDialogComponent,
+        LoadflowDataGenerationModelsComponent,
+        LoadflowGenerationModelDialogComponent,
         LoadflowGeneratorDialogComponent,
         GspHomeComponent,
         GspHeaderComponent,

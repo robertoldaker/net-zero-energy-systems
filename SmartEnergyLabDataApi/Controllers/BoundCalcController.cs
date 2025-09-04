@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.SignalR;
 using SmartEnergyLabDataApi.Data;
 using SmartEnergyLabDataApi.BoundCalc;
 using SmartEnergyLabDataApi.Data.BoundCalc;
-using static SmartEnergyLabDataApi.BoundCalc.BoundCalc;
 using SmartEnergyLabDataApi.Models;
+using static SmartEnergyLabDataApi.BoundCalc.BoundCalcNetworkData;
 
 namespace SmartEnergyLabDataApi.Controllers
 {
@@ -66,8 +66,8 @@ namespace SmartEnergyLabDataApi.Controllers
         [HttpPost]
         [Route("Run")]
         public IActionResult Run(int datasetId,
-                                    SetPointMode setPointMode,
-                                    int transportModelId,
+                                    SetPointModeNew setPointMode,
+                                    int generationModelId,
                                     bool nodeMarginals = false,
                                     string? boundaryName = null,
                                     bool boundaryTrips = false,
@@ -75,15 +75,7 @@ namespace SmartEnergyLabDataApi.Controllers
                                     string? connectionId = null)
         {
             try {
-                var resp = BoundCalc.BoundCalc.Run(datasetId,
-                                                        setPointMode,
-                                                        transportModelId,
-                                                        nodeMarginals,
-                                                        boundaryName,
-                                                        boundaryTrips,
-                                                        tripStr,
-                                                        connectionId,
-                                                        _hubContext);
+                var resp = BoundCalcNetworkData.Run(datasetId, setPointMode, generationModelId, nodeMarginals, boundaryName, boundaryTrips, tripStr, connectionId, _hubContext);
                 return this.Ok(resp);
             } catch (Exception e) {
                 return this.Ok(new BoundCalcResults(e.Message));
@@ -95,10 +87,10 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("RunBoundaryTrip")]
-        public IActionResult RunBoundaryTrip(int datasetId, SetPointMode setPointMode, int transportModelId, string boundaryName, string tripName, string? tripStr)
+        public IActionResult RunBoundaryTrip(int datasetId, int generationModelId, string boundaryName, string tripName, string? tripStr)
         {
             try {
-                var resp = BoundCalc.BoundCalc.RunBoundaryTrip(datasetId, setPointMode, transportModelId, boundaryName, tripName, tripStr);
+                var resp = BoundCalcNetworkData.RunBoundaryTrip(datasetId, generationModelId, boundaryName, tripName, tripStr);
                 return this.Ok(resp);
             } catch (Exception e) {
                 return this.Ok(new BoundCalcResults(e.Message));
@@ -115,18 +107,8 @@ namespace SmartEnergyLabDataApi.Controllers
         [Route("ManualSetPointMode")]
         public IActionResult ManualSetPointMode(int datasetId, [FromBody] List<CtrlSetPoint> initialSetPoints)
         {
-            BoundCalc.BoundCalc.ManualSetPointMode(datasetId, this.GetUserId(), initialSetPoints);
+            BoundCalc.BoundCalcNetworkData.ManualSetPointMode(datasetId, this.GetUserId(), initialSetPoints);
             return Ok();
-        }
-
-        /// <summary>
-        /// Adjusts branch capcities to remove overloads
-        /// </summary>
-        [HttpPost]
-        [Route("AdjustBranchCapacities")]
-        public BoundCalcResults AdjustBranchCapacities(int datasetId, int transportModelId)
-        {
-            return BoundCalc.BoundCalc.AdjustBranchCapacities(datasetId, transportModelId, this.GetUserId());
         }
 
         /// <summary>
@@ -178,14 +160,12 @@ namespace SmartEnergyLabDataApi.Controllers
         /// Gets BoundCalc network data
         /// </summary>
         /// <param name="datasetId">Id of dataset</param>
+        /// <param name="generationModelId">Id of generation model</param>
         /// /// <returns></returns>
         [HttpGet]
         [Route("NetworkData")]
-        public BoundCalcNetworkData NetworkData(int datasetId, int transportModelId = 0)
-        {
-            using (var bc = new BoundCalc.BoundCalc(datasetId, transportModelId)) {
-                return new BoundCalcNetworkData(bc);
-            }
+        public BoundCalcNetworkData NetworkData(int datasetId, int generationModelId=0) {
+            return new BoundCalcNetworkData(datasetId,generationModelId);
         }
 
         /// <summary>

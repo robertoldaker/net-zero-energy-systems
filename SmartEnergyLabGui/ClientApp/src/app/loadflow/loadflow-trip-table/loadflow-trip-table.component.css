@@ -1,20 +1,29 @@
 .mat-column-surplus {
     text-align: right;
     padding-right: 0.5rem;
+    width: 100px;
     color: green;
 }
 .mat-column-capacity {
     text-align: right;
     padding-right: 0.5rem;
+    width: 100px;
     color: green;
 }
 
 .mat-column-limCct {
     padding-right: 0.5rem;
+    width: 100px;
     color: green;
 }
 
 .mat-column-trip {
+    padding-right: 0.5rem;
+    width: 100px;
+    color: green;
+}
+
+.mat-column-tripOutcome {
     padding-right: 0.5rem;
     color: green;
 }

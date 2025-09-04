@@ -99,6 +99,16 @@ public class Datasets : DataSet {
         return data;
     }
 
+    public IList<UserEdit> GetUserEdits(string tableName, int datasetId, string colName)
+    {
+        var data = Session.QueryOver<UserEdit>().
+            Where(m => m.Dataset.Id == datasetId).
+            And(m => m.TableName == tableName).
+            And(m => m.ColumnName == colName).
+            List();
+        return data;
+    }
+
     public IList<UserEdit> GetUserEdits(string tableName, string key) {
         var data = Session.QueryOver<UserEdit>().
             Where(m => m.Key == key).
@@ -302,8 +312,8 @@ public class Datasets : DataSet {
             foreach (var g in generators) {
                 Session.Delete(g);
             }
-            // Transport models
-            var tms = Session.QueryOver<TransportModel>().Where(m => m.Dataset.Id == dataset.Id).List();
+            // Generation models
+            var tms = Session.QueryOver<GenerationModel>().Where(m => m.Dataset.Id == dataset.Id).List();
             foreach (var tm in tms) {
                 Session.Delete(tm);
             }

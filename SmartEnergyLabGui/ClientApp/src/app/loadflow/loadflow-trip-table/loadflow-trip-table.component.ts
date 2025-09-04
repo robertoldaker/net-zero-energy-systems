@@ -15,8 +15,8 @@ export class LoadflowTripTableComponent implements OnInit, AfterViewInit {
 
     constructor(private dataService: LoadflowDataService) {
         this.sort = null
-        this.ctrls=[]
-        this.displayedColumns = ['selected','capacity', 'surplus', 'trip', 'limCct']
+        this.parentWidth = 'calc(100vw - 495px)';
+        this.displayedColumns = ['selected','capacity', 'surplus', 'trip', 'limCct','tripOutcome']
         this.trips = new MatTableDataSource();
     }
     ngAfterViewInit(): void {
@@ -26,37 +26,10 @@ export class LoadflowTripTableComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit(): void {
-        if ( this.trips.data.length>0) {
-            this.ctrls = this.trips.data[0].ctrls
-            this.ctrls.forEach((c)=>{
-                this.displayedColumns.push(c.code)
-            })
-        }
-    }
-
-    getCtrls() {
-        if ( this.trips.data.length>0) {
-            return this.trips.data[0].ctrls
-        } else {
-            return []
-        }
     }
 
     getTripName(index: number, item: AllTripResult) {
         return (item.trip != null ) ? item.trip.text : "Intact"
-    }
-
-    getSetPoint(item: AllTripResult, ctrlCode: string):string {
-        if ( item.ctrls ) {
-            let ctrl = item.ctrls.find(m=>m.code == ctrlCode);
-            if ( ctrl && ctrl.setPoint) {
-                return ctrl?.setPoint?.toFixed(2)
-            } else {
-                return "0.00"
-            }
-        } else {
-            return ""
-        }
     }
 
     tripSelected(tripResult: AllTripResult) {
@@ -71,9 +44,25 @@ export class LoadflowTripTableComponent implements OnInit, AfterViewInit {
         return style
     }
 
+    getTripOutcomeStyle(tripOutcome: string): any {
+        if (tripOutcome) {
+            return { 'color': 'darkred' }
+        } else {
+            return {};
+        }
+    }
+
+    getOverallTripOutcomeStyle(): any {
+        let t = this.trips.data.find( m=>m.tripOutcome )
+        if ( t ) {
+            return { 'color': 'darkred' }
+        } else {
+            return {};
+        }
+    }
+
     displayedColumns: string[]
-    ctrls: CtrlResult[]
-    //??parentWidth: string
+    parentWidth: string
 
     @Input()
     trips: MatTableDataSource<AllTripResult>

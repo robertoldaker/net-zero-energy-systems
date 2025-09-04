@@ -101,10 +101,10 @@
                 <div [style]="getOverallSetPointStyle()">Set point</div>
             </th>
             <td mat-cell *matCellDef="let element">
-                <div *ngIf="setPointMode==SetPointMode.Auto"
+                <div *ngIf="setPointMode!==SetPointMode.Manual"
                     [style]="getSetPointStyle(element.setPoint?.value,element.minCtrl.value,element.maxCtrl.value)">
                     {{element.setPoint?.value?.toFixed(2)}}</div>
-                <app-cell-editor *ngIf="setPointMode==SetPointMode.Manual" [data]="element.setPoint" [decimalPlaces]="2"
+                <app-cell-editor *ngIf="setPointMode===SetPointMode.Manual" [data]="element.setPoint" [decimalPlaces]="2"
                     [canDelete]="false"></app-cell-editor>
             </td>
         </ng-container>

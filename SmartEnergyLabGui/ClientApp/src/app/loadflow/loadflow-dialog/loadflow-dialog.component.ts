@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Boundary, BoundaryTrip, Branch, AllTripResult, Dataset, DatasetType, NetworkData, SetPointMode, TransportModel } from '../../data/app.data';
+import { Boundary, BoundaryTrip, Branch, AllTripResult, Dataset, DatasetType, NetworkData, SetPointMode, GenerationModel } from '../../data/app.data';
 import { LoadflowDataService } from '../loadflow-data-service.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 import { DataClientService } from 'src/app/data/data-client.service';
@@ -40,7 +40,8 @@ export class LoadflowDialogComponent extends ComponentBase {
                 this.trips = results.boundaryTrips.trips
             }
             // this enables the adjustCapacities button and should only appear if we have a capacity error and the dataset is not read only
-            this.hasCapacityError = results.branchCapacityError && !this.dataService.dataset?.isReadOnly;
+            //?? No need for this as now done when a new dataset is created
+            //??this.hasCapacityError = results.branchCapacityError && !this.dataService.dataset?.isReadOnly;
         }))
         this.addSub(dataService.AllTripsProgress.subscribe((data)=>{
             this.currentTrip = data.msg;
@@ -84,23 +85,18 @@ export class LoadflowDialogComponent extends ComponentBase {
     }
 
     onDatasetSelected(dataset: Dataset) {
-        this.hasCapacityError = false
         this.dataService.loadDataset(dataset)
     }
 
-    transportModelChanged(e: any) {
-        let tm = this.transportModels.find(m=>m.id === e.value)
+    generationModelChanged(e: any) {
+        let tm = this.generationModels.find(m=>m.id === e.value)
         if ( tm ) {
-            this.dataService.setTransportModel(tm);
+            this.dataService.setGenerationModel(tm);
         }
     }
 
     setPointModeChanged(e: any) {
         this.dataService.setSetPointMode(e.value);
-    }
-
-    adjustBranchCapacities() {
-        this.dataService.adjustBranchCapacities();
     }
 
     get numberOfTrips() {
@@ -111,12 +107,12 @@ export class LoadflowDialogComponent extends ComponentBase {
         return this.dataService.setPointMode
     }
 
-    get resultsLoaded() {
-        return this.dataService.loadFlowResults ? true : false
+    get canSelectManual() {
+        return this.dataService.loadFlowResults && (!this.dataService.dataset?.isReadOnly) ? true : false
     }
 
-    get transportModel():TransportModel | null {
-        return this.dataService.transportModel
+    get generationModel():GenerationModel | null {
+        return this.dataService.generationModel
     }
 
     get totalGeneration():number {
@@ -147,9 +143,9 @@ export class LoadflowDialogComponent extends ComponentBase {
         return this.dataService.boundaryTripResult
     }
 
-    get transportModels():TransportModel[] {
+    get generationModels():GenerationModel[] {
         if ( this.dataService.networkData ) {
-            return this.dataService.networkData.transportModels.data
+            return this.dataService.networkData.generationModels.data
         } else {
             return []
         }
@@ -179,6 +175,5 @@ export class LoadflowDialogComponent extends ComponentBase {
     boundaryName: string
     trips: BoundaryTrip[]
     datasetTypes = DatasetType
-    hasCapacityError:boolean = false
     SetPointMode = SetPointMode
 }
