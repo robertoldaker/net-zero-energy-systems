@@ -1,4 +1,4 @@
-import { AfterContentInit, AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { AfterContentInit, AfterViewInit, Component, ElementRef, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
 import { LoadflowSplitService } from '../loadflow-split.service';
 import { UserService } from 'src/app/users/user.service';
 import { DialogService } from 'src/app/dialogs/dialog.service';
@@ -15,8 +15,13 @@ export class LoadflowHomeComponent implements OnInit, AfterViewInit{
     constructor(
         private userService: UserService,
         private dialogService:DialogService,
+        @Inject('MODE') private mode: string,
         titleService: Title) {
-            titleService.setTitle('Bound Calc')
+            let title = 'Bound Calc'
+            if ( mode !=='Production') {
+                title += ` (${mode})`
+            }
+            titleService.setTitle(title)
     }
     ngAfterViewInit(): void {
     }
