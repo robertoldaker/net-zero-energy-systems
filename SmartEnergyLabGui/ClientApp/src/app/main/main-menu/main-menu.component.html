@@ -2,27 +2,18 @@
     <mat-icon>menu</mat-icon>
 </button>
 <mat-menu #menu="matMenu">
-    <button mat-menu-item routerLink="/classificationTool" routerLinkActive="active">
-        <span>Classification tool</span>
-    </button>
-    <button mat-menu-item routerLink="/lowVoltage" routerLinkActive="active">
-        <span>Low voltage network</span>
-    </button>
-    <button mat-menu-item routerLink="/loadflow" routerLinkActive="active">
-        <span>Transmission Boundary Capability Calculator</span>
-    </button>
-    <button mat-menu-item routerLink="/elsi" routerLinkActive="active">
-        <span>GB Electricity Market Simulator</span>
+    <button *ngFor="let app of mainService.apps" mat-menu-item routerLink="{{app.path}}" routerLinkActive="active">
+        <span>{{app.title}}</span>
     </button>
     <button mat-menu-item (click)="solarInstallations()">
         <span>Bath Solar Installations</span>
     </button>
-    <hr style="margin: 0">    
+    <hr style="margin: 0">
     <button mat-menu-item (click)="openDocument()">
         <span>Data & Digitalisation Strategy Document</span>
     </button>
     <ng-container *ngIf="userService.isAdmin">
-        <hr style="margin: 0">    
+        <hr style="margin: 0">
         <button mat-menu-item routerLink="/admin" routerLinkActive="active">
             <span >Admin</span>
         </button>

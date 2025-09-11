@@ -1,0 +1,11 @@
+<div class="notFound">
+    <div class="mainTitle">
+        <img src="/assets/icons/electric-factory-512x512.png"/>
+        <span>App [{{currentPath}}] not found</span>
+    </div>
+    <div class="prompt">Please choose a valid app from the list below</div>
+    <div class="appList">
+        <div class="appEntry" *ngFor="let app of mainService.apps" [routerLink]="app.path" routerLinkActive="active">
+            {{app.title}} ({{app.path}})</div>
+    </div>
+</div>

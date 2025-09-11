@@ -187,6 +187,7 @@ import { QuickHelpContentComponent } from './utils/quick-help-content/quick-help
 import { LoadflowQuickHelpComponent } from './loadflow/loadflow-quick-help/loadflow-quick-help.component';
 import { DatasetsQuickHelpComponent } from './datasets/datasets-quick-help/datasets-quick-help.component';
 import { QuickHelpDialogGroupComponent } from './utils/quick-help-dialog-group/quick-help-dialog-group.component';
+import { PathNotFoundComponent } from './main/path-not-found/path-not-found.component';
 
 
 @NgModule({
@@ -328,7 +329,8 @@ import { QuickHelpDialogGroupComponent } from './utils/quick-help-dialog-group/q
         QuickHelpContentComponent,
         LoadflowQuickHelpComponent,
         DatasetsQuickHelpComponent,
-        QuickHelpDialogGroupComponent
+        QuickHelpDialogGroupComponent,
+        PathNotFoundComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -336,18 +338,22 @@ import { QuickHelpDialogGroupComponent } from './utils/quick-help-dialog-group/q
         FormsModule,
         ReactiveFormsModule,
         RouterModule.forRoot([
-            //??{ path: '',   redirectTo: '/lowVoltage', pathMatch: 'full' }, // redirect to `first-component`
-            { path: '',   redirectTo: '/loadflow', pathMatch: 'full' }, // redirect to `first-component`
-            { path: 'bathLV',   redirectTo: '/lowVoltage', pathMatch: 'full' }, // redirect to `first-component`
+            { path: '',   redirectTo: '/boundCalc', pathMatch: 'full' },
+            { path: 'bathLV',   redirectTo: '/lowVoltage', pathMatch: 'full' },
             { path: 'lowVoltage', component: HomeComponent},
             { path: 'ResetPassword', component: HomeComponent},
             { path: 'solarInstallations', component: HomeComponent},
-            { path: 'loadflow', component: LoadflowHomeComponent},
+            { path: 'loadflow', redirectTo: '/boundCalc' },
+            { path: 'boundCalc', component: LoadflowHomeComponent},
             { path: 'elsi', component: ElsiHomeComponent},
             { path: 'classificationTool', component: ClassificationToolComponent},
             { path: 'admin', component: AdminHomeComponent},
-            { path: 'gspDemandProfiles', component: GspHomeComponent }
-        ]),
+            { path: 'gspDemandProfiles', component: GspHomeComponent},
+            // This is the wildcard route for a 404 page
+            { path: '**', component: PathNotFoundComponent }
+
+        ]
+            ),
         NgxEchartsModule.forRoot({
             /**
              * This will import all modules from echarts.

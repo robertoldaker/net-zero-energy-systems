@@ -12,7 +12,7 @@ import { DialogService } from '../dialogs/dialog.service';
 
 export class MainService {
 
-    constructor(private dataClientService: DataClientService, private signalRService: SignalRService, private dialogService: DialogService) { 
+    constructor(private dataClientService: DataClientService, private signalRService: SignalRService, private dialogService: DialogService) {
         dataClientService.SystemInfo((resp: SystemInfo)=>{
             this.processorCount = resp.processorCount
             this.maintenanceMode = resp.maintenanceMode
@@ -21,10 +21,25 @@ export class MainService {
         signalRService.hubConnection.on('MaintenanceMode',(data) => {
             this.maintenanceMode = data
         })
-         
+
     }
 
     maintenanceMode: boolean = false
     processorCount: number = 0
     serverVersionData: VersionData | undefined
+    apps: AppInfo[] = [
+            { path: '/classificationTool', title: "Classification Tool"},
+            { path: '/lowVoltage', title: 'Low voltage network' },
+            { path: '/boundCalc', title: 'Transmission Boundary Capability Calculator'},
+            { path: '/elsi', title: 'GB Electricity Market Simulator'}
+        ]
+}
+
+export class AppInfo {
+    constructor() {
+        this.path=''
+        this.title=''
+    }
+    path: string
+    title: string
 }
