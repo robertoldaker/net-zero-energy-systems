@@ -273,7 +273,7 @@ export interface EVDemandStatus {
 
 export enum SetPointMode {Auto, Manual, BalanceHVDCNodes}
 
-export interface LoadflowResults {
+export interface BoundCalcResults {
     stageResults: StageResults,
     nodes: DatasetData<Node>,
     branches: DatasetData<Branch>,
@@ -455,7 +455,7 @@ export interface Branch {
     percentCapacity: number | null
 }
 
-export enum LoadflowCtrlType {
+export enum BoundCalcCtrlType {
     QB,         // Quad Booster
     HVDC,       // High-voltage DC
     SeriesCap,  // Series capacitor
@@ -474,7 +474,7 @@ export interface Ctrl {
     minCtrl: number
     maxCtrl: number
     cost: number
-    type: LoadflowCtrlType
+    type: BoundCalcCtrlType
     node1Code: string
     node2Code: string
     node1Id: number,
@@ -974,7 +974,7 @@ export interface GridSubstation {
     name: string,
     reference: string,
     voltage: string,
-    loadflowNode: Node,
+    boundcalcNode: Node,
     gisData: GISData
 }
 

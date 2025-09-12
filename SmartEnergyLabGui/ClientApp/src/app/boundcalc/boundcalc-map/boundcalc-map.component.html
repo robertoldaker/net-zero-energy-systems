@@ -1,0 +1,24 @@
+<div #divContainer style="height: calc(100vh - 72px)" >
+    <google-map width="100%" height="100%" [center]="center" [options]="options" (zoomChanged)="zoomChanged()" [zoom]="zoom" (centerChanged)="centerChanged()" (mapClick)="mapClick($event)">
+        <div #key>
+        </div>
+        <div #buttons>
+            <app-boundcalc-map-buttons (onAddLocation)="addLocation($event)"></app-boundcalc-map-buttons>
+            <app-boundcalc-map-search></app-boundcalc-map-search>
+            <app-boundcalc-map-key></app-boundcalc-map-key>
+        </div>
+
+        <map-advanced-marker #locMarkers *ngFor="let markerOption of locMarkerData.markerOptions;" [options]="markerOption.options" (mapClick)="locMarkerClicked(markerOption)" (mapDragend)="locMarkerDragEnd({ mo: markerOption, e: $event} )"></map-advanced-marker>
+        <map-polyline #linkLines *ngFor="let linkOption of linkPolylineData.polyLineOptions; trackBy: polylineTrackByFcn" [options]="linkOption.options" (polylineClick)="linkLineClicked(linkOption.id)"></map-polyline>
+        <map-advanced-marker #linkMarkers *ngFor="let markerOption of linkLabelData.markerOptions;" [options]="markerOption.options"></map-advanced-marker>
+
+        <app-boundcalc-info-window #locInfoWindow (closeClick)="clearSelection()">
+            <app-boundcalc-loc-info-window (onNewBranch)="newBranch($event)"></app-boundcalc-loc-info-window>
+        </app-boundcalc-info-window>
+        <app-boundcalc-info-window #linkInfoWindow (closeClick)="clearSelection()">
+            <app-boundcalc-branch-info-window></app-boundcalc-branch-info-window>
+        </app-boundcalc-info-window>
+
+    </google-map>
+
+</div>

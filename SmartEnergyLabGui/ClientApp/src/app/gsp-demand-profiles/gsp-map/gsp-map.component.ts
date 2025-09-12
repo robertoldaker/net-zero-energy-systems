@@ -3,7 +3,7 @@ import { GspDemandProfilesService } from '../gsp-demand-profiles-service';
 import { IMapData, MapOptions } from 'src/app/utils/map-options';
 import { GridSubstationLocation } from 'src/app/data/app.data';
 import { GoogleMap } from '@angular/google-maps';
-import { MapAdvancedMarker } from 'src/app/loadflow/loadflow-map/map-advanced-marker/map-advanced-marker';
+import { MapAdvancedMarker } from 'src/app/boundcalc/boundcalc-map/map-advanced-marker/map-advanced-marker';
 import { ComponentBase } from 'src/app/utils/component-base';
 
 @Component({

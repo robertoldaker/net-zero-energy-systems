@@ -1,0 +1,37 @@
+<div [ngClass]="{hide: showMap}" class="mapButton" (click)="toggleMap()" title="show map">
+    <div [class]="{ offset: tabButtonsShown}">
+        <img [src]="mapButtonImage" />
+    </div>
+</div>
+<mat-tab-group [ngClass]="{hide: showMap}" animationDuration="0ms" [preserveContent]="true"
+    [selectedIndex]="selected.value" (selectedIndexChange)="selected.setValue($event)"
+    (selectedTabChange)="tabChange($event)" #matTabGroup>
+    <mat-tab label="Nodes" [labelClass]="getNodeTabLabelClass()">
+        <app-boundcalc-data-nodes></app-boundcalc-data-nodes>
+    </mat-tab>
+    <mat-tab label="Generators" labelClass="matTabLabelNarrow">
+        <app-boundcalc-data-generators></app-boundcalc-data-generators>
+    </mat-tab>
+    <mat-tab label="Branches" [labelClass]="getBranchTabLabelClass()">
+        <app-boundcalc-data-branches></app-boundcalc-data-branches>
+    </mat-tab>
+    <mat-tab label="Controls" [labelClass]="getCtrlTabLabelClass()">
+        <app-boundcalc-data-ctrls></app-boundcalc-data-ctrls>
+    </mat-tab>
+    <mat-tab label="Boundaries" labelClass="matTabLabelNarrow">
+        <app-boundcalc-data-boundaries></app-boundcalc-data-boundaries>
+    </mat-tab>
+    <mat-tab label="Zones" labelClass="matTabLabelNarrow">
+        <app-boundcalc-data-zones></app-boundcalc-data-zones>
+    </mat-tab>
+    <mat-tab label="Locations" labelClass="matTabLabelNarrow">
+        <app-boundcalc-data-locations></app-boundcalc-data-locations>
+    </mat-tab>
+    <mat-tab label="Generation models" labelClass="matTabLabelNarrow">
+        <app-boundcalc-data-generation-models></app-boundcalc-data-generation-models>
+    </mat-tab>
+    <mat-tab *ngIf="hasTripResults" label="Boundary trip results" labelClass="matTabLabelNarrow output">
+        <app-boundcalc-trip-results></app-boundcalc-trip-results>
+    </mat-tab>
+</mat-tab-group>
+<app-boundcalc-map [ngClass]="{hide: !showMap}"></app-boundcalc-map>

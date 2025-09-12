@@ -1,0 +1,115 @@
+<app-table-paginator [dataFilter]="dataFilter" helpId="data.ctrls" helpTitle="Controls" (onFilter)="filterTable($event)"
+    [allowAdd]="true" [typeName]="typeName" (onAdd)="addCtrl()"></app-table-paginator>
+
+<app-div-auto-scroller>
+
+    <table style="width: 100%;" mat-table [dataSource]="data" [trackBy]="getDataId" matSort [matSortActive]="sortColumn"
+        [matSortDirection]="sortDirection" matSortDisableClear (matSortChange)="sortTable($event)">
+
+        <!-- buttons Column -->
+        <ng-container matColumnDef="buttons">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-buttons [element]="element" [typeName]="typeName" [disableDelete]="true"
+                    (onEdit)="edit($event)"></app-cell-buttons>
+            </td>
+        </ng-container>
+
+        <!-- code -->
+        <ng-container matColumnDef="code">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <app-quick-help helpId="data.ctrls.code" title="Code" iconClass="small leftOffset"></app-quick-help>
+                Code
+            </th>
+            <td mat-cell *matCellDef="let element">
+                <app-boundcalc-branch-code-cell [isCtrl]=true [branchCode]="element.code.value"
+                    [node1LocationId]="element.node1LocationId.value"
+                    [node2LocationId]="element.node2LocationId.value"></app-boundcalc-branch-code-cell>
+            </td>
+        </ng-container>
+
+        <!-- node1/zone1 -->
+        <ng-container matColumnDef="nodeZone1">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <app-quick-help helpId="data.ctrls.nodeZone" title="Node/Zone" iconClass="small leftOffset"></app-quick-help>
+                Node/Zone 1
+            </th>
+            <td mat-cell *matCellDef="let element">
+                <app-boundcalc-data-ctrls-node-zone [element]="element"
+                    [nodeZoneNum]="NodeZoneNum.One"></app-boundcalc-data-ctrls-node-zone>
+            </td>
+        </ng-container>
+
+        <!-- node2/zone2 -->
+        <ng-container matColumnDef="nodeZone2">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <app-quick-help helpId="data.ctrls.nodeZone" title="Node/Zone" iconClass="small leftOffset"></app-quick-help>
+                Node/Zone 2
+            </th>
+            <td mat-cell *matCellDef="let element">
+                <app-boundcalc-data-ctrls-node-zone [element]="element"
+                    [nodeZoneNum]="NodeZoneNum.Two"></app-boundcalc-data-ctrls-node-zone>
+            </td>
+        </ng-container>
+
+        <!-- type -->
+        <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                <app-quick-help helpId="data.ctrls.type" title="Type" iconClass="small leftOffset"></app-quick-help>
+                <app-column-filter [filter]="typeDataFilter" title="Type"></app-column-filter>
+            </th>
+            <td mat-cell *matCellDef="let element">{{getTypeStr(element.type.value)}}</td>
+        </ng-container>
+
+        <!-- min Ctrl -->
+        <ng-container matColumnDef="minCtrl">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">
+                <app-quick-help helpId="data.ctrls.minCtrl" title="Min Ctrl" iconClass="small"></app-quick-help>
+                Min Ctrl
+            </th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.minCtrl" [decimalPlaces]="2"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <!-- max ctrl -->
+        <ng-container matColumnDef="maxCtrl">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">
+                <app-quick-help helpId="data.ctrls.maxCtrl" title="Max Ctrl" iconClass="small"></app-quick-help>
+                Max Ctrl
+            </th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.maxCtrl" [decimalPlaces]="2"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <!-- cost -->
+        <ng-container matColumnDef="cost">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">
+                <app-quick-help helpId="data.ctrls.cost" title="" iconClass="small"></app-quick-help>
+                Cost
+            </th>
+            <td mat-cell *matCellDef="let element">
+                <app-cell-editor [data]="element.cost" [decimalPlaces]="1"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <!-- set point -->
+        <ng-container matColumnDef="setPoint">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header arrowPosition="before">
+                <app-quick-help helpId="data.ctrls.setPoint" title="Set Point" iconClass="small"></app-quick-help>
+                <div [style]="getOverallSetPointStyle()">Set point</div>
+            </th>
+            <td mat-cell *matCellDef="let element">
+                <div *ngIf="setPointMode!==SetPointMode.Manual"
+                    [style]="getSetPointStyle(element.setPoint?.value,element.minCtrl.value,element.maxCtrl.value)">
+                    {{element.setPoint?.value?.toFixed(2)}}</div>
+                <app-cell-editor *ngIf="setPointMode===SetPointMode.Manual" [data]="element.setPoint" [decimalPlaces]="2"
+                    [canDelete]="false"></app-cell-editor>
+            </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{isDeleted: row._isDeleted}"></tr>
+    </table>
+</app-div-auto-scroller>

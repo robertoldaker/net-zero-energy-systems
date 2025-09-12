@@ -1,10 +1,10 @@
 import { Component, Injectable } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { AboutDialogComponent } from '../main/about-dialog/about-dialog.component';
-import { AboutLoadflowDialogComponent } from '../loadflow/about-loadflow-dialog/about-loadflow-dialog.component';
+import { AboutBoundCalcDialogComponent } from '../boundcalc/about-boundcalc-dialog/about-boundcalc-dialog.component';
 import { ClassificationToolDialogComponent } from '../classification/classification-tool-dialog/classification-tool-dialog.component';
 import { DistSubstationDialogComponent } from '../low-voltage/dist-substation-dialog/dist-substation-dialog.component';
-import { LoadflowHelpDialogComponent } from '../loadflow/loadflow-help-dialog/loadflow-help-dialog.component';
+import { BoundCalcHelpDialogComponent } from '../boundcalc/boundcalc-help-dialog/boundcalc-help-dialog.component';
 import { LogOnComponent } from '../users/log-on/log-on.component';
 import { RegisterUserComponent } from '../users/register-user/register-user.component';
 import { DataClientService } from '../data/data-client.service';
@@ -17,16 +17,16 @@ import { ElsiHelpDialogComponent } from '../elsi/elsi-help-dialog/elsi-help-dial
 import { NeedsLogonComponent } from '../main/main-menu/needs-logon/needs-logon.component';
 import { ResetPasswordComponent } from '../users/reset-password/reset-password.component';
 import { DatasetDialogComponent } from '../datasets/dataset-dialog/dataset-dialog.component';
-import { LoadflowNodeDialogComponent } from '../loadflow/dialogs/loadflow-node-dialog/loadflow-node-dialog.component';
+import { BoundCalcNodeDialogComponent } from '../boundcalc/dialogs/boundcalc-node-dialog/boundcalc-node-dialog.component';
 import { ICellEditorDataDict } from '../datasets/cell-editor/cell-editor.component';
-import { LoadflowZoneDialogComponent } from '../loadflow/dialogs/loadflow-zone-dialog/loadflow-zone-dialog.component';
-import { LoadflowBoundaryDialogComponent } from '../loadflow/dialogs/loadflow-boundary-dialog/loadflow-boundary-dialog.component';
-import { LoadflowBranchDialogComponent } from '../loadflow/dialogs/loadflow-branch-dialog/loadflow-branch-dialog.component';
-import { LoadflowCtrlDialogComponent } from '../loadflow/dialogs/loadflow-ctrl-dialog/loadflow-ctrl-dialog.component';
-import { LoadflowLocationDialogComponent } from '../loadflow/dialogs/loadflow-location-dialog/loadflow-location-dialog.component';
-import { IBranchEditorData } from '../loadflow/loadflow-data-service.service';
-import { LoadflowGenerationModelDialogComponent } from '../loadflow/dialogs/loadflow-generation-model-dialog/loadflow-generation-model-dialog.component';
-import { LoadflowGeneratorDialogComponent } from '../loadflow/dialogs/loadflow-generator-dialog/loadflow-generator-dialog.component';
+import { BoundCalcZoneDialogComponent } from '../boundcalc/dialogs/boundcalc-zone-dialog/boundcalc-zone-dialog.component';
+import { BoundCalcBoundaryDialogComponent } from '../boundcalc/dialogs/boundcalc-boundary-dialog/boundcalc-boundary-dialog.component';
+import { BoundCalcBranchDialogComponent } from '../boundcalc/dialogs/boundcalc-branch-dialog/boundcalc-branch-dialog.component';
+import { BoundCalcCtrlDialogComponent } from '../boundcalc/dialogs/boundcalc-ctrl-dialog/boundcalc-ctrl-dialog.component';
+import { BoundCalcLocationDialogComponent } from '../boundcalc/dialogs/boundcalc-location-dialog/boundcalc-location-dialog.component';
+import { IBranchEditorData } from '../boundcalc/boundcalc-data-service.service';
+import { BoundCalcGenerationModelDialogComponent } from '../boundcalc/dialogs/boundcalc-generation-model-dialog/boundcalc-generation-model-dialog.component';
+import { BoundCalcGeneratorDialogComponent } from '../boundcalc/dialogs/boundcalc-generator-dialog/boundcalc-generator-dialog.component';
 
 @Injectable({
     providedIn: 'root'
@@ -58,12 +58,12 @@ export class DialogService {
         let dialogRef = this.dialog.open(AboutDialogComponent, this.defaultOptions)
     }
 
-    showAboutLoadflowDialog() {
-        let dialogRef = this.dialog.open(AboutLoadflowDialogComponent, this.defaultOptions)
+    showAboutBoundCalcDialog() {
+        let dialogRef = this.dialog.open(AboutBoundCalcDialogComponent, this.defaultOptions)
     }
 
-    showHelpLoadflowDialog() {
-        let dialogRef = this.dialog.open(LoadflowHelpDialogComponent, this.defaultOptions)
+    showHelpBoundCalcDialog() {
+        let dialogRef = this.dialog.open(BoundCalcHelpDialogComponent, this.defaultOptions)
     }
 
     showRegisterUserDialog() {
@@ -121,16 +121,16 @@ export class DialogService {
         let dialogRef = this.dialog.open(ElsiHelpDialogComponent, this.defaultOptions)
     }
 
-    showLoadflowNodeDialog(cellObj?: ICellEditorDataDict) {
+    showBoundCalcNodeDialog(cellObj?: ICellEditorDataDict) {
         let options = Object.assign({},this.defaultOptions)
         options.data = cellObj
-        this.dialog.open(LoadflowNodeDialogComponent, options)
+        this.dialog.open(BoundCalcNodeDialogComponent, options)
     }
 
-    showLoadflowZoneDialog(cellObj?: ICellEditorDataDict, onClose?: (obj?: Zone) => void) {
+    showBoundCalcZoneDialog(cellObj?: ICellEditorDataDict, onClose?: (obj?: Zone) => void) {
         let options = Object.assign({},this.defaultOptions)
         options.data = cellObj
-        let dialogRef = this.dialog.open(LoadflowZoneDialogComponent, options)
+        let dialogRef = this.dialog.open(BoundCalcZoneDialogComponent, options)
         dialogRef.afterClosed().subscribe((obj)=>{
             if ( onClose) {
                 onClose(obj)
@@ -138,16 +138,16 @@ export class DialogService {
         })
     }
 
-    showLoadflowBoundaryDialog(cellObj?: ICellEditorDataDict) {
+    showBoundCalcBoundaryDialog(cellObj?: ICellEditorDataDict) {
         let options = Object.assign({},this.defaultOptions)
         options.data = cellObj
-        this.dialog.open(LoadflowBoundaryDialogComponent, options)
+        this.dialog.open(BoundCalcBoundaryDialogComponent, options)
     }
 
-    showLoadflowBranchDialog(branchEditorData?: IBranchEditorData, onClose?: (e: any)=>void ) {
+    showBoundCalcBranchDialog(branchEditorData?: IBranchEditorData, onClose?: (e: any)=>void ) {
         let options = Object.assign({},this.defaultOptions)
         options.data = branchEditorData
-        let dialogRef = this.dialog.open(LoadflowBranchDialogComponent, options)
+        let dialogRef = this.dialog.open(BoundCalcBranchDialogComponent, options)
         dialogRef.afterClosed().subscribe((input)=>{
             if ( onClose ) {
                 onClose(input)
@@ -155,16 +155,16 @@ export class DialogService {
         });
     }
 
-    showLoadflowCtrlDialog(cellObj?: ICellEditorDataDict) {
+    showBoundCalcCtrlDialog(cellObj?: ICellEditorDataDict) {
         let options = Object.assign({},this.defaultOptions)
         options.data = cellObj
-        this.dialog.open(LoadflowCtrlDialogComponent, options)
+        this.dialog.open(BoundCalcCtrlDialogComponent, options)
     }
 
-    showLoadflowLocationDialog(cellObj?: ICellEditorDataDict, onClose?: (e: any)=>void) {
+    showBoundCalcLocationDialog(cellObj?: ICellEditorDataDict, onClose?: (e: any)=>void) {
         let options = Object.assign({},this.defaultOptions)
         options.data = cellObj
-        let dialogRef = this.dialog.open(LoadflowLocationDialogComponent, options)
+        let dialogRef = this.dialog.open(BoundCalcLocationDialogComponent, options)
         dialogRef.afterClosed().subscribe((input)=>{
             if ( onClose ) {
                 onClose(input)
@@ -172,10 +172,10 @@ export class DialogService {
         });
     }
 
-    showLoadflowGenerationModelDialog(generationModel:GenerationModel | undefined, onClose?: (e: any)=>void) {
+    showBoundCalcGenerationModelDialog(generationModel:GenerationModel | undefined, onClose?: (e: any)=>void) {
         let options = Object.assign({},this.defaultOptions)
         options.data = generationModel
-        let dialogRef = this.dialog.open(LoadflowGenerationModelDialogComponent, options)
+        let dialogRef = this.dialog.open(BoundCalcGenerationModelDialogComponent, options)
         dialogRef.afterClosed().subscribe((input)=>{
             if ( onClose ) {
                 onClose(input)
@@ -183,10 +183,10 @@ export class DialogService {
         });
     }
 
-    showLoadflowGeneratorDialog(cellObj?: ICellEditorDataDict, onClose?: (obj?: Generator)=>void) {
+    showBoundCalcGeneratorDialog(cellObj?: ICellEditorDataDict, onClose?: (obj?: Generator)=>void) {
         let options = Object.assign({},this.defaultOptions)
         options.data = cellObj
-        let dialogRef = this.dialog.open(LoadflowGeneratorDialogComponent, options)
+        let dialogRef = this.dialog.open(BoundCalcGeneratorDialogComponent, options)
         dialogRef.afterClosed().subscribe((obj)=>{
             if ( onClose ) {
                 onClose(obj)

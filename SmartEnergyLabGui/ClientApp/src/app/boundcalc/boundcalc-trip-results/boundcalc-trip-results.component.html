@@ -1,0 +1,14 @@
+<div style="padding: 0">
+    <mat-tab-group animationDuration="0ms" [preserveContent]="true" (selectedTabChange)="tabChange()">
+        <mat-tab label="Intact"  labelClass="matTabLabelNarrow output">
+            <app-boundcalc-trip-table [trips]="intactTrips"></app-boundcalc-trip-table>    
+        </mat-tab>
+        <mat-tab label="Single trips"  labelClass="matTabLabelNarrow output">
+            <app-boundcalc-trip-table [trips]="singleTrips"></app-boundcalc-trip-table>    
+        </mat-tab>
+        <mat-tab label="Double trips"  labelClass="matTabLabelNarrow output">
+            <app-boundcalc-trip-table [trips]="doubleTrips"></app-boundcalc-trip-table>    
+        </mat-tab>
+    </mat-tab-group>
+</div>
+

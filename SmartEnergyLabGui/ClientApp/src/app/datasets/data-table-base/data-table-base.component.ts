@@ -6,7 +6,7 @@ import { DataFilter, ICellEditorDataDict } from 'src/app/datasets/cell-editor/ce
 import { DatasetsService } from 'src/app/datasets/datasets.service';
 import { TablePaginatorComponent } from 'src/app/datasets/table-paginator/table-paginator.component';
 import { DialogBase } from 'src/app/dialogs/dialog-base';
-import { LoadflowDataService } from 'src/app/loadflow/loadflow-data-service.service';
+import { BoundCalcDataService } from 'src/app/boundcalc/boundcalc-data-service.service';
 
 @Component({
     selector: 'app-data-table-base',

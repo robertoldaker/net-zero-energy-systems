@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { UserService } from 'src/app/users/user.service';
-import { LoadflowSplitService } from '../../loadflow/loadflow-split.service';
+import { BoundCalcSplitService } from '../../boundcalc/boundcalc-split.service';
 import { Title } from '@angular/platform-browser';
 
 @Component({
@@ -12,7 +12,7 @@ import { Title } from '@angular/platform-browser';
 export class ElsiHomeComponent implements OnInit {
 
     constructor(
-        private splitService: LoadflowSplitService,
+        private splitService: BoundCalcSplitService,
         private userService: UserService,
         private dialogService: DialogService,
         titleService: Title) {

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { DialogBase } from 'src/app/dialogs/dialog-base';
-import { LoadflowNodeDialogComponent } from 'src/app/loadflow/dialogs/loadflow-node-dialog/loadflow-node-dialog.component';
+import { BoundCalcNodeDialogComponent } from 'src/app/boundcalc/dialogs/boundcalc-node-dialog/boundcalc-node-dialog.component';
 import { DialogBaseInput } from '../dialog-base-input';
 import { DatasetsService } from '../datasets.service';
 

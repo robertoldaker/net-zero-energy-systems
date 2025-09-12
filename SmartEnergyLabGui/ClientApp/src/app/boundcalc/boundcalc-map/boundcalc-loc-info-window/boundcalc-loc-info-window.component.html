@@ -1,0 +1,72 @@
+<div class="mapInfoWindow">
+    <div class="inlineFlexRow" style="margin-bottom: 0.5rem;">
+        <svg *ngIf="!isQB" width="30" height="15">
+            <circle  cx="10" cy="7" r="5" fill="grey"/>
+        </svg>
+        <svg *ngIf="isQB" width="30" height="15">
+            <circle  cx="10" cy="7" r="5" fill="#7E4444"/>
+        </svg>
+        <span>{{name}}</span>
+        <div class="buttons">
+            <app-mini-icon-button (click)="editLocation($event)" iconName="edit" title="Delete this location"></app-mini-icon-button>
+            <app-mini-icon-button *ngIf="canDeleteLocation" (click)="deleteLocation($event)" iconName="delete_forever" title="Delete this location"></app-mini-icon-button>
+        </div>
+    </div>
+    <mat-tab-group animationDuration="0ms" [preserveContent]="true">
+        <mat-tab label="Nodes" labelClass="matTabLabelInfoWindow">
+            <div class="itemContainer">
+                <app-boundcalc-node-info-table *ngIf="this.nodes.length>0" [nodes]="nodes"></app-boundcalc-node-info-table>
+                <div *ngIf="this.nodes.length===0" class="noneAvailable">No nodes defined</div>
+                <div style="height: 0.5em"></div>
+                <div *ngFor="let node of deletedNodes">
+                    <app-map-buttons typeName="Node" [element]="node" (onEdit)="editNode($event)" [isDeleted]="true">
+                        {{node.code}}
+                    </app-map-buttons>
+                </div>
+            </div>
+            <div class="miniButtonContainer">
+                <app-mini-map-button (onClick)="addNode($event)" [disabled]="!datasetsService.isEditable">
+                    <mat-icon [inline]="true">add</mat-icon>
+                    <span>Node</span>
+                </app-mini-map-button>
+            </div>
+        </mat-tab>
+        <mat-tab label="Branches (int)" labelClass="matTabLabelInfoWindow">
+            <div class="itemContainer">
+                <app-boundcalc-branch-info-table *ngIf="this.branchesInt.length>0" [branches]="this.branchesInt"></app-boundcalc-branch-info-table>
+                <div *ngIf="this.branchesInt.length===0" class="noneAvailable">No internal branches defined</div>
+                <div style="height: 0.5em"></div>
+                <div *ngFor="let branch of deletedBranchesInt">
+                    <app-map-buttons typeName="Branch" [element]="branch" [isDeleted]="true">
+                        {{branch.displayName}}
+                    </app-map-buttons>
+                </div>
+            </div>
+            <div class="miniButtonContainer">
+                <app-mini-map-button (onClick)="addInternalBranch($event)" [disabled]="!datasetsService.isEditable">
+                    <mat-icon [inline]="true">add</mat-icon>
+                    <span>Branch (int.)</span>
+                </app-mini-map-button>
+            </div>
+        </mat-tab>
+        <mat-tab label="Branches (ext)" labelClass="matTabLabelInfoWindow">
+            <div class="itemContainer">
+                <app-boundcalc-branch-info-table *ngIf="this.branchesExt.length>0" [branches]="this.branchesExt"></app-boundcalc-branch-info-table>
+                <div *ngIf="this.branchesExt.length===0" class="noneAvailable">No external branches defined</div>
+                <div style="height: 0.5em"></div>
+                <div *ngFor="let branch of deletedBranchesExt">
+                    <app-map-buttons typeName="Branch" [element]="branch" [isDeleted]="true">
+                        {{branch.displayName}}
+                    </app-map-buttons>
+                </div>
+            </div>
+            <div class="miniButtonContainer">
+                <app-mini-map-button (onClick)="addExternalBranch($event)" [disabled]="!datasetsService.isEditable">
+                    <mat-icon [inline]="true">add</mat-icon>
+                    <span>Branch (ext.)</span>
+                </app-mini-map-button>
+            </div>
+        </mat-tab>
+    </mat-tab-group>
+</div>
+

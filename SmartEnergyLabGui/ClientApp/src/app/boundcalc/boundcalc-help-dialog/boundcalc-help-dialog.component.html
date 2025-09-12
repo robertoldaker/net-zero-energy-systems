@@ -1,0 +1,117 @@
+
+<app-dialog-header [dialogRef]="dialogRef">Transmission Boundary Capability Calculator</app-dialog-header>
+<div id="container">
+
+<h1>Purpose</h1>
+<p>
+To assist calculation of network boundary capabilities (and compare these to SQSS requirements) with optimised settings of all available power flow controlling devices (e.g. quad boosters, HVDC links, modular power flow controllers and system to generation or system to 
+demand intertrip schemes). As well as load flow on AC circuits, the calculator represents interconnected HVDC links with automatic balancing of HVDC nodes respecting available link capacities and whole system boundary capability objectives.
+</p>
+
+<h1>Context</h1>
+<p>
+To achieve 40GW of offshore wind by 2030 with minimal environmental impacts from new network it will be necessary to make full use of existing network capacity, the opportunities to interconnect new offshore connection circuits and make suitable dispatch of international interconnectors (when cross-border capacity allocation permits).  The calculator is intended to complement existing power system tools by providing access to optimal flow control settings for many security contingencies.
+</p>
+
+<h1>Problem formulation</h1>
+<p>
+For intact network and single circuit and two circuit security contingencies,
+</p>
+<h2>Maximise</h2>
+<p>
+Boundary transfer (dictated by SQSS required scaling of generation and demand) less control costs (i.e. quantity of control movements from float positions on power flow controllers and HVDC links).    
+</p>
+<h2>Subject to:</h2>
+<ol>
+    <li>all circuits within (MW) power flow capacity limits;</li>
+    <li>all power flow control devices scheduled within control ranges;</li>
+    <li>all nodes (DC and AC) satisfying Kirchoff’s current law (i.e. Generation less Demand at node = net circuit flows from node); and</li>
+    <li>power flow on AC circuits proportional to difference in voltage phase angle and inversely proportional to circuit reactance (i.e. linearised AC system load flow assumption without circuit mutual couplings).</li>
+</ol>
+
+
+<h1>Data definitions</h1>
+
+<h2>Nodes table</h2>
+<div class="compact">
+    <p><i>Node</i> - unique text identifier;</p>
+    <p><i>Zone</i> – text identifier must be present in Boundary table “Zone” column;</p>
+    <p><i>Demand</i> – real number (e.g. MW) consumption at node;</p>
+    <p><i>Generation</i> – real number (e.g. MW) production at node;</p>
+    <p><i>Ext</i> – True/False, True signifies nodal generation and demand is external to GB and not scaled to adjust boundary transfer (as per SQSS requirement).</p>
+    <p><i>Mismatch</i> - nodal mismatches (Generation – Demand – circuit outflows)</p>
+    <p><i>Vang</i> - voltage phase angles (in radians with reference node defined as zero angle).</p>        
+</div>
+<h2>Branches table</h2>
+<div class="compact">
+    <p><i>Node1</i> – text identifier ‘from node’ of branch/circuit must be present in Node column of node table;</p>
+    <p><i>Node2</i> – text identifier ‘to node’ of branch/circuit must be present in Node column of node table;</p>
+    <p><i>Code</i> – text identifier such that ‘Node1-Node2:Code’ must be unique in branch table;</p>
+    <p><i>X</i> – real number (e.g. % on 100 MVA base) AC reactance of branch/circuit (HVDC links should have zero reactance);</p>
+    <p><i>Cap</i> – real number (e.g. MW) capacity of branch/circuit;</p>
+    <p><i>Free</i> - unused capacity of branch/circuit;</p>    
+</div>
+
+<h2>Controls table</h2>
+<div class="compact">
+    <p><i>Node1</i> – text identifier ‘from node’ of circuit flow controller must be present in Node column of node table;</p>
+    <p><i>Node2</i> – text identifier ‘to node’ of circuit flow controller must be present in Node column of node table;</p>
+    <p><i>Code</i> – unique text identifier in control table and also ‘Node1-Node2:Code’ must be present in branch table;</p>
+    <p><i>Type</i> – “QB” or “HVDC” (currently, MPFC approximated as QB and intertrips approximated as HVDC);</p>
+    <p><i>Minctrl</i> – negative real number or zero – max buck phase angle (QB) or max reverse power flow (HVDC);</p>
+    <p><i>Maxctrl</i> – positive real number or zero – max boost phase angle (QB) or max forward power flow (HVDC);</p>
+    <p><i>Cost</i> – positive real number defining penalty to boundary transfer objective for using Maxctrl or Minctrl;</p>    
+</div>
+
+<h1>Operation</h1>
+
+<h2>Base load flow</h2>
+<p>
+The <i>Base</i> button will calculate base boundcalc and will access the data tables, perform data checks, calculate the load flow and produce result columns in the Branch and Ctrl tables.  Progress and diagnostics are provided in the lower left panel.  The circuit list in the lower right panel permits one or more circuits to be selected as a trip.
+</p>
+<p>
+The calculation chooses the reference node to maximise calculation speed (it will be one of the most connected nodes in the network).  As well as having zero voltage phase angle, any system mismatch will be accumulated at this reference node.  
+</p>
+<p>
+Flow control devices are set for the base and trip load flows such that HVDC nodes balance, circuit flows are within capability limits, flow control devices are in their minimum to maximum control ranges and with as low a control cost as possible.  Diagnostics indicate which circuit capacity limits are active and the potential control cost saving (shadow cost) if these circuit capabilities were increased by 1 MW. If an optimised solution cannot be found (e.g. there is insufficient control range to avoid an overload) then diagnostics will report overloads at the point the infeasibility was detected.
+</p>
+
+<h2>Boundary analysis</h2>
+<p>
+The <i>Boundary</i> drop down list at the top of the form provides access to boundary transfer maximisation calculations.
+</p>
+<p>Selection of a boundary will cause the following actions:</p>
+<ol>
+    <li>A load flow calculation of the planned transfer with intact network (as per base boundcalc above) to check data tables, connectivity and ensure HVDC node balance.</li>
+    <li>A calculation of the generation and demand inside and outside the boundary.</li>
+    <li>A calculation of the modelled transfer and SQSS interconnection allowance (positive for exporting boundary).</li>
+    <li>The population of the trip list containing single and two circuit combinations of circuits crossing the boundary.</li>
+    <li>An optimisation calculation of the boundary with all circuits in service.</li>
+</ol>
+
+<p>An example following selection of the EC1 boundary is shown below:</p>
+<p>
+    <img src="/assets/images/Help1.png" style="width: 100%"/>
+</p>
+<p>
+In this example the trip list is populated by single and two circuit combinations of the EC1 boundary crossing circuits.  Diagnostics reports that a planned transfer load flow succeeds with WBUR4 selected as reference node. (The shadow cost of 1.0 reported for cct0 shows the artificial constraint limiting boundary flows to planned transfer is the only limit active). Diagnostics then reports a successful attempt at optimising power transfer across EC1, first with only the boundary circuits represented (Boundcap 11686 MW) then with a all other circuits considered (only ELST40-SUND40:A605 is a potential overload and, with optimum control settings, this overload can be resolved with a boundary flow of 11691 MW).  The shadow cost shows boundary circuit KEAD40-KILL40:A30A would release 3.8 MW of capacity for each MW of circuit capacity (because other circuits have free capacity that could then be used).   
+</p>
+ 
+<h2>Boundary capacity calculations</h2>
+<p>Boundary capacity calculations are started using these buttons:</p>
+<p><i>Single Trip</i> button - calculates the boundary capability with a trip selected in the trip drop down list. For example, if S2 is selected, then a boundary optimisation is performed with circuit GRIW40-KEAD40:A30C removed and results are saved in columns headed: Base1EC1S2. 
+</p>
+<p><i>All Trips</i> button - calculates the boundary capability for all trips in the trip list panel. Results are sorted to the most limiting cases in separate tables for single circuit and multiple circuit trips and are presented in a new tab called <i>All trip results</i>
+
+<p>The contents of the two <i>All trip results</i> tables are:</p>
+<p>
+<i>Surplus</i> – the extent the calculated boundary capacity for a trip exceeds the SQSS requirement.  This is sorted from smallest upwards.
+For a single circuit trip, the SQSS requirement is Planned Transfer plus full Interconnection Allowance. For two or more simultaneous circuit trips, the SQSS requirement is taken to be Planned Transfer plus half the Interconnection Allowance.
+</p>
+<p><i>Capacity</i> – the boundary capability achieved for the trip.</p>
+<p><i>Trip</i> – the trip identifier and circuits removed.</p>
+<p><i>Lim Cct</i> – a list of circuits which, due to their power capacity, limit the boundary capability.</p>
+<p>Further columns are the control settings chosen to achieve the boundary capacity for that trip.
+
+</div>
+<app-dialog-footer [dialogRef]="dialogRef" [buttons]="DialogFooterButtons.Close"></app-dialog-footer>
