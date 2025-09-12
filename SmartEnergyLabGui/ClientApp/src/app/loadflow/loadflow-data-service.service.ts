@@ -275,14 +275,15 @@ export class LoadflowDataService {
         }
     }
 
-    runBoundCalc( boundaryName: string, boundaryTrips: boolean) {
+    runBoundCalc( boundaryTrips: boolean) {
         this.inRun = true;
         let tripStr = this.getTripStr()
         if ( boundaryTrips) {
             this.clearBoundaryTrips()
         }
         if ( this.generationModel && this.dataset ) {
-            this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, this.generationModel.id, this.nodeMarginals, boundaryName, boundaryTrips, tripStr, (results)=>{
+            let bn = this.boundaryName ? this.boundaryName : ''
+            this.dataClientService.RunBoundCalc( this.dataset.id, this.setPointMode, this.generationModel.id, this.nodeMarginals, bn, boundaryTrips, tripStr, (results)=>{
                 if ( boundaryTrips && results.boundaryTripResults) {
                     this.setBoundaryTrips(results.boundaryTripResults)
                 }

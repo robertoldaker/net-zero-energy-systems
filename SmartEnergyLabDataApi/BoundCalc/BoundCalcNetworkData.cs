@@ -392,9 +392,17 @@ public class BoundCalcNetworkData {
         return false;
     }
 
-    public static BoundCalcResults RunBoundaryTrip(int datasetId, int generationModelId, string boundaryName, string tripName, string tripStr)
+    public static BoundCalcResults RunBoundaryTrip(int datasetId, int generationModelId, string boundaryName, string tripName, string tripStr, string? connectionId=null, IHubContext<NotificationHub> hubContext = null)
     {
         var nd = new BoundCalcNetworkData(datasetId, generationModelId);
+        // update gui
+        if (connectionId != null) {
+            nd.ProgressManager.ProgressUpdate += (m, p) => {
+                hubContext.Clients.Client(connectionId).SendAsync("BoundCalc_AllTripsProgress", new { msg = m, percent = p });
+            };
+        }
+        nd.ProgressManager.Start("Calculating", 1);
+
         // Get network model and check not null
         var fullnet = nd.Model;
         //
@@ -430,6 +438,9 @@ public class BoundCalcNetworkData {
         Network.NetState ns = new(baseLf, ts, bndsetpts); // Create a new netstate with the tripspec and setpoints
         (LPResult r1, int r2, bool discon) = netopt.OptimiseNet(ns, out Network.FullLoadFlow lf, out double _);
         nd.FillResults(lf, ns.NSetPts, false);
+        //
+        nd.ProgressManager.Finish();
+        //
         return new BoundCalcResults(nd);
     }
 

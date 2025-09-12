@@ -55,11 +55,7 @@ export class LoadflowDialogComponent extends ComponentBase {
     }
 
     calc() {
-        let bn:string = this.boundaryName;
-        if ( bn == "Unspecified") {
-            bn = "";
-        }
-        this.dataService.runBoundCalc(bn,true);
+        this.dataService.runBoundCalc(true);
     }
 
     getLineNames(trip: BoundaryTrip):string {

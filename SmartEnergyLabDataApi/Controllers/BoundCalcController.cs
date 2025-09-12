@@ -87,10 +87,10 @@ namespace SmartEnergyLabDataApi.Controllers
         /// </summary>
         [HttpPost]
         [Route("RunBoundaryTrip")]
-        public IActionResult RunBoundaryTrip(int datasetId, int generationModelId, string boundaryName, string tripName, string? tripStr)
+        public IActionResult RunBoundaryTrip(int datasetId, int generationModelId, string boundaryName, string tripName, string tripStr, string? connectionId = null)
         {
             try {
-                var resp = BoundCalcNetworkData.RunBoundaryTrip(datasetId, generationModelId, boundaryName, tripName, tripStr);
+                var resp = BoundCalcNetworkData.RunBoundaryTrip(datasetId, generationModelId, boundaryName, tripName, tripStr, connectionId, _hubContext);
                 return this.Ok(resp);
             } catch (Exception e) {
                 return this.Ok(new BoundCalcResults(e.Message));
