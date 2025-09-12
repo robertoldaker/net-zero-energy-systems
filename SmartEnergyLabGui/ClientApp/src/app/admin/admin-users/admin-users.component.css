@@ -1,0 +1,19 @@
+img.isConnected {
+    width: 20px;
+    color: #666;
+}
+
+div.header {
+    background: white;
+    padding: 1rem;
+    display: flex;
+}
+
+.checkbox {
+    cursor: pointer;
+    padding-right: 1rem;
+}
+
+.mat-column-isConnected {
+    width: 50px;
+}

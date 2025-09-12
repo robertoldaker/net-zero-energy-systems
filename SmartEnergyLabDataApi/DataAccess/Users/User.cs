@@ -5,10 +5,9 @@ namespace SmartEnergyLabDataApi.Data
 {
     public enum UserRole { Basic, Admin}
 
-    [ApplicationGroup(ApplicationGroup.BoundCalc,ApplicationGroup.Elsi)]
+    [ApplicationGroup(ApplicationGroup.BoundCalc, ApplicationGroup.Elsi)]
     [Class(0, Table = "smart_energy_users")]
-    public class User
-    {
+    public class User {
         public User()
         {
 
@@ -22,28 +21,36 @@ namespace SmartEnergyLabDataApi.Data
         public virtual int Id { get; set; }
 
         [Property()]
-        public virtual string Name {get; set;}
+        public virtual string Name { get; set; }
 
         [Property()]
-        public virtual string Email {get; set;}
-
-        [Property()]
-        [JsonIgnore]
-        public virtual byte[] Password {get; set;}
+        public virtual string Email { get; set; }
 
         [Property()]
         [JsonIgnore]
-        public virtual byte[] Salt {get; set;}
+        public virtual byte[] Password { get; set; }
 
         [Property()]
-        public virtual bool Enabled {get; set;}
+        [JsonIgnore]
+        public virtual byte[] Salt { get; set; }
 
         [Property()]
-        public virtual UserRole Role {get; set;}
+        public virtual bool Enabled { get; set; }
 
-        public virtual string RoleStr {
+        [Property()]
+        public virtual UserRole Role { get; set; }
+
+        public virtual string RoleStr
+        {
             get {
                 return this.Role.ToString();
+            }
+        }
+
+        public virtual bool IsConnected
+        {
+            get {
+                return NotificationHub.ConnectedUsers.IsConnected(Id);
             }
         }
 

@@ -15,16 +15,10 @@ export class AdminUsersComponent extends ComponentBase implements OnInit {
     constructor(private dataService: DataClientService) {
         super()
         this.sort = null
-        this.displayedColumns = ['name','email','role','enabled']
+        this.displayedColumns = ['isConnected','name','email','role','enabled']
         this.users = []
-        this.dataService.GetUsers((users)=>{
-            this.users = users
-            this.tableData = new MatTableDataSource(this.users)
-            this.tableData.sortingDataAccessor = this.sortDataAccessor
-            this.tableData.sort = this.sort
-
-        });
         this.tableData = new MatTableDataSource(this.users)
+        this.loadUsers()
     }
 
 
@@ -50,7 +44,36 @@ export class AdminUsersComponent extends ComponentBase implements OnInit {
     displayedColumns: string[]
 
     sortDataAccessor(data: any, headerId: string): number | string {
-        return data[headerId];
+        let d = data[headerId];
+        if ( typeof(d) === "string") {
+            return d.toLocaleLowerCase();
+        } else {
+            return d;
+        }
     }
+
+    reload() {
+        this.loadUsers();
+    }
+
+    private loadUsers() {
+        this.dataService.GetUsers((users) => {
+            if ( this.onlyConnectedUsers) {
+                this.users = users.filter(m=>m.isConnected)
+            } else {
+                this.users = users
+            }
+            this.tableData = new MatTableDataSource(this.users)
+            this.tableData.sortingDataAccessor = this.sortDataAccessor
+            this.tableData.sort = this.sort
+
+        });
+    }
+
+    onlyConnectedUsersClicked() {
+        this.loadUsers()
+    }
+
+    onlyConnectedUsers: boolean = false
 
 }
