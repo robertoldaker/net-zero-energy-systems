@@ -150,6 +150,16 @@ export class LoadflowDataService {
                 this.setGenerationModel(results.generationModel, false)
             }
             this._locationDragging = false
+            //
+            if ( newDataset) {
+                this.setBoundary(undefined);
+            } else {
+                // check the existing boundary still exists
+                let bound = results.boundaries.data.find(m => m.code === this.boundaryName)
+                // reset boundary
+                this.setBoundary(bound?.code)
+            }
+            //
             this.clearMapSelection()
             this.clearTrips()
             this.calcTotals()
@@ -251,6 +261,7 @@ export class LoadflowDataService {
     }
 
     setGenerationModel(generationModel: GenerationModel, reload: boolean=true) {
+        console.log('setGenerationModel', generationModel, reload)
         this.generationModel = generationModel
         // This gets sent to the datasets edit/delete/undelete methods as an extra data field
         if ( this.generationModel ) {
@@ -258,6 +269,7 @@ export class LoadflowDataService {
         } else {
             this.datasetsService.customData = undefined
         }
+        //
         if ( reload ) {
             this.reloadDataset()
         }

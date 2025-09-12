@@ -10,7 +10,7 @@
         <app-quick-help-dialog-group helpId="dialog.boundary" helpTitle="Boundary" style="padding-right: 0.5rem">
             <mat-form-field appearance="fill" [color]="'primary'">
                 <mat-label>Boundary</mat-label>
-                <mat-select (selectionChange)="setBoundary()" [(ngModel)]="boundaryName">
+                <mat-select [(ngModel)]="boundaryName">
                     <mat-option [value]="'Unspecified'">Unspecified</mat-option>
                     <mat-option *ngFor="let b of boundaries" [value]="b.code">{{b.code}}</mat-option>
                 </mat-select>

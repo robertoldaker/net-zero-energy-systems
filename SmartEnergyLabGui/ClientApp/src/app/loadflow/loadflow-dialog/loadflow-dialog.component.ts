@@ -25,8 +25,6 @@ export class LoadflowDialogComponent extends ComponentBase {
         this.addSub(dataService.NetworkDataLoaded.subscribe((results=>{
             this.setBoundaries(results)
             this.branches = results.branches.data
-            this.boundaryName = "Unspecified"
-            this.setBoundary()
             //
             if ( Math.abs(this.dataService.totalDemand - this.dataService.totalGeneration) > 1e-6) {
                 this.errorMsg = "Demand does not equal generation"
@@ -62,14 +60,6 @@ export class LoadflowDialogComponent extends ComponentBase {
             bn = "";
         }
         this.dataService.runBoundCalc(bn,true);
-    }
-
-    setBoundary() {
-        if ( this.boundaryName == "Unspecified") {
-            this.dataService.setBoundary(undefined);
-        } else {
-            this.dataService.setBoundary(this.boundaryName);
-        }
     }
 
     getLineNames(trip: BoundaryTrip):string {
@@ -172,7 +162,13 @@ export class LoadflowDialogComponent extends ComponentBase {
     selectedTrip: string
     boundaries: Boundary[] = []
     branches: any;
-    boundaryName: string
+    get boundaryName():string {
+        return this.dataService.boundaryName ? this.dataService.boundaryName : "Unspecified"
+    }
+    set boundaryName(bn: string) {
+        let newBn = bn !== 'Unspecified' ? bn : undefined
+        this.dataService.setBoundary(newBn)
+    }
     trips: BoundaryTrip[]
     datasetTypes = DatasetType
     SetPointMode = SetPointMode
