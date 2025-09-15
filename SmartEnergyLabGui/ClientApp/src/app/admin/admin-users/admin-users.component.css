@@ -16,4 +16,5 @@ div.header {
 
 .mat-column-isConnected {
     width: 50px;
+    padding-right: 1rem;
 }

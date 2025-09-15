@@ -914,7 +914,7 @@ export interface User {
     enabled : boolean
     role: UserRole
     roleStr: string
-    isConnected: boolean
+    numConnections: number
 }
 
 export interface ChangePassword {

@@ -28,9 +28,9 @@ namespace SmartEnergyLabDataApi.Controllers
 
         [HttpPost]
         [Route("Logon")]
-        public IActionResult Logon([FromBody] Logon logon) {
+        public IActionResult Logon([FromBody] Logon logon, string? connectionId) {
             using( var m = new LogonModel(this, logon) ) {
-                if ( !m.TryLogon() ) {
+                if ( !m.TryLogon(connectionId) ) {
                     return this.ModelErrors(m.Errors);
                 }
             }
@@ -39,8 +39,8 @@ namespace SmartEnergyLabDataApi.Controllers
 
         [HttpPost]
         [Route("Logoff")]
-        public IActionResult Logoff() {
-            this.LogOffNow();
+        public IActionResult Logoff(string? connectionId) {
+            this.LogOffNow(connectionId);
             return Ok();
         }
 
@@ -89,7 +89,7 @@ namespace SmartEnergyLabDataApi.Controllers
         [Route("Users")]
         public IList<User> Users() {
             using( var m = new UsersModel(this) ) {
-                return m.GetUsers();                
+                return m.GetUsers();
             }
         }
     }

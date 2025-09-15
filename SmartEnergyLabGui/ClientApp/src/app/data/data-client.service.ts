@@ -422,16 +422,16 @@ export class DataClientService implements ILogs {
         this.postDialogRequest<NewUser>('/Users/SaveNewUser', newUser, onOk, onError);
     }
 
-    Logon(logon: Logon, onOk: (resp: string)=> void | undefined, onError: (error: any)=>void | undefined) {
-        this.postDialogRequest<Logon>('/Users/Logon', logon, onOk, onError);
+    Logon(logon: Logon, connectionId: string, onOk: (resp: string)=> void | undefined, onError: (error: any)=>void | undefined) {
+        this.postDialogRequest<Logon>(`/Users/Logon?connectionId=${connectionId}`, logon, onOk, onError);
     }
 
     ForgotPassword(logon: Logon, onOk: (resp: string)=> void | undefined, onError: (error: any)=>void | undefined) {
         this.postDialogRequest<Logon>('/Users/ForgotPassword', logon, onOk, onError);
     }
 
-    Logoff(onOk: (resp: string)=> void | undefined,) {
-        this.postRequest<void>('/Users/Logoff', undefined, onOk);
+    Logoff(connectionId: string, onOk: (resp: string)=> void | undefined,) {
+        this.postRequest<void>(`/Users/Logoff?connectionId=${connectionId}`, undefined, onOk);
     }
 
     CurrentUser(onLoad: (resp: User | undefined)=> void | undefined) {

@@ -2,60 +2,77 @@
 using Microsoft.AspNetCore.SignalR;
 using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
+using Microsoft.Extensions.ObjectPool;
 
 
 public class NotificationHub : Hub {
     public static ConnectedUsers ConnectedUsers = new ConnectedUsers();
-    public override Task OnConnectedAsync()
+    public override async Task OnConnectedAsync()
     {
         var userIdStr = this.Context.User?.Identity?.Name;
         if (int.TryParse(userIdStr, out int userId)) {
-            ConnectedUsers.Add(userId);
+            ConnectedUsers.AddConnection(userId, this.Context.ConnectionId);
         }
-        return base.OnConnectedAsync();
+        await base.OnConnectedAsync();
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var userIdStr = this.Context.User?.Identity?.Name;
         if (int.TryParse(userIdStr, out int userId)) {
-            ConnectedUsers.Remove(userId);
+            ConnectedUsers.RemoveConnection(userId, this.Context.ConnectionId);
         }
-        return base.OnDisconnectedAsync(exception);
+        await base.OnDisconnectedAsync(exception);
     }
 }
 
 public class ConnectedUsers {
-    private Dictionary<int, int> _connectedUsers = new Dictionary<int, int>();
+    private Dictionary<int, Dictionary<string,bool>> _connectedUsers = new Dictionary<int, Dictionary<string,bool>>();
 
-    public void Add(int userId)
+    public void AddConnection(int userId, string connectionId)
+    {
+        lock (_connectedUsers) {
+            // create connection dict if not exists
+            if (!_connectedUsers.ContainsKey(userId)) {
+                _connectedUsers.Add(userId, new Dictionary<string, bool>());
+            }
+            var connectionDict = _connectedUsers[userId];
+            // add this connection Id if not already there
+            if (!connectionDict.ContainsKey(connectionId)) {
+                connectionDict.Add(connectionId, true);
+            }
+        }
+    }
+
+    public void RemoveConnection(int userId, string connectionId)
     {
         lock (_connectedUsers) {
             if (_connectedUsers.ContainsKey(userId)) {
-                _connectedUsers[userId]++;
+                var connectionDict = _connectedUsers[userId];
+                // Remove this connectionId from users lists of valid connections
+                // (will not raise exception if not in list)
+                connectionDict.Remove(connectionId);
+            }
+        }
+    }
+
+    public void Clear(int userId)
+    {
+        lock (_connectedUsers) {
+            if (_connectedUsers.ContainsKey(userId)) {
+                _connectedUsers.Remove(userId);
+            }
+        }
+    }
+
+    public int NumConnections(int userId)
+    {
+        lock (_connectedUsers) {
+            if (_connectedUsers.TryGetValue(userId, out Dictionary<string,bool> connectionDict)) {
+                return connectionDict.Count;
             } else {
-                _connectedUsers.Add(userId, 1);
+                return 0;
             }
         }
     }
-
-    public void Remove(int userId)
-    {
-        lock (_connectedUsers) {
-            if (_connectedUsers.ContainsKey(userId)) {
-                _connectedUsers[userId]--;
-                if (_connectedUsers[userId] <= 0) {
-                    _connectedUsers.Remove(userId);
-                }
-            }
-        }
-    }
-
-    public bool IsConnected(int userId)
-    {
-        lock (_connectedUsers) {
-            return _connectedUsers.ContainsKey(userId);
-        }
-    }
-
 }

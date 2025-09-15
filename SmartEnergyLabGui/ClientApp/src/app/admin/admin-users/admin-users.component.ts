@@ -59,7 +59,7 @@ export class AdminUsersComponent extends ComponentBase implements OnInit {
     private loadUsers() {
         this.dataService.GetUsers((users) => {
             if ( this.onlyConnectedUsers) {
-                this.users = users.filter(m=>m.isConnected)
+                this.users = users.filter(m=>m.numConnections>0)
             } else {
                 this.users = users
             }

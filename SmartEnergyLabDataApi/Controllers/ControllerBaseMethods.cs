@@ -26,9 +26,16 @@ namespace SmartEnergyLabDataApi.Controllers
             return controller.User.Identity.IsAuthenticated;
         }
 
-        public static void LogOffNow(this ControllerBase c)
+        public static void LogOffNow(this ControllerBase c, string? connectionId)
         {
+            //
+            int userId = c.GetUserId();
+            //
             c.HttpContext.SignOutAsync().Wait();
+            // Remove from list of connected users
+            if (userId != 0 && !string.IsNullOrEmpty(connectionId)) {
+                NotificationHub.ConnectedUsers.RemoveConnection(userId, connectionId);
+            }
         }
 
     }

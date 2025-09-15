@@ -24,7 +24,7 @@ namespace SmartEnergyLabDataApi.Models
         }
 
         protected override void checkModel()
-        {            
+        {
             if ( string.IsNullOrEmpty(_newUser.Email) ) {
                 addError("email","Field is mandatory");
             } else {
@@ -77,7 +77,7 @@ namespace SmartEnergyLabDataApi.Models
             _password = logon.Password;
         }
 
-        public bool TryLogon() {
+        public bool TryLogon(string? connectionId) {
             bool result = false;
             if ( string.IsNullOrEmpty(_logon.Email)) {
                 addError("email","Field is mandatory");
@@ -89,7 +89,7 @@ namespace SmartEnergyLabDataApi.Models
                 var user = _da.Users.GetUser(_logon.Email);
                 if ( user!=null ) {
                     if ( user.VerifyPassword(_password) ) {
-                        logon(user);
+                        logon(user, connectionId);
                         result = true;
                     } else {
                         addError("password","Authentication failed");
@@ -99,10 +99,11 @@ namespace SmartEnergyLabDataApi.Models
                 }
             }
 
-            return result;            
+            //
+            return result;
         }
 
-        private void logon(User user) {
+        private void logon(User user, string? connectionId) {
             var claims = new List<Claim>
                     {
                         new Claim(ClaimTypes.Name, user.Id.ToString()),
@@ -117,6 +118,10 @@ namespace SmartEnergyLabDataApi.Models
                 IsPersistent = true,
                 ExpiresUtc = DateTime.UtcNow + new TimeSpan(365, 0, 0, 0),
             }).Wait();
+            // add connectionId to list of valid logged on users
+            if (!string.IsNullOrEmpty(connectionId)) {
+                NotificationHub.ConnectedUsers.AddConnection(user.Id, connectionId);
+            }
         }
 
         public bool ForgotPassword() {
@@ -223,7 +228,7 @@ namespace SmartEnergyLabDataApi.Models
                             this.addError("newPassword2","Passwords do not match");
                         }
                     }
-                } 
+                }
             }
 
         }
@@ -233,7 +238,7 @@ namespace SmartEnergyLabDataApi.Models
             _user.SetPassword(_resetPassword.NewPassword1);
         }
     }
-        
+
 
     public class ChangePassword {
         public string Password {get; set;}

@@ -12,7 +12,9 @@
         <ng-container matColumnDef="isConnected">
             <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
             <td mat-cell *matCellDef="let element">
-                <img class="isConnected" *ngIf="element.isConnected" src="/assets/images/user-connected.png"/>
+                <div style="white-space: nowrap;" *ngIf="element.numConnections>0">
+                    <img class="isConnected"  src="/assets/images/user-connected.png" /> ({{element.numConnections}})
+                </div>
             </td>
         </ng-container>
 

@@ -47,13 +47,12 @@ namespace SmartEnergyLabDataApi.Data
             }
         }
 
-        public virtual bool IsConnected
+        public virtual int NumConnections
         {
             get {
-                return NotificationHub.ConnectedUsers.IsConnected(Id);
+                return NotificationHub.ConnectedUsers.NumConnections(Id);
             }
         }
-
 
     }
 }

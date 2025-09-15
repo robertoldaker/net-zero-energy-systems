@@ -7,6 +7,7 @@ import { UserService } from '../user.service';
 import { DialogService } from 'src/app/dialogs/dialog.service';
 import { MessageDialogIcon } from 'src/app/dialogs/message-dialog/message-dialog.component';
 import { DialogFooterButtonsEnum } from 'src/app/dialogs/dialog-footer/dialog-footer.component';
+import { SignalRService } from 'src/app/main/signal-r-status/signal-r.service';
 
 @Component({
     selector: 'app-log-on',
@@ -15,7 +16,11 @@ import { DialogFooterButtonsEnum } from 'src/app/dialogs/dialog-footer/dialog-fo
 })
 export class LogOnComponent extends DialogBase implements OnInit {
 
-    constructor(public dialogRef: MatDialogRef<LogOnComponent>, private service: DataClientService, private userService: UserService, private dialogService: DialogService) {
+    constructor(public dialogRef: MatDialogRef<LogOnComponent>,
+        private service: DataClientService,
+        private userService: UserService,
+        private dialogService: DialogService,
+        private signalRService: SignalRService ) {
         super();
         this.addFormControl('email','')
         this.addFormControl('password','')
@@ -26,8 +31,8 @@ export class LogOnComponent extends DialogBase implements OnInit {
 
     logon() {
         let v = this.getFormValues()
-        this.service.Logon(v,(resp)=>{
-            this.userService.checkLogon();
+        this.service.Logon(v, this.signalRService.connectionId, (resp)=>{
+            this.userService.checkLogon(true);
             this.dialogRef.close();
         },(error)=>{
             this.fillErrors(error);
@@ -38,7 +43,7 @@ export class LogOnComponent extends DialogBase implements OnInit {
     forgotPassword() {
         let v = this.getFormValues()
         this.service.ForgotPassword(v,(resp)=>{
-            this.dialogRef.close();                    
+            this.dialogRef.close();
             this.dialogService.showMessageDialog({
                     message: `An email has been sent to <b>${v.email}</b> with a link to change your password.<br/><br/>PLEASE REMEBER TO CHECK YOUR SPAM FOLDER</br>`,
                     icon: MessageDialogIcon.Info,
