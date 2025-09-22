@@ -18,8 +18,7 @@ namespace EnergySystemLabDataApi.Controllers
     /// </summary>
     [ApiController]
     [Route("Admin")]
-    public class AdminController : ControllerBase
-    {
+    public class AdminController : ControllerBase {
         private IBackgroundTasks _backgroundTasks;
         private DatabaseBackupBackgroundTask _backupDbTask;
         private LoadDistributionDataBackgroundTask _loadDistributionDataTask;
@@ -59,7 +58,8 @@ namespace EnergySystemLabDataApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("SystemInfo")]
-        public SystemInfo SystemInfo() {
+        public SystemInfo SystemInfo()
+        {
             return new SystemInfo();
         }
 
@@ -69,7 +69,8 @@ namespace EnergySystemLabDataApi.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("MaintenanceMode")]
-        public void MaintenanceMode(bool state) {
+        public void MaintenanceMode(bool state)
+        {
             AdminModel.Instance.MaintenanceMode = state;
         }
 
@@ -79,7 +80,8 @@ namespace EnergySystemLabDataApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("BackupDb")]
-        public IActionResult BackupDb(bool sFtp=true, bool restoreToStagingServer=false) {
+        public IActionResult BackupDb(bool sFtp = true, bool restoreToStagingServer = false)
+        {
             _backupDbTask.Run(sFtp, restoreToStagingServer);
             return this.Ok();
         }
@@ -91,12 +93,13 @@ namespace EnergySystemLabDataApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("BackupDbLocally")]
-        public IActionResult BackupDbLocally(ApplicationGroup appGroup = ApplicationGroup.All) {
+        public IActionResult BackupDbLocally(ApplicationGroup appGroup = ApplicationGroup.All)
+        {
             var m = new DatabaseBackup(null);
             var sr = m.BackupToStream(out string filename, appGroup);
             var fsr = new FileStreamResult(sr.BaseStream, "application/sql");
-			fsr.FileDownloadName = filename;
-			return fsr;
+            fsr.FileDownloadName = filename;
+            return fsr;
         }
 
         /// <summary>
@@ -107,10 +110,11 @@ namespace EnergySystemLabDataApi.Controllers
         [Route("RestoreDb")]
         [DisableRequestSizeLimit]
         [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
-        public IActionResult RestoreDb(IFormFile file) {
+        public IActionResult RestoreDb(IFormFile file)
+        {
             var m = new DatabaseBackup(null);
             m.Restore(file);
-			return this.Ok();
+            return this.Ok();
         }
 
         /// <summary>
@@ -119,12 +123,13 @@ namespace EnergySystemLabDataApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("Cancel")]
-        public IActionResult Cancel(int taskId) {
+        public IActionResult Cancel(int taskId)
+        {
             try {
                 _backgroundTasks.GetTask<BackgroundTaskBase>(taskId)?.Cancel();
                 return this.Ok();
-            } catch( Exception e) {
-                return this.StatusCode(500,e.Message);
+            } catch (Exception e) {
+                return this.StatusCode(500, e.Message);
             }
         }
 
@@ -135,13 +140,14 @@ namespace EnergySystemLabDataApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("LoadDistributionData")]
-        public IActionResult LoadDistributionData(LoadNetworkDataSource source=LoadNetworkDataSource.All) {
+        public IActionResult LoadDistributionData(LoadNetworkDataSource source = LoadNetworkDataSource.All)
+        {
             try {
                 //
                 _loadDistributionDataTask.Run(source);
                 return this.Ok();
-            } catch( Exception e) {
-                return this.StatusCode(500,e.Message);
+            } catch (Exception e) {
+                return this.StatusCode(500, e.Message);
             }
         }
 
@@ -151,7 +157,8 @@ namespace EnergySystemLabDataApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("DistributionData")]
-        public DistributionData GetDistributionData() {
+        public DistributionData GetDistributionData()
+        {
             var m = new DistributionData();
             return m;
         }
@@ -162,7 +169,8 @@ namespace EnergySystemLabDataApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("TransmissionData")]
-        public TransmissionData GetTransmissionData() {
+        public TransmissionData GetTransmissionData()
+        {
             var m = new TransmissionData();
             return m;
         }
@@ -173,14 +181,15 @@ namespace EnergySystemLabDataApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("TestLog")]
-        public IActionResult TestLog() {
+        public IActionResult TestLog()
+        {
             try {
-                for( int i=1; i<=100; i++) {
+                for (int i = 1; i <= 100; i++) {
                     Logger.Instance.LogInfoEvent($"Test log message [{i}]");
                 }
                 return this.Ok();
-            } catch( Exception e) {
-                return this.StatusCode(500,e.Message);
+            } catch (Exception e) {
+                return this.StatusCode(500, e.Message);
             }
         }
 
@@ -190,7 +199,8 @@ namespace EnergySystemLabDataApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("DataModel")]
-        public DataModel GetDataModel() {
+        public DataModel GetDataModel()
+        {
             var m = new DataModel();
             m.Load();
             return m;
@@ -202,7 +212,8 @@ namespace EnergySystemLabDataApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("PerformCleanup")]
-        public void PerformCleanup() {
+        public void PerformCleanup()
+        {
             Logger.Instance.LogInfoEvent("Started database cleanup...");
             DataAccessBase.PerformCleanup();
             Logger.Instance.LogInfoEvent("Finished database cleanup");
@@ -210,7 +221,8 @@ namespace EnergySystemLabDataApi.Controllers
 
         [HttpGet]
         [Route("GenerateError")]
-        public void GenerateError() {
+        public void GenerateError()
+        {
             throw new Exception("This is an error generated for test purposes using \"Admin/GenerateError\"");
         }
 
@@ -220,15 +232,15 @@ namespace EnergySystemLabDataApi.Controllers
         /// <param name="gaId"></param>
         [HttpPost]
         [Route("DeleteAllSubstations")]
-        public void DeleteAllSubstations(int gaId) {
-            using( var da = new DataAccess() ) {
+        public void DeleteAllSubstations(int gaId)
+        {
+            using (var da = new DataAccess()) {
                 da.Substations.DeleteAllDistributionInGeographicalArea(gaId);
                 da.Substations.DeleteAllPrimaryInGeographicalArea(gaId);
                 da.SupplyPoints.DeleteAllGridSupplyPointsInGeographicalArea(gaId);
                 da.CommitChanges();
             }
         }
-
     }
 
 }

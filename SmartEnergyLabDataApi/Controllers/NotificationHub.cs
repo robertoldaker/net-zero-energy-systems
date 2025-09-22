@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using HaloSoft.EventLogger;
 using SmartEnergyLabDataApi.Data;
 using Microsoft.Extensions.ObjectPool;
+using NHibernate.Id;
 
 
 public class NotificationHub : Hub {
@@ -23,6 +24,23 @@ public class NotificationHub : Hub {
             ConnectedUsers.RemoveConnection(userId, this.Context.ConnectionId);
         }
         await base.OnDisconnectedAsync(exception);
+    }
+
+    public async Task Pong()
+    {
+        await Task.Run(() => {
+            var userIdStr = this.Context.User?.Identity?.Name;
+            if (int.TryParse(userIdStr, out int userId)) {
+                ConnectedUsers.AddConnection(userId, this.Context.ConnectionId);
+            }
+        });
+
+    }
+
+    public async Task PingUsers()
+    {
+        ConnectedUsers.Clear();
+        await this.Clients.All.SendAsync("Ping");
     }
 }
 
@@ -56,12 +74,10 @@ public class ConnectedUsers {
         }
     }
 
-    public void Clear(int userId)
+    public void Clear()
     {
         lock (_connectedUsers) {
-            if (_connectedUsers.ContainsKey(userId)) {
-                _connectedUsers.Remove(userId);
-            }
+            _connectedUsers.Clear();
         }
     }
 

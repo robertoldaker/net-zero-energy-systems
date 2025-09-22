@@ -22,7 +22,7 @@ export class UserService {
         });
     }
 
-    checkLogon(notify: boolean = false) {
+    checkLogon() {
         this.service.CurrentUser((user)=> {
             this.user = user;
             this.userInfoValid = true
@@ -30,10 +30,6 @@ export class UserService {
                 //
                 this.LogonEvent.emit(this.user)
                 //
-                console.log('check logon',notify)
-                if ( notify ) {
-                    this.notifyOtherTabs()
-                }
             }
         })
     }
@@ -45,12 +41,14 @@ export class UserService {
             this.LogoffEvent.emit()
             //
             this.notifyOtherTabs()
+            //
+            window.location.reload()
         })
     }
 
     private readonly storageKey = 'loggedInChange'
 
-    private notifyOtherTabs() {
+    notifyOtherTabs() {
         let item = localStorage.getItem(this.storageKey)
         if ( item && item == '1') {
             localStorage.setItem(this.storageKey, '0');

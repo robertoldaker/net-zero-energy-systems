@@ -3,6 +3,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { User } from 'src/app/data/app.data';
 import { DataClientService } from 'src/app/data/data-client.service';
+import { MainService } from 'src/app/main/main.service';
 import { ComponentBase } from 'src/app/utils/component-base';
 
 @Component({
@@ -12,7 +13,7 @@ import { ComponentBase } from 'src/app/utils/component-base';
 })
 export class AdminUsersComponent extends ComponentBase implements OnInit {
 
-    constructor(private dataService: DataClientService) {
+    constructor(private dataService: DataClientService, private mainService:MainService) {
         super()
         this.sort = null
         this.displayedColumns = ['isConnected','name','email','role','enabled']
@@ -75,5 +76,9 @@ export class AdminUsersComponent extends ComponentBase implements OnInit {
     }
 
     onlyConnectedUsers: boolean = false
+
+    pingUsers() {
+        this.mainService.pingUsers()
+    }
 
 }

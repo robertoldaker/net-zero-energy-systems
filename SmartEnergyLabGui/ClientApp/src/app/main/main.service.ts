@@ -21,6 +21,10 @@ export class MainService {
         signalRService.hubConnection.on('MaintenanceMode',(data) => {
             this.maintenanceMode = data
         })
+        signalRService.hubConnection.on('Ping', () => {
+            console.log('ping received')
+            this.signalRService.hubConnection.send('Pong')
+        })
 
     }
 
@@ -33,6 +37,9 @@ export class MainService {
             { path: '/boundCalc', title: 'Transmission Boundary Capability Calculator'},
             { path: '/elsi', title: 'GB Electricity Market Simulator'}
         ]
+    pingUsers() {
+        this.signalRService.hubConnection.send('PingUsers')
+    }
 }
 
 export class AppInfo {

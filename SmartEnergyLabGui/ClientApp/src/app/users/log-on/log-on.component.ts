@@ -32,8 +32,9 @@ export class LogOnComponent extends DialogBase implements OnInit {
     logon() {
         let v = this.getFormValues()
         this.service.Logon(v, this.signalRService.connectionId, (resp)=>{
-            this.userService.checkLogon(true);
+            this.userService.notifyOtherTabs()
             this.dialogRef.close();
+            window.location.reload()
         },(error)=>{
             this.fillErrors(error);
         }

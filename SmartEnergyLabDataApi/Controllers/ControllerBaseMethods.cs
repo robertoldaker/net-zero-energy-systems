@@ -32,10 +32,6 @@ namespace SmartEnergyLabDataApi.Controllers
             int userId = c.GetUserId();
             //
             c.HttpContext.SignOutAsync().Wait();
-            // Remove from list of connected users
-            if (userId != 0 && !string.IsNullOrEmpty(connectionId)) {
-                NotificationHub.ConnectedUsers.RemoveConnection(userId, connectionId);
-            }
         }
 
     }

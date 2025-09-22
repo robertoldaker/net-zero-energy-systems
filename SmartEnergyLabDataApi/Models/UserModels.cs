@@ -118,10 +118,6 @@ namespace SmartEnergyLabDataApi.Models
                 IsPersistent = true,
                 ExpiresUtc = DateTime.UtcNow + new TimeSpan(365, 0, 0, 0),
             }).Wait();
-            // add connectionId to list of valid logged on users
-            if (!string.IsNullOrEmpty(connectionId)) {
-                NotificationHub.ConnectedUsers.AddConnection(user.Id, connectionId);
-            }
         }
 
         public bool ForgotPassword() {

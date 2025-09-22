@@ -436,7 +436,7 @@ public class BoundCalcNetworkData {
         }
 
         Network.NetState ns = new(baseLf, ts, bndsetpts); // Create a new netstate with the tripspec and setpoints
-        (LPResult r1, int r2, bool discon) = netopt.OptimiseNet(ns, out Network.FullLoadFlow lf, out double _);
+        (LPResult r1, int r2, bool discon) = netopt.OptimiseNet(ns, out Network.FullLoadFlow lf, out Lad.NetworkLibrary.Network.FullLoadFlow? _);
         nd.FillResults(lf, ns.NSetPts, false);
         //
         nd.ProgressManager.Finish();

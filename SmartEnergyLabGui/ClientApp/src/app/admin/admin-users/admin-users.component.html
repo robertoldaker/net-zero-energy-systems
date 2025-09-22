@@ -3,7 +3,11 @@
         <input type="checkbox" [(ngModel)]="onlyConnectedUsers" (click)="onlyConnectedUsersClicked()"/>
         Only Connected users
     </label>
-    <mat-icon class="iconButton" style="font-size: 20pt;" (click)="reload()" [title]="'Add a new dataset'" [inline]="true">refresh</mat-icon>
+    <button mat-raised-button color="primary" (click)="pingUsers()" style="margin-right: 0.5rem">Ping users</button>
+    <button mat-raised-button color="primary" (click)="reload()">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+    </button>
 </div>
 <app-div-auto-scroller name="users">
     <table style="width: 100%;" #table mat-table [dataSource]="tableData" [trackBy]="getId" matSort>
