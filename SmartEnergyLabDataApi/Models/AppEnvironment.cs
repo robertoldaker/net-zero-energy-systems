@@ -31,14 +31,15 @@ namespace SmartEnergyLabDataApi.Models
         private bool _maintenanceMode;
         private string _activeFilename;
         private string _inactiveFilename;
+        private string _rootFolder;
 
         public AppEnvironment(IWebHostEnvironment hostingEnvironment)
         {
             // Workout whether we are in maintenance mode and set the filename for the file
             // that controls this
-            string rootFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            _activeFilename = Path.Combine(rootFolder, MAINTENANCE_MODE_FILENAME);
-            _inactiveFilename = Path.Combine(rootFolder, "_" + MAINTENANCE_MODE_FILENAME);
+            _rootFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            _activeFilename = Path.Combine(_rootFolder, MAINTENANCE_MODE_FILENAME);
+            _inactiveFilename = Path.Combine(_rootFolder, "_" + MAINTENANCE_MODE_FILENAME);
             _maintenanceMode = File.Exists(_activeFilename);
             // This means we have had an install when in maintenance mode so remove the newly copied file
             if ( _maintenanceMode && File.Exists(_inactiveFilename))
@@ -59,9 +60,15 @@ namespace SmartEnergyLabDataApi.Models
 
         public Context Context
         {
-            get
-            {
+            get {
                 return _appContext;
+            }
+        }
+
+        public string RootFolder
+        {
+            get {
+                return _rootFolder;
             }
         }
 
@@ -78,7 +85,7 @@ namespace SmartEnergyLabDataApi.Models
             if ( value && File.Exists(_inactiveFilename) )
             {
                 File.Move(_inactiveFilename, _activeFilename);
-            } 
+            }
             else if ( !value && File.Exists(_activeFilename))
             {
                 File.Move(_activeFilename, _inactiveFilename);
@@ -124,7 +131,7 @@ namespace SmartEnergyLabDataApi.Models
                     url += HttpUtility.HtmlEncode(p.Name) + "=" + HttpUtility.HtmlEncode(p.GetValue(ps, null).ToString());
                 }
             }
-            return url;            
+            return url;
         }
     }
 }

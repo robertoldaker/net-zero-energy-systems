@@ -17,3 +17,5 @@ SmartEnergyLabDataApi/debugDbHost.txt
 SmartEnergyLabDataApi/_debugDbHost.txt
 SmartEnergyLabDataApi/VersionData.cs
 SmartEnergyLabGui/ClientApp/src/app/main/about-dialog/about-dialog.component.ts
+SmartEnergyLabDataApi/smart-energy-lab (service account).json
+SmartEnergyLabDataApi/smart-energy-lab (api key).txt

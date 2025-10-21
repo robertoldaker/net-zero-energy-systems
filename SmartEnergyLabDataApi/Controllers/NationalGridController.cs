@@ -24,13 +24,13 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Loads network data from NationalGrid's website
         /// </summary>
-        [HttpPost]        
+        [HttpPost]
         [Route("LoadNetwork")]
         public void LoadNetwork(NationalGridNetworkSource source) {
             try {
                 var m = new NationalGridNetworkLoader();
                 m.Load(source);
-            } catch ( Exception e) {                
+            } catch ( Exception e) {
                 Logger.Instance.LogErrorEvent($"Error: loading national grid network [{e.Message}]");
                 throw;
             }
@@ -39,13 +39,13 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Loads network data from NationalGrid's website
         /// </summary>
-        [HttpPost]        
+        [HttpPost]
         [Route("DeleteNetwork")]
         public void DeleteNetwork(GridSubstationLocationSource source) {
             try {
                 var m = new NationalGridNetworkLoader();
                 m.Delete(source);
-            } catch ( Exception e) {                
+            } catch ( Exception e) {
                 Logger.Instance.LogErrorEvent($"Error: loading national grid network [{e.Message}]");
                 throw;
             }
@@ -54,7 +54,7 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Gets substations
         /// </summary>
-        [HttpGet]        
+        [HttpGet]
         [Route("Substations")]
         public IList<GridSubstation> GetSubstations() {
             using( var da = new DataAccess()) {
@@ -65,7 +65,7 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Deletes substation locations
         /// </summary>
-        [HttpPost]        
+        [HttpPost]
         [Route("SubstationLocations/Delete")]
         public void DeleteLocations(GridSubstationLocationSource source=GridSubstationLocationSource.GoogleMaps) {
             using( var da = new DataAccess()) {
@@ -77,7 +77,7 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Looksup places using google places api
         /// </summary>
-        [HttpGet]        
+        [HttpGet]
         [Route("GoogleMapsLookup")]
         public PlaceLookupContainer GoogleMapsLookup(string text) {
             var gmaps = new GoogleMapsGISFinder();
@@ -88,7 +88,7 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Looksup places using google places api
         /// </summary>
-        [HttpGet]        
+        [HttpGet]
         [Route("GooglePlacesLookup")]
         public TextSearch GooglePlacesLookup(string searchText) {
             var gmaps = new GoogleMapsGISFinder();
@@ -97,9 +97,21 @@ namespace SmartEnergyLabDataApi.Controllers
         }
 
         /// <summary>
+        /// Looksup places using google places api
+        /// </summary>
+        [HttpGet]
+        [Route("GoogleGeocoderLookup")]
+        public GoogleMapsGISFinder.Geometry GoogleGeocoderLookup(string text)
+        {
+            var gmaps = new GoogleMapsGISFinder();
+            var response = gmaps.Lookup(text);
+            return response;
+        }
+
+        /// <summary>
         /// Update location with given reference using string [lat],[lng]
         /// </summary>
-        [HttpGet]        
+        [HttpGet]
         [Route("SubstationLocation/Update")]
         public void Update(string reference, string location) {
             using( var da = new DataAccess()) {
@@ -124,7 +136,7 @@ namespace SmartEnergyLabDataApi.Controllers
         /// <summary>
         /// Deletes location with given reference
         /// </summary>
-        [HttpPost]        
+        [HttpPost]
         [Route("SubstationLocation/Delete")]
         public void Delete(string reference) {
             using( var da = new DataAccess()) {

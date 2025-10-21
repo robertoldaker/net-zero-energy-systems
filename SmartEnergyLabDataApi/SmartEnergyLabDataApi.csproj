@@ -36,6 +36,7 @@
     </ItemGroup>
     <ItemGroup>
         <Content Include="LowVoltage\EVDemand\**" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="smart-energy-lab (api key).txt" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
 </Project>

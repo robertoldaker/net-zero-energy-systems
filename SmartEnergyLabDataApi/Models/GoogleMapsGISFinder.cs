@@ -23,10 +23,26 @@ namespace SmartEnergyLabDataApi.Models
             _placeBuilder = new UriBuilder("https://maps.googleapis.com/maps/api/place/findplacefromtext/json");
             _textSearchBuilder = new UriBuilder("https://maps.googleapis.com/maps/api/place/textsearch/json");
             _textSearchNewUrl = "https://places.googleapis.com/v1/places:searchText";
-            _key = "AIzaSyBlmuxJKaYg1JvwRuXJFqdFVxClUR2Phps";
+            _key = loadKey();
             //
             _newClient = new HttpClient();
-            _newClient.DefaultRequestHeaders.Add("X-Goog-Api-Key",_key);
+            _newClient.DefaultRequestHeaders.Add("X-Goog-Api-Key", _key);
+        }
+
+        private string loadKey()
+        {
+            //
+            // this file needs to appear in the home directory and also will not be in the source code repository
+            // since the repository is now open source
+            //
+            string fileName = "smart-energy-lab (api key).txt";
+            string file = Path.Combine(AppEnvironment.Instance.RootFolder, fileName);
+            if (File.Exists(file)) {
+                string text = File.ReadAllText(file).Trim();
+                return text;
+            } else {
+                throw new Exception($"Cannot find google api key file [{fileName}]");
+            }
         }
 
         public Geometry Lookup(string address)
@@ -43,7 +59,11 @@ namespace SmartEnergyLabDataApi.Models
             if ( results!=null && results.Count>0) {
                 return results[0].geometry;
             } else {
-                return null;
+                if ( result?.error_message!=null ) {
+                    throw new Exception($"Problem using google geocoder api [{result.error_message}]");
+                } else {
+                    throw new Exception("Unspecified problem using google geocoder api");
+                }
             }
         }
         public Geocode LookupAll(string address)
@@ -188,7 +208,7 @@ namespace SmartEnergyLabDataApi.Models
         public class PlaceLookupContainer {
             public List<PlaceLookupResult> candidates { get; set; }
             public string error_message {get; set;}
-            public string status {get; set;}    
+            public string status {get; set;}
         }
 
         public class PlaceLookupResult {

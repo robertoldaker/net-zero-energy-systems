@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
@@ -23,26 +24,11 @@ namespace SmartEnergyLabDataApi.Models
         public ClassificationTool()
         {
             string serviceAccountEmail = "smart-energy-lab@smart-energy-lab.iam.gserviceaccount.com";
-            string jsonCredentials = @"
-{
-  ""type"": ""service_account"",
-  ""project_id"": ""smart-energy-lab"",
-  ""private_key_id"": ""dc619ecea5d1325a2bf5d7c966dbdda271a35c86"",
-  ""private_key"": ""-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDCYStyny9Sqfef\nRnvxgIQ15U6JMQfJloM37ZHkaACgwTC7t++GEZ0xvmNfwLbEA8hjfIk0yYjmImXw\nUkdFHIxlKwZxg6HOF4GbUQbrql/fRHjS/wGXJvSR6pJoN2mM3I8A/LkzjQ7eNYDd\nVpllej61wZ5YJJTtF0Ny0qIqPKbz1awfZ7n1Fk80QuulYbaHJxPRcnXmqbrmQhTa\n+XYeojql3zdRnzG6oDFZkEymbOaDunXNOMEpao3pV45vdVz0p0mgtHZpjoPEvjhI\n9mFFx32YondaOBge9yTuBWT5uYOKJK9EU44VkmyzS3Ne8UO0+41Yb61jbUwVrwcM\n+ivkhPxhAgMBAAECggEANGS+slGoDs8TmNIF3I24lVJuvdoCcFrqmaumlHtYF/ya\n5y5oGKosxdi8rnWijek7HV3XGexswyNoeMOkxEMysJ5NSVGizotVewj3JZSx7Ntm\n+fCUfCqa563jssWk5Lwaq7hzLysJY+nmB0Mta8Xsm09KIBYUMmf/3TZbUakxky1/\nWBe0Yb9jnQuuB9WX98KPA/bJr6TRSyyn6sKUkPmRFMtf3dbkDvDyq4yFQ1tJut8f\nAHePHOd1rvDfITavaGbzG1hPqUVVDT3QMCl+R/HZrPukDAIIhdz7KKVzN3QAk3XJ\nfrQTgkIJGWI24kVFok0reR+Wkgl6UpFfxSi7ebtXxQKBgQDzMOzIFmuxR+N63qFc\nuBytaNL2JKbC8/1iSpYrC/9C5n/sOMBL5GAvntadu7dpUMsrNG9Ul4NNAh1bUmpG\nZXtMeYlTVkgJ+hBI7VCp0KjNLsMZE04VuebQLnKaTdjfNltQ+caD37SHa/IbHbxj\nfVOubr0+OW0AXu/OxJYZ+oEcrwKBgQDMnhfBULTxxHF7XM5pLfg6+7gRZUGEQeNE\nVRRk+fC+wpF/kcBdYiBGafk3+ATf5rWWGxNeN1l0uHfkC1KGO5stmGNOwpHfYueX\nmF+GmU3oyiNKoYulCgwR8ifqaP56+aCEJsqC94O8cug+7iapIBDTGQMk7WUrPJ0D\nlRbkKAdb7wKBgBPCfOrBD50G90/LeRb8iq/4XXPMhJRAmOz8nHkA74uzCN/buJwy\nATK9WDjWwM9Y1jk7eHRKH0wJiPMbnjD8G+mZ0nOoBhBxdhNG3Q//OUf6rbWC4QxY\n3404yO0KuD1iwEazFNMwQQ3j0ncrklwPGdaJfuzoY5ftHtURGhUgSo9XAoGACWdq\nqBPRfRsOLCFDy0m1kuBmwUXqEO4GR+mxGkLycZH3pelI8gHEgff04EGh17h+t/te\nlIHutpKT0ANFM64hn6LVTZVbpuygwDLckQ8SqZRAsvlhtaAUle6PLxLMP1KhsfEm\ndYZyo4KUce/4DuXOYCVSI6xVbftHLBb6ClpcnDkCgYAe3nfVO7cOBI5IIkbwR0Zs\nHtlJ69MyIqUEBN/ygr3nXHpiQndiZCLmLEkuZgW1jXsc8ehISXu8bnh/Hv1xhKKM\nNZ6X+P+KyNPNMkL0ISMActQ68rQMgXzaUFWNll5hA9pDA9Elib+AKqYcGq9sBA1L\nX8laDZrArzSNwBQxZ16vFg==\n-----END PRIVATE KEY-----\n"",
-  ""client_email"": ""smart-energy-lab@smart-energy-lab.iam.gserviceaccount.com"",
-  ""client_id"": ""106472379703979965143"",
-  ""auth_uri"": ""https://accounts.google.com/o/oauth2/auth"",
-  ""token_uri"": ""https://oauth2.googleapis.com/token"",
-  ""auth_provider_x509_cert_url"": ""https://www.googleapis.com/oauth2/v1/certs"",
-  ""client_x509_cert_url"": ""https://www.googleapis.com/robot/v1/metadata/x509/smart-energy-lab%40smart-energy-lab.iam.gserviceaccount.com""
-}
-";
-
+            string jsonCredentials = loadCredentials();
             _credentials = (ServiceAccountCredential)
             GoogleCredential.FromJson(jsonCredentials).UnderlyingCredential;
 
-            var initializer = new ServiceAccountCredential.Initializer(_credentials.Id)
-            {
+            var initializer = new ServiceAccountCredential.Initializer(_credentials.Id) {
                 User = serviceAccountEmail,
                 Key = _credentials.Key,
                 Scopes = _scopes
@@ -51,12 +37,27 @@ namespace SmartEnergyLabDataApi.Models
 
             //
             // Create Google Sheets API service.
-            _service = new SheetsService(new BaseClientService.Initializer()
-            {
+            _service = new SheetsService(new BaseClientService.Initializer() {
                 HttpClientInitializer = _credentials,
                 ApplicationName = "Smart-energy-lab",
             });
 
+        }
+
+        private string loadCredentials()
+        {
+            //
+            // this file needs to appear in the home directory and also will not be in the source code repository
+            // since the repository is now open source
+            //
+            string fileName = "smart-energy-lab (service account).json";
+            string file = Path.Combine(AppEnvironment.Instance.RootFolder, fileName);
+            if ( File.Exists(file)) {
+                string json = File.ReadAllText(file);
+                return json;
+            } else {
+                throw new Exception($"Cannot find service account credentials [{fileName}]");
+            }
         }
 
         public void Dispose()
@@ -143,14 +144,14 @@ namespace SmartEnergyLabDataApi.Models
             }
             //
             var data = new double[lpd.Load.Length];
-            for( int i=0; i<data.Length;i++ ) { 
+            for( int i=0; i<data.Length;i++ ) {
                 data[i] = lpd.Load[i] * lpd.Peak;
-            } 
+            }
             //
             con.Data = data;
             con.IntervalMins = 24*60 / data.Length;
             // Actually a guess for the mo!!
-            con.Season = Season.Winter; 
+            con.Season = Season.Winter;
         }
 
         /// <summary>
@@ -158,7 +159,7 @@ namespace SmartEnergyLabDataApi.Models
         /// </summary>
         /// <param name="input">Input to the tool</param>
         /// <returns>Output from the tool</returns>
-        public ClassificationToolOutput Run(ClassificationToolInput input) 
+        public ClassificationToolOutput Run(ClassificationToolInput input)
         {
 
             var valueRanges = getValueRanges(input);
@@ -253,7 +254,7 @@ namespace SmartEnergyLabDataApi.Models
             //
             valueRanges.Add(elexonVr);
 
-            // Other 
+            // Other
             var otherValues = new List<IList<object>>();
             if ( input.SubstationMount==SubstationMountEnum.Ground ) {
                 otherValues.Add( new List<object>() { "Ground Mounted" });
@@ -322,7 +323,7 @@ namespace SmartEnergyLabDataApi.Models
     /// Class to define inputs into classification tool
     /// </summary>
     public class ClassificationToolInput {
-        
+
         /// <summary>
         /// Elexon profile number of customers
         /// </summary>
@@ -392,7 +393,7 @@ namespace SmartEnergyLabDataApi.Models
         /// Cluster probabilities
         /// </summary>
         /// <value></value>
-        public double[] ClusterProbabilities {get; set;} 
+        public double[] ClusterProbabilities {get; set;}
 
         /// <summary>
         /// Estimated load
