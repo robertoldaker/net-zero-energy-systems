@@ -48,6 +48,13 @@ export class ClassificationToolInputComponent implements OnInit {
                 this.input.elexonProfile[i] = parseFloat(ep)
             }
         }
+        this.input.substationMount = Number(this.input.substationMount)
+        this.input.transformerRating = Number(this.input.transformerRating)
+        this.input.percentIndustrialCustomers = Number(this.input.percentIndustrialCustomers)
+        this.input.percentageHalfHourlyLoad = Number(this.input.percentageHalfHourlyLoad)
+        this.input.percentageOverhead = Number(this.input.percentageOverhead)
+        this.input.numberOfFeeders = Number(this.input.numberOfFeeders)
+        this.input.totalLength = Number(this.input.totalLength)
         this.service.run(this.input)
     }
 

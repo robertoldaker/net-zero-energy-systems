@@ -14,18 +14,18 @@ export class ClassificationToolService {
     toolRunning: boolean = false
 
     constructor(private dataClientService: DataClientService) {
-        
+
     }
 
     run(input: ClassificationToolInput) {
         this.input = input
         this.toolRunning = true;
-        this.dataClientService.RunClassificationTool(input, 
+        this.dataClientService.RunClassificationTool(input,
             (output: ClassificationToolOutput) => {
                 this.output = output
                 this.OutputLoaded.emit(output)
-            }, 
-            undefined, 
+            },
+            undefined,
             () => {
                 this.toolRunning = false;
             }
